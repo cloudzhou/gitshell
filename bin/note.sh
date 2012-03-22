@@ -1,2 +1,20 @@
 #!/bin/bash
-echo "apt-get install libzip1 libzip-dev  libssl0.9.8 libssl-dev  libpcre3 libpcre3-dev  build-essential python-dev"
+automake
+build-essential
+git
+libmysqlclient-dev
+libpcre3
+libpcre3-dev
+libpython2.7
+libssl0.9.8
+libssl-dev
+libtool
+libzip1
+libzip-dev
+mysql
+mysql-client
+mysql-server
+pip
+python-dev
+python-pip
+python-pyasn1
