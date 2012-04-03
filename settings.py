@@ -79,6 +79,10 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'gitshell.index',
+    'gitshell.keyauth',
+    'gitshell.dist',
+    'gitshell.keyvalue',
     # 'django.contrib.admin',
     # 'django.contrib.admindocs',
 )
