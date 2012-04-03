@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}gitshell{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="git hos">
+    <meta name="author" content="">
+
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/gitshell.css" rel="stylesheet">
+    {% block css %}{% endblock %}
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+
+    <link rel="shortcut icon" href="/static/ico/favicon.ico">
+  </head>
+
+  <body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">Gitshell</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">Home</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <!-- container -->
+    <div class="container">
+
+    {% block container %}{% endblock %}
+
+    <footer class="footer">
+      <p class="pull-right"><a href="#">Back to top</a></p>
+      <p><a href="/help/about/"> 关于 </a> | <a href="/help/faq/"> FAQ </a> | <a href="/help/mission/"> 愿景 </a> | <a href="/help/quickstart/"> 快速入门 </a> | <a href="/help/"> 帮助 </a> | <a target="_blank" href="http://blog.gitshell.com"> 官方博客 </a> | <a href="/help/contact/"> 联系方式 </a> </p>
+      <p>&copy; Gitshell 2012 专注于 git 托管</p>
+      <p>得益于优美的 bootstrap 框架, 图片来源<a href="http://glyphicons.com"> Glyphicons Free </a>, licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+    </footer>
+    </div>
+  <!-- /container -->
+
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/static/js/jquery-1.7.2.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    {% block js %}{% endblock %}
+  </body>
+</html>
+
