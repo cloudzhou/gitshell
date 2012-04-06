@@ -11,6 +11,7 @@ urlpatterns = patterns('gitshell',
     url(r'^stats/?$', 'index.views.home'),
     url(r'^login/?$', 'gsuser.views.login'),
     url(r'^join/?$', 'gsuser.views.join'),
+    url(r'^resetpassword/?$', 'gsuser.views.resetpassword'),
 
     # help
     url(r'^help/?$', 'help.views.default'),

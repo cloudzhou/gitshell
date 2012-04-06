@@ -1,35 +1,39 @@
 {% extends "base.html" %}
 {% block container %}
 <div class="page-header">
-        <h1>:-), 帮助 <small>gitshell介绍，使用，git入门...</small></h1>
+        <h1>:-), 注册 <small>已经拥有帐号？直接<a href="/login/">登录</a></small></h1>
 </div>
 <div class="row">
-<div class="span3">
-<div style="padding: 8px 0;" class="well">
-    <ul class="nav nav-list">
-        <li class="nav-header">about gitshell</li>
-        <li><a href="#about">关于</a></li>
-        <li><a href="#mission">愿景</a></li>
-        <li><a href="#faq">FAQ</a></li>
-        <li><a href="#mission">服务条款</a></li>
-        <li><a href="#mission">联系方式 </a></li>
-        <li class="nav-header">快速入门</li>
-        <li><a href="#join.login">注册·登录</a></li>
-        <li><a href="#join.login">管理ssh key</a></li>
-        <li><a href="#mission">创建仓库</a></li>
-        <li><a href="#mission">clone·push·pull代码</a></li>
-        <li><a href="#mission">协同开发</a></li>
-        <li class="nav-header">git 新手</li>
-        <li><a href="#">Profile</a></li>
-        <li><a href="#">Settings</a></li>
-        <li class="divider"></li>
-        <li><a href="#">git外部学习资源</a></li>
-    </ul>
-</div>
-</div>
-<div class="span9">
-        <h3>愿景</h3>
-        <p>aa</p>
-</div>
+    <div class="span9">
+        <form class="well form-inline">
+            <input type="text" placeholder="注册邮箱" class="input-big">
+            &nbsp;·&nbsp;
+            <img style="margin-bottom:10px" src="http://tx.bdimg.com/sys/portrait/item/2c956261696475636f727073706163652b01.jpg"/>
+            <input type="password" placeholder="验证码" class="input-small">
+            <button class="btn" type="submit">注册</button>
+        </form>
+    </div>
+    <div class="span7">
+        <form class="form-horizontal">
+            <fieldset>
+                <div class="control-group">
+                    <label for="input01" class="control-label">用户名</label>
+                    <div class="controls">
+                        <input type="text" id="input01">
+                        <span class="help-inline">注册后不可修改, 最长12字符</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="input01" class="control-label">密码</label>
+                    <div class="controls">
+                        <input type="password" id="input01">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">注册</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
 </div>
 {% endblock %}
