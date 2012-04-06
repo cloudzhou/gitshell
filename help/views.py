@@ -5,12 +5,6 @@ from django.shortcuts import render_to_response
 
 def default(request):
     response_dictionary = {'hello_world': 'hello world'}
-    return render_to_response('home.html',
+    return render_to_response('help/default.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
-def home(request):
-    response_dictionary = {'hello_world': 'hello world'}
-    return render_to_response('home.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-

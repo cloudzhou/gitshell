@@ -1,7 +1,7 @@
 # Django settings for gitshell project.
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
+TEMPLATE_DEBUG = True
 
 ADMINS = (
     ('cloudzhou', 'cloudzhou@163.com'),
