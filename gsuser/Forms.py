@@ -12,7 +12,7 @@ class JoinForm0(forms.Form):
     captcha = CaptchaField()
 
 class JoinForm1(forms.Form):
-    user_name = forms.CharField(max_length=12)
+    name = forms.CharField(max_length=12)
     password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False))
 
 class ResetpasswordForm0(forms.Form):

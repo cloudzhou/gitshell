@@ -1,39 +1,94 @@
 {% extends "base.html" %}
 {% block container %}
+{% ifequal step '3'  %}
+<div class="page-header">
+        <h1>:-), {{ user_name }}，欢迎您</h1>
+</div>
+{% else %}
 <div class="page-header">
         <h1>:-), 注册 <small>已经拥有帐号？直接<a href="/login/">登录</a></small></h1>
 </div>
+{% endifequal %}
 <div class="row">
+{% ifequal step '0' %}
     <div class="span9">
-        <form class="well form-inline">
-            <input type="text" placeholder="注册邮箱" class="input-big">
+        <form class="well form-inline" action="/join/0/" method="post">
+            {% csrf_token %}
+            {{ joinForm0.email }}
             &nbsp;·&nbsp;
-            <img style="margin-bottom:10px" src="http://tx.bdimg.com/sys/portrait/item/2c956261696475636f727073706163652b01.jpg"/>
-            <input type="password" placeholder="验证码" class="input-small">
+            {{ joinForm0.captcha }}
             <button class="btn" type="submit">注册</button>
         </form>
     </div>
+{% endifequal %}
+{% ifequal step '1' %}
+    <div class="span12">
+    <p class="lead">谢谢你，已经发送注册邮件，请在半小时内激活，部分运营商会拦截邮件，注意查收</p>
+    <small>如果发送邮件失败，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="http://www.sinaimg.cn/blog/developer/wiki/LOGO_16x16.png"/>&nbsp;gitshell</a></small>
+    </div>
+{% endifequal %}
+{% if step|length > 1 %}
     <div class="span7">
         <form class="form-horizontal">
+            {% csrf_token %}
             <fieldset>
                 <div class="control-group">
-                    <label for="input01" class="control-label">用户名</label>
+                    <label for="id_name" class="control-label">用户名</label>
                     <div class="controls">
-                        <input type="text" id="input01">
+                        {{ joinForm1.name }}
                         <span class="help-inline">注册后不可修改, 最长12字符</span>
                     </div>
                 </div>
                 <div class="control-group">
-                    <label for="input01" class="control-label">密码</label>
+                    <label for="id_password" class="control-label">密码</label>
                     <div class="controls">
-                        <input type="password" id="input01">
+                        {{ joinForm1.password }}
                     </div>
                 </div>
                 <div class="form-actions">
-                    <button class="btn btn-primary" type="submit">注册</button>
+                    <button id="id_join_submit" class="btn btn-primary" type="submit">注册</button>
                 </div>
             </fieldset>
         </form>
     </div>
+{% endif %}
+{% ifequal step '3' %}
+    <div class="span12">
+    <p class="lead">在gitshell为您服务之前，你有必要理解以下内容：</p>
+    <ul>
+        <li><a href="">设置ssh pub key</a></li>
+        <li><a href="">创建仓库</a></li>
+        <li><a href="">协同开发</a></li>
+        <li><a href="">gitshell 能做什么？</a></li>
+        <li><a href="">gitshell 不能做什么？</a></li>
+    </ul>
+    </div>
+{% endifequal %}
 </div>
+{% endblock %}
+{% block js %}
+<script src="/static/js/md5.min.js"></script>
+<script>
+/*global jQuery, window */
+$(function(){
+    var md5_user_passwd = function() {
+        $('#result').html(window.md5($('#input').val()));
+    },
+    join0_init = function() {
+        $('#id_email').attr('placeholder', '输入邮箱');
+        $('#id_captcha_1').attr('placeholder', '输入验证码');
+    };
+    join1_init = function() {
+        $('#id_name').attr('placeholder', '用户名，[A-Za-z0-9_]');
+        $('#id_password').attr('placeholder', '密码，包含数字和字母');
+    };
+{% ifequal step '0' %}
+    join0_init();
+{% endifequal %}
+{% if step|length > 1 %}
+    join1_init();
+{% endif %}
+    $('#id_join_submit').on('click', md5_user_passwd);
+});
+</script>
 {% endblock %}
