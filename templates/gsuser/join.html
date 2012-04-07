@@ -2,7 +2,7 @@
 {% block container %}
 {% ifequal step '3'  %}
 <div class="page-header">
-        <h1>:-), {{ user_name }}，欢迎您</h1>
+        <h1>:-), {{ user.username }}，欢迎您</h1>
 </div>
 {% else %}
 <div class="page-header">
@@ -29,7 +29,7 @@
 {% endifequal %}
 {% if step|length > 1 %}
     <div class="span7">
-        <form class="form-horizontal">
+        <form class="form-horizontal" action="" method="post">
             {% csrf_token %}
             <fieldset>
                 <div class="control-group">
@@ -64,6 +64,11 @@
     </ul>
     </div>
 {% endifequal %}
+{% ifequal step '4' %}
+    <div class="span12">
+    <small>注册失败，可能是激活url Token过期，请重新通过<a href="/join/0/">注册</a>获取激活url，如果这种情况持续出现，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="http://www.sinaimg.cn/blog/developer/wiki/LOGO_16x16.png"/>&nbsp;gitshell</a></small>
+    </div>
+{% endifequal %}
 </div>
 {% endblock %}
 {% block js %}
@@ -72,7 +77,7 @@
 /*global jQuery, window */
 $(function(){
     var md5_user_passwd = function() {
-        $('#result').html(window.md5($('#input').val()));
+        $('#id_password').val(window.md5($('#id_password').val()));
     },
     join0_init = function() {
         $('#id_email').attr('placeholder', '输入邮箱');

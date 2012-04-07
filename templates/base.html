@@ -33,15 +33,21 @@
                     <div class="nav-collapse">
                         <ul class="nav">
                             <li class="active"><a href="/home/">首页</a></li>
-                            <li><a href="/project/">项目</a></li>
+                            <li><a href="/{{ user.username }}/repos/">项目</a></li>
+                            <li><a href="/{{ user.username }}/">{{ user.username }}</a></li>
                             <li><a href="/skills/">技能</a></li>
-                            <li><a href="/me/">个人</a></li>
                             <li><a href="/stats/">统计</a></li>
                             <li><a href="/help/">帮助</a></li>
                         </ul>
                         <ul class="nav" style="float:right">
-                            <li><a href="/login/">登录</a></li>
-                            <li><a href="/join/0/">注册</a></li>
+                            {% if user.is_authenticated %}
+                                <li><a href="/settings/">设置</a></li>
+                                <li><a href="/feed/message/">消息</a></li>
+                                <li><a href="/logout/">退出</a></li>
+                            {% else %}
+                                <li><a href="/login/">登录</a></li>
+                                <li><a href="/join/0/">注册</a></li>
+                            {% endif %}
                         </ul>
                     </div><!--/.nav-collapse -->
                 </div>

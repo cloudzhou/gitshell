@@ -33,15 +33,33 @@
                     <label for="id_rememberme" class="checkbox">
                         <div class="controls">
                             {{ loginForm.rememberme }}
-                            下次自动登录&nbsp;|&nbsp;<a href="/forgetpasswd">忘记密码了</a>
+                            下次自动登录&nbsp;|&nbsp;<a href="/resetpassword/">忘记密码了</a>
                         </div>
                     </label>
                 </div>
                 <div class="form-actions">
-                    <button class="btn btn-primary" type="submit">登录</button>
+                    <button id="id_login_submit" class="btn btn-primary" type="submit">登录</button>
                 </div>
             </fieldset>
         </form>
     </div>
 </div>
+{% endblock %}
+{% block js %}
+<script src="/static/js/md5.min.js"></script>
+<script>
+/*global jQuery, window */
+$(function(){
+    var md5_user_passwd = function() {
+        $('#id_password').val(window.md5($('#id_password').val()));
+    },
+    login_init = function() {
+        $('#id_email').attr('placeholder', '输入邮箱');
+        $('#id_password').attr('placeholder', '输入密码，注意大小写');
+        $('#id_captcha_1').attr('placeholder', '输入验证码');
+    };
+    login_init();
+    $('#id_login_submit').on('click', md5_user_passwd);
+});
+</script>
 {% endblock %}

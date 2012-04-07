@@ -13,6 +13,7 @@ urlpatterns = patterns('gitshell',
     # gsuser
     url(r'^settings/?$', 'gsuser.views.settings'),
     url(r'^login/?$', 'gsuser.views.login'),
+    url(r'^logout/?$', 'gsuser.views.logout'),
     url(r'^join/?(\w+)?/?$', 'gsuser.views.join'),
     url(r'^resetpassword/?(\w+)?/?$', 'gsuser.views.resetpassword'),
 
