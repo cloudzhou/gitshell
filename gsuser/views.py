@@ -36,6 +36,9 @@ def login(request):
         if loginForm.is_valid():
             email = loginForm.cleaned_data['email']
             password = loginForm.cleaned_data['password']
+            rememberme = loginForm.cleaned_data['rememberme']
+            if rememberme:
+                request.session.set_expiry(2592000)
             user = User.objects.get(email=email)
             if user is not None and user.check_password(password):
                 user = auth_authenticate(username=user.username, password=password)

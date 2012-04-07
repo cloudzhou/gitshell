@@ -37,6 +37,7 @@ MEDIA_URL = 'http://www.gitshell.com/static/media'
 STATIC_ROOT = '/opt/gitshellstatic/static/'
 STATIC_URL = '/static/'
 ADMIN_MEDIA_PREFIX = '/static/admin/'
+SESSION_COOKIE_AGE = 43200
 
 STATICFILES_DIRS = (
 )

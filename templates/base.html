@@ -32,9 +32,15 @@
                     <a class="brand" href="/">Gitshell</a>
                     <div class="nav-collapse">
                         <ul class="nav">
+                            {% if user.is_authenticated %}
                             <li class="active"><a href="/home/">首页</a></li>
                             <li><a href="/{{ user.username }}/repos/">项目</a></li>
                             <li><a href="/{{ user.username }}/">{{ user.username }}</a></li>
+                            {% else %}
+                            <li><a href="/">首页</a></li>
+                            <li><a href="/">项目</a></li>
+                            <li><a href="/join/">YOU</a></li>
+                            {% endif %}
                             <li><a href="/skills/">技能</a></li>
                             <li><a href="/stats/">统计</a></li>
                             <li><a href="/help/">帮助</a></li>
