@@ -78,6 +78,7 @@ def join(request, step):
                     user = auth_authenticate(username=user.username, password=password)
                     if user is not None and user.is_active:
                         auth_login(request, user)
+                        cache.delete(step)
                         return HttpResponseRedirect('/join/3/')
             return HttpResponseRedirect('/join/4/')
     response_dictionary = {'step': step, 'joinForm0': joinForm0, 'joinForm1': joinForm1}
@@ -114,6 +115,7 @@ def resetpassword(request, step):
                     user.save()
                     user = auth_authenticate(username=user.username, password=password)
                     auth_login(request, user)
+                    cache.delete(step)
                     return HttpResponseRedirect('/resetpassword/3/')
             return HttpResponseRedirect('/resetpassword/4/')
     response_dictionary = {'step': step, 'resetpasswordForm0': resetpasswordForm0, 'resetpasswordForm1': resetpasswordForm1}
