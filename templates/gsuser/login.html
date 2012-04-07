@@ -37,6 +37,12 @@
                         </div>
                     </label>
                 </div>
+                {% if error %}
+                <div class="alert">
+                    <a data-dismiss="alert" class="close">×</a>
+                    <strong>出错了！</strong> {{ error }}
+                </div>
+                {% endif %}
                 <div class="form-actions">
                     <button id="id_login_submit" class="btn btn-primary" type="submit">登录</button>
                 </div>
