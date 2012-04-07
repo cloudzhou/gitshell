@@ -79,6 +79,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'captcha',
     'gitshell.index',
     'gitshell.keyauth',
     'gitshell.dist',

@@ -1,39 +1,41 @@
 {% extends "base.html" %}
+{% block css %}
+#id_captcha_1 {display:block;margin-top:10px;}
+{% endblock %}
 {% block container %}
 <div class="page-header">
         <h1>:-), 登录 <small>还没有帐号？立即<a href="/join/">注册</a></small></h1>
 </div>
 <div class="row">
     <div class="span7">
-        <form class="form-horizontal">
+        <form class="form-horizontal" action="/login/" method="post">
+            {% csrf_token %}
             <fieldset>
                 <div class="control-group">
-                    <label for="input01" class="control-label">邮箱</label>
+                    <label for="id_email" class="control-label">邮箱</label>
                     <div class="controls">
-                        <input type="text" id="input01">
+                        {{ loginForm.email }}
                     </div>
                 </div>
                 <div class="control-group">
-                    <label for="input01" class="control-label">密码</label>
+                    <label for="id_password" class="control-label">密码</label>
                     <div class="controls">
-                        <input type="password" id="input01">
+                        {{ loginForm.password }}
                     </div>
                 </div>
                 <div class="control-group">
-                    <label for="input01" class="control-label">验证码</label>
+                    <label for="id_captcha_1" class="control-label">验证码</label>
                     <div class="controls">
-                        <img style="margin-bottom:10px" src="http://www.douban.com/misc/captcha?id=RvMAYbKghxdK9SmJ7aiDSinQ&size=s"/>
-                        <input type="text" id="input01">
+                        {{ loginForm.captcha }}
                     </div>
                 </div>
                 <div class="control-group">
-                    <label for="optionsCheckbox2" class="control-label"></label>
-                    <div class="controls">
-                        <label class="checkbox">
-                        <input type="checkbox" value="option1" id="optionsCheckbox2">
-                        下次自动登录&nbsp;|&nbsp;<a href="/forgetpasswd">忘记密码了</a>
-                        </label>
-                    </div>
+                    <label for="id_rememberme" class="checkbox">
+                        <div class="controls">
+                            {{ loginForm.rememberme }}
+                            下次自动登录&nbsp;|&nbsp;<a href="/forgetpasswd">忘记密码了</a>
+                        </div>
+                    </label>
                 </div>
                 <div class="form-actions">
                     <button class="btn btn-primary" type="submit">登录</button>

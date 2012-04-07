@@ -3,14 +3,14 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.cache import cache
 import re
 
-def project(request, pproject):
+def repos(request, pproject):
     
     if len(project_partition_array) == 0:
         refresh(request)
     return HttpResponse("auth and distributed", content_type="text/plain")
 
 def refresh(request):
-    new_project_partition_array = []
+    new_repos_partition_array = []
     file = open(project_partition_conf_file, 'r')
     try:
         for line in file:
@@ -18,15 +18,15 @@ def refresh(request):
             if len(array) != 4 or not re.match("\d+", array[0]) or not re.match("\d+", array[1]) or not re.match("\d+", array[3]):
                 continue
             project_partition  = ProjectPartition(int(array[0]), int(array[1]), array[2], int(array[3]))
-            new_project_partition_array.append(project_partition)
+            new_repos_partition_array.append(project_partition)
     finally:
         file.close()
-    if len(new_project_partition_array) > 0:
-        project_partition_array = new_project_partition_array
+    if len(new_repos_partition_array) > 0:
+        project_partition_array = new_repos_partition_array
     
-    return print_project_partition(request)
+    return echo_repos_partition(request)
 
-def print_project_partition(request):
+def echo_repos_partition(request):
     str_list = []
     for project_partition in project_partition_array:
         str_list.append(project_partition)

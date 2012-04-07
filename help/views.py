@@ -8,3 +8,9 @@ def default(request):
     return render_to_response('help/default.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+def quickstart(request):
+    response_dictionary = {'hello_world': 'hello world'}
+    return render_to_response('help/default.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
