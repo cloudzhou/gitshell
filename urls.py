@@ -9,6 +9,7 @@ urlpatterns = patterns('gitshell',
     url(r'^repos/?$', 'index.views.home'),
     url(r'^skills/?$', 'index.views.home'),
     url(r'^stats/?$', 'index.views.home'),
+	url(r'^warehouse/?$', 'index.views.warehouse'),
 
     # gsuser
     url(r'^login/?$', 'gsuser.views.login'),
@@ -22,7 +23,12 @@ urlpatterns = patterns('gitshell',
 
     # settings
     url(r'^settings/?$', 'gssettings.views.default'),
-    #url(r'^settings/profile/?$', 'gssettings.views.profile'),
+    url(r'^settings/profile/?$', 'gssettings.views.profile'),
+    url(r'^settings/changepassword/?$', 'gssettings.views.changepassword'),
+    url(r'^settings/sshpubkey/?$', 'gssettings.views.sshpubkey'),
+    url(r'^settings/email/?$', 'gssettings.views.email'),
+    url(r'^settings/repos/?$', 'gssettings.views.repos'),
+    url(r'^settings/destroy/?$', 'gssettings.views.destroy'),
 
     # gitshell openssh keyauth and dist, private for subnetwork access by iptables, nginx port 9000
     url(r'^private/keyauth/fp/(\w+)/?$', 'keyauth.views.fingerprint'),

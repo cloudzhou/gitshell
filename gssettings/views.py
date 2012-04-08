@@ -2,10 +2,47 @@
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.shortcuts import render_to_response
+from gitshell.gssettings.Form import SshpubkeyForm
 
 def default(request):
     response_dictionary = {'hello_world': 'hello world'}
-    print 'aa'
     return render_to_response('settings/default.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def profile(request):
+    response_dictionary = {'hello_world': 'hello world'}
+    return render_to_response('settings/profile.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def changepassword(request):
+    response_dictionary = {'hello_world': 'hello world'}
+    return render_to_response('settings/changepassword.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def sshpubkey(request):
+    sshpubkeyForm = SshpubkeyForm()
+    response_dictionary = {'hello_world': 'hello world', 'sshpubkeyForm': sshpubkeyForm}
+    return render_to_response('settings/sshpubkey.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def email(request):
+    response_dictionary = {'hello_world': 'hello world'}
+    return render_to_response('settings/email.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def repos(request):
+    response_dictionary = {'hello_world': 'hello world'}
+    return render_to_response('settings/repos.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def destroy(request):
+    response_dictionary = {'hello_world': 'hello world'}
+    return render_to_response('settings/destroy.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

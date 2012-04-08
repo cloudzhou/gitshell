@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block css %}
+.progress {margin-bottom: 3px; height: 10px;}
+{% endblock %}
+{% block container %}
+<div class="page-header">
+        <h1>:-), 设置 <small>个人资料，ssh pub key，密码，仓库配额...</small></h1>
+</div>
+<div class="row">
+<div class="span3">
+<div style="padding: 8px 0;" class="well">
+    <ul class="nav nav-list">
+        <li class="nav-header">:-) {{ user }}</li>
+        <li><a href="/settings/profile/">个人资料</a></li>
+        <li><a href="/settings/changepassword/">修改密码</a></li>
+        <li><a href="/settings/sshpubkey/">SSH密钥</a></li>
+        <li><a href="/settings/email/">Email通知</a></li>
+        <li><a href="/settings/repos/">仓库</a></li>
+        <li><a href="/settings/destroy/">刪除帐号</a></li>
+        <li class="divider"></li>
+        <li>仓库数目 10/100</li>
+        <li><div class="progress">
+            <div class="bar" style="width: 10%;"></div>
+        </div></li>
+        <li>仓库配额 10/100</li>
+        <li><div class="progress progress-danger">
+            <div class="bar" style="width: 60%;"></div>
+        </div></li>
+    </ul>
+</div>
+</div>
+{% block container-right %}
+{% endblock %}
+</div>
+{% endblock %}

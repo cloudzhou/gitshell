@@ -13,4 +13,9 @@ def home(request):
     return render_to_response('home.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+def warehouse(request):
+    response_dictionary = {'hello_world': 'hello world'}
+    return render_to_response('warehouse/list.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))						  
 

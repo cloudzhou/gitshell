@@ -1,0 +1,82 @@
+{% extends "settings/base.html" %}
+{% block container-right %}
+<div class="span9">
+    <h3 style="border-bottom:1px solid #EEEEEE; margin-bottom:15px;">
+        ssh public key 管理<small>&nbsp;公钥密钥关系着帐号安全，务必妥善保存</small>
+    </h3>
+    <table class="table table-bordered table-striped">
+        <colgroup>
+            <col class="span2">
+            <col class="span3">
+            <col class="span1">
+            <col class="span2">
+        </colgroup>
+        <thead>
+            <tr>
+                <th>公钥标识</th>
+                <th>指纹信息</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>工作</td>
+                <td>75:18:68:96:96:a6:8e:c0:59:b7:66:df:b5:91:5f:6c</td>
+                <td><span class="label label-info">正常</span></td>
+                <td>
+                    <button href="#" class="btn btn-mini btn-warning">禁止</button>
+                    <button href="#" class="btn btn-mini btn-danger">删除</button>
+                    <button style="margin-top:5px; display:block" href="#" class="btn btn-mini btn-danger">确定删除？</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <h4 style="margin-bottom:15px; padding-bottom: 4px;">
+        创建ssh public key<small>&nbsp;最多10个key，强烈建议不要共享key</$small>
+    </h4>
+    <div>
+        <form class="form-horizontal" action="" method="post">
+            {% csrf_token %}
+            <fieldset>
+                <div class="control-group">
+                    <label for="id_pubkey_name" class="control-label">公钥标识</label>
+                    <div class="controls">
+                        {{ sshpubkeyForm.pubkey_name }}
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_pubkey" class="control-label">公钥</label>
+                    <div class="controls">
+                        {{ sshpubkeyForm.pubkey }}
+                    </div>
+                </div>
+                {% if error %}
+                <div class="alert">
+                    <a data-dismiss="alert" class="close">×</a>
+                    <strong>出错了！</strong> {{ error }}
+                </div>
+                {% endif %}
+                <div class="form-actions">
+                    <button id="id_add_submit" class="btn btn-primary" type="submit">创建</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+/*global jQuery, window */
+$(function(){
+    var pubkey_init = function() {
+        $('#id_pubkey_name').attr('placeholder', '自定义的名字，比如公司，笔记本，开发环境');
+        $('#id_pubkey').attr('placeholder', '公钥，比如直接拷贝id_rsa.pub文本内容，不要修改任何值，我们会修改您的comment，也就是公钥空格分割的最后一个字段');
+        $('#id_pubkey_name').addClass('input-xlarge');
+        $('#id_pubkey').addClass('input-xlarge');
+    };
+    pubkey_init();
+});
+</script>
+{% endblock %}
+
