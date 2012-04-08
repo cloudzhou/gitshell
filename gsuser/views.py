@@ -25,12 +25,6 @@ def repos(request, user_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-def settings(request):
-    response_dictionary = {'hello_world': 'hello world1'}
-    return render_to_response('home.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
 def login(request):
     loginForm = LoginForm()
     error = u''
@@ -109,7 +103,7 @@ def join(request, step):
                         auth_login(request, user)
                         cache.delete(step)
                         return HttpResponseRedirect('/join/3/')
-                error = u'用户名 %s 或者 邮箱 %s 已经被注册' % (name, email)
+                error = u'用户名 %s 或者 邮箱 %s 已经注册' % (name, email)
             else:
                 error = u'请检查用户名是否规范[A-Za-z0-9_]'
         else:
