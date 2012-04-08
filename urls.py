@@ -22,7 +22,7 @@ urlpatterns = patterns('gitshell',
 
     # settings
     url(r'^settings/?$', 'gssettings.views.default'),
-    url(r'^settings/profile/?$', 'gssettings.views.profile'),
+    #url(r'^settings/profile/?$', 'gssettings.views.profile'),
 
     # gitshell openssh keyauth and dist, private for subnetwork access by iptables, nginx port 9000
     url(r'^private/keyauth/fp/(\w+)/?$', 'keyauth.views.fingerprint'),

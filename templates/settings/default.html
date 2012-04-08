@@ -1,29 +1,31 @@
 {% extends "base.html" %}
+{% block css %}
+.progress {margin-bottom: 1px; height: 10px;}
+{% endblock %}
 {% block container %}
 <div class="page-header">
-        <h1>:-), 帮助 <small>gitshell介绍，使用，git入门...</small></h1>
+        <h1>:-), 设置 <small>个人资料，ssh pub key，密码，仓库配额...</small></h1>
 </div>
 <div class="row">
 <div class="span3">
 <div style="padding: 8px 0;" class="well">
     <ul class="nav nav-list">
-        <li class="nav-header">about gitshell</li>
-        <li><a href="#about">关于</a></li>
-        <li><a href="#mission">愿景</a></li>
-        <li><a href="#faq">FAQ</a></li>
-        <li><a href="#mission">服务条款</a></li>
-        <li><a href="#mission">联系方式 </a></li>
-        <li class="nav-header">快速入门</li>
-        <li><a href="#join.login">注册·登录</a></li>
-        <li><a href="#join.login">管理ssh key</a></li>
-        <li><a href="#mission">创建仓库</a></li>
-        <li><a href="#mission">clone·push·pull代码</a></li>
-        <li><a href="#mission">协同开发</a></li>
-        <li class="nav-header">git 新手</li>
-        <li><a href="#">Profile</a></li>
-        <li><a href="#">Settings</a></li>
+        <li class="nav-header">:-) {{ user }}</li>
+        <li><a href="#profile">个人资料</a></li>
+        <li><a href="#mission">修改密码</a></li>
+        <li><a href="#mission">SSH密钥</a></li>
+        <li><a href="#faq">Email通知</a></li>
+        <li><a href="#">仓库</a></li>
+        <li><a href="#">刪除帐号</a></li>
         <li class="divider"></li>
-        <li><a href="#">git外部学习资源</a></li>
+        <li>仓库数目 10/100</li>
+        <li><div class="progress">
+            <div class="bar" style="width: 10%;"></div>
+        </div></li>
+        <li>仓库配额 10/100</li>
+        <li><div class="progress progress-danger">
+            <div class="bar" style="width: 60%;"></div>
+        </div></li>
     </ul>
 </div>
 </div>
