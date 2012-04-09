@@ -2,7 +2,7 @@
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.shortcuts import render_to_response
-from gitshell.gssettings.Form import SshpubkeyForm
+from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, UserprofileForm
 
 def default(request):
     response_dictionary = {'hello_world': 'hello world'}
@@ -11,13 +11,17 @@ def default(request):
                           context_instance=RequestContext(request))
 
 def profile(request):
-    response_dictionary = {'hello_world': 'hello world'}
+    userprofileForm = UserprofileForm()
+    if request.method == 'POST':
+        userprofileForm = UserprofileForm(request.POST)
+    response_dictionary = {'hello_world': 'hello world', 'userprofileForm': userprofileForm}
     return render_to_response('settings/profile.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def changepassword(request):
-    response_dictionary = {'hello_world': 'hello world'}
+    changepasswordForm = ChangepasswordForm()
+    response_dictionary = {'hello_world': 'hello world', 'changepasswordForm': changepasswordForm}
     return render_to_response('settings/changepassword.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

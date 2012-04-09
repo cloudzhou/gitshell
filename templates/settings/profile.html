@@ -1,7 +1,81 @@
 {% extends "settings/base.html" %}
 {% block container-right %}
 <div class="span9">
-        <h3>个人资料<small>&nbsp;ii</small></h3>
-        <p>aa</p>
+    <h3 style="border-bottom:1px solid #EEEEEE; margin-bottom:15px;">
+        个人资料<small>&nbsp;详细信息能让人更好认识你</small>
+    </h3>
+    <div>
+        <form class="form-horizontal" action="" method="post">
+            {% csrf_token %}
+            <fieldset>
+                <div class="control-group">
+                    <label for="id_tweet" class="control-label">* 一句话介绍自己</label>
+                    <div class="controls">
+                        {{ userprofileForm.tweet }}
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_nickname" class="control-label">姓名/昵称</label>
+                    <div class="controls">
+                        {{ userprofileForm.nickname }}
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_company" class="control-label">公司</label>
+                    <div class="controls">
+                        {{ userprofileForm.company }}
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_location" class="control-label">所在地</label>
+                    <div class="controls">
+                        {{ userprofileForm.location }}
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_resume" class="control-label">简历</label>
+                    <div class="controls">
+                        <div class="wmd-panel">
+                            <div id="wmd-button-bar"></div>
+                            {{ userprofileForm.resume }}
+                        </div>
+                        <div id="wmd-preview" class="wmd-panel wmd-preview"></div>
+                    </div>
+                </div>
+                {% if error %}
+                <div class="alert">
+                    <a data-dismiss="alert" class="close">×</a>
+                    <strong>出错了！</strong> {{ error }}
+                </div>
+                {% endif %}
+                <div class="form-actions">
+                    <button id="id_add_submit" class="btn btn-primary" type="submit">设置</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
 </div>
 {% endblock %}
+{% block js %}
+<script src="/static/js/Markdown.Converter.js"></script>
+<script src="/static/js/Markdown.Editor.js"></script>
+<script src="/static/js/Markdown.Sanitizer.js"></script>
+<script>
+/*global jQuery, window */
+$(function(){
+    var changepassword_init = function() {
+        $('#id_old_password').attr('placeholder', '如果忘记了选择重置密码');
+        $('#id_password').attr('placeholder', '保持一定复杂度');
+        $('.control-group input').addClass('input-xlarge');
+        $('.control-group textarea').addClass('input-xlarge');
+        $('#id_resume').addClass('wmd-input');
+        $('#id_resume').attr("id","wmd-input");
+        var converter = Markdown.getSanitizingConverter();
+        var editor = new Markdown.Editor(converter);
+        editor.run();
+    };
+    changepassword_init();
+});
+</script>
+{% endblock %}
+
