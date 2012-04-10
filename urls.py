@@ -9,7 +9,7 @@ urlpatterns = patterns('gitshell',
     url(r'^repos/?$', 'index.views.home'),
     url(r'^skills/?$', 'index.views.home'),
     url(r'^stats/?$', 'index.views.home'),
-	url(r'^warehouse/?$', 'index.views.warehouse'),
+    url(r'^warehouse/?$', 'index.views.warehouse'),
 
     # gsuser
     url(r'^login/?$', 'gsuser.views.login'),

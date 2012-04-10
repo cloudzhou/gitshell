@@ -52,7 +52,7 @@ def login(request):
         else:
             error = u'请检查邮箱密码，验证码是否正确，注意大小写和前后空格。'
     response_dictionary = {'error': error, 'loginForm': loginForm}
-    return render_to_response('gsuser/login.html',
+    return render_to_response('user/login.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
@@ -109,7 +109,7 @@ def join(request, step):
         else:
             error = u'请检查用户名，密码是否正确，注意大小写和前后空格。'
     response_dictionary = {'step': step, 'error': error, 'joinForm0': joinForm0, 'joinForm1': joinForm1}
-    return render_to_response('gsuser/join.html',
+    return render_to_response('user/join.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
@@ -156,7 +156,7 @@ def resetpassword(request, step):
                     return HttpResponseRedirect('/resetpassword/3/')
             return HttpResponseRedirect('/resetpassword/4/')
     response_dictionary = {'step': step, 'error': error, 'resetpasswordForm0': resetpasswordForm0, 'resetpasswordForm1': resetpasswordForm1}
-    return render_to_response('gsuser/resetpassword.html',
+    return render_to_response('user/resetpassword.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
