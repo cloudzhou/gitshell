@@ -4,6 +4,7 @@ from captcha.fields import CaptchaField
 class UserprofileForm(forms.Form):
     nickname = forms.CharField(max_length=30)
     company = forms.CharField(max_length=64)
+    website = forms.CharField(max_length=64)
     location = forms.CharField(max_length=64)
     tweet = forms.CharField(max_length=64)
     resume = forms.CharField(max_length=2048, widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))

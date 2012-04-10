@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block css %}
+#id_user_detail dt {text-align: left; font-weight: normal; color: #999999;}
+#id_user_detail .dl-horizontal {margin-top: 0px;}
+#id_user_resume strong {font-size: 12px; font-weight: 300}
+{% endblock %}
+{% block container %}
+<div class="page-header">
+    <img src="https://secure.gravatar.com/avatar/8e580cce03d7a7229981c1acad1313bd?s=80"/>
+    <span style="margin-left: 10px; font-size: 30px; font-weight: 400">cloudzhou (吴云州)</span>
+</div>
+<div class="row">
+    <div class="span7">
+        <div id="id_user_detail">
+            <dl class="dl-horizontal">
+                <dt>网站</dt>
+                <dd>http://www.gitshell.com</dd>
+                <dt>公司</dt>
+                <dd>西红柿炒蛋信息技术有限公司</dd>
+                <dt>所在地</dt>
+                <dd>江苏 苏州</dd>
+            </dl>
+        </div>
+    </div>
+    <div class="span5">
+        <div id="id_user_resume">
+            <h4 style="margin-bottom: 8px; font-weight: normal; color: #999999;">简历:</h4>
+            <blockquote>
+<p><strong>现任</strong></p>
+<ul>
+<li>CTO at DXY.com</li>
+<li>Founder at BetaCafe Club </li>
+</ul>
+<p><strong>工作经历</strong></p>
+<ul>
+<li>Technical Leader at Alipay.com</li>
+<li>Architect at Alipay.com</li>
+</ul>
+<p><strong>教育背景</strong></p>
+<ul>
+<li>北京信息工程学院</li>
+</ul>
+<p><strong>擅长于</strong></p>
+<ul>
+<li>python java linux</li>
+</ul>
+<p><strong>联系方式</strong></p>
+<ul>
+<li>cloudzhou@163.com</li>
+</ul>
+            </blockquote>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+/*global jQuery, window */
+$(function(){ var md5_user_passwd = function() { $('#id_password').val(window.md5($('#id_password').val()));
+    },
+    login_init = function() {
+        $('#id_email').attr('placeholder', '输入邮箱');
+        $('#id_password').attr('placeholder', '输入密码，注意大小写');
+        $('#id_captcha_1').attr('placeholder', '输入验证码');
+    };
+    login_init();
+    $('#id_login_submit').on('click', md5_user_passwd);
+});
+</script>
+{% endblock %}

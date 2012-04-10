@@ -15,7 +15,7 @@ from gitshell.gsuser.Forms import LoginForm, JoinForm0, JoinForm1, Resetpassword
 
 def user(request, user_name):
     response_dictionary = {'hello_world': 'hello world1'}
-    return render_to_response('home.html',
+    return render_to_response('user/user.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
