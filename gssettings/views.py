@@ -5,7 +5,7 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.contrib.auth.models import User
 from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, UserprofileForm, DoSshpubkeyForm
-from gitshell.keyauth.models import UserPubkey
+from gitshell.keyauth.models import UserPubkey, KeyauthManager
 from gitshell.objectscache.models import Count
 
 def default(request):
@@ -34,7 +34,8 @@ def sshpubkey(request):
     sshpubkeyForm = SshpubkeyForm()
     doSshpubkeyForm = DoSshpubkeyForm()
     error = u''
-    userPubkey_all = UserPubkey.objects.raw('SELECT * FROM keyauth_userpubkey WHERE user_id = %s and visibly = 0', [request.user.id])
+    userPubkey_all = KeyauthManager.list_userPubkey_by_user_id(request.user.id)
+    print userPubkey_all
     if request.method == 'POST':
         sshpubkeyForm = SshpubkeyForm(request.POST)
         if sshpubkeyForm.is_valid():
@@ -58,8 +59,7 @@ def sshpubkey(request):
                         error = u'您不能使用此公钥，为了防止公钥大量共享使用等原因，我们对一些公钥进行限制'
                 else:
                     error = u'您最多拥有10个公钥'
-        else:
-            error = u'确定公钥标识非空，且公钥拷贝正确，典型公钥位置：~/.ssh/id_rsa.pub'
+        error = u'确定公钥标识非空，且公钥拷贝正确，典型公钥位置：~/.ssh/id_rsa.pub'
             
     response_dictionary = {'sshpubkeyForm': sshpubkeyForm, 'doSshpubkeyForm': doSshpubkeyForm, 'error': error,
                         'userPubkey_all': list(userPubkey_all)}

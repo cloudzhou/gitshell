@@ -26,6 +26,7 @@ CACHES = {
         'TIMEOUT': 1800,
     }
 }
+KEY_PREFIX = 'gs_'
 
 TIME_ZONE = 'Asia/Shanghai'
 LANGUAGE_CODE = 'zh_CN'
