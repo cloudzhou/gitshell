@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-  
 from django import forms
 from captcha.fields import CaptchaField
 
@@ -10,7 +11,7 @@ class UserprofileForm(forms.Form):
     resume = forms.CharField(max_length=2048, widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
 
 class DoSshpubkeyForm(forms.Form):
-    user_pubkey_id = forms.IntegerField()
+    pubkey_id = forms.IntegerField()
     action = forms.CharField(max_length=12)
 
 class SshpubkeyForm(forms.Form):

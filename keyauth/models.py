@@ -7,7 +7,6 @@ class UserPubkey(models.Model):
     visibly = models.SmallIntegerField(default=0, null=False)
 
     user_id = models.IntegerField(null=False)
-    pubkey_name = models.CharField(max_length=32, null=False)
-    pub_key = models.CharField(max_length=1024,  null=False)
-    key_fingerprint = models.CharField(max_length=64, db_index=True, null=False)
-    is_active = models.SmallIntegerField(default=0, null=False) 
+    name = models.CharField(max_length=32, null=False)
+    key = models.CharField(max_length=1024,  null=False)
+    fingerprint = models.CharField(max_length=64, db_index=True, null=False)

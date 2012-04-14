@@ -28,7 +28,8 @@ CACHES = {
 }
 
 TIME_ZONE = 'Asia/Shanghai'
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh_CN'
+DEFAULT_CHARSET = 'UTF-8'
 SITE_ID = 1
 USE_I18N = False
 USE_L10N = True

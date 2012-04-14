@@ -20,18 +20,26 @@
             </tr>
         </thead>
         <tbody>
+            {% for userPubkey in userPubkey_all %}
             <tr>
-                <td>工作</td>
-                <td>75:18:68:96:96:a6:8e:c0:59:b7:66:df:b5:91:5f:6c</td>
-                <td><span class="label label-info">正常</span></td>
+                <td>{{ userPubkey.name }}</td>
+                <td>{{ userPubkey.fingerprint }}</td>
                 <td>
-                    <button href="#" class="btn btn-mini btn-warning">禁用</button>
-                    <button href="#" class="btn btn-mini btn-danger">删除</button>
-                    <button style="margin-top:5px; display:block" href="#" class="btn btn-mini btn-danger">确定删除？</button>
+                    <span class="label label-info">正常</span>
+                </td>
+                <td>
+                    <button id="i_remove_{{ userPubkey.id }}" value="{{ userPubkey.id }}" class="c_remove_sshpubkey btn btn-mini btn-danger">删除</button>
+                    </button>
                 </td>
             </tr>
+            {% endfor %}
         </tbody>
     </table>
+    <form id="i_do_sshpubkey_form" style="display:none" class="form-horizontal" action="/settings/sshpubkey/remove/" method="post">
+        {% csrf_token %}
+        {{ doSshpubkeyForm.pubkey_id }}
+        {{ doSshpubkeyForm.action }}
+    </form>
     <h4 style="margin-bottom:15px; padding-bottom: 4px;">
         创建ssh public key<small>&nbsp;最多10个key，强烈建议不要共享key</$small>
     </h4>
@@ -71,11 +79,23 @@
 $(function(){
     var pubkey_init = function() {
         $('#id_pubkey_name').attr('placeholder', '自定义的名字，比如公司，笔记本，开发环境');
-        $('#id_pubkey').attr('placeholder', '公钥，比如直接拷贝id_rsa.pub文本内容，不要修改任何值，我们会修改您的comment，也就是公钥空格分割的最后一个字段');
+        $('#id_pubkey').attr('placeholder', '公钥，比如直接拷贝id_rsa.pub文本内容，不要修改任何值，我们会忽略您的comment，也就是公钥空格分割的最后一个字段');
         $('#id_pubkey_name').addClass('input-xlarge');
         $('#id_pubkey').addClass('input-xlarge');
+    },
+    remove_ssh_publickey = function() {
+        if($(this).html() == '删除') {
+            $(this).html('确定删除');
+            return;
+        }
+        if($(this).html() == '确定删除') {
+            $('#id_pubkey_id').val($(this).val());
+            $('#id_action').val('remove');
+            $('#i_do_sshpubkey_form').submit()
+        }
     };
     pubkey_init();
+    $('.c_remove_sshpubkey').on('click', remove_ssh_publickey);
 });
 </script>
 {% endblock %}
