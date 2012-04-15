@@ -7,12 +7,33 @@
 {% endblock %}
 {% block container %}
 <div class="page-header">
-    <a href="http://www.gravatar.com/"><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=60"/></a>
-    <span style="margin-left: 10px; font-size: 30px; font-weight: 400">{{ user.username }}
-    {% if userprofile.nickname %}
-        ({{ userprofile.nickname }})
-    {% endif %}
-    </span>
+    <div class="row">
+        <div class="span1">
+            <a href="http://www.gravatar.com/"><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=60"/></a>
+        </div>
+        <div class="span6">
+            <div style="margin-bottom: 5px">
+                <span style="font-size: 25px; font-weight: 400">{{ user.username }}
+                {% if userprofile.nickname %}
+                    ({{ userprofile.nickname }})
+                {% endif %}
+                <a href="">+</a></span>
+            </div>
+            <span style="color: #999999;">{{ userprofile.tweet }}</span>
+        </div>
+        <div class="span1">
+            <a href=""><span style="font-size: 25px; font-weight: 400">75</span></a>
+            <br/><span style="color: #999999;">公共仓库</span>
+        </div>
+        <div class="span1">
+            <a href=""><span style="font-size: 25px; font-weight: 400">75</span></a>
+            <br/><span style="color: #999999;">关注</span>
+        </div>
+        <div class="span1">
+            <a href=""><span style="font-size: 25px; font-weight: 400">75</span></a>
+            <br/><span style="color: #999999;">被关注</span>
+        </div>
+    </div>
 </div>
 <div class="row">
     <div class="span7">
@@ -48,7 +69,7 @@
         <div id="id_user_resume">
             <h4 style="margin-bottom: 8px; font-weight: normal; color: #999999;">简历:</h4>
             <blockquote>
-                <div id="id_user_resume_content">{{ userprofile.resume }}</div>
+                <div id="id_user_resume_content" style="display:none">{{ userprofile.resume }}</div>
             </blockquote>
         </div>
     </div>
@@ -62,9 +83,10 @@
 /*global jQuery, window */
 $(function(){
     var resume_md_converter = function() {
-        var converter = new Markdown.Converter();
+        var converter = new Markdown.getSanitizingConverter();
         var html = converter.makeHtml($('#id_user_resume_content').html());
-        $('#id_user_resume_content').html(html)
+        $('#id_user_resume_content').html(html);
+        $('#id_user_resume_content').show();
     };
     resume_md_converter();
 });
