@@ -44,7 +44,10 @@ def login(request):
                 user = auth_authenticate(username=user.username, password=password)
                 if user is not None and user.is_active:
                     auth_login(request, user)
-                    return HttpResponseRedirect('/home/')
+                    url_next = '/home/'
+                    if request.GET.get('next') is not None:
+                        url_next = request.GET.get('next')
+                    return HttpResponseRedirect(url_next)
             if user is None:
                 error = u'%s 还没有注册' % email
             else:

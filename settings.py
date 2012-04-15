@@ -40,6 +40,7 @@ STATIC_ROOT = '/opt/gitshellstatic/static/'
 STATIC_URL = '/static/'
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 SESSION_COOKIE_AGE = 43200
+LOGIN_URL = '/login/'
 
 STATICFILES_DIRS = (
 )
@@ -68,6 +69,18 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'gitshell.gsuser.middleware.UserprofileMiddleware',
+)
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.contrib.messages.context_processors.messages',
+    'django.core.context_processors.csrf',
+    'gitshell.gsuser.middleware.userprofile',
 )
 
 ROOT_URLCONF = 'gitshell.urls'
@@ -88,6 +101,7 @@ INSTALLED_APPS = (
     'gitshell.keyauth',
     'gitshell.dist',
     'gitshell.keyvalue',
+    'gitshell.gsuser',
     # 'django.contrib.admin',
     # 'django.contrib.admindocs',
 )

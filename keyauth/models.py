@@ -1,5 +1,5 @@
 from django.db import models
-from gitshell.objectscache.da import query
+from gitshell.objectscache.da import query, execute, count
 
 class UserPubkey(models.Model):
     create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
@@ -14,5 +14,13 @@ class UserPubkey(models.Model):
 class KeyauthManager():
 
     @classmethod
-    def list_userPubkey_by_user_id(self, user_id):
-        return query(UserPubkey, 'keyauth_userpubkey', user_id, 'userpubkey_user_id', [user_id])
+    def list_userpubkey_by_user_id(self, user_id):
+        return query(UserPubkey, 'keyauth_userpubkey', user_id, 'userpubkey_by_user_id', [user_id])
+
+    @classmethod
+    def update_userpubkey_by_id(self, id):
+        return execute('userpubkey_by_id', id)
+
+    @classmethod
+    def count_userpubkey_by_fingerprint(self, fingerprint):
+        return count('userpubkey_by_fingerprint', fingerprint)
