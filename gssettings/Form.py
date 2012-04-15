@@ -3,13 +3,8 @@ from django import forms
 from captcha.fields import CaptchaField
 from gitshell.gsuser.models import Userprofile
 
+# TODO max_length
 class UserprofileForm(forms.ModelForm):
-    #nickname = forms.CharField(max_length=30)
-    #company = forms.CharField(max_length=64)
-    #website = forms.CharField(max_length=64)
-    #location = forms.CharField(max_length=64)
-    #tweet = forms.CharField(max_length=64)
-    #resume = forms.CharField(max_length=2048, widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
     class Meta:
         model = Userprofile
         fields = ('nickname', 'company', 'website', 'location', 'tweet', 'resume')

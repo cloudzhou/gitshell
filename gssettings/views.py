@@ -9,6 +9,7 @@ from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, Userprof
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
 from gitshell.gsuser.models import Userprofile
 
+# TODO modle.form ? 
 @login_required
 def profile(request):
     userprofile = Userprofile()
