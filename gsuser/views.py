@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate as auth_authenticate, login as auth
 from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
 from gitshell.gsuser.Forms import LoginForm, JoinForm0, JoinForm1, ResetpasswordForm0, ResetpasswordForm1
+from gitshell.gsuser.models import Userprofile
 
 def user(request, user_name):
     response_dictionary = {'hello_world': 'hello world1'}

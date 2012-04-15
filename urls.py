@@ -24,7 +24,7 @@ urlpatterns = patterns('gitshell',
     url(r'^help/quickstart/?$', 'help.views.quickstart'),
 
     # settings
-    url(r'^settings/?$', 'gssettings.views.default'),
+    url(r'^settings/?$', 'gssettings.views.profile'),
     url(r'^settings/profile/?$', 'gssettings.views.profile'),
     url(r'^settings/changepassword/?$', 'gssettings.views.changepassword'),
     url(r'^settings/sshpubkey/?$', 'gssettings.views.sshpubkey'),

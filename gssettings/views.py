@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-  
-import base64,hashlib
+import base64, hashlib
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.shortcuts import render_to_response
@@ -7,22 +7,22 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, UserprofileForm, DoSshpubkeyForm
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
-
-@login_required
-def default(request):
-    response_dictionary = {'hello_world': 'hello world'}
-    return render_to_response('settings/default.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
+from gitshell.gsuser.models import Userprofile
 
 @login_required
 def profile(request):
-    userprofileForm = UserprofileForm()
+    userprofile = Userprofile()
+    try:
+        userprofile = Userprofile.objects.get(id = request.user.id)
+    except Userprofile.DoesNotExist:
+        userprofile.id = request.user.id
+        userprofile.imgurl = hashlib.md5(request.user.email.lower()).hexdigest()
+    userprofileForm = UserprofileForm(instance = userprofile)
     if request.method == 'POST':
-        userprofileForm = UserprofileForm(request.POST)
+        userprofileForm = UserprofileForm(request.POST, instance = userprofile)
         if userprofileForm.is_valid():
-            pass        
-    response_dictionary = {'hello_world': 'hello world', 'userprofileForm': userprofileForm}
+            userprofileForm.save()
+    response_dictionary = {'userprofileForm': userprofileForm}
     return render_to_response('settings/profile.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

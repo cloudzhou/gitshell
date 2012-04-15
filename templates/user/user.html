@@ -7,26 +7,40 @@
 {% endblock %}
 {% block container %}
 <div class="page-header">
-    <img src="https://secure.gravatar.com/avatar/8e580cce03d7a7229981c1acad1313bd?s=80"/>
-    <span style="margin-left: 10px; font-size: 30px; font-weight: 400">cloudzhou (吴云州)</span>
+    <a href="http://www.gravatar.com/"><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=60"/></a>
+    <span style="margin-left: 10px; font-size: 30px; font-weight: 400">{{ user.username }}
+    {% if userprofile.nickname %}
+        ({{ userprofile.nickname }})
+    {% endif %}
+    </span>
 </div>
 <div class="row">
     <div class="span7">
         <div id="id_user_detail">
             <dl class="dl-horizontal">
-                <dt>网站</dt>
-                <dd>http://www.gitshell.com</dd>
-                <dt>公司</dt>
-                <dd>西红柿炒蛋信息技术有限公司</dd>
-                <dt>所在地</dt>
-                <dd>江苏 苏州</dd>
+                {% if userprofile.website %}
+                    <dt>网站</dt>
+                    <dd>{{ userprofile.website }}</dd>
+                {% endif %}
+                {% if userprofile.company %}
+                    <dt>公司</dt>
+                    <dd>{{ userprofile.company }}</dd>
+                {% endif %}
+                {% if userprofile.location %}
+                    <dt>所在地</dt>
+                    <dd>{{ userprofile.location }}</dd>
+                {% endif %}
                 <dt>技能</dt>
-                <dd><span class="badge badge-info">+1</span><span class="label skills">linux</span> <span class="skill-count">× 3</span>
-                    <a href="">+</a><span class="label skills">linux</span> x51
-                    <a href="">+</a><span class="label skills">linux</span> <small>x3</small>
+                <dd>
+                    <a href=""><strong style="font-size: 16px">+</strong></a>
+                    <span class="label skills">linux</span><span class="skill-count"> x51</span>
+                    <a href=""><strong style="font-size: 16px">+</strong></a>
+                    <span class="label skills">linux</span><span class="skill-count"> x51</span>
+                    <a href=""><strong style="font-size: 16px">+</strong></a>
+                    <span class="label skills">linux</span><span class="skill-count"> x51</span>
+                    <a href=""><strong style="font-size: 16px">+</strong></a>
+                    <span class="label skills">linux</span><span class="skill-count"> x51</span>
                 </dd>
-                <dd>江苏 苏州</dd>
-                <dd>江苏 苏州</dd>
             </dl>
         </div>
     </div>
@@ -34,45 +48,25 @@
         <div id="id_user_resume">
             <h4 style="margin-bottom: 8px; font-weight: normal; color: #999999;">简历:</h4>
             <blockquote>
-<p><strong>现任</strong></p>
-<ul>
-<li>CTO at DXY.com</li>
-<li>Founder at BetaCafe Club </li>
-</ul>
-<p><strong>工作经历</strong></p>
-<ul>
-<li>Technical Leader at Alipay.com</li>
-<li>Architect at Alipay.com</li>
-</ul>
-<p><strong>教育背景</strong></p>
-<ul>
-<li>北京信息工程学院</li>
-</ul>
-<p><strong>擅长于</strong></p>
-<ul>
-<li>python java linux</li>
-</ul>
-<p><strong>联系方式</strong></p>
-<ul>
-<li>cloudzhou@163.com</li>
-</ul>
+                <div id="id_user_resume_content">{{ userprofile.resume }}</div>
             </blockquote>
         </div>
     </div>
 </div>
 {% endblock %}
 {% block js %}
+<script src="/static/js/Markdown.Converter.js"></script>
+<script src="/static/js/Markdown.Editor.js"></script>
+<script src="/static/js/Markdown.Sanitizer.js"></script>
 <script>
 /*global jQuery, window */
-$(function(){ var md5_user_passwd = function() { $('#id_password').val(window.md5($('#id_password').val()));
-    },
-    login_init = function() {
-        $('#id_email').attr('placeholder', '输入邮箱');
-        $('#id_password').attr('placeholder', '输入密码，注意大小写');
-        $('#id_captcha_1').attr('placeholder', '输入验证码');
+$(function(){
+    var resume_md_converter = function() {
+        var converter = new Markdown.Converter();
+        var html = converter.makeHtml($('#id_user_resume_content').html());
+        $('#id_user_resume_content').html(html)
     };
-    login_init();
-    $('#id_login_submit').on('click', md5_user_passwd);
+    resume_md_converter();
 });
 </script>
 {% endblock %}
