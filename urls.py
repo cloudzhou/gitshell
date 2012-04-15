@@ -10,8 +10,8 @@ urlpatterns = patterns('gitshell',
     url(r'^skills/?$', 'index.views.home'),
     url(r'^stats/?$', 'index.views.home'),
     url(r'^warehouse/?$', 'index.views.warehouse'),
-	url(r'^folder/?$', 'index.views.folder'),
-	url(r'^file/?$', 'index.views.file'),
+    url(r'^folder/?$', 'index.views.folder'),
+    url(r'^file/?$', 'index.views.file'),
 
     # gsuser
     url(r'^login/?$', 'gsuser.views.login'),
@@ -34,10 +34,10 @@ urlpatterns = patterns('gitshell',
     url(r'^settings/destroy/?$', 'gssettings.views.destroy'),
 
     # gitshell openssh keyauth and dist, private for subnetwork access by iptables, nginx port 9000
-    url(r'^private/keyauth/fp/(\w+)/?$', 'keyauth.views.fingerprint'),
-    url(r'^private/dist/pj/(\w+)/?$', 'dist.views.repos'),
-    url(r'^private/dist/refresh/?$', 'dist.views.refresh'),
-    url(r'^private/dist/echo/?$', 'dist.views.echo_repos_partition'),
+    #url(r'^private/keyauth/(\w+)/(\w+)/(\w+)/?$', 'keyauth.views.auth'),
+    #url(r'^private/dist/pj/(\w+)/(\w+)/?$', 'dist.views.repos'),
+    #url(r'^private/dist/refresh/?$', 'dist.views.refresh'),
+    #url(r'^private/dist/echo/?$', 'dist.views.echo_repos_partition'),
 
     # third part
     url(r'^captcha/', include('captcha.urls')),
@@ -45,7 +45,8 @@ urlpatterns = patterns('gitshell',
     # write middleware to rewrite urlconf, by add 'urlconf' attribute to HttpRequest
     # gsuser
     url(r'^(\w+)/?$', 'gsuser.views.user'),
-    url(r'^(\w+)/repos/?$', 'gsuser.views.repos'),
     # repos
-    url(r'^(\w+)/(\w+)?$', 'repos.views.repos'),
+    url(r'^(\w+)/repos/?$', 'repos.views.repos'),
+    url(r'^(\w+)/repos/edit/(\d+)/?$', 'repos.views.edit'),
+    url(r'^(\w+)/(\w+)/?$', 'repos.views.repos'),
 )

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block css %}
+#id_captcha_1 {display:block;margin-top:10px;}
+{% endblock %}
+{% block container %}
+<div class="page-header">
+        <h1>:-), 创建仓库 <small>提交代码需要<a href="/settings/sshpubkey/">设置SSH公钥</a></small></h1>
+</div>
+<div class="row">
+    <div class="span7">
+        <form class="form-horizontal" action="" method="post">
+            {% csrf_token %}
+            <fieldset>
+                <div class="control-group" style="display: none">
+                    <label for="id_rid" class="control-label">你看不见我哦</label>
+                    <div class="controls">
+                        {{ editForm.rid }}
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_name" class="control-label">仓库名称</label>
+                    <div class="controls">
+                        {{ editForm.name }}
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_desc" class="control-label">简介</label>
+                    <div class="controls">
+                        {{ editForm.desc }}
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_lang" class="control-label">语言选择</label>
+                    <div class="controls">
+                        {{ editForm.lang }}
+                    </div>
+                </div>
+                <div id="id_other_lang_group" class="control-group" style="display: none">
+                    <label for="id_other_lang" class="control-label">其他语言</label>
+                    <div class="controls">
+                        {{ editForm.other_lang }}
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_auth_type" class="control-label">可见度</label>
+                    <div class="controls">
+                        {{ editForm.auth_type }}
+                    </div>
+                </div>
+                {% if error %}
+                <div class="alert">
+                    <a data-dismiss="alert" class="close">×</a>
+                    <strong>出错了！</strong> {{ error }}
+                </div>
+                {% endif %}
+                <div class="form-actions">
+                    <button id="id_create_submit" class="btn btn-primary" type="submit">创建</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script src="/static/js/md5.min.js"></script>
+<script>
+/*global jQuery, window */
+$(function(){
+    var create_init = function() {
+        $('#id_name').attr('placeholder', '[A-Za-z0-9_]');
+        $('#id_desc').attr('placeholder', '提供什么功能，解决什么问题');
+        $('#id_captcha_1').attr('placeholder', '私有项目');
+        $('#id_captcha_1').attr('placeholder', '半公开项目');
+    },
+    change_other_lang = function() {
+        if($('#id_lang option:selected').val() == 'other') {
+            $('#id_other_lang_group').show();
+        }
+    };
+    $('#id_lang').click(change_other_lang);
+    create_init();
+});
+</script>
+{% endblock %}
