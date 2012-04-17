@@ -7,12 +7,14 @@ from gitshell.repos.Forms import ReposForm
 from gitshell.repos.models import Repos
 import re
 
+@login_required
 def repos(request, repos_name):
     response_dictionary = {'hello_world': 'hello world1'}
-    return render_to_response('home.html',
+    return render_to_response('repos/repos.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+# TODO
 @login_required
 def edit(request, username, rid):
     error = u''
@@ -24,6 +26,7 @@ def edit(request, username, rid):
         except Repos.DoesNotExist:
             pass
     reposForm = ReposForm(instance = repos)
+    orgi_name = repos.name
     if request.method == 'POST':
         reposForm = ReposForm(request.POST, instance = repos)
         if reposForm.is_valid() and re.match("^\w+$", reposForm.cleaned_data['name']):

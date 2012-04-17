@@ -21,3 +21,16 @@ class ResetpasswordForm0(forms.Form):
 
 class ResetpasswordForm1(forms.Form):
     password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False))
+
+# skills and recommends
+class SkillsForm(forms.Form):
+    sid = forms.IntegerField()
+    skills = forms.CharField(max_length=10)
+    uid = forms.IntegerField()
+    action = forms.CharField(max_length=3)
+
+class RecommendsForm(forms.Form):
+    rid = forms.IntegerField()
+    recommends = forms.CharField(max_length=64)
+    uid = forms.IntegerField()
+    action = forms.CharField(max_length=3)

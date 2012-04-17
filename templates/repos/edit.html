@@ -17,12 +17,6 @@
         <form class="form-horizontal" action="" method="post">
             {% csrf_token %}
             <fieldset>
-                <div id="id_hidden_lang_group" class="control-group" style="display: none">
-                    <label for="id_user_id" class="control-label">你看不见我哦</label>
-                    <div class="controls">
-                        <input type="text" value="0" name="user_id">
-                    </div>
-                </div>
                 <div class="control-group">
                     <label for="id_name" class="control-label">仓库名称</label>
                     <div class="controls">
@@ -44,7 +38,7 @@
                 <div id="id_other_lang_group" class="control-group" style="display: none">
                     <label for="id_other_lang" class="control-label">其他语言</label>
                     <div class="controls">
-                        <input type="text" maxlength="30" value="" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder="哇！难道你发明了新的语言:-)">
+                        <input type="text" maxlength="16" value="" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder="哇！难道你发明了新的语言:-)">
                     </div>
                 </div>
                 <div class="control-group">
@@ -57,10 +51,6 @@
                 <div class="alert">
                     <a data-dismiss="alert" class="close">×</a>
                     <strong>出错了！</strong> {{ error }}
-                    {{ reposForm.name.errors }}
-                    {{ reposForm.user_id.errors }}
-                    {{ reposForm.desc.errors }}
-                    {{ reposForm.lang.errors }}
                 </div>
                 {% endif %}
                 <div class="form-actions">

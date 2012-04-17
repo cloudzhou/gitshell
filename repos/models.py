@@ -7,7 +7,17 @@ class Repos(models.Model):
 
     user_id = models.IntegerField()
     name = models.CharField(max_length=64)
-    desc = models.CharField(max_length=512, null=True)
+    desc = models.CharField(max_length=512, default='')
     lang = models.CharField(max_length=16)
-    auth_type = models.SmallIntegerField(default=0, null=False)
-    quote = models.BigIntegerField(default=0, null=False)
+    auth_type = models.SmallIntegerField(default=0)
+    quote = models.BigIntegerField(default=0)
+
+class ReposManager():
+
+    @classmethod
+    def get_repos_by_id_userid(rid, userid):
+        pass
+
+    @classmethod
+    def count_repos_by_userid_name(userid, name):
+        pass

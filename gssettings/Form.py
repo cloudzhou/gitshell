@@ -3,7 +3,6 @@ from django import forms
 from captcha.fields import CaptchaField
 from gitshell.gsuser.models import Userprofile
 
-# TODO max_length
 class UserprofileForm(forms.ModelForm):
     class Meta:
         model = Userprofile

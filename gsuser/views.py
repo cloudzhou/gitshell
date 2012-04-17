@@ -10,11 +10,13 @@ from django.core.validators import email_re
 from django.contrib.auth import authenticate as auth_authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
-from gitshell.gsuser.Forms import LoginForm, JoinForm0, JoinForm1, ResetpasswordForm0, ResetpasswordForm1
+from gitshell.gsuser.Forms import LoginForm, JoinForm0, JoinForm1, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
 from gitshell.gsuser.models import Userprofile
 
 def user(request, user_name):
-    response_dictionary = {'hello_world': 'hello world1'}
+    skillsForm = SkillsForm()
+    recommendsForm = RecommendsForm()
+    response_dictionary = {'ii': range(0, 5), 'jj': range(0, 3), 'kk': range(0, 10), 'skillsForm': skillsForm, 'recommendsForm': recommendsForm}
     return render_to_response('user/user.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

@@ -10,12 +10,8 @@ class ReposForm(forms.ModelForm):
     class Meta:
         model = Repos
         fields = ('name', 'desc', 'lang', 'auth_type')
-        required = {
-            'desc': False,
-        }
         widgets = {
-            'name': forms.TextInput(attrs={'maxlength': '64'}),
             'desc': forms.Textarea(attrs={'cols': 50, 'rows': 5, 'maxlength': 512}),
-            'lang': forms.Select(attrs={'maxlength': 16}, choices=LANG_CHOICES),
-            'auth_type': forms.RadioSelect(attrs={'maxlength': 10}, choices=AUTH_TYPE_CHOICES),
+            'lang': forms.Select(choices=LANG_CHOICES),
+            'auth_type': forms.RadioSelect(choices=AUTH_TYPE_CHOICES),
         }
