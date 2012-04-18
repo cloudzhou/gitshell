@@ -53,6 +53,8 @@
                     <dt>所在地</dt>
                     <dd>{{ userprofile.location }}</dd>
                 {% endif %}
+                <dt>加入gitshell</dt>
+                <dd>2012/03/09</dd>
                 <dt>技能</dt>
                 {% for i in ii %}
                 <dd>
@@ -88,7 +90,7 @@
             </dl>
         </div>
         <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
-            <h2>最近 <small>git提交历史, 技能, 评价</small></h2>
+            <h2>最近 <small>git提交历史, 技能, 评价<a href="" style="float:right; font-size: 13px; color: #999999">更多&gt;&gt;</a></small></h2>
         </div>
         <div>
             <table class="table table-striped">
@@ -111,7 +113,7 @@
             </table>
         </div>
         <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
-            <h2>公共仓库</h2>
+            <h2>公共仓库<a href="" style="float:right; font-size: 13px; color: #999999">更多&gt;&gt;</a></h2>
         </div>
         <div>
             <table class="table">
@@ -137,7 +139,23 @@
             </table>
         </div>
         <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
-            <h2>关注</h2>
+            <h2>统计<a href="" style="float:right; font-size: 13px; color: #999999">更多&gt;&gt;</a></h2>
+        </div>
+        <div id="id_user_stats">
+            <ul class="nav nav-pills">
+                <li class="active"><a href="#">24小时</a></li>
+                <li><a href="#">一周</a></li>
+                <li><a href="#">一月</a></li>
+                <li><a href="#">六月</a></li>
+                <li><a href="#">所有</a></li>
+            </ul>
+            <div id="figure-a" class="figure lg">
+                <div id="id_placeholder" style="width:670px;height:200px"></div>
+                <div class="muted">统计 <strong>commit</strong> 次数 异步统计，仅供参考</div>
+            </div>
+        </div>
+        <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
+            <h2>关注<a href="" style="float:right; font-size: 13px; color: #999999">更多&gt;&gt;</a></h2>
         </div>
         <div>
             <table class="table">
@@ -160,7 +178,7 @@
             </table>
         </div>
         <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
-            <h2>被关注 <small>不在关注列表</small></h2>
+            <h2>被关注 <small>不在关注列表<a href="" style="float:right; font-size: 13px; color: #999999">更多&gt;&gt;</a></small></h2>
         </div>
         <div>
             <table class="table">
@@ -176,7 +194,7 @@
                         <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
                     </tr>
                     <tr>
-                        <td><a href="/cloudzhou/gitshell/">gitshell</a></td>
+                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
                         <td>没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
                     </tr>
                 </tbody>
@@ -190,18 +208,20 @@
                 <div id="id_user_resume_content" style="display:none">{{ userprofile.resume }}</div>
             </blockquote>
         </div>
-        <h4 style="margin-bottom: 8px; font-weight: normal; color: #999999;">评论:</h4>
-        <blockquote style="border-left-width: 0px;">
-            {% for i in kk %}
-            <span>作为gitshell创始人，知识全面，为人谦和</span>
-            <small style="margin-left: 10px"><a href="">cloudzhou</a> git创始人</small>
-            {% endfor %}
-            <form class="form-inline" action="/{{user.username}}/recommends/" method="post">
-                {% csrf_token %}
-                {{ recommendsForm.recommends }}
-                <button id="id_recommends_submit" class="btn hide" type="submit">确定</button>
-            </form>
-        </blockquote>
+        <div id="id_user_recommends">
+            <h4 style="margin-bottom: 8px; font-weight: normal; color: #999999;">评论:</h4>
+            <blockquote style="border-left-width: 0px;">
+                {% for i in kk %}
+                <span>作为gitshell开发者，知识全面，为人谦和</span>
+                <small style="margin-left: 10px"><a href="">cloudzhou</a> git开发者</small>
+                {% endfor %}
+                <form class="form-inline" action="/{{user.username}}/recommends/" method="post">
+                    {% csrf_token %}
+                    {{ recommendsForm.recommends }}
+                    <button id="id_recommends_submit" class="btn hide" type="submit">确定</button>
+                </form>
+            </blockquote>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -209,6 +229,7 @@
 <script src="/static/js/Markdown.Converter.js"></script>
 <script src="/static/js/Markdown.Editor.js"></script>
 <script src="/static/js/Markdown.Sanitizer.js"></script>
+<script src="/static/js/flot/jquery.flot.min.js"></script>
 <script>
 /*global jQuery, window */
 $(function(){
@@ -218,7 +239,7 @@ $(function(){
         $('#id_user_resume_content').html(html);
         $('#id_user_resume_content').show();
         $('#id_skills').attr('placeholder', '简单描述技能，使用名词，术语');
-        $('#id_recommends').attr('placeholder', '评论一下他，希望你确实了解他');
+        $('#id_recommends').attr('placeholder', '言简意赅评论一下他，希望你确实了解他');
         $('#id_recommends').addClass('input-xlarge');
     };
     resume_md_converter();
@@ -228,6 +249,13 @@ $(function(){
     $('#id_recommends').click(function() {
         $('#id_recommends_submit').show();
     });
+    var d1 = [[0, 3], [4, 8], [8, 5], [9, 13], [23, 0]];
+    $.plot($("#id_placeholder"), [
+        {
+            data: d1,
+            bars: { show: true, fill: true }
+        },
+    ]);
 });
 </script>
 {% endblock %}
