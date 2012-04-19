@@ -9,7 +9,7 @@ import re
 
 @login_required
 def repos(request, repos_name):
-    response_dictionary = {'hello_world': 'hello world1'}
+    response_dictionary = {'ii': range(0, 20)}
     return render_to_response('repos/repos.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
