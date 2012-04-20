@@ -7,12 +7,20 @@ from django.shortcuts import render_to_response
 from django.core.mail import send_mail
 from django.core.cache import cache
 from django.core.validators import email_re
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate as auth_authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
 from gitshell.gsuser.Forms import LoginForm, JoinForm0, JoinForm1, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
 from gitshell.gsuser.models import Userprofile
 
+@login_required
+def home(request):
+    response_dictionary = {'hello_world': 'hello world'}
+    return render_to_response('user/home.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+@login_required
 def user(request, user_name):
     skillsForm = SkillsForm()
     recommendsForm = RecommendsForm()
@@ -21,6 +29,7 @@ def user(request, user_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@login_required
 def repos(request, user_name):
     response_dictionary = {'hello_world': 'hello world1'}
     return render_to_response('home.html',

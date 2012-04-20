@@ -2,18 +2,22 @@ from django.conf.urls.defaults import patterns, include, url
 
 urlpatterns = patterns('gitshell',
     # gitshell web app, nginx port 8000, proxy by haproxy, public
-    url(r'^/?$', 'index.views.default'),
+    url(r'^/?$', 'index.views.index'),
 
     # main
-    url(r'^home/?$', 'index.views.home'),
     url(r'^repos/?$', 'index.views.home'),
-    url(r'^skills/?$', 'index.views.home'),
-    url(r'^stats/?$', 'index.views.home'),
     url(r'^warehouse/?$', 'index.views.warehouse'),
     url(r'^folder/?$', 'index.views.folder'),
     url(r'^file/?$', 'index.views.file'),
 
+    # skills
+    url(r'^skills/?$', 'skills.views.skills'),
+
+    # stats
+    url(r'^stats/?$', 'stats.views.stats'),
+
     # gsuser
+    url(r'^home/?$', 'gsuser.views.home'),
     url(r'^login/?$', 'gsuser.views.login'),
     url(r'^logout/?$', 'gsuser.views.logout'),
     url(r'^join/?(\w+)?/?$', 'gsuser.views.join'),
