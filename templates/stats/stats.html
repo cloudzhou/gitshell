@@ -1,262 +1,95 @@
 {% extends "base.html" %}
 {% block css %}
-#id_user_detail dt {text-align: left; font-weight: normal; color: #999999;}
-#id_user_detail .dl-horizontal {margin-top: 0px;}
-#id_user_resume strong {font-size: 12px; font-weight: 300}
-.skill-count {color: #707070; font-size: 12px; vertical-align: baseline}
 {% endblock %}
 {% block container %}
-<div class="page-header">
-    <div class="row">
-        <div class="span1">
-            <a href="http://www.gravatar.com/"><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/></a>
-        </div>
-        <div class="span6">
-            <div style="margin-bottom: 5px">
-                <span style="font-size: 25px; font-weight: 400">{{ user.username }}
-                {% if userprofile.nickname %}
-                    ({{ userprofile.nickname }})
-                {% endif %}
-                <a href="">+</a></span>
-            </div>
-            <span style="color: #999999;">{{ userprofile.tweet }}</span>
-        </div>
-        <div class="span1">
-            <a href=""><span style="font-size: 25px; font-weight: 400">75</span></a>
-            <br/><span style="color: #999999;">公共仓库</span>
-        </div>
-        <div class="span1">
-            <a href=""><span style="font-size: 25px; font-weight: 400">75</span></a>
-            <br/><span style="color: #999999;">关注</span>
-        </div>
-        <div class="span1">
-            <a href=""><span style="font-size: 25px; font-weight: 400">75</span></a>
-            <br/><span style="color: #999999;">被关注</span>
-        </div>
-        <div class="span2">
-        </div>
+<div class="page-header" style="padding-bottom: 0px">
+    <ul class="nav nav-pills">
+        <li class="active"><a href="#">24小时</a></li>
+        <li><a href="#">一周</a></li>
+        <li><a href="#">一月</a></li>
+        <li><a href="#">六月</a></li>
+        <li><a href="#">所有</a></li>
+    </ul>
+</div>
+<div class="row" style="margin-bottom: 10px">
+    <div class="span6">
+        <h4 class="muted">24小时内个人统计</h4>
     </div>
 </div>
-<div class="row">
+<div class="row" style="margin-bottom: 10px">
     <div class="span7">
-        <div id="id_user_detail">
-            <dl class="dl-horizontal">
-                {% if userprofile.website %}
-                    <dt>网站</dt>
-                    <dd>{{ userprofile.website }}</dd>
-                {% endif %}
-                {% if userprofile.company %}
-                    <dt>公司</dt>
-                    <dd>{{ userprofile.company }}</dd>
-                {% endif %}
-                {% if userprofile.location %}
-                    <dt>所在地</dt>
-                    <dd>{{ userprofile.location }}</dd>
-                {% endif %}
-                <dt>加入gitshell</dt>
-                <dd>2012/03/09</dd>
-                <dt>技能</dt>
-                {% for i in ii %}
-                <dd>
-                    <a href=""><strong style="font-size: 16px">+</strong></a>
-                    <span class="label skills">linux</span><span class="skill-count"> x51</span>
-                    <a href=""><strong style="font-size: 16px">+</strong></a>
-                    <span class="label skills">linux</span><span class="skill-count"> x51</span>
-                    <a href=""><strong style="font-size: 16px">+</strong></a>
-                    <span class="label skills">linux</span><span class="skill-count"> x51</span>
-                    <a href=""><strong style="font-size: 16px">+</strong></a>
-                    <span class="label skills">linux</span><span class="skill-count"> x51</span>
-                    {% if forloop.last %} 
-                    <a style="margin-left: 30px" href="/skills/{{ user.username }}/">更多&gt;&gt;</a>
-                    {% endif %}
-                </dd>
-                {% endfor %}
-                <dt>最新</dt>
-                {% for i in jj %}
-                <dd>
-                    <a href="">小红</a> 打上 <span class="label skills">linux</span> 标签
-                    {% if forloop.last %} 
-                        ...
-                    {% endif %}
-                </dd>
-                {% endfor %}
-                <dd>
-                <form class="form-inline" action="/{{user.username}}/skills/" method="post">
-                    {% csrf_token %}
-                    {{ skillsForm.skills }}
-                    <button id="id_skills_submit" class="btn hide" type="submit">确定</button>
-                </form>
-                </dd>
-            </dl>
-        </div>
-        <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
-            <h2>最近 <small>git提交历史，issue...<a href="" style="float:right; font-size: 13px; color: #999999">more</a></small></h2>
-        </div>
-        <div>
-            <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th class="span1">事件</th>
-                    <th class="span5">详细</th>
-                    <th class="span1">时间</th>
-                  </tr>
-                </thead>
-                <tbody>
-                    {% for i in jj %}
-                    <tr>
-                        <td><a href="">gitshell</a></td>
-                        <td>增加基础样式文件 <a style="float:right" href=""><code>acedfgff</code></a></td>
-                        <td>2012.02.03</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
-            <h2>公共仓库<small><a href="" style="float:right; font-size: 13px; color: #999999">more</a></small></h2>
-        </div>
-        <div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th class="span1">名称</th>
-                        <th class="span5">简介</th>
-                        <th class="span1">最近更新</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td>没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                        <td>1小时前</td>
-                    </tr>
-                    <tr>
-                        <td><a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td>没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                        <td>1小时前</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
-            <h2>统计<small><a href="" style="float:right; font-size: 13px; color: #999999">more</a></small></h2>
-        </div>
-        <div id="id_user_stats">
-            <ul class="nav nav-pills">
-                <li class="active"><a href="#">24小时</a></li>
-                <li><a href="#">一周</a></li>
-                <li><a href="#">一月</a></li>
-                <li><a href="#">六月</a></li>
-                <li><a href="#">所有</a></li>
-            </ul>
-            <div id="figure-a" class="figure lg">
-                <div id="id_placeholder" style="height:200px"></div>
-                <div class="muted">统计 <strong>commit</strong> 次数 异步统计，仅供参考</div>
+        <div style="padding: 15px 15px 0px; background-color: #EEEEEE; margin-bottom: 10px">
+            <div class="c_status" style="padding: 10px; background-color: #FFFFFF">
+                <div id="id_commit_flot" style="height: 200px"></div>
+            </div>
+            <div style="padding: 15px; background-color: #EEEEEE">
+                <p class="muted">commit 历史</p>
+                <ul>
+                    <li style="margin-bottom: 5px"><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-)
+                    <span class="pull-right muted">30分钟前</span></li>
+                    <li style="margin-bottom: 5px"><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-)
+                    <span class="pull-right muted">30分钟前</span></li>
+                    <li style="margin-bottom: 5px"><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-)
+                    <span class="pull-right muted">30分钟前</span></li>
+                    <li style="margin-bottom: 5px"><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-)
+                    <span class="pull-right muted">30分钟前</span></li>
+                </ul>
             </div>
         </div>
-        <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
-            <h2>关注<small><a href="" style="float:right; font-size: 13px; color: #999999">more</a></small></h2>
-        </div>
-        <div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th class="span2">用户</th>
-                        <th class="span5">简介</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                    </tr>
-                    <tr>
-                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
-            <h2>被关注 <small>不在关注列表<a href="" style="float:right; font-size: 13px; color: #999999">more</a></small></h2>
-        </div>
-        <div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th class="span2">名称</th>
-                        <th class="span5">简介</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                    </tr>
-                    <tr>
-                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td>没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                    </tr>
-                </tbody>
-            </table>
+        <h4 class="muted">24小时内汇总统计</h4>
+        <div class="c_status" style="padding: 10px; text-align: center">
         </div>
     </div>
-    <div class="span5">
-        <div id="id_user_resume">
-            <h4 style="margin-bottom: 8px; font-weight: normal; color: #999999;">简历:</h4>
-            <blockquote>
-                <div id="id_user_resume_content" style="display:none">{{ userprofile.resume }}</div>
-            </blockquote>
+    <div class="span4" style="padding: 15px 15px 0px;">
+        <div class="c_status" style="padding: 10px;">
+            <div id="id_commit_repos_flot" style="height: 300px"></div>
         </div>
-        <div id="id_user_recommends">
-            <h4 style="margin-bottom: 8px; font-weight: normal; color: #999999;">评论:
-                <small><a href="" style="float:right; font-size: 13px; color: #999999">more</a></small></h4>
-            <blockquote style="border-left-width: 0px;">
-                {% for i in kk %}
-                <span>作为gitshell开发者，知识全面，为人谦和</span>
-                <small style="margin-left: 10px; margin-bottom:6px"><a href="">cloudzhou</a> git开发者</small>
-                {% endfor %}
-                <form class="form-inline" action="/{{user.username}}/recommends/" method="post">
-                    {% csrf_token %}
-                    {{ recommendsForm.recommends }}
-                    <button id="id_recommends_submit" class="btn hide" type="submit">确定</button>
-                </form>
-            </blockquote>
+        <div style="padding: 15px; background-color: #EEEEEE">
+            <p class="muted">commit 仓库比例</p>
+            <ul>
+                <li style="margin-bottom: 5px"><a href="">gitshell</a> 98%</li>
+                <li style="margin-bottom: 5px"><a href="">gitshell</a> 98%</li>
+                <li style="margin-bottom: 5px"><a href="">gitshell</a> 98%</li>
+            </ul>
         </div>
     </div>
 </div>
 {% endblock %}
 {% block js %}
-<script src="/static/js/Markdown.Converter.js"></script>
-<script src="/static/js/Markdown.Editor.js"></script>
-<script src="/static/js/Markdown.Sanitizer.js"></script>
 <script src="/static/js/flot/jquery.flot.min.js"></script>
+<script src="/static/js/flot/jquery.flot.pie.min.js"></script>
 <script>
 /*global jQuery, window */
 $(function(){
-    var resume_md_converter = function() {
-        var converter = new Markdown.getSanitizingConverter();
-        var html = converter.makeHtml($('#id_user_resume_content').html());
-        $('#id_user_resume_content').html(html);
-        $('#id_user_resume_content').show();
-        $('#id_skills').attr('placeholder', '简单描述技能，使用名词，术语');
-        $('#id_recommends').attr('placeholder', '言简意赅评论一下他，希望你确实了解他');
-        $('#id_recommends').addClass('input-xlarge');
-    };
-    resume_md_converter();
-    $('#id_skills').click(function() {
-        $('#id_skills_submit').show();
-    });
-    $('#id_recommends').click(function() {
-        $('#id_recommends_submit').show();
-    });
     var d1 = [[0, 3], [4, 8], [8, 5], [9, 13], [23, 0]];
-    $.plot($("#id_placeholder"), [
-        {
-            data: d1,
-            bars: { show: true, fill: true }
+    var plot = $.plot($("#id_commit_flot"), [d1],
+    {
+        lines: { show: true, fill: true },
+        points: { show: true },
+        yaxis: { min:0, autoscaleMargin: 0.1 },
+        /*xaxis: { mode: "time" },*/
+        selection: { mode: "x" },
+        grid: { hoverable: true, tickColor: '#d0d0d0', borderColor:'#7f7f7f', markingsColor:'#f2f5ff' }
+    });
+    var data = [
+        { label: "Series1",  data: 10},
+        { label: "Series2",  data: 30},
+        { label: "Series3",  data: 90},
+        { label: "Series4",  data: 70},
+        { label: "Series5",  data: 80},
+        { label: "Series6",  data: 110}
+    ];
+    var plot1 = $.plot($("#id_commit_repos_flot"), data,
+    {
+        series: {
+            pie: {
+                show: true
+            }
         },
-    ]);
+        legend: {
+            show: false
+        }
+    });
 });
 </script>
 {% endblock %}
