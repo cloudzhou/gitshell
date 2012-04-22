@@ -16,7 +16,7 @@ from gitshell.gsuser.models import Userprofile
 
 @login_required
 def home(request):
-    response_dictionary = {'hello_world': 'hello world'}
+    response_dictionary = {'hello_world': 'hello world', 'ii': range(0, 4)}
     return render_to_response('user/home.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
