@@ -11,19 +11,17 @@
         <li><a href="#">所有</a></li>
     </ul>
 </div>
-<div class="row" style="margin-bottom: 10px">
-    <div class="span6">
-        <h4 class="muted">24小时内个人统计</h4>
-    </div>
-</div>
-<div class="row" style="margin-bottom: 10px">
+<div class="row">
     <div class="span7">
+        <div style="margin-bottom: 10px">
+            <h4 class="muted">24小时内个人统计</h4>
+        </div>
         <div style="padding: 15px 15px 0px; background-color: #EEEEEE; margin-bottom: 10px">
             <div class="c_status" style="padding: 10px; background-color: #FFFFFF">
                 <div id="id_commit_flot" style="height: 200px"></div>
             </div>
             <div style="padding: 15px; background-color: #EEEEEE">
-                <p class="muted">commit 历史</p>
+                <p class="muted">♬ commit 历史</p>
                 <ul>
                     <li style="margin-bottom: 5px"><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-)
                     <span class="pull-right muted">30分钟前</span></li>
@@ -36,8 +34,32 @@
                 </ul>
             </div>
         </div>
-        <h4 class="muted">24小时内汇总统计</h4>
-        <div class="c_status" style="padding: 10px; text-align: center">
+        <div style="margin-bottom: 10px">
+            <h4 class="muted">24小时内汇总统计</h4>
+        </div>
+        <div style="padding: 15px 15px 0px; background-color: #EEEEEE; margin-bottom: 10px">
+            <div class="c_status" style="padding: 10px; background-color: #FFFFFF">
+                <div id="id_repos_commit_flot" style="height: 200px"></div>
+            </div>
+            <div style="padding: 15px; background-color: #EEEEEE">
+                <p class="muted">♩ 所有仓库 commit 累计次数</p>
+            </div>
+        </div>
+        <div style="padding: 15px 15px 0px; background-color: #EEEEEE; margin-bottom: 10px">
+            <div class="c_status" style="padding: 10px; background-color: #FFFFFF">
+                <div id="id_repos_watch_flot" style="height: 200px"></div>
+            </div>
+            <div style="padding: 15px; background-color: #EEEEEE">
+                <p class="muted">♪ 所有仓库 关注 累计次数</p>
+            </div>
+        </div>
+        <div style="padding: 15px 15px 0px; background-color: #EEEEEE; margin-bottom: 10px">
+            <div class="c_status" style="padding: 10px; background-color: #FFFFFF">
+                <div id="id_repos_fork_flot" style="height: 200px"></div>
+            </div>
+            <div style="padding: 15px; background-color: #EEEEEE">
+                <p class="muted">♫ 所有仓库 fork 累计次数</p>
+            </div>
         </div>
     </div>
     <div class="span4" style="padding: 15px 15px 0px;">
@@ -46,11 +68,30 @@
         </div>
         <div style="padding: 15px; background-color: #EEEEEE">
             <p class="muted">commit 仓库比例</p>
-            <ul>
-                <li style="margin-bottom: 5px"><a href="">gitshell</a> 98%</li>
-                <li style="margin-bottom: 5px"><a href="">gitshell</a> 98%</li>
-                <li style="margin-bottom: 5px"><a href="">gitshell</a> 98%</li>
-            </ul>
+            <div class="muted pull-right"><a href="">gitshell</a> 60%</div><br/>
+            <div class="progress" style="margin-bottom: 3px; height: 10px;">
+            <div style="width: 60%;" class="bar"></div></div>
+            <div class="muted pull-right"><a href="">gitshell</a> 30%</div><br/>
+            <div class="progress" style="margin-bottom: 3px; height: 10px;">
+            <div style="width: 30%;" class="bar"></div></div>
+            <div class="muted pull-right"><a href="">gitshell</a> 10%</div><br/>
+            <div class="progress" style="margin-bottom: 3px; height: 10px;">
+            <div style="width: 10%;" class="bar"></div></div>
+        </div>
+        <div class="c_status" style="padding: 10px;">
+            <div id="id_lang_flot" style="height: 300px"></div>
+        </div>
+        <div style="padding: 15px; background-color: #EEEEEE">
+            <p class="muted">仓库编程语言比例</p>
+            <div class="muted pull-right"><a href="">Java</a> 60%</div><br/>
+            <div class="progress" style="margin-bottom: 3px; height: 10px;">
+            <div style="width: 60%;" class="bar"></div></div>
+            <div class="muted pull-right"><a href="">C</a> 30%</div><br/>
+            <div class="progress" style="margin-bottom: 3px; height: 10px;">
+            <div style="width: 30%;" class="bar"></div></div>
+            <div class="muted pull-right"><a href="">C++</a> 10%</div><br/>
+            <div class="progress" style="margin-bottom: 3px; height: 10px;">
+            <div style="width: 10%;" class="bar"></div></div>
         </div>
     </div>
 </div>
@@ -62,10 +103,33 @@
 /*global jQuery, window */
 $(function(){
     var d1 = [[0, 3], [4, 8], [8, 5], [9, 13], [23, 0]];
-    var plot = $.plot($("#id_commit_flot"), [d1],
+    var plot1 = $.plot($("#id_commit_flot"), [d1],
     {
-        lines: { show: true, fill: true },
-        points: { show: true },
+        bars: { show: true, fill: true },
+        yaxis: { min:0, autoscaleMargin: 0.1 },
+        /*xaxis: { mode: "time" },*/
+        selection: { mode: "x" },
+        grid: { hoverable: true, tickColor: '#d0d0d0', borderColor:'#7f7f7f', markingsColor:'#f2f5ff' }
+    });
+    var plot2 = $.plot($("#id_repos_commit_flot"), [d1],
+    {
+        bars: { show: true, fill: true },
+        yaxis: { min:0, autoscaleMargin: 0.1 },
+        /*xaxis: { mode: "time" },*/
+        selection: { mode: "x" },
+        grid: { hoverable: true, tickColor: '#d0d0d0', borderColor:'#7f7f7f', markingsColor:'#f2f5ff' }
+    });
+    var plot3 = $.plot($("#id_repos_watch_flot"), [d1],
+    {
+        bars: { show: true, fill: true },
+        yaxis: { min:0, autoscaleMargin: 0.1 },
+        /*xaxis: { mode: "time" },*/
+        selection: { mode: "x" },
+        grid: { hoverable: true, tickColor: '#d0d0d0', borderColor:'#7f7f7f', markingsColor:'#f2f5ff' }
+    });
+    var plot4 = $.plot($("#id_repos_fork_flot"), [d1],
+    {
+        bars: { show: true, fill: true },
         yaxis: { min:0, autoscaleMargin: 0.1 },
         /*xaxis: { mode: "time" },*/
         selection: { mode: "x" },
@@ -81,14 +145,13 @@ $(function(){
     ];
     var plot1 = $.plot($("#id_commit_repos_flot"), data,
     {
-        series: {
-            pie: {
-                show: true
-            }
-        },
-        legend: {
-            show: false
-        }
+        series: { pie: { show: true } },
+        legend: { show: false }
+    });
+    var plot2 = $.plot($("#id_lang_flot"), data,
+    {
+        series: { pie: { show: true } },
+        legend: { show: false }
     });
 });
 </script>
