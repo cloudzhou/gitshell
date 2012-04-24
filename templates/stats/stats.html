@@ -18,7 +18,7 @@
         </div>
         <div style="padding: 15px 15px 0px; background-color: #EEEEEE; margin-bottom: 10px">
             <div class="c_status" style="padding: 10px; background-color: #FFFFFF">
-                <div id="id_commit_flot" style="height: 200px"></div>
+                <div id="id_commit_flot" style="height: 150px"></div>
             </div>
             <div style="padding: 15px; background-color: #EEEEEE">
                 <p class="muted">♬ commit 历史</p>
@@ -37,9 +37,32 @@
         <div style="margin-bottom: 10px">
             <h4 class="muted">24小时内汇总统计</h4>
         </div>
+        <div class="page-header" style="padding-bottom: 0px">
+            <p class="muted">热门的仓库列表</p>
+        </div>
+        <div style="padding: 10px; background-color: rgb(255, 255, 255);" class="c_repos">
+            <h3>1. <img style="margin-right: 10px;" src="http://www.gravatar.com/avatar/8e580cce03d7a7229981c1acad1313bd?s=20"><a href="/cloudzhou/">cloudzhou</a> / 
+            <a href="/cloudzhou/gitshell/">gitshell</a>
+            <span style="float: right;">
+            <a data-original-title="commit 次数" rel="tooltip" style="margin-right: 20px" href="">♯ 11</a>
+            <a data-original-title="关注 数量" rel="tooltip" style="margin-right: 20px" href="">♥ 22</a>
+            <a data-original-title="fork 次数" rel="tooltip" style="margin-right: 20px" href="">♂ 33</a></span></h3>
+            <div style="margin-left: 20px;">
+                <h6>创建于xxx，最近更新xxx</h6> 
+                <p>gitshell 就是您目前使用的这个网站，使用django，redis，nginx，memcached，uwsgi</p>
+            </div>
+            <div style="padding: 0px; background-color: #EEEEEE; margin-bottom: 10px">
+                <div class="c_status" style="padding: 2px; background-color: #FFFFFF">
+                    <div id="id_hot_repos_flot" style="height: 80px"></div>
+                </div>
+            </div>
+        </div>
+        <div class="page-header" style="padding-bottom: 0px">
+            <p class="muted">所有仓库数据统计</p>
+        </div>
         <div style="padding: 15px 15px 0px; background-color: #EEEEEE; margin-bottom: 10px">
             <div class="c_status" style="padding: 10px; background-color: #FFFFFF">
-                <div id="id_repos_commit_flot" style="height: 200px"></div>
+                <div id="id_repos_commit_flot" style="height: 150px"></div>
             </div>
             <div style="padding: 15px; background-color: #EEEEEE">
                 <p class="muted">♩ 所有仓库 commit 累计次数</p>
@@ -47,7 +70,7 @@
         </div>
         <div style="padding: 15px 15px 0px; background-color: #EEEEEE; margin-bottom: 10px">
             <div class="c_status" style="padding: 10px; background-color: #FFFFFF">
-                <div id="id_repos_watch_flot" style="height: 200px"></div>
+                <div id="id_repos_watch_flot" style="height: 150px"></div>
             </div>
             <div style="padding: 15px; background-color: #EEEEEE">
                 <p class="muted">♪ 所有仓库 关注 累计次数</p>
@@ -55,7 +78,7 @@
         </div>
         <div style="padding: 15px 15px 0px; background-color: #EEEEEE; margin-bottom: 10px">
             <div class="c_status" style="padding: 10px; background-color: #FFFFFF">
-                <div id="id_repos_fork_flot" style="height: 200px"></div>
+                <div id="id_repos_fork_flot" style="height: 150px"></div>
             </div>
             <div style="padding: 15px; background-color: #EEEEEE">
                 <p class="muted">♫ 所有仓库 fork 累计次数</p>
@@ -111,6 +134,15 @@ $(function(){
         selection: { mode: "x" },
         grid: { hoverable: true, tickColor: '#d0d0d0', borderColor:'#7f7f7f', markingsColor:'#f2f5ff' }
     });
+    var plot0 = $.plot($("#id_hot_repos_flot"), [d1],
+    {
+        bars: { show: true, fill: true },
+        xaxis: {show: false},
+        yaxis: { min:0, autoscaleMargin: 0.1 },
+        /*xaxis: { mode: "time" },*/
+        selection: { mode: "x" },
+        grid: { hoverable: true, tickColor: '#d0d0d0', borderColor:'#7f7f7f', markingsColor:'#f2f5ff' }
+    });
     var plot2 = $.plot($("#id_repos_commit_flot"), [d1],
     {
         bars: { show: true, fill: true },
@@ -153,6 +185,15 @@ $(function(){
         series: { pie: { show: true } },
         legend: { show: false }
     });
+    $('.c_repos').hover(function() {
+        $(this).css('background-color', '#D9EDF7');
+    }, function(){
+        $(this).css('background-color', '#FFFFFF');
+    });
+    $('.c_repos').tooltip({
+      selector: "a[rel=tooltip]"
+    });
+
 });
 </script>
 {% endblock %}
