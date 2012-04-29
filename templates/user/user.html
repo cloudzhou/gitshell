@@ -85,6 +85,7 @@
                     {% csrf_token %}
                     {{ skillsForm.skills }}
                     <button id="id_skills_submit" class="btn hide" type="submit">确定</button>
+                    <p id="id_skills_tip" class="hide muted" style="margin-top: 5px">多个技能使用逗号分割，不需要“高级”，“资深”等等形容词</p>
                 </form>
                 </dd>
             </dl>
@@ -137,7 +138,7 @@
                     <tr>
                         <th class="span1">名称</th>
                         <th class="span5">简介</th>
-                        <th class="span1">最近更新</th>
+                        <th class="">更新</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -246,6 +247,7 @@ $(function(){
     resume_md_converter();
     $('#id_skills').click(function() {
         $('#id_skills_submit').show();
+        $('#id_skills_tip').show();
     });
     $('#id_recommends').click(function() {
         $('#id_recommends_submit').show();
