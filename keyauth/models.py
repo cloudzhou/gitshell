@@ -1,5 +1,5 @@
 from django.db import models
-from gitshell.objectscache.da import query, execute, count
+from gitshell.objectscache.da import query, queryraw, execute, count
 
 class UserPubkey(models.Model):
     create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
@@ -24,3 +24,10 @@ class KeyauthManager():
     @classmethod
     def count_userpubkey_by_fingerprint(self, fingerprint):
         return count('userpubkey_by_fingerprint', fingerprint)
+
+    @classmethod
+    def get_userpubkey_by_fingerprint(self, fingerprint):
+        userPubkeys = queryraw(UserPubkey, 'userpubkey_s_fingerprint', fingerprint)
+        if len(list(userPubkeys)) > 0:
+            return userPubkeys[0]
+        return None

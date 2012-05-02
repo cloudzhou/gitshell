@@ -1,4 +1,5 @@
 from django.db import models
+from gitshell.objectscache.da import query, queryraw, execute, count
 
 class Repos(models.Model):
     create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
@@ -15,9 +16,17 @@ class Repos(models.Model):
 class ReposManager():
 
     @classmethod
-    def get_repos_by_id_userid(rid, userid):
+    def get_repos_by_userId_id(self, user_id, rid):
         pass
 
     @classmethod
-    def count_repos_by_userid_name(userid, name):
+    def count_repos_by_userId_name(self, user_id):
         pass
+
+    @classmethod
+    def get_repos_by_userId_name(self, user_id, name):
+        reposes = query(Repos, 'repos_repos', user_id, 'repos_s_userId_name', [user_id, name])
+        if len(list(reposes)) > 0:
+            return reposes[0]
+        return None
+

@@ -5,12 +5,22 @@ from gitshell.objectscache.models import Count
 import time
 
 rawsql = {
-    'userpubkey_by_user_id':
-        'SELECT * FROM keyauth_userpubkey WHERE user_id = %s and visibly = 0 limit 0, 10',
-    'userpubkey_by_id':
-        'UPDATE keyauth_userpubkey SET visibly = 1 WHERE id = %s',
-    'userpubkey_by_fingerprint':
-        'SELECT 0 as id, count(1) as count FROM keyauth_userpubkey WHERE fingerprint = %s and visibly = 0 limit 0, 10',
+    # userpubkey #
+    'userpubkey_l_user_id':
+        'select * from keyauth_userpubkey where visibly = 0 and user_id = %s limit 0, 10',
+    'userpubkey_u_id':
+        'update keyauth_userpubkey set visibly = 1 where visibly = 0 and user_id = %s and id = %s',
+    'userpubkey_c_fingerprint':
+        'select 0 as id, count(1) as count from keyauth_userpubkey where visibly = 0 and fingerprint = %s limit 0, 10',
+    'userpubkey_s_fingerprint':
+        'select * from keyauth_userpubkey where visibly = 0 and fingerprint = %s limit 0, 1',
+    # repos #
+    'repos_s_userId_name':
+        'select * from repos_repos where visibly = 0 and user_id = %s and name = %s limit 0, 1',
+    'repos_l_userId':
+        'select * from repos_repos where visibly = 0 and user_id = %s limit %s, %s',
+    'repos_c_userId':
+        'select 0 as id, count(1) as count from repos_repos where visibly = 0 and user_id = %s',
 }
 
 def get_many(model, table, pids):
@@ -26,6 +36,8 @@ def get(model, table, pid):
     return obj
 
 def query(model, table, pt_id, rawsql_id, parameters):
+    return model.objects.raw(rawsql[rawsql_id], parameters)
+
     if pt_id == None:
         return model.objects.raw(rawsql[rawsql_id], parameters)
     ver_key = get_ver_key(table, pt_id)
@@ -51,7 +63,13 @@ def query(model, table, pt_id, rawsql_id, parameters):
         pass
     return model.objects.raw(rawsql[rawsql_id], parameters)
 
-def count(rawsql_id, parameters):
+def queryraw(model, rawsql_id, parameters):
+    return model.objects.raw(rawsql[rawsql_id], parameters)
+    
+def count(model, table, pt_id, rawsql_id, parameters):
+    return countraw(rawsql_id, parameters)
+
+def countraw(rawsql_id, parameters):
     count = Count.objects.raw(rawsql[rawsql_id], [parameters])[0]
     return count.count
 
