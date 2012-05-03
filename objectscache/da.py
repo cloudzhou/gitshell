@@ -14,6 +14,8 @@ rawsql = {
         'select 0 as id, count(1) as count from keyauth_userpubkey where visibly = 0 and fingerprint = %s limit 0, 10',
     'userpubkey_s_fingerprint':
         'select * from keyauth_userpubkey where visibly = 0 and fingerprint = %s limit 0, 1',
+    'userpubkey_s_userId_fingerprint':
+        'select * from keyauth_userpubkey where visibly = 0 and user_id = %s and fingerprint = %s limit 0, 1',
     # repos #
     'repos_s_userId_name':
         'select * from repos_repos where visibly = 0 and user_id = %s and name = %s limit 0, 1',
@@ -70,7 +72,7 @@ def count(model, table, pt_id, rawsql_id, parameters):
     return countraw(rawsql_id, parameters)
 
 def countraw(rawsql_id, parameters):
-    count = Count.objects.raw(rawsql[rawsql_id], [parameters])[0]
+    count = Count.objects.raw(rawsql[rawsql_id], parameters)[0]
     return count.count
 
 def execute(rawsql_id, parameters):

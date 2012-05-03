@@ -18,16 +18,23 @@ class KeyauthManager():
         return query(UserPubkey, 'keyauth_userpubkey', user_id, 'userpubkey_by_user_id', [user_id])
 
     @classmethod
+    def get_userpubkey_by_userId_fingerprint(self, user_id, fingerprint):
+        userPubkeys = query(UserPubkey, 'keyauth_userpubkey', user_id, 'userpubkey_s_userId_fingerprint', [user_id, fingerprint])
+        if len(list(userPubkeys)) > 0:
+            return userPubkeys[0]
+        return None
+
+    @classmethod
     def update_userpubkey_by_id(self, id):
-        return execute('userpubkey_by_id', id)
+        return execute('userpubkey_by_id', [id])
 
     @classmethod
     def count_userpubkey_by_fingerprint(self, fingerprint):
-        return count('userpubkey_by_fingerprint', fingerprint)
+        return count('userpubkey_by_fingerprint', [fingerprint])
 
     @classmethod
     def get_userpubkey_by_fingerprint(self, fingerprint):
-        userPubkeys = queryraw(UserPubkey, 'userpubkey_s_fingerprint', fingerprint)
+        userPubkeys = queryraw(UserPubkey, 'userpubkey_s_fingerprint', [fingerprint])
         if len(list(userPubkeys)) > 0:
             return userPubkeys[0]
         return None

@@ -16,7 +16,9 @@ def keyauth(request, fingerprint, username, reposname):
         user = User.objects.get(username = username)
     except User.DoesNotExist:
         return HttpResponse("None", content_type="text/plain")
-    repos = ReposManager.get_repos_by_userId_name(user.id, reposname)
-    if repos is not None:
-        return dist_repos(request, username, reposname)
+    userPubkey = KeyauthManager.get_userpubkey_by_userId_fingerprint(user.id, fingerprint)
+    if userPubkey is not None:
+        repos = ReposManager.get_repos_by_userId_name(user.id, reposname)
+        if repos is not None:
+            return dist_repos(request, username, reposname)
     return HttpResponse("None", content_type="text/plain")
