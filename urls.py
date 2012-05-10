@@ -53,5 +53,5 @@ urlpatterns = patterns('gitshell',
     # repos
     url(r'^(\w+)/repos/?$', 'repos.views.repos'),
     url(r'^(\w+)/repos/edit/(\d+)/?$', 'repos.views.edit'),
-    url(r'^(\w+)/(\w+)/?$', 'repos.views.repos'),
+    url(r'^(\w+)/(\w+)/?$', 'repos.views.user_repos'),
 )

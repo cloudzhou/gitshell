@@ -2,18 +2,26 @@
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.shortcuts import render_to_response
 from gitshell.repos.Forms import ReposForm
-from gitshell.repos.models import Repos
+from gitshell.repos.models import Repos, ReposManager
 import re
 
 @login_required
-def repos(request, repos_name):
-    response_dictionary = {'ii': range(0, 20)}
+def repos(request, user_name):
+    repos_list = ReposManager.list_repos_by_userId(request.user.id, 0, 20)
+    response_dictionary = {'user_name': user_name, 'repos_list': repos_list }
     return render_to_response('repos/repos.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@login_required
+def user_repos(request, user_name, repos_name):
+    response_dictionary = {'ii': range(0, 20)}
+    return render_to_response('repos/repos.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
 # TODO
 @login_required
 def edit(request, username, rid):

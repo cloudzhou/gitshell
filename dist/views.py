@@ -46,7 +46,7 @@ def do_refresh():
         repos_partition_array = new_repos_partition_array
 
 # static field and class
-repos_root = '/opt/repos'
+repos_root = '/opt/repos/'
 repos_partition_array = []
 repos_partition_conf_file = "/opt/run/var/repos_partition.conf"
 

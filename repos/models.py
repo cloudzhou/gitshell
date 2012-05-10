@@ -13,14 +13,20 @@ class Repos(models.Model):
     auth_type = models.SmallIntegerField(default=0)
     quote = models.BigIntegerField(default=0)
 
+    commit = models.IntegerField(default=0)
+    watch = models.IntegerField(default=0)
+    fork = models.IntegerField(default=0)
+    member = models.IntegerField(default=0)
+
 class ReposManager():
 
     @classmethod
-    def get_repos_by_userId_id(self, user_id, rid):
-        pass
+    def list_repos_by_userId(self, user_id, offset, row_count):
+        reposes = query(Repos, 'repos_repos', user_id, 'repos_l_userId', [user_id, offset, row_count])
+        return list(reposes)
 
     @classmethod
-    def count_repos_by_userId_name(self, user_id):
+    def get_repos_by_userId_id(self, user_id, rid):
         pass
 
     @classmethod
@@ -29,4 +35,8 @@ class ReposManager():
         if len(list(reposes)) > 0:
             return reposes[0]
         return None
+
+    @classmethod
+    def count_repos_by_userId(self, user_id):
+        pass
 
