@@ -24,7 +24,7 @@
             <a href="/{{ user_name }}/{{ repos.name }}/">{{ repos.name }}</a>
             <span style="float: right;">
             <a href="" style="margin-right: 20px" rel="tooltip" data-original-title="commit 次数">♯ {{ repos.commit }}</a>
-            <a href="" style="margin-right: 20px" rel="tooltip" data-original-title="关注 数量">♥ {{ repos.watch }}</a>
+            <a href="" style="margin-right: 20px" rel="tooltip" data-original-title="watch 次数">♥ {{ repos.watch }}</a>
             <a href="" style="margin-right: 20px" rel="tooltip" data-original-title="fork 次数">♂ {{ repos.fork }}</a></span></h3>
             <div style="margin-left: 20px;">
                 <h6>创建于{{ repos.create_time|date:"y/m/d" }}，最近更新{{ repos.modify_time|date:"y/m/d H:i" }}</h6> 
