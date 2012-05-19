@@ -11,7 +11,7 @@ urlpatterns = patterns('gitshell',
     url(r'^file/?$', 'index.views.file'),
 
     # skills
-    url(r'^skills/?$', 'skills.views.skills'),
+    # url(r'^skills/?$', 'skills.views.skills'),
 
     # stats
     url(r'^stats/?$', 'stats.views.stats'),
