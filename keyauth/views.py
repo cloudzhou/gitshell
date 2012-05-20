@@ -11,11 +11,12 @@ def pubkey(request, fingerprint):
     return HttpResponse("", content_type="text/plain")
 
 # TODO repos member support
-def keyauth(request, fingerprint, username, reposname):
+def keyauth(request, username, reposname, fingerprint, command):
     try:
         user = User.objects.get(username = username)
     except User.DoesNotExist:
         return HttpResponse("None", content_type="text/plain")
+    print command
     userPubkey = KeyauthManager.get_userpubkey_by_userId_fingerprint(user.id, fingerprint)
     if userPubkey is not None:
         repos = ReposManager.get_repos_by_userId_name(user.id, reposname)

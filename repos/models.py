@@ -18,10 +18,18 @@ class Repos(models.Model):
     fork = models.IntegerField(default=0)
     member = models.IntegerField(default=0)
 
+class ReposMember(models.Model):
+    create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
+    modify_time = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
+    visibly = models.SmallIntegerField(default=0, null=False)
+
+    user_id = models.IntegerField()
+    permission = models.SmallIntegerField(default=0)
+
 # commit history from git
 # class commit_history(models.Model):
 
-class watch_history(models.Model):
+class WatchHistory(models.Model):
     create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
     modify_time = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
     visibly = models.SmallIntegerField(default=0, null=False)
@@ -29,7 +37,7 @@ class watch_history(models.Model):
     repos_id = models.IntegerField()
     user_id = models.IntegerField()
 
-class fork_history(models.Model):
+class ForkHistory(models.Model):
     create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
     modify_time = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
     visibly = models.SmallIntegerField(default=0, null=False)

@@ -14,6 +14,10 @@ class Userprofile(models.Model):
     resume = models.CharField(max_length=2048, null=True)
     imgurl = models.CharField(max_length=32, null=True)
 
+    pubrepos = models.IntegerField(default=0) 
+    watch = models.IntegerField(default=0)
+    be_watched = models.IntegerField(default=0)
+
 class UserprofileManager():
     pass
     #@classmethod
