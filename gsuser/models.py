@@ -14,6 +14,8 @@ class Userprofile(BaseModel):
     prirepos = models.IntegerField(default=0)
     watch = models.IntegerField(default=0)
     be_watched = models.IntegerField(default=0)
+    quote = models.BigIntegerField(default=0)
+    used_quote = models.BigIntegerField(default=0)
 
 class UserprofileManager():
     pass

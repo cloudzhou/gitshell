@@ -11,8 +11,8 @@ class UserPubkey(BaseModel):
 class KeyauthManager():
 
     @classmethod
-    def list_userpubkey_by_user_id(self, user_id):
-        return query(UserPubkey, 'keyauth_userpubkey', user_id, 'userpubkey_by_user_id', [user_id])
+    def list_userpubkey_by_userId(self, user_id):
+        return query(UserPubkey, 'keyauth_userpubkey', user_id, 'userpubkey_l_userId', [user_id])
 
     @classmethod
     def get_userpubkey_by_userId_fingerprint(self, user_id, fingerprint):
@@ -23,11 +23,11 @@ class KeyauthManager():
 
     @classmethod
     def update_userpubkey_by_id(self, id):
-        return execute('userpubkey_by_id', [id])
+        return execute('userpubkey_u_id', [id])
 
     @classmethod
     def count_userpubkey_by_fingerprint(self, fingerprint):
-        return count('userpubkey_by_fingerprint', [fingerprint])
+        return count('userpubkey_c_fingerprint', [fingerprint])
 
     @classmethod
     def get_userpubkey_by_fingerprint(self, fingerprint):

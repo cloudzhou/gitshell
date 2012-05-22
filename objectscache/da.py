@@ -6,7 +6,7 @@ import time
 
 rawsql = {
     # userpubkey #
-    'userpubkey_l_user_id':
+    'userpubkey_l_userId':
         'select * from keyauth_userpubkey where visibly = 0 and user_id = %s limit 0, 10',
     'userpubkey_u_id':
         'update keyauth_userpubkey set visibly = 1 where visibly = 0 and user_id = %s and id = %s',

@@ -54,7 +54,7 @@ def sshpubkey(request):
     sshpubkeyForm = SshpubkeyForm()
     doSshpubkeyForm = DoSshpubkeyForm()
     error = u''
-    userPubkey_all = KeyauthManager.list_userpubkey_by_user_id(request.user.id)
+    userPubkey_all = KeyauthManager.list_userpubkey_by_userId(request.user.id)
     if request.method == 'POST':
         sshpubkeyForm = SshpubkeyForm(request.POST)
         if sshpubkeyForm.is_valid():
