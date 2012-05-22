@@ -1,11 +1,8 @@
 from django.db import models
+from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, queryraw, execute, count
 
-class UserPubkey(models.Model):
-    create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
-    modify_time = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
-    visibly = models.SmallIntegerField(default=0, null=False)
-
+class UserPubkey(BaseModel):
     user_id = models.IntegerField(null=False)
     name = models.CharField(max_length=32, null=False)
     key = models.CharField(max_length=1024,  null=False)

@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+import sys
+import os
+
+#puts "Enforcing Policies... \n(#{$refname}) (#{$oldrev[0,6]}) (#{$newrev[0,6]})"
+def main():
+    refname = sys.argv[1]
+    oldrev  = sys.argv[2]
+    newrev  = sys.argv[3]
+    user    = os.getenv('__GITSHELL_USER__', 'nullbody')
+    f = open('/tmp/update.hook.log', 'a')
+    try:
+        f.write( '%s,%s,%s,%s\n' % ( refname, oldrev, newrev, user) )
+    finally:
+        f.close()
+
+if __name__ == '__main__':
+    main()
