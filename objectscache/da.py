@@ -5,6 +5,9 @@ from gitshell.objectscache.models import Count
 import time
 
 rawsql = {
+    # userprofile #
+    'userprofile_s_id':
+        'select * from gsuser_userprofile where visibly = 0 and id = %s',
     # userpubkey #
     'userpubkey_l_userId':
         'select * from keyauth_userpubkey where visibly = 0 and user_id = %s limit 0, 10',

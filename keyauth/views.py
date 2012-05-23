@@ -2,6 +2,7 @@ import re
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.models import User
 from gitshell.repos.models import ReposManager
+from gitshell.gsuser.models import UserprofileManager
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
 from gitshell.dist.views import repos as dist_repos
 
@@ -46,14 +47,17 @@ def keyauth(request, fingerprint, command):
 
     repos = ReposManager.get_repos_by_userId_name(user.id, reposname)
     if repos is not None:
+        userprofile = UserprofileManager.get_userprofile_by_id(user.id)
+        quote = userprofile.quote
+        print quote
         userPubkey = KeyauthManager.get_userpubkey_by_userId_fingerprint(user.id, fingerprint)
         if userPubkey is not None:
-            return response_full_git_command(pre_command, username, reposname)
+            return response_full_git_command(quote, pre_command, username, reposname)
         # member of repos TODO
     return not_git_command()
 
-def response_full_git_command(pre_command, username, reposname):
-    return HttpResponse("/usr/bin/git-shell -c \"%s '%s/%s'\"" % (pre_command, username, reposname), content_type="text/plain")
+def response_full_git_command(quote, pre_command, username, reposname):
+    return HttpResponse("ulimit && ulimit && ulimit && /usr/bin/git-shell -c \"%s '%s/%s'\"" % (pre_command, username, reposname), content_type="text/plain")
 
 def not_git_command():
     return HttpResponse("echo 'fatal: does not appear to be a git command or you have not rights'", content_type="text/plain")

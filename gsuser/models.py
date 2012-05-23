@@ -1,5 +1,6 @@
 from django.db import models
 from gitshell.objectscache.models import BaseModel
+from gitshell.objectscache.da import query, queryraw, execute, count, countraw
 
 class Userprofile(BaseModel):
     tweet = models.CharField(max_length=128, null=True)
@@ -18,5 +19,10 @@ class Userprofile(BaseModel):
     used_quote = models.BigIntegerField(null=False, default=0)
 
 class UserprofileManager():
-    pass
-    #@classmethod
+
+    @classmethod
+    def get_userprofile_by_id(self, user_id):
+        userprofiles = query(Userprofile, 'gsuser_userprofile', user_id, 'userprofile_s_id', [user_id])
+        if len(list(userprofiles)) > 0:
+            return userprofiles[0]
+        return None
