@@ -16,6 +16,7 @@ class Repos(BaseModel):
     member = models.IntegerField(default=0)
 
 class ReposMember(BaseModel):
+    repos_id = models.IntegerField()
     user_id = models.IntegerField()
     permission = models.SmallIntegerField(default=0)
 

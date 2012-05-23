@@ -55,8 +55,7 @@
                 {% endif %}
                 <dt>加入gitshell</dt>
                 <dd>2012/03/09</dd>
-                <dt>技能</dt>
-                {% for i in ii %}
+                <!--dt>技能</dt>
                 <dd>
                     <a href=""><strong style="font-size: 16px">+</strong></a>
                     <span class="label skills">linux</span><span class="skill-count"> x51</span>
@@ -70,16 +69,13 @@
                     <a style="margin-left: 30px" href="/skills/{{ user.username }}/">更多&gt;&gt;</a>
                     {% endif %}
                 </dd>
-                {% endfor %}
                 <dt>最新</dt>
-                {% for i in jj %}
                 <dd>
                     <a href="">小红</a> 打上 <span class="label skills">linux</span> 标签
                     {% if forloop.last %} 
                         ...
                     {% endif %}
                 </dd>
-                {% endfor %}
                 <dd>
                 <form class="form-inline" action="/{{user.username}}/skills/" method="post">
                     {% csrf_token %}
@@ -87,7 +83,7 @@
                     <button id="id_skills_submit" class="btn hide" type="submit">确定</button>
                     <p id="id_skills_tip" class="hide muted" style="margin-top: 5px">多个技能使用逗号分割，不需要“高级”，“资深”等等形容词</p>
                 </form>
-                </dd>
+                </dd-->
             </dl>
         </div>
         <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">

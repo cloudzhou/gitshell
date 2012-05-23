@@ -10,12 +10,12 @@ class Userprofile(BaseModel):
     resume = models.CharField(max_length=2048, null=True)
     imgurl = models.CharField(max_length=32, null=True)
 
-    pubrepos = models.IntegerField(default=0) 
-    prirepos = models.IntegerField(default=0)
-    watch = models.IntegerField(default=0)
-    be_watched = models.IntegerField(default=0)
-    quote = models.BigIntegerField(default=0)
-    used_quote = models.BigIntegerField(default=0)
+    pubrepos = models.IntegerField(null=False, default=0) 
+    prirepos = models.IntegerField(null=False, default=0)
+    watch = models.IntegerField(null=False, default=0)
+    be_watched = models.IntegerField(null=False, default=0)
+    quote = models.BigIntegerField(null=False, default=67108864)
+    used_quote = models.BigIntegerField(null=False, default=0)
 
 class UserprofileManager():
     pass

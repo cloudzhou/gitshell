@@ -11,6 +11,12 @@ class UserprofileForm(forms.ModelForm):
             'resume': forms.Textarea(attrs={'cols': 50, 'rows': 5}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super(UserprofileForm, self).__init__(*args, **kwargs)
+        for key, field in self.fields.iteritems():
+            if key != 'tweet':
+                self.fields[key].required = False
+
 class DoSshpubkeyForm(forms.Form):
     pubkey_id = forms.IntegerField()
     action = forms.CharField(max_length=12)

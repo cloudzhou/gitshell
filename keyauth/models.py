@@ -1,6 +1,6 @@
 from django.db import models
 from gitshell.objectscache.models import BaseModel
-from gitshell.objectscache.da import query, queryraw, execute, count
+from gitshell.objectscache.da import query, queryraw, execute, count, countraw
 
 class UserPubkey(BaseModel):
     user_id = models.IntegerField(null=False)
@@ -27,7 +27,7 @@ class KeyauthManager():
 
     @classmethod
     def count_userpubkey_by_fingerprint(self, fingerprint):
-        return count('userpubkey_c_fingerprint', [fingerprint])
+        return countraw('userpubkey_c_fingerprint', [fingerprint])
 
     @classmethod
     def get_userpubkey_by_fingerprint(self, fingerprint):
