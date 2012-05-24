@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-  
 import random
 import re
+import base64, hashlib
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.shortcuts import render_to_response
@@ -116,6 +117,10 @@ def join(request, step):
                     if user is not None and user.is_active:
                         auth_login(request, user)
                         cache.delete(step)
+                        userprofile = Userprofile()
+                        userprofile.id = user.id
+                        userprofile.imgurl = hashlib.md5(user.email.lower()).hexdigest()
+                        userprofile.save()
                         return HttpResponseRedirect('/join/3/')
                 error = u'用户名 %s 或者 邮箱 %s 已经注册' % (name, email)
             else:
@@ -174,4 +179,4 @@ def resetpassword(request, step):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-# note: add email unique support ! UNIQUE KEY `email` (`email`) #
+# TODO note: add email unique support ! UNIQUE KEY `email` (`email`) #

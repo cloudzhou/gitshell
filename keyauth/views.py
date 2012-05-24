@@ -47,17 +47,27 @@ def keyauth(request, fingerprint, command):
 
     repos = ReposManager.get_repos_by_userId_name(user.id, reposname)
     if repos is not None:
+        pre_repos_path = '/opt/repos/private'
+        if repos.auth_type == 0:
+            pre_repos_path = '/opt/repos/public' 
         userprofile = UserprofileManager.get_userprofile_by_id(user.id)
         quote = userprofile.quote
-        print quote
+
         userPubkey = KeyauthManager.get_userpubkey_by_userId_fingerprint(user.id, fingerprint)
         if userPubkey is not None:
-            return response_full_git_command(quote, pre_command, username, reposname)
+            return response_full_git_command(quote, pre_command, pre_repos_path, username, reposname)
         # member of repos TODO
     return not_git_command()
 
-def response_full_git_command(quote, pre_command, username, reposname):
-    return HttpResponse("ulimit && ulimit && ulimit && /usr/bin/git-shell -c \"%s '%s/%s'\"" % (pre_command, username, reposname), content_type="text/plain")
+blocks_quote = {67108864 : 16384}
+kbytes_quote = {67108864 : 16384}
+def response_full_git_command(quote, pre_command, pre_repos_path, username, reposname):
+    blocks = 16384
+    kbytes = 16384
+    if quote in blocks_quote:
+        blocks = blocks_quote[quote]
+        kbytes = kbytes_quote[quote]
+    return HttpResponse("ulimit -f %s && ulimit -m %s && ulimit -v %s && /usr/bin/git-shell -c \"%s '%s/%s/%s'\"" % (blocks, kbytes, kbytes, pre_command, pre_repos_path, username, reposname), content_type="text/plain")
 
 def not_git_command():
     return HttpResponse("echo 'fatal: does not appear to be a git command or you have not rights'", content_type="text/plain")

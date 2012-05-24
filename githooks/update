@@ -7,10 +7,9 @@ def main():
     refname = sys.argv[1]
     oldrev  = sys.argv[2]
     newrev  = sys.argv[3]
-    user    = os.getenv('__GITSHELL_USER__', 'nullbody')
     f = open('/tmp/update.hook.log', 'a')
     try:
-        f.write( '%s,%s,%s,%s\n' % ( refname, oldrev, newrev, user) )
+        f.write( '%s,%s,%s,%s\n' % ( refname, oldrev, newrev) )
     finally:
         f.close()
 
