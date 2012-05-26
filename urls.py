@@ -39,7 +39,7 @@ urlpatterns = patterns('gitshell',
 
     # gitshell openssh keyauth and dist, private for subnetwork access by iptables, nginx port 9000
     url(r'^private/keyauth/([A-Za-z0-9:]+)/?$', 'keyauth.views.pubkey'),
-    url(r'^private/keyauth/([A-Za-z0-9:]+)/([A-Za-z0-9_ \-\'"\/]+)/?$', 'keyauth.views.keyauth'),
+    url(r'^private/keyauth/([A-Za-z0-9:]+)/([A-Za-z0-9_ \-\'"\/]+)$', 'keyauth.views.keyauth'),
     url(r'^private/dist/repos/(\w+)/(\w+)/?$', 'dist.views.repos'),
     url(r'^private/dist/refresh/?$', 'dist.views.refresh'),
     url(r'^private/dist/echo/?$', 'dist.views.echo'),

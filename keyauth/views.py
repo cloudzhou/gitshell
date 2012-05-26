@@ -51,18 +51,20 @@ def keyauth(request, fingerprint, command):
         if repos.auth_type == 0:
             pre_repos_path = '/opt/repos/public' 
         userprofile = UserprofileManager.get_userprofile_by_id(user.id)
-        quote = userprofile.quote
+        if userprofile.used_quote > userprofile.quote:
+            return not_git_command()
 
+        quote = userprofile.quote
         userPubkey = KeyauthManager.get_userpubkey_by_userId_fingerprint(user.id, fingerprint)
         if userPubkey is not None:
             return response_full_git_command(quote, pre_command, pre_repos_path, username, reposname)
         # member of repos TODO
     return not_git_command()
 
-blocks_quote = {67108864 : 16384}
+blocks_quote = {67108864 : 32768}
 kbytes_quote = {67108864 : 16384}
 def response_full_git_command(quote, pre_command, pre_repos_path, username, reposname):
-    blocks = 16384
+    blocks = 32768
     kbytes = 16384
     if quote in blocks_quote:
         blocks = blocks_quote[quote]
@@ -70,7 +72,7 @@ def response_full_git_command(quote, pre_command, pre_repos_path, username, repo
     return HttpResponse("ulimit -f %s && ulimit -m %s && ulimit -v %s && /usr/bin/git-shell -c \"%s '%s/%s/%s'\"" % (blocks, kbytes, kbytes, pre_command, pre_repos_path, username, reposname), content_type="text/plain")
 
 def not_git_command():
-    return HttpResponse("echo 'fatal: does not appear to be a git command or you have not rights'", content_type="text/plain")
+    return HttpResponse("echo 'fatal: git repository size limit exceeded or you have not rights or does not appear to be a git command'", content_type="text/plain")
 
 # echo -e "       _ _       _          _ _ \n      (_) |     | |        | | |\n  __ _ _| |_ ___| |__   ___| | |\n / _\` | | __/ __| '_ \ / _ \ | |\n| (_| | | |_\__ \ | | |  __/ | |\n \__, |_|\__|___/_| |_|\___|_|_|\n  __/ |                         \n |___/                          \nusage\n    help: get the help message\n    ls yourname: ls yournam's repos\n    mkdir yourname/reposname: create private repos for user yourname\n"
 

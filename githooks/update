@@ -9,7 +9,7 @@ def main():
     newrev  = sys.argv[3]
     f = open('/tmp/update.hook.log', 'a')
     try:
-        f.write( '%s,%s,%s,%s\n' % ( refname, oldrev, newrev) )
+        f.write( '%s,%s,%s\n' % ( refname, oldrev, newrev) )
     finally:
         f.close()
 
