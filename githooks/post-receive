@@ -5,8 +5,6 @@ import beanstalkc
 
 def main():
     abspath = os.path.abspath(os.path.dirname(__file__))
-    username = get_username(abspath)
-    reposname = get_reposname(abspath)
     rev_ref_arr = []
     max_line_count = 100
     for line in sys.stdin.xreadlines():
@@ -16,27 +14,14 @@ def main():
         rev_ref_arr.append(line.strip().split(' ')) 
     json_map = {}
     json_map['type'] = 0
-    json_map['username'] = username
-    json_map['reposname'] = reposname
+    json_map['abspath'] = abspath
     json_map['revrefarr'] = rev_ref_arr
     send_commit_event(json.dumps(json_map))
 
 def send_commit_event(event):
     beanstalk = beanstalkc.Connection(host='localhost', port=11300)
-    #beanstalk.use('high_priority')
+    beanstalk.use('high_priority')
     beanstalk.put(event) 
-
-def get_username(abspath):
-    first_slash_idx = abspath.rfind('/')
-    second_slash_idx = abspath.rfind('/', 0, first_slash_idx)
-    third_slash_idx = abspath.rfind('/', 0, second_slash_idx)
-    return abspath[third_slash_idx+1 : second_slash_idx]
-
-def get_reposname(abspath):
-    first_slash_idx = abspath.rfind('/')
-    second_slash_idx = abspath.rfind('/', 0, first_slash_idx)
-    third_slash_idx = abspath.rfind('/', 0, second_slash_idx)
-    return abspath[second_slash_idx+1 : first_slash_idx]
 
 if __name__ == '__main__':
     main()
