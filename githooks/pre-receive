@@ -4,12 +4,17 @@ import json
 import beanstalkc
 
 def main():
-    max_line_count = 100
+    max_line_count = 50
     for line in sys.stdin.xreadlines():
+        if len(line) > 1024:
+            return 1
+        array_len = len(line.strip().split(' '))
+        if array_len != 3:
+            return 1
         max_line_count = max_line_count - 1
         if max_line_count < 0:
             return 1
     return 0
 
 if __name__ == '__main__':
-    return main()
+    sys.exit(main())
