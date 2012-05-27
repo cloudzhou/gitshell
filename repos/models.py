@@ -20,8 +20,18 @@ class ReposMember(BaseModel):
     user_id = models.IntegerField()
     permission = models.SmallIntegerField(default=0)
 
-# commit history from git
-# class commit_history(models.Model):
+# commit history from git: commit_hash parent_hashes tree_hash committer author committer_date subject
+# git log -100 --pretty='%h  %p  %t  %an  %cn  %ct  %s'
+class CommitHistory(BaseModel):
+    repos_id = models.IntegerField()
+    commit_hash = models.CharField(max_length=12)
+    parent_hashes = models.CharField(max_length=24)
+    tree_hash = models.CharField(max_length=12)
+    committer = models.CharField(max_length=30)
+    author = models.CharField(max_length=30)
+    committer_date = models.DateTimeField(auto_now=True)
+    subject = models.CharField(max_length=512)
+    #refname = models.CharField(max_length=32)
 
 class WatchHistory(BaseModel):
     repos_id = models.IntegerField()

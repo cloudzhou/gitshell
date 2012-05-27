@@ -12,7 +12,6 @@ def main():
     while not exit_flag:
         event_job = beanstalk.reserve()
         do_event(event_job.body)
-        print event_job.body
         event_job.delete()
 
 def do_event(event_job):
@@ -30,7 +29,7 @@ def do_event(event_job):
             refname = rev_ref[2]
             diff_tree_blob_size_params.extend(rev_ref)
             if refname == 'refs/heads/master': 
-                update_commits(oldrev, newrev, refname)
+                update_commits(abspath, oldrev, newrev)
         update_quote(abspath, diff_tree_blob_size_params)
         return
     if etype == 1:
@@ -41,12 +40,17 @@ def do_event(event_job):
 def update_quote(abspath, parameters):
     args = ['/opt/run/bin/diff-tree-blob-size.sh', abspath]
     args.extend(parameters)
-    print args
-    result = Popen(args, stdout=PIPE, close_fds=True).communicate()[0]
-    print result
+    popen = Popen(args, stdout=PIPE, close_fds=True)
+    result = popen.communicate()[0].strip()
+    if popen.returncode == 0:
+        print result
 
-def update_commits(oldrev, newrev, refname):
-    pass
+def update_commits(abspath, oldrev, newrev):
+    args = ['/opt/run/bin/git-pretty-log.sh', abspath, oldrev, newrev]
+    popen = Popen(args, stdout=PIPE, close_fds=True)
+    result = popen.communicate()[0].strip()
+    if popen.returncode == 0:
+        print result
 
 if __name__ == '__main__':
     main()
