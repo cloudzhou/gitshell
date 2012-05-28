@@ -5,21 +5,9 @@ if [ $# -lt 4 ]; then
 fi
 
 args=("$@")
-# abspath is the hooks path
+# abspath is the repos path
 abspath=${args[0]}
-# private and public move
-if [ ! -e $abspath ]; then
-    private=`echo $abspath | egrep -c '^/opt/repos/private/'`
-    if [ $private -gt 0 ]; then
-        abspath=`echo $abspath | sed 's:^/opt/repos/private/:/opt/repos/public/:'`
-    else
-        abspath=`echo $abspath | sed 's:^/opt/repos/public/:/opt/repos/private/:'`
-    fi
-    if [ ! -e $abspath ]; then
-        return 0
-    fi
-fi
-cd $abspath && cd ..
+cd $abspath
 
 index=1
 size=0
@@ -39,7 +27,7 @@ while [ $index -lt $# ]; do
     /usr/bin/git diff-tree --raw -r -c -M -C --no-commit-id $oldrev $newrev |\
     head -n 100 |\
     awk '{print $4}' > $tempfile
-    total_line=`cat $tempfile|wc -l`
+    total_line=`wc -l $tempfile | awk '{print $1}'`
     if [ $total_line -ge 100 ]; then
         du_size=`du -sb .`
         break

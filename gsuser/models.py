@@ -26,3 +26,4 @@ class UserprofileManager():
         if len(list(userprofiles)) > 0:
             return userprofiles[0]
         return None
+

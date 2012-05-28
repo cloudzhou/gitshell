@@ -29,9 +29,24 @@ class CommitHistory(BaseModel):
     tree_hash = models.CharField(max_length=12)
     committer = models.CharField(max_length=30)
     author = models.CharField(max_length=30)
-    committer_date = models.DateTimeField(auto_now=True)
+    author_id = models.IntegerField()
+    committer_date = models.DateTimeField()
     subject = models.CharField(max_length=512)
     #refname = models.CharField(max_length=32)
+
+    @classmethod
+    def create(self, repos_id, commit_hash, parent_hashes, tree_hash, committer, author, author_id, committer_date, subject):
+        return CommitHistory(
+            repos_id = repos_id,
+            commit_hash = commit_hash,
+            parent_hashes = parent_hashes,
+            tree_hash = tree_hash,
+            committer = committer,
+            author = author,
+            author_id = author_id,
+            committer_date = committer_date,
+            subject = subject
+        )
 
 class WatchHistory(BaseModel):
     repos_id = models.IntegerField()
