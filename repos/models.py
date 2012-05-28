@@ -8,7 +8,7 @@ class Repos(BaseModel):
     desc = models.CharField(max_length=512, default='')
     lang = models.CharField(max_length=16)
     auth_type = models.SmallIntegerField(default=0)
-    quote = models.BigIntegerField(default=0)
+    used_quote = models.BigIntegerField(default=0)
 
     commit = models.IntegerField(default=0)
     watch = models.IntegerField(default=0)

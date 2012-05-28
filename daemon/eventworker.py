@@ -64,7 +64,7 @@ def update_quote(user, gsuser, repos, repospath, parameters):
         if result.startswith('+') or result.startswith('-'):
             diff_size = int(result)
         else:
-            diff_size = int(result) - repos.quote
+            diff_size = int(result) - repos.used_quote
     update_gsuser_repos_quote(gsuser, repos, diff_size)
 
 def bulk_create_commits(user, gsuser, repos, repospath, oldrev, newrev):
@@ -78,7 +78,9 @@ def bulk_create_commits(user, gsuser, repos, repospath, oldrev, newrev):
             if len(items) >= 6 and re.match('^\d+$', items[5]):
                 committer_date = datetime.fromtimestamp(int(items[5])) 
                 # TODO
-                commitHistory = CommitHistory.create(repos.id, items[0], items[1][0:24], items[2], items[3][0:30], items[4][0:30], 0, committer_date, items[6][0:512])
+                author_name = items[3][0:30]
+                author_uid = 0
+                commitHistory = CommitHistory.create(repos.id, items[0], items[1][0:24], items[2], author_name, items[4][0:30], author_uid, committer_date, items[6][0:512])
                 commitHistorys.append(commitHistory)
     if len(commitHistorys) > 0:
         CommitHistory.objects.bulk_create(commitHistorys)
@@ -117,8 +119,8 @@ def get_repospath(user, repos):
         return ('/opt/repos/private/%s/%s.git') % (user.username, repos.name)
 
 def update_gsuser_repos_quote(gsuser, repos, diff_size):
-    gsuser.quote = gsuser.quote + diff_size
-    repos.quote = repos.quote + diff_size
+    gsuser.used_quote = gsuser.used_quote + diff_size
+    repos.used_quote = repos.used_quote + diff_size
     gsuser.save()
     repos.save()
 
