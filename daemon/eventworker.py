@@ -16,7 +16,11 @@ def main():
     exit_flag = False
     while not exit_flag:
         event_job = beanstalk.reserve()
-        do_event(event_job.body)
+        try:
+            do_event(event_job.body)
+        except Exception, e:
+            print 'do_event catch except, event: %s' % event_job.body
+            print 'exception: %s' % e
         event_job.delete()
 
 # abspath is the repos hooks directory
