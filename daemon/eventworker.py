@@ -7,6 +7,7 @@ from subprocess import Popen
 from subprocess import PIPE
 from datetime import datetime
 from django.contrib.auth.models import User
+from gitshell.settings import PRIVATE_REPOS_PATH, PUBLIC_REPOS_PATH
 from gitshell.gsuser.models import Userprofile, UserprofileManager
 from gitshell.repos.models import CommitHistory, Repos, ReposManager
 
@@ -118,9 +119,9 @@ def get_repos(user, reposname):
 
 def get_repospath(user, repos):
     if repos.auth_type == 0:
-        return ('/opt/repos/public/%s/%s.git') % (user.username, repos.name)
+        return ('%s/%s/%s.git') % (PUBLIC_REPOS_PATH, user.username, repos.name)
     else:
-        return ('/opt/repos/private/%s/%s.git') % (user.username, repos.name)
+        return ('%s/%s/%s.git') % (PRIVATE_REPOS_PATH, user.username, repos.name)
 
 def update_gsuser_repos_quote(gsuser, repos, diff_size):
     gsuser.used_quote = gsuser.used_quote + diff_size

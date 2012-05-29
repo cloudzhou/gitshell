@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from gitshell.repos.models import ReposManager
 from gitshell.gsuser.models import UserprofileManager
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
+from gitshell.settings import PRIVATE_REPOS_PATH, PUBLIC_REPOS_PATH
 from gitshell.dist.views import repos as dist_repos
 
 def pubkey(request, fingerprint):
@@ -47,9 +48,9 @@ def keyauth(request, fingerprint, command):
 
     repos = ReposManager.get_repos_by_userId_name(user.id, reposname)
     if repos is not None:
-        pre_repos_path = '/opt/repos/private'
+        pre_repos_path = PRIVATE_REPOS_PATH
         if repos.auth_type == 0:
-            pre_repos_path = '/opt/repos/public' 
+            pre_repos_path = PUBLIC_REPOS_PATH
         userprofile = UserprofileManager.get_userprofile_by_id(user.id)
         if userprofile.used_quote > userprofile.quote:
             return not_git_command()

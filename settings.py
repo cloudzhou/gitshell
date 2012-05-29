@@ -136,3 +136,6 @@ LOGGING = {
         },
     }
 }
+
+PRIVATE_REPOS_PATH = '/opt/repos/private'
+PUBLIC_REPOS_PATH = '/opt/repos/public'
