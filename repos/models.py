@@ -49,10 +49,12 @@ class CommitHistory(BaseModel):
         )
 
 class WatchHistory(BaseModel):
-    repos_id = models.IntegerField()
-    user_id = models.IntegerField()
+    user_id = models.IntegerField(default=0)
+    watch_repos_id = models.IntegerField(default=0)
+    watch_user_id = models.IntegerField(default=0)
 
 class ForkHistory(BaseModel):
+    user_id = models.IntegerField(default=0)
     repos_id = models.IntegerField()
     fork_repos_id = models.IntegerField()
 

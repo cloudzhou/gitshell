@@ -139,3 +139,6 @@ LOGGING = {
 
 PRIVATE_REPOS_PATH = '/opt/repos/private'
 PUBLIC_REPOS_PATH = '/opt/repos/public'
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379
+REDIS_SOCKET_TIMEOUT = 3
