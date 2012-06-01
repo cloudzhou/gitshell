@@ -16,12 +16,6 @@ from gitshell.gsuser.Forms import LoginForm, JoinForm0, JoinForm1, Resetpassword
 from gitshell.gsuser.models import Userprofile
 
 @login_required
-def home(request):
-    response_dictionary = {'hello_world': 'hello world', 'ii': range(0, 4)}
-    return render_to_response('user/home.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-@login_required
 def user(request, user_name):
     skillsForm = SkillsForm()
     recommendsForm = RecommendsForm()

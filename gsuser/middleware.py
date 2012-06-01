@@ -7,6 +7,7 @@ from gitshell.gsuser.models import Userprofile
 def get_userprofile(request):
     if not hasattr(request, '_cached_userprofile'):
         if request.user.is_authenticated():
+            # TODO from cache
             request._cached_userprofile = Userprofile.objects.get(id = request.user.id)
     return request._cached_userprofile
 
@@ -20,6 +21,5 @@ def userprofile(request):
         userprofile = request.userprofile
     else:
         userprofile = Userprofile()
-
     return {'userprofile': userprofile }
 

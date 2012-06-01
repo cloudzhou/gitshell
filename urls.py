@@ -17,7 +17,12 @@ urlpatterns = patterns('gitshell',
     url(r'^stats/?$', 'stats.views.stats'),
 
     # gsuser
-    url(r'^home/?$', 'gsuser.views.home'),
+    url(r'^home/?$', 'feed.views.home'),
+    url(r'^home/feed/?$', 'feed.views.feed'),
+    url(r'^home/git/?$', 'feed.views.git'),
+    url(r'^home/issues/?$', 'feed.views.issues'),
+    url(r'^home/explore/?$', 'feed.views.explore'),
+    url(r'^home/notif/?$', 'feed.views.notif'),
     url(r'^login/?$', 'gsuser.views.login'),
     url(r'^logout/?$', 'gsuser.views.logout'),
     url(r'^join/?(\w+)?/?$', 'gsuser.views.join'),

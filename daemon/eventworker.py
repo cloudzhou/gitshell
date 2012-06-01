@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import re
+import re, time
 import os, sys
 import json
 import beanstalkc
@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from gitshell.settings import PRIVATE_REPOS_PATH, PUBLIC_REPOS_PATH
 from gitshell.gsuser.models import Userprofile, UserprofileManager
 from gitshell.repos.models import CommitHistory, Repos, ReposManager
+from gitshell.feed.feed import FeedAction
 
 def main():
     beanstalk = beanstalkc.Connection(host='localhost', port=11300)
@@ -50,6 +51,7 @@ def do_event(event_job):
             newrev = rev_ref[1]
             refname = rev_ref[2]
             diff_tree_blob_size_params.extend(rev_ref)
+            # TODO why master?
             if refname == 'refs/heads/master': 
                 bulk_create_commits(user, gsuser, repos, repospath, oldrev, newrev)
         update_quote(user, gsuser, repos, repospath, diff_tree_blob_size_params)
@@ -87,8 +89,19 @@ def bulk_create_commits(user, gsuser, repos, repospath, oldrev, newrev):
                 author_uid = 0
                 commitHistory = CommitHistory.create(repos.id, items[0], items[1][0:24], items[2], author_name, items[4][0:30], author_uid, committer_date, items[6][0:512])
                 commitHistorys.append(commitHistory)
-    if len(commitHistorys) > 0:
-        CommitHistory.objects.bulk_create(commitHistorys)
+    for commitHistory in commitHistorys:
+        commitHistory.save()
+    feedAction = FeedAction()
+    feed_key_values = []
+    for commitHistory in commitHistorys:
+        feed_key_values.append(-float(time.mktime(commitHistory.committer_date.timetuple())))
+        feed_key_values.append(commitHistory.id)
+    # total private repos the feed is private
+    if repos.auth_type == 2:
+        feedAction.madd_pri_user_feed(user.id, feed_key_values)
+    else:
+        feedAction.madd_pub_user_feed(user.id, feed_key_values)
+    feedAction.madd_repos_feed(repos.id, feed_key_values)
 
 def get_username_reposname(abspath):
     rfirst_slash_idx = abspath.rfind('/')

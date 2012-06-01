@@ -7,22 +7,19 @@
 </div>
 <div class="page-header" style="padding-bottom: 0px; border-bottom: 0px">
         <ul class="nav nav-tabs">
-            <li class="active"><a href="#">Feed</a></li>
-            <li><a href="#">Git 历史</a></li>
-            <li><a href="#">issues</a></li>
-            <li><a href="#">查看最新</a></li>
-            <li><a href="#">通知 ( 1 )</a></li>
+            <li {% if current == 'feed' %} class="active" {% endif %}><a href="/home/feed/">Feed</a></li>
+            <li {% if current == 'git' %} class="active" {% endif %}><a href="/home/git/">Git 历史</a></li>
+            <li {% if current == 'issues' %} class="active" {% endif %}><a href="/home/issues/">Issues</a></li>
+            <li {% if current == 'explore' %} class="active" {% endif %}><a href="/home/explore/">查看最新</a></li>
+            <li {% if current == 'notif' %} class="active" {% endif %}><a href="/home/notif/">通知 ( 1 )</a></li>
         </ul>
 </div>
-{% for i in ii %}
 <div class="row" style="">
     <div class="span7">
-        {% if i  == 0 or i == 1  %}
         <div class="page-header" style="margin: 0px; padding-bottom: 10px">
             <h4 class="muted">今天</h4>
         </div>
-        {% endif %}
-        <div class="c_repos" style="padding: 10px;">
+        <div class="feedtime" style="padding: 10px;">
             <h3>
             <img style="margin-right: 10px" src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=32"/>
             <a href="/{{ user.username }}/">{{ user.username }}</a>...
@@ -46,22 +43,23 @@
         </div>
     </div>
 </div>
-{% endfor %}
 {% endblock %}
 {% block js %}
 <script src="/static/js/flot/jquery.flot.min.js"></script>
 <script>
 /*global jQuery, window */
 $(function(){
-    var resume_md_converter = function() {
+    var orgi_feeds = {{ feeds_as_json|safe }}
+    var sorted_feeds = []
+    var sort_orgi_feeds = function() {
     };
-    resume_md_converter();
-    $('.c_repos').hover(function() {
+    sort_orgi_feeds();
+    $('.feedtime').hover(function() {
         $(this).css('background-color', '#D9EDF7');
     }, function(){
         $(this).css('background-color', '#FFFFFF');
     });
-    $('.c_repos').tooltip({
+    $('.feedtime').tooltip({
       selector: "a[rel=tooltip]"
     })
 });
