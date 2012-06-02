@@ -29,7 +29,19 @@ rawsql = {
 }
 
 def get_many(model, table, pids):
-    pass
+    if len(pids) == 0:
+        return []
+    ids_key = get_ids_key(table, pids)
+    cache_objs_map = cache.get_many(ids_key)
+    many_objects = [cache_objs_map[key] for key in cache_objs_map]
+    uncache_ids_key = list( set(ids_key) - set(cache_objs_map.keys()) )
+    uncache_ids = get_uncache_ids(uncache_ids_key)
+    
+    if len(uncache_ids) > 0:
+        objects = model.objects.filter(id__in=uncache_ids)
+        add_many(table, objects)
+        many_objects.extend(objects)
+    return many_objects
 
 def get(model, table, pid):
     id_key = get_id_key(table, pid)
@@ -41,8 +53,7 @@ def get(model, table, pid):
     return obj
 
 def query(model, table, pt_id, rawsql_id, parameters):
-    return model.objects.raw(rawsql[rawsql_id], parameters)
-
+    return model.objects.raw(rawsql[rawsql_id], parameters) 
     if pt_id == None:
         return model.objects.raw(rawsql[rawsql_id], parameters)
     ver_key = get_ver_key(table, pt_id)
@@ -96,6 +107,9 @@ def get_id_key(table, id):
 def get_ids_key(table, ids):
     return [get_id_key(table, id) for id in ids]
 
-def get_un_cache_ids(un_cache_ids_key):
-    return [key.split('|')[1] for key in un_cache_ids_key] 
+def get_uncache_ids(uncache_ids_key):
+    return [key.split('|')[1] for key in uncache_ids_key] 
 
+def add_many(table, objects):
+    for sobject in objects: 
+        cache.add(get_id_key(table, sobject.id), sobject)

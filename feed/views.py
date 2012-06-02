@@ -1,10 +1,12 @@
 #!/user/bin/python
 # -*- coding: utf-8 -*-  
+import re, json, time
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.feed.feed import FeedAction
+from gitshell.repos.models import ReposManager
 
 @login_required
 def home(request):
@@ -18,6 +20,31 @@ def feed(request):
     return render_to_response('user/home.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+@login_required
+def feedbyids(request):
+    ids_str = request.POST.get('ids_str', '')
+    feeds = []
+    if re.match('^\w+$', ids_str):
+        feeds = get_feeds(ids_str)
+    response_dictionary = {'feeds': feeds}
+    return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
+
+def get_feeds(ids_str):
+    feeds = []
+    ids = []
+    for idstr in ids_str.split('_'):
+        if re.match('^\d+$', idstr):
+            ids.append(int(idstr))
+    commits = ReposManager.get_commits_by_ids(ids)
+    for commit in commits:
+        feed = {}
+        feed['commit_hash'] = commit.commit_hash
+        feed['author'] = commit.author
+        feed['committer_date'] = time.mktime(commit.committer_date.timetuple())
+        feed['subject'] = commit.subject
+        feeds.append(feed)
+    return feeds
+
 @login_required
 def git(request):
     current = 'git'

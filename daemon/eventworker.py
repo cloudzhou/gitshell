@@ -93,6 +93,7 @@ def bulk_create_commits(user, gsuser, repos, repospath, oldrev, newrev):
         commitHistory.save()
     feedAction = FeedAction()
     feed_key_values = []
+    # TODO not user.id but author.id
     for commitHistory in commitHistorys:
         feed_key_values.append(-float(time.mktime(commitHistory.committer_date.timetuple())))
         feed_key_values.append(commitHistory.id)

@@ -27,19 +27,18 @@
             <div style="margin-left: 50px;">
                 <p>commit 到 <a href="">gitshell</a></p>
                 <ul>
-                    <li><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-) <span class="muted pull-right">三个小时前</span></li>
-                    <li><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-) <span class="muted pull-right">三个小时前</span></li>
-                    <li><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-) <span class="muted pull-right">三个小时前</span></li>
+                    <li style="margin: 1px"><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-) <span class="muted pull-right">三个小时前</span></li>
                 </ul>
             </div>
             <div style="margin-left: 50px;">
                 <p>commit 到 <a href="">gitshellstatic</a></p>
                 <ul>
-                    <li><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-) <span class="muted pull-right">三个小时前</span></li>
-                    <li><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-) <span class="muted pull-right">三个小时前</span></li>
-                    <li><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-) <span class="muted pull-right">三个小时前</span></li>
+                    <li style="margin: 1px"><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-) <span class="muted pull-right">三个小时前</span></li>
                 </ul>
             </div>
+        </div>
+        <div class="page-header" style="margin: 0px; padding-bottom: 10px">
+            <h4 class="muted">昨天</h4>
         </div>
     </div>
 </div>
@@ -52,6 +51,40 @@ $(function(){
     var orgi_feeds = {{ feeds_as_json|safe }}
     var sorted_feeds = []
     var sort_orgi_feeds = function() {
+        all_ids = []
+        all_feeds = []
+        for (x in orgi_feeds) {
+            all_feeds = all_feeds.concat(orgi_feeds[x]);
+        } 
+        all_feeds.sort(function(a,b) {
+            return a[1]-b[1];
+        })
+        var i = 0;
+        var pre_feed_id = 0;
+        for (x in all_feeds) {
+            feed_id = all_feeds[x][0]
+            if(pre_feed_id != feed_id) {
+                i++;
+                all_ids.push(feed_id);
+            }
+            pre_feed_id = feed_id
+            if(i >= 100) { break; }
+        }
+        all_ids_str = all_ids.join('_');
+        $.ajax({
+            url: '/ajax/feed/ids/',
+            type: 'POST',
+            data: {'ids_str': all_ids_str, csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 5000,
+            error: function(){
+                alert('Error loading Json document');
+            },
+            success: function(json){
+                console.log(json);
+            }
+        });
+        console.log(all_ids_str);
     };
     sort_orgi_feeds();
     $('.feedtime').hover(function() {

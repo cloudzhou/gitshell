@@ -1,6 +1,6 @@
 from django.db import models
 from gitshell.objectscache.models import BaseModel
-from gitshell.objectscache.da import query, queryraw, execute, count
+from gitshell.objectscache.da import query, queryraw, execute, count, get_many
 
 class Repos(BaseModel):
     user_id = models.IntegerField()
@@ -29,7 +29,7 @@ class CommitHistory(BaseModel):
     tree_hash = models.CharField(max_length=12)
     committer = models.CharField(max_length=30)
     author = models.CharField(max_length=30)
-    author_id = models.IntegerField()
+    author_id = models.IntegerField(default=0)
     committer_date = models.DateTimeField()
     subject = models.CharField(max_length=512)
     #refname = models.CharField(max_length=32)
@@ -80,3 +80,6 @@ class ReposManager():
     def count_repos_by_userId(self, user_id):
         pass
 
+    @classmethod
+    def get_commits_by_ids(self, ids):
+        return get_many(CommitHistory, 'repos_commithistory', ids)
