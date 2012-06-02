@@ -119,4 +119,3 @@ class FeedAction():
 if __name__ == '__main__':
     feedAction = FeedAction()
     print feedAction.get_pri_user_feeds(1, 0, -1)
-{{ feeds_as_json }}
