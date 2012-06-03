@@ -16,6 +16,7 @@
 </div>
 <div class="row" style="">
     <div id='feeds_container' class="span7">
+    <img id='feeds_loading' style="margin-left: 50px" src='/static/img/loading.gif'>
     </div>
 </div>
 {% endblock %}
@@ -56,7 +57,7 @@ $(function(){
             dataType: 'json',
             timeout: 5000,
             error: function(){
-                alert('Error loading Json document');
+                //alert('');
             },
             success: function(json){
                 ordered_date = []
@@ -103,6 +104,7 @@ $(function(){
                 if(ordered_date.length == 0) {
                     $('#feeds_container').append('还没有提交信息');
                 }
+                $('#feeds_loading').remove()
             }
         });
     };
