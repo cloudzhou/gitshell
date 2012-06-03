@@ -15,49 +15,27 @@
         </ul>
 </div>
 <div class="row" style="">
-    <div class="span7">
-        <div class="page-header" style="margin: 0px; padding-bottom: 10px">
-            <h4 class="muted">今天</h4>
-        </div>
-        <div class="feedtime" style="padding: 10px;">
-            <h3>
-            <img style="margin-right: 10px" src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=32"/>
-            <a href="/{{ user.username }}/">{{ user.username }}</a>...
-            </h3>
-            <div style="margin-left: 50px;">
-                <p>commit 到 <a href="">gitshell</a></p>
-                <ul>
-                    <li style="margin: 1px"><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-) <span class="muted pull-right">三个小时前</span></li>
-                </ul>
-            </div>
-            <div style="margin-left: 50px;">
-                <p>commit 到 <a href="">gitshellstatic</a></p>
-                <ul>
-                    <li style="margin: 1px"><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-) <span class="muted pull-right">三个小时前</span></li>
-                </ul>
-            </div>
-        </div>
-        <div class="page-header" style="margin: 0px; padding-bottom: 10px">
-            <h4 class="muted">昨天</h4>
-        </div>
+    <div id='feeds_container' class="span7">
     </div>
 </div>
 {% endblock %}
 {% block js %}
-<script src="/static/js/flot/jquery.flot.min.js"></script>
+<script src="/static/js/moment.min.js"></script>
+<script src="/static/js/moment.zh-cn.js"></script>
 <script>
 /*global jQuery, window */
 $(function(){
+    moment.lang('zh-cn');
     var orgi_feeds = {{ feeds_as_json|safe }}
     var sorted_feeds = []
-    var sort_orgi_feeds = function() {
+    var do_orgi_feeds = function() {
         all_ids = []
         all_feeds = []
         for (x in orgi_feeds) {
             all_feeds = all_feeds.concat(orgi_feeds[x]);
         } 
         all_feeds.sort(function(a,b) {
-            return a[1]-b[1];
+            return a[1] - b[1];
         })
         var i = 0;
         var pre_feed_id = 0;
@@ -81,12 +59,54 @@ $(function(){
                 alert('Error loading Json document');
             },
             success: function(json){
-                console.log(json);
+                ordered_date = []
+                ordered_date_reposname = {}
+                display_feeds_map = {}
+                feeds = json.feeds
+                gravatarmap = json.gravatarmap
+                feeds.sort(function(a,b) {
+                    return b.committer_date - a.committer_date;
+                })
+                for(x in feeds) {
+                    feed = feeds[x];
+                    feed_date_str = moment(new Date(feed.committer_date*1000)).format('MM/DD');
+                    feed_repos_name = feed.repos_name;
+                    if(!display_feeds_map[feed_date_str]) {
+                        ordered_date.push(feed_date_str);
+                        display_feeds_map[feed_date_str] = {};
+                    }
+                    if(!display_feeds_map[feed_date_str][feed_repos_name]) {
+                        if(!ordered_date_reposname[feed_date_str]) {
+                            ordered_date_reposname[feed_date_str] = [];
+                        }
+                        ordered_date_reposname[feed_date_str].push(feed_repos_name);
+                        display_feeds_map[feed_date_str][feed_repos_name] = [];
+                    }
+                    display_feeds_map[feed_date_str][feed_repos_name].push(feed);
+                }
+                html = []
+                for(x in ordered_date) {
+                    feed_date = ordered_date[x];
+                    html.push('<div class="page-header" style="margin: 0px; padding-bottom: 10px"><h4 class="muted"> ' + feed_date + ' </h4></div><div class="feedtime" style="padding: 10px;"><h3><img style="margin-right: 10px" src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=32"/><a href="/{{ user.username }}/">{{ user.username }}</a>...</h3>');
+                    for(y in ordered_date_reposname[ordered_date[x]]) {
+                        feed_reposname = ordered_date_reposname[ordered_date[x]][y];
+                        html.push('<div style="margin-left: 50px;"><p>commit 到 <a href="">' + feed_reposname + '</a></p><ul>');
+                        for(z in display_feeds_map[feed_date][feed_reposname]) {
+                            feed = display_feeds_map[feed_date][feed_reposname][z];
+                            html.push('<li style="margin: 1px"><code><a href="">' + feed.commit_hash + '</a></code> ' + feed.subject + ' <span class="muted pull-right">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></li>');
+                        }
+                        html.push('</ul></div>');
+                    }
+                    html.push('</div>')
+                }
+                $('#feeds_container').append(html.join(''));
+                if(ordered_date.length() == 0) {
+                    $('#feeds_container').append('还没有提交信息');
+                }
             }
         });
-        console.log(all_ids_str);
     };
-    sort_orgi_feeds();
+    do_orgi_feeds();
     $('.feedtime').hover(function() {
         $(this).css('background-color', '#D9EDF7');
     }, function(){

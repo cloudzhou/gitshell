@@ -24,6 +24,7 @@ class ReposMember(BaseModel):
 # git log -100 --pretty='%h  %p  %t  %an  %cn  %ct  %s'
 class CommitHistory(BaseModel):
     repos_id = models.IntegerField()
+    repos_name = models.CharField(max_length=64)
     commit_hash = models.CharField(max_length=12)
     parent_hashes = models.CharField(max_length=24)
     tree_hash = models.CharField(max_length=12)
@@ -35,9 +36,10 @@ class CommitHistory(BaseModel):
     #refname = models.CharField(max_length=32)
 
     @classmethod
-    def create(self, repos_id, commit_hash, parent_hashes, tree_hash, committer, author, author_id, committer_date, subject):
+    def create(self, repos_id, repos_name, commit_hash, parent_hashes, tree_hash, committer, author, author_id, committer_date, subject):
         return CommitHistory(
             repos_id = repos_id,
+            repos_name = repos_name,
             commit_hash = commit_hash,
             parent_hashes = parent_hashes,
             tree_hash = tree_hash,

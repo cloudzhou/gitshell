@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User, UserManager
 from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, queryraw, execute, count, countraw
 
@@ -26,4 +27,11 @@ class UserprofileManager():
         if len(list(userprofiles)) > 0:
             return userprofiles[0]
         return None
-
+    
+    @classmethod
+    def get_userprofile_by_name(self, username):
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return None 
+        return self.get_userprofile_by_id(user.id)

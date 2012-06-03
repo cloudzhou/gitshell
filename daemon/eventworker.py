@@ -87,7 +87,7 @@ def bulk_create_commits(user, gsuser, repos, repospath, oldrev, newrev):
                 # TODO
                 author_name = items[3][0:30]
                 author_uid = 0
-                commitHistory = CommitHistory.create(repos.id, items[0], items[1][0:24], items[2], author_name, items[4][0:30], author_uid, committer_date, items[6][0:512])
+                commitHistory = CommitHistory.create(repos.id, repos.name, items[0], items[1][0:24], items[2], author_name, items[4][0:30], author_uid, committer_date, items[6][0:512])
                 commitHistorys.append(commitHistory)
     for commitHistory in commitHistorys:
         commitHistory.save()

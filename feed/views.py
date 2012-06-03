@@ -1,12 +1,14 @@
 #!/user/bin/python
 # -*- coding: utf-8 -*-  
 import re, json, time
+from sets import Set
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.feed.feed import FeedAction
 from gitshell.repos.models import ReposManager
+from gitshell.gsuser.models import UserprofileManager
 
 @login_required
 def home(request):
@@ -26,8 +28,22 @@ def feedbyids(request):
     feeds = []
     if re.match('^\w+$', ids_str):
         feeds = get_feeds(ids_str)
-    response_dictionary = {'feeds': feeds}
+    gravatarmap = get_gravatarmap(feeds)
+    response_dictionary = {'feeds': feeds, 'gravatarmap': gravatarmap}
     return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
+
+def get_gravatarmap(feeds):
+    gravatarmap = {}
+    for feed in feeds:
+        username = feed['author']
+        if username not in gravatarmap:
+            userprofile = UserprofileManager.get_userprofile_by_name(username)
+            if userprofile is not None:
+                gravatarmap[username] = userprofile.imgurl
+                continue
+            gravatarmap[username] = 'None'
+    return gravatarmap
+    
 
 def get_feeds(ids_str):
     feeds = []
@@ -38,6 +54,8 @@ def get_feeds(ids_str):
     commits = ReposManager.get_commits_by_ids(ids)
     for commit in commits:
         feed = {}
+        feed['id'] = commit.id
+        feed['repos_name'] = commit.repos_name
         feed['commit_hash'] = commit.commit_hash
         feed['author'] = commit.author
         feed['committer_date'] = time.mktime(commit.committer_date.timetuple())
