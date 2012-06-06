@@ -23,7 +23,7 @@ rawsql = {
     'repos_s_userId_name':
         'select * from repos_repos where visibly = 0 and user_id = %s and name = %s limit 0, 1',
     'repos_l_userId':
-        'select * from repos_repos where visibly = 0 and user_id = %s order by modify_time limit %s, %s',
+        'select * from repos_repos where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
     'repos_c_userId':
         'select 0 as id, count(1) as count from repos_repos where visibly = 0 and user_id = %s',
 }

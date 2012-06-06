@@ -6,14 +6,26 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render_to_response
+from gitshell.feed.feed import FeedAction
 from gitshell.repos.Forms import ReposForm
 from gitshell.repos.models import Repos, ReposManager
 from gitshell.settings import PRIVATE_REPOS_PATH, PUBLIC_REPOS_PATH, GIT_BARE_REPOS_PATH
 
 @login_required
 def repos(request, user_name):
-    repos_list = ReposManager.list_repos_by_userId(request.user.id, 0, 20)
-    response_dictionary = {'user_name': user_name, 'repos_list': repos_list }
+    return repos_paging(request, user_name, 0)
+
+@login_required
+def repos_paging(request, user_name, pagenum):
+    repos_list = ReposManager.list_repos_by_userId(request.user.id, 0, 25)
+    repos_commit_map = {}
+    feedAction = FeedAction()
+    for repos in repos_list:
+        repos_commit_map[str(repos.name)] = []
+        feeds = feedAction.get_repos_feeds(repos.id, 0, 4)
+        for feed in feeds:
+            repos_commit_map[str(repos.name)].append(feed[0])
+    response_dictionary = {'user_name': user_name, 'repos_list': repos_list, 'repos_commit_map': repos_commit_map}
     return render_to_response('repos/repos.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

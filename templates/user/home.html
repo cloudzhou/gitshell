@@ -2,10 +2,7 @@
 {% block css %}
 {% endblock %}
 {% block container %}
-<div class="page-header" style="padding-bottom: 0px; border-bottom: 0px">
-    <h1>:-), {{ user.username }}的首页</h1>
-</div>
-<div class="page-header" style="padding-bottom: 0px; border-bottom: 0px">
+<div class="page-header" style="padding-bottom: 0px; border-bottom: 0px; margin-top: 0px;">
         <ul class="nav nav-tabs">
             <li {% if current == 'feed' %} class="active" {% endif %}><a href="/home/feed/">Feed</a></li>
             <li {% if current == 'git' %} class="active" {% endif %}><a href="/home/git/">Git 历史</a></li>

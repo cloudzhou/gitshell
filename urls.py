@@ -60,6 +60,7 @@ urlpatterns = patterns('gitshell',
     url(r'^(\w+)/?$', 'gsuser.views.user'),
     # repos
     url(r'^(\w+)/repos/?$', 'repos.views.repos'),
+    url(r'^(\w+)/repos/(\d+)/?$', 'repos.views.repos_paging'),
     url(r'^\w+/repos/edit/(\d+)/?$', 'repos.views.edit'),
     url(r'^(\w+)/(\w+)/?$', 'repos.views.user_repos'),
 )
