@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block css %}
+{% endblock %}
+{% block container %}
+<div class="page-header" style="margin-bottom: 18px; height: 52px; padding-bottom: 0px;">
+        <h1 style="float: left; margin-right: 30px">:-), {{ user_name }}的仓库列表</h1><div style="float: left" class="btn-group">
+          <button data-toggle="dropdown" class="btn btn-small dropdown-toggle">查看列表 <span class="caret"></span></button>
+          <ul class="dropdown-menu">
+            {% for repos in repos_list %}
+            <li><a href="/{{ user_name }}/{{ repos.name }}/">{{ repos.name }}</a></li>
+            {% endfor %}
+            <li class="divider"></li>
+            <li><a href="/{{ user.username }}/repos/edit/0/">+ 创建新的仓库</a></li>
+            <li><a href="/settings/repos/">+ 更多仓库管理</a></li>
+          </ul>
+</div>
+</div>
+{% load humanize %}
+{% for repos in repos_list %}
+<div class="row" style="margin: 10px;">
+    <div class="span7">
+        <div class="c_repos" style="padding: 10px;">
+            <h3>☺ <a href="/{{ user_name }}/">{{ user_name }}</a> / 
+            <a href="/{{ user_name }}/{{ repos.name }}/">{{ repos.name }}</a>
+            <span style="float: right;">
+            <a href="" style="margin-right: 20px" rel="tooltip" data-original-title="commit 次数">♯ {{ repos.commit }}</a>
+            <a href="" style="margin-right: 20px" rel="tooltip" data-original-title="watch 次数">♥ {{ repos.watch }}</a>
+            <a href="" style="margin-right: 20px" rel="tooltip" data-original-title="fork 次数">♂ {{ repos.fork }}</a></span></h3>
+            <div style="margin-left: 20px;">
+                <h6>创建于{{ repos.create_time|date:"y/m/d" }}，最近更新{{ repos.modify_time|date:"y/m/d H:i" }}</h6> 
+                <p>{{ repos.desc }}</p>
+                <h6 id="i_{{repos.name}}_commit_history" style="display: none">commit 历史</h6> 
+                <ul id="i_{{repos.name}}">
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="span5">
+        <div class="c_repos_event">
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+{% block js %}
+<script src="/static/js/moment.min.js"></script>
+<script src="/static/js/moment.zh-cn.js"></script>
+<script>
+/*global jQuery, window */
+$(function(){
+    moment.lang('zh-cn');
+    orgi_repos_commit_map = {{repos_commit_map|safe}};
+    var do_repos_feeds = function() {
+        all_ids = [];
+        for (x in orgi_repos_commit_map) {
+            all_ids = all_ids.concat(orgi_repos_commit_map[x]);
+        }
+        all_ids_str = all_ids.join('_');
+        $.ajax({
+            url: '/ajax/feed/ids/',
+            type: 'POST',
+            data: {'ids_str': all_ids_str, csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 5000,
+            error: function(){
+                //alert('');
+            },
+            success: function(json){
+                repos_commit_map = {} 
+                for (x in json.feeds) {
+                    repos_commit_map[json.feeds[x]['id']] = json.feeds[x] 
+                }
+                for (x in orgi_repos_commit_map) {
+                    html = []
+                    $('#i_' + x  + '_commit_history').show();
+                    for (y in orgi_repos_commit_map[x]) {
+                        if(repos_commit_map.hasOwnProperty(orgi_repos_commit_map[x][y])) {
+                            feed = repos_commit_map[orgi_repos_commit_map[x][y]];
+                            html.push('<li><code><a href="">' + feed.commit_hash + '</a></code> ' + feed.subject + ' <span class="muted pull-right">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></li>');
+                        }
+                    }
+                    $('#i_'+x).append(html.join(''));
+                }
+            }
+        })
+    };
+    do_repos_feeds();
+    $('.c_repos').hover(function() {
+        $(this).css('background-color', '#D9EDF7');
+    }, function(){
+        $(this).css('background-color', '#FFFFFF');
+    });
+    $('.c_repos').tooltip({
+      selector: "a[rel=tooltip]"
+    })
+});
+</script>
+{% endblock %}

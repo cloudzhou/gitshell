@@ -12,11 +12,11 @@ from gitshell.repos.models import Repos, ReposManager
 from gitshell.settings import PRIVATE_REPOS_PATH, PUBLIC_REPOS_PATH, GIT_BARE_REPOS_PATH
 
 @login_required
-def repos(request, user_name):
-    return repos_paging(request, user_name, 0)
+def user_repos(request, user_name):
+    return user_repos_paging(request, user_name, 0)
 
 @login_required
-def repos_paging(request, user_name, pagenum):
+def user_repos_paging(request, user_name, pagenum):
     repos_list = ReposManager.list_repos_by_userId(request.user.id, 0, 25)
     repos_commit_map = {}
     feedAction = FeedAction()
@@ -26,16 +26,63 @@ def repos_paging(request, user_name, pagenum):
         for feed in feeds:
             repos_commit_map[str(repos.name)].append(feed[0])
     response_dictionary = {'user_name': user_name, 'repos_list': repos_list, 'repos_commit_map': repos_commit_map}
+    return render_to_response('repos/user_repos.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def repos(request, user_name, repos_name):
+    response_dictionary = {'current': 'index', 'user_name': user_name, 'repos_name': repos_name}
     return render_to_response('repos/repos.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@login_required
-def user_repos(request, user_name, repos_name):
-    response_dictionary = {'ii': range(0, 20)}
+def repos_tree(request, user_name, repos_name):
+    response_dictionary = {'current': 'tree', 'user_name': user_name, 'repos_name': repos_name}
     return render_to_response('repos/repos.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+def repos_commits(request, user_name, repos_name):
+    response_dictionary = {'current': 'commits', 'user_name': user_name, 'repos_name': repos_name}
+    return render_to_response('repos/repos.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def repos_issues(request, user_name, repos_name):
+    response_dictionary = {'current': 'issues', 'user_name': user_name, 'repos_name': repos_name}
+    return render_to_response('repos/repos.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def repos_network(request, user_name, repos_name):
+    response_dictionary = {'current': 'network', 'user_name': user_name, 'repos_name': repos_name}
+    return render_to_response('repos/repos.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def repos_branches(request, user_name, repos_name):
+    response_dictionary = {'current': 'branches', 'user_name': user_name, 'repos_name': repos_name}
+    return render_to_response('repos/repos.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def repos_stats(request, user_name, repos_name):
+    response_dictionary = {'current': 'stats', 'user_name': user_name, 'repos_name': repos_name}
+    return render_to_response('repos/repos.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def folder(request):
+    response_dictionary = {'hello_world': 'hello world'}
+    return render_to_response('repos/folder.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def file(request):
+    response_dictionary = {'hello_world': 'hello world'}
+    return render_to_response('repos/file.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))						  
 # TODO
 @login_required
 def edit(request, rid):

@@ -12,21 +12,4 @@ def home(request):
     return render_to_response('user/home.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
-def warehouse(request):
-    response_dictionary = {'hello_world': 'hello world'}
-    return render_to_response('warehouse/list.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-def folder(request):
-    response_dictionary = {'hello_world': 'hello world'}
-    return render_to_response('warehouse/folder.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-def file(request):
-    response_dictionary = {'hello_world': 'hello world'}
-    return render_to_response('warehouse/file.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))						  
 

@@ -59,8 +59,14 @@ urlpatterns = patterns('gitshell',
     # gsuser
     url(r'^(\w+)/?$', 'gsuser.views.user'),
     # repos
-    url(r'^(\w+)/repos/?$', 'repos.views.repos'),
-    url(r'^(\w+)/repos/(\d+)/?$', 'repos.views.repos_paging'),
+    url(r'^(\w+)/repos/?$', 'repos.views.user_repos'),
+    url(r'^(\w+)/repos/(\d+)/?$', 'repos.views.user_repos_paging'),
     url(r'^\w+/repos/edit/(\d+)/?$', 'repos.views.edit'),
-    url(r'^(\w+)/(\w+)/?$', 'repos.views.user_repos'),
+    url(r'^(\w+)/(\w+)/?$', 'repos.views.repos'),
+    url(r'^(\w+)/(\w+)/tree/?$', 'repos.views.repos_tree'),
+    url(r'^(\w+)/(\w+)/network/?$', 'repos.views.repos_network'),
+    url(r'^(\w+)/(\w+)/issues/?$', 'repos.views.repos_issues'),
+    url(r'^(\w+)/(\w+)/stats/?$', 'repos.views.repos_stats'),
+    url(r'^(\w+)/(\w+)/commits/?$', 'repos.views.repos_commits'),
+    url(r'^(\w+)/(\w+)/branches/?$', 'repos.views.repos_branches'),
 )
