@@ -4,14 +4,14 @@
     <div class="page-header" style="padding-bottom: 0px; margin-top: 0px;">
 	    <ul class="breadcrumb" style="margin-bottom: 0px">
             <li>Private: </li>
-            <li><a href="/{{ user_name }}/">{{ user_name }}</a> <span class="divider">/</span></li>
-            <li><a href="/{{ user_name }}/{{ repos_name }}/">{{ repos_name }}</a></li>
+            <li><h4><a href="/{{ user_name }}/">{{ user_name }}</a> <span class="divider">/</span></h4></li>
+            <li><h4><a href="/{{ user_name }}/{{ repos_name }}/">{{ repos_name }}</a></h4></li>
         </ul>
         {% if current == 'index' %}
         <div class="breadcrumb" style="border-top: 0px; padding: 8px;">
     	    <div class="row">
     			<div class="span9">
-    			    <p>zzzzzzzzzz — <a href="#Readme.md">更多介绍</a></p>
+    			    <p>zzzzzzzzzz — <a href="#README.md">更多介绍</a></p>
     			</div>
     		</div>
     		<div class="row">
@@ -25,7 +25,7 @@
                     </div>				
                 </div>				
     			<div class="pull-left">
-    				<input type="text" readonly=true value="http://gitshell.com/{{ user_name }}/{{ repos_name }}.git" class="span5">
+    				<input id="i_git_url" type="text" value="http://gitshell.com/{{ user_name }}/{{ repos_name }}.git" class="span5">
     				<i class="icon-list-alt"></i> 只读
     			</div>
     		</div>
@@ -84,4 +84,17 @@
 		</div>
 	</div>
 </div>
+{% endblock %}
+{% block js %}
+<script src="/static/js/moment.min.js"></script>
+<script src="/static/js/moment.zh-cn.js"></script>
+<script>
+/*global jQuery, window */
+$(function(){
+    moment.lang('zh-cn');
+    $('#i_git_url').mouseover(function(event) {
+        $('#i_git_url').select();
+    });
+});
+</script>
 {% endblock %}
