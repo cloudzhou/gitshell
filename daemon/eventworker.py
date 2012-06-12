@@ -64,7 +64,7 @@ def do_event(event_job):
 def update_quote(user, gsuser, repos, repospath, parameters):
     args = ['/opt/run/bin/diff-tree-blob-size.sh', repospath]
     args.extend(parameters)
-    popen = Popen(args, stdout=PIPE, close_fds=True)
+    popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
     result = popen.communicate()[0].strip()
     diff_size = 0
     if popen.returncode == 0:
@@ -76,7 +76,7 @@ def update_quote(user, gsuser, repos, repospath, parameters):
 
 def bulk_create_commits(user, gsuser, repos, repospath, oldrev, newrev):
     args = ['/opt/run/bin/git-pretty-log.sh', repospath, oldrev, newrev]
-    popen = Popen(args, stdout=PIPE, close_fds=True)
+    popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
     result = popen.communicate()[0].strip()
     commitHistorys = []
     if popen.returncode == 0:

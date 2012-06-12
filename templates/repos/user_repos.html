@@ -72,7 +72,9 @@ $(function(){
                 }
                 for (x in orgi_repos_commit_map) {
                     html = []
-                    $('#i_' + x  + '_commit_history').show();
+                    if (orgi_repos_commit_map[x].length > 0) {
+                        $('#i_' + x  + '_commit_history').show();
+                    }
                     for (y in orgi_repos_commit_map[x]) {
                         if(repos_commit_map.hasOwnProperty(orgi_repos_commit_map[x][y])) {
                             feed = repos_commit_map[orgi_repos_commit_map[x][y]];
