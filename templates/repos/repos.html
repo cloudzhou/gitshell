@@ -111,19 +111,22 @@ $(function(){
                 //alert('');
             },
             success: function(json){
+                if($('#i_refs .dropdown-menu li').size() > 0) {
+                    return;
+                }
                 for(x in json.branches) {
-                    $('#i_refs .dropdown-menu').append('<li><a href="' + json.branches[x] + '">' + json.branches[x] + '</a></li>')
+                    $('#i_refs .dropdown-menu').append('<li><a href="/{{user_name}}/{{repos_name}}/tree/' + json.branches[x] + '/">' + json.branches[x] + '</a></li>');
                 } 
                 if(json.tags.length > 0) {
-                    $('#i_refs .dropdown-menu').append('<li class="divider"></li>')
+                    $('#i_refs .dropdown-menu').append('<li class="divider"></li>');
                 }
                 for(x in json.tags) {
-                    $('#i_refs .dropdown-menu').append('<li><a href="' + json.tags[x] + '">' + json.tags[x] + '</a></li>')
+                    $('#i_refs .dropdown-menu').append('<li><a href="/{{user_name}}/{{repos_name}}/tree/' + json.tags[x] + '/">' + json.tags[x] + '</a></li>');
                 } 
             },
         })
     }
-    $('#i_refs').click(function(event) {
+    $('#i_refs').mouseover(function(event) {
         if($('#i_refs .dropdown-menu li').size() == 0) {
             do_refs();
         }
