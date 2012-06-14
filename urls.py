@@ -18,6 +18,7 @@ urlpatterns = patterns('gitshell',
 
     # ajax
     url(r'^ajax/feed/ids/?$', 'feed.views.feedbyids'),
+    url(r'^ajax/repo/(\w+)/(\w+)/refs/?$', 'repos.views.repo_refs'),
 
     # gsuser
     url(r'^home/?$', 'feed.views.home'),

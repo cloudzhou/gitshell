@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-  
 import os, re
 import shutil
+import json
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
@@ -8,6 +9,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import render_to_response
 from gitshell.feed.feed import FeedAction
 from gitshell.repos.Forms import ReposForm
+from gitshell.repos.githandler import GitHandler
 from gitshell.repos.models import Repos, ReposManager
 from gitshell.settings import PRIVATE_REPOS_PATH, PUBLIC_REPOS_PATH, GIT_BARE_REPOS_PATH
 
@@ -71,6 +73,30 @@ def repos_stats(request, user_name, repos_name):
     return render_to_response('repos/repos.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+def repo_refs(request, user_name, repo_name):
+    repo = get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        return HttpResponse(json.dumps({'user_name': user_name, 'repo_name': repo_name, 'branches': [], 'tags': []}), mimetype="application/json")
+    parent_path = ""
+    if repo.auth_type == 0:
+        parent_path = PUBLIC_REPOS_PATH
+    else:
+        parent_path = PRIVATE_REPOS_PATH
+    repopath = '%s/%s/%s.git' % (parent_path, user_name, repo_name)
+
+    gitHandler = GitHandler()
+    branches_refs = gitHandler.repo_ls_branches(repopath)
+    tags_refs = gitHandler.repo_ls_tags(repopath)
+    response_dictionary = {'user_name': user_name, 'repo_name': repo_name, 'branches': branches_refs, 'tags': tags_refs}
+    return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
+
+def get_repo_by_name(user_name, repo_name):
+    try:
+        user = User.objects.get(username=user_name)     
+        return ReposManager.get_repos_by_userId_name(user.id, repo_name)
+    except User.DoesNotExist:
+        return None
 
 def folder(request):
     response_dictionary = {'hello_world': 'hello world'}

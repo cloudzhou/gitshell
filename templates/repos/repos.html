@@ -25,7 +25,7 @@
                     </div>				
                 </div>				
     			<div class="pull-left">
-    				<input id="i_git_url" type="text" value="http://gitshell.com/{{ user_name }}/{{ repos_name }}.git" class="span5">
+    				<input id="i_git_url" style="margin-bottom: 0px;" type="text" value="http://gitshell.com/{{ user_name }}/{{ repos_name }}.git" class="span5">
     				<i class="icon-list-alt"></i> 只读
     			</div>
     		</div>
@@ -36,11 +36,16 @@
 	<div class="row">
 	    <div id="repos_nav" class="span12">
 	        <ul class="nav nav-tabs">
+                <li id="i_refs" class="dropdown">
+                    <a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle">分支&标签<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    </ul>
+                </li>
                 <li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/tree/">文件列表</a></li>
                 <li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/commits/">提交信息</a></li>
                 <li {% if current == 'issues' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/issues/">Issues</a></li>
                 <li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/network/">协同</a></li>
-                <li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/branches/">分支</a></li>
+                <li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/branches/">clone 分支</a></li>
                 <li {% if current == 'stats' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/stats/">统计</a></li>
             </ul>
 	<div class="file-list">
@@ -92,8 +97,36 @@
 /*global jQuery, window */
 $(function(){
     moment.lang('zh-cn');
-    $('#i_git_url').mouseover(function(event) {
+    $('#i_git_url').click(function(event) {
         $('#i_git_url').select();
+    });
+    var do_refs = function() {
+        $.ajax({
+            url: '/ajax/repo/{{user_name}}/{{repos_name}}/refs/',
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 5000,
+            error: function(){
+                //alert('');
+            },
+            success: function(json){
+                for(x in json.branches) {
+                    $('#i_refs .dropdown-menu').append('<li><a href="' + json.branches[x] + '">' + json.branches[x] + '</a></li>')
+                } 
+                if(json.tags.length > 0) {
+                    $('#i_refs .dropdown-menu').append('<li class="divider"></li>')
+                }
+                for(x in json.tags) {
+                    $('#i_refs .dropdown-menu').append('<li><a href="' + json.tags[x] + '">' + json.tags[x] + '</a></li>')
+                } 
+            },
+        })
+    }
+    $('#i_refs').click(function(event) {
+        if($('#i_refs .dropdown-menu li').size() == 0) {
+            do_refs();
+        }
     });
 });
 </script>
