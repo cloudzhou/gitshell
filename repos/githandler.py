@@ -1,8 +1,7 @@
 #!/usr/bin/python
-
+# -*- coding: utf-8 -*-
 import os, re
-from subprocess import Popen
-from subprocess import PIPE
+from subprocess import check_output
 """
 git ls-tree `cat .git/refs/heads/master` -- githooks/
 git log -1 --pretty='%ct  %s' -- githooks/
@@ -10,38 +9,48 @@ git show HEAD:README.md
 git diff 2497dbb67cb29c0448a3c658ed50255cb4de6419 a2f5ec702e58eb5053fc199c590eac29a2627ad7 --
 """
 class GitHandler():
+    max_char_len = 524288
+    empty_commit_hash = '0000000000000000000000000000000000000000'
     # TODO path too loong limit, file and tree limit
     def repo_ls_tree(self, repo_path, commit_hash, path):
         if not self.path_check(repo_path, commit_hash, path):
             return None
-        args = ['/usr/bin/git', 'ls-tree', commit_hash, '--', path]
-        popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
-        result = popen.communicate()[0]
-        return result
+        command = '/usr/bin/git ls-tree %s -- %s | /usr/bin/cut -c -524288' % (commit_hash, path)
+        try:
+            result = check_output(command, shell=True)
+            return result
+        except Exception, e:
+            return None
     
     def repo_cat_file(self, repo_path, commit_hash, path):
         if not self.path_check(repo_path, commit_hash, path):
             return None
-        args = ['/usr/bin/git', 'show', '%s:%s' % (commit_hash, path)]
-        popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
-        result = popen.communicate()[0]
-        return result
+        command = '/usr/bin/git show %s:%s | /usr/bin/cut -c -524288' % (commit_hash, path)
+        try:
+            result = check_output(command, shell=True)
+            return result
+        except Exception, e:
+            return None
     
     def repo_log_file(self, repo_path, commit_hash, path):
         if not self.path_check(repo_path, commit_hash, path):
             return None
-        args = ['/usr/bin/git', 'log', '-10', '--pretty=%h  %p  %t  %an  %cn  %ct  %s', commit_hash, '--', path]
-        popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
-        result = popen.communicate()[0]
-        return result
+        command = '/usr/bin/git log -10 --pretty="%%h  %%p  %%t  %%an  %%cn  %%ct  %%s" %s -- %s | /usr/bin/cut -c -524288' % (commit_hash, path)
+        try:
+            result = check_output(command, shell=True)
+            return result
+        except Exception, e:
+            return None
     
     def repo_diff(self, repo_path, pre_commit_hash, commit_hash, path):
         if not self.path_check(repo_path, commit_hash, path) or not re.match('^\w+$', pre_commit_hash):
             return None
-        args = ['/usr/bin/git', 'diff', '%s..%s' % (pre_commit_hash, commit_hash), '--', path]
-        popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
-        result = popen.communicate()[0]
-        return result
+        command = '/usr/bin/git diff %s..%s -- %s | /usr/bin/cut -c -524288' % (pre_commit_hash, commit_hash, path)
+        try:
+            result = check_output(command, shell=True)
+            return result
+        except Exception, e:
+            return None
 
     def path_check(self, repo_path, commit_hash, path):
         if not self.is_allowed_path(repo_path) or not self.is_allowed_path(path) or not re.match('^\w+$', commit_hash) or not os.path.exists(repo_path):
@@ -83,7 +92,6 @@ class GitHandler():
                     break
         return branches
     
-    empty_commit_hash = '0000000000000000000000000000000000000000'
     """ refs: branch, tag """
     def get_commit_hash(self, repo_path, refs):
         refs_path = '%s/%s' % (repo_path, refs)
@@ -121,7 +129,7 @@ if __name__ == '__main__':
     print gitHandler.get_commit_hash('/opt/8001/gitshell/.git', 'refs/heads/master')
     print gitHandler.is_allowed_path('abc')
     print gitHandler.is_allowed_path('abc b')
-    print gitHandler.is_allowed_path('abc-_:/.b')
+    print gitHandler.is_allowed_path('abc-_/.b')
     print gitHandler.repo_ls_tree('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', 'githooks/')
     print gitHandler.repo_ls_tree('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', '.')
     print gitHandler.repo_cat_file('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', 'README.md')
