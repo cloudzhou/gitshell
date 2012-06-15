@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import os, re
+import hashlib
+import json
 from subprocess import check_output
 """
 git ls-tree `cat .git/refs/heads/master` -- githooks/
@@ -9,15 +11,28 @@ git show HEAD:README.md
 git diff 2497dbb67cb29c0448a3c658ed50255cb4de6419 a2f5ec702e58eb5053fc199c590eac29a2627ad7 --
 """
 class GitHandler():
-    max_char_len = 524288
-    empty_commit_hash = '0000000000000000000000000000000000000000'
-    # TODO path too loong limit, file and tree limit
+
+    def __init__(self):
+        self.empty_commit_hash = '0000000000000000000000000000000000000000'
+        self.stage_path = '/opt/repos/stage'
+
     def repo_ls_tree(self, repo_path, commit_hash, path):
         if not self.path_check(repo_path, commit_hash, path):
             return None
+        stage_file = '%s/%s' % (self.stage_path, hashlib.md5('%s|%s|%s' % (repo_path, commit_hash, path)).hexdigest())
+        if os.path.exists(stage_file):
+            try:
+                json_data = open(stage_file)
+                result = json.load(json_data)
+                return result
+            except Exception, e:
+                return None
+            finally:
+                json_data.close()
         command = '/usr/bin/git ls-tree %s -- %s | /usr/bin/cut -c -524288' % (commit_hash, path)
         try:
             result = check_output(command, shell=True)
+            write_stage_file(result, stage_file)
             return result
         except Exception, e:
             return None
@@ -51,6 +66,9 @@ class GitHandler():
             return result
         except Exception, e:
             return None
+
+    def write_stage_file(result, stage_file):
+        pass
 
     def path_check(self, repo_path, commit_hash, path):
         if not self.is_allowed_path(repo_path) or not self.is_allowed_path(path) or not re.match('^\w+$', commit_hash) or not os.path.exists(repo_path):
