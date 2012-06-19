@@ -1,41 +1,36 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import os, re
-import hashlib
+import time
 import json
+import hashlib
+import shutil
 from subprocess import check_output
 """
 git ls-tree `cat .git/refs/heads/master` -- githooks/
 git log -1 --pretty='%ct  %s' -- githooks/
 git show HEAD:README.md
 git diff 2497dbb67cb29c0448a3c658ed50255cb4de6419 a2f5ec702e58eb5053fc199c590eac29a2627ad7 --
+path: . means is root of the repo path
 """
 class GitHandler():
 
     def __init__(self):
         self.empty_commit_hash = '0000000000000000000000000000000000000000'
         self.stage_path = '/opt/repos/stage'
+        self.blank_p = re.compile(r'\s+')
 
     def repo_ls_tree(self, repo_path, commit_hash, path):
         if not self.path_check(repo_path, commit_hash, path):
             return None
-        stage_file = '%s/%s' % (self.stage_path, hashlib.md5('%s|%s|%s' % (repo_path, commit_hash, path)).hexdigest())
-        if os.path.exists(stage_file):
-            try:
-                json_data = open(stage_file)
-                result = json.load(json_data)
-                return result
-            except Exception, e:
-                return None
-            finally:
-                json_data.close()
-        command = '/usr/bin/git ls-tree %s -- %s | /usr/bin/cut -c -524288' % (commit_hash, path)
-        try:
-            result = check_output(command, shell=True)
-            write_stage_file(result, stage_file)
+        stage_file = self.get_stage_file(repo_path, commit_hash, path)
+        result = self.read_load_stage_file(stage_file)
+        result = None
+        if result is not None:
             return result
-        except Exception, e:
-            return None
+        result = self.ls_tree_check_output(commit_hash, path)
+        self.dumps_write_stage_file(result, stage_file)
+        return result
     
     def repo_cat_file(self, repo_path, commit_hash, path):
         if not self.path_check(repo_path, commit_hash, path):
@@ -45,6 +40,7 @@ class GitHandler():
             result = check_output(command, shell=True)
             return result
         except Exception, e:
+            print e
             return None
     
     def repo_log_file(self, repo_path, commit_hash, path):
@@ -55,6 +51,7 @@ class GitHandler():
             result = check_output(command, shell=True)
             return result
         except Exception, e:
+            print e
             return None
     
     def repo_diff(self, repo_path, pre_commit_hash, commit_hash, path):
@@ -65,10 +62,73 @@ class GitHandler():
             result = check_output(command, shell=True)
             return result
         except Exception, e:
+            print e
             return None
 
-    def write_stage_file(result, stage_file):
-        pass
+    def get_stage_file(self, repo_path, commit_hash, path):
+        (username, reponame) = repo_path.split('/')[-2:]
+        stage_file = '%s/%s/%s/%s' % (self.stage_path, username, reponame, hashlib.md5('%s|%s' % (commit_hash, path)).hexdigest())
+        return stage_file
+        
+    def read_load_stage_file(self, stage_file):
+        if os.path.exists(stage_file):
+            try:
+                print stage_file
+                json_data = open(stage_file)
+                result = json.load(json_data)
+                return result
+            except Exception, e:
+                print e
+                return None
+            finally:
+                json_data.close()
+
+    def ls_tree_check_output(self, commit_hash, path):
+        command = '/usr/bin/git ls-tree %s -- %s | /usr/bin/cut -c -524288' % (commit_hash, path)
+        result = {}
+        try:
+            raw_result = check_output(command, shell=True)
+            max = 100
+            for line in raw_result.split("\n"):
+                array = self.blank_p.split(line) 
+                if len(array) >= 4:
+                    relative_path = array[3]
+                    if path != '.':
+                        relative_path = relative_path[len(path):]
+                    if array[1] == 'tree':
+                        relative_path = relative_path + '/'
+                    result[relative_path] = array[1:3]
+                    last_commit_command = 'git log -1 --pretty="%%ct  %%s" -- %s | /usr/bin/cut -c -524288' % (array[3])
+                    last_commit_output = check_output(last_commit_command, shell=True)
+                    (unixtime, last_commit) = last_commit_output.split('  ', 1)
+                    result[relative_path].append(unixtime)
+                    result[relative_path].append(last_commit)
+                max = max - 1
+                if(max <= 0):
+                    break
+            return result
+        except Exception, e:
+            print e
+            return None
+
+    def dumps_write_stage_file(self, result, stage_file):
+        if result is None:
+            return
+        timenow = int(time.time()) 
+        stage_file_tmp = '%s.%s' % (stage_file, timenow)
+        stage_file_tmp_path = os.path.dirname(stage_file_tmp)
+        if not os.path.exists(stage_file_tmp_path):
+            os.makedirs(stage_file_tmp_path)
+        try:
+            stage_file_w = open(stage_file_tmp, 'w')
+            stage_file_w.write(json.dumps(result))
+            stage_file_w.flush()
+            shutil.move(stage_file_tmp, stage_file)
+        except Exception, e:
+            print e
+            pass
+        finally:
+            stage_file_w.close()
 
     def path_check(self, repo_path, commit_hash, path):
         if not self.is_allowed_path(repo_path) or not self.is_allowed_path(path) or not re.match('^\w+$', commit_hash) or not os.path.exists(repo_path):
@@ -139,6 +199,7 @@ class GitHandler():
             os.chdir(path)
             return True
         except Exception, e:
+            print e
             return False
 
 if __name__ == '__main__':
