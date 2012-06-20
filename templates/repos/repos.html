@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block container %}
+<style>
+    table { table-layout: fixed; }
+    table th, table td { overflow: hidden; }
+</style>
 <div class="code">
     <div class="page-header" style="padding-bottom: 0px; margin-top: 0px;">
 	    <ul class="breadcrumb" style="margin-bottom: 0px">
@@ -48,44 +52,7 @@
                 <li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/branches/">clone 分支</a></li>
                 <li {% if current == 'stats' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/stats/">统计</a></li>
             </ul>
-	<div class="file-list">
-	<table class="table table-striped">
-			<thead>
-			  <tr>
-				<th></th>
-				<th>名称</th>
-				<th>修改时间</th>
-				<th>日志</th>
-			  </tr>
-			</thead>
-			<tbody>
-			  <tr>
-				<td><i class="icon-file"></i></td>
-				<td><a href="/base.css" title="base.css">base.css</a></td>
-				<td>2012.02.03</td>
-				<td>增加基础样式文件</td>
-			  </tr>
-			  <tr>
-				<td><i class="icon-file"></i></td>
-				<td><a href="/base.css" title="base.css">javascript.css</a></td>
-				<td>2012.04.13</td>
-				<td>增加用于javascript插件的CSS样式</a></td>
-			  </tr>
-			  <tr>
-				<td><i class="icon-file"></i></td>
-				<td><a href="/base.css" title="base.css">index.html</a></td>
-				<td>2012.03.29</td>
-				<td>首页,项目介绍及入口</td>
-			  </tr>
-			  <tr>
-				<td><i class="icon-folder-close"></i></td>
-				<td><a href="/folder" title="base.css">img</a></td>
-				<td>2012.04.13</td>
-				<td>新加图片目录,存放网站页面用到的图片</a></td>
-			  </tr>			  
-			</tbody>
-		  </table>
-		</div>		  
+    {% block subcontainer %}{% endblock %}
 		</div>
 	</div>
 </div>

@@ -38,9 +38,18 @@ def repos(request, user_name, repos_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-def repos_tree(request, user_name, repos_name):
-    response_dictionary = {'current': 'tree', 'user_name': user_name, 'repos_name': repos_name}
-    return render_to_response('repos/repos.html',
+def repos_tree(request, user_name, repo_name, refs, path):
+    repo = get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    if path is None or path == '':
+        path = '.'
+    gitHandler = GitHandler()
+    abs_repopath = repo.get_abs_repopath(user_name)
+    commit_hash = gitHandler.get_commit_hash(abs_repopath, refs)
+    tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
+    response_dictionary = {'current': 'tree', 'user_name': user_name, 'repos_name': repo_name, 'tree': tree}
+    return render_to_response('repos/tree.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
@@ -78,12 +87,7 @@ def repo_refs(request, user_name, repo_name):
     repo = get_repo_by_name(user_name, repo_name)
     if repo is None:
         return HttpResponse(json.dumps({'user_name': user_name, 'repo_name': repo_name, 'branches': [], 'tags': []}), mimetype="application/json")
-    parent_path = ""
-    if repo.auth_type == 0:
-        parent_path = PUBLIC_REPOS_PATH
-    else:
-        parent_path = PRIVATE_REPOS_PATH
-    repopath = '%s/%s/%s.git' % (parent_path, user_name, repo_name)
+    repopath = repo.get_abs_repopath(user_name)
 
     gitHandler = GitHandler()
     branches_refs = gitHandler.repo_ls_branches(repopath)

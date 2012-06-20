@@ -8,7 +8,7 @@ import shutil
 from subprocess import check_output
 """
 git ls-tree `cat .git/refs/heads/master` -- githooks/
-git log -1 --pretty='%ct  %s' -- githooks/
+git log -1 --pretty='%ct %s' -- githooks/
 git show HEAD:README.md
 git diff 2497dbb67cb29c0448a3c658ed50255cb4de6419 a2f5ec702e58eb5053fc199c590eac29a2627ad7 --
 path: . means is root of the repo path
@@ -21,10 +21,10 @@ class GitHandler():
         self.blank_p = re.compile(r'\s+')
 
     def repo_ls_tree(self, repo_path, commit_hash, path):
-        if not self.path_check(repo_path, commit_hash, path):
+        if not self.path_check_chdir(repo_path, commit_hash, path):
             return None
         stage_file = self.get_stage_file(repo_path, commit_hash, path)
-        result = self.read_load_stage_file(stage_file)
+#        result = self.read_load_stage_file(stage_file)
         result = None
         if result is not None:
             return result
@@ -33,7 +33,7 @@ class GitHandler():
         return result
     
     def repo_cat_file(self, repo_path, commit_hash, path):
-        if not self.path_check(repo_path, commit_hash, path):
+        if not self.path_check_chdir(repo_path, commit_hash, path):
             return None
         command = '/usr/bin/git show %s:%s | /usr/bin/cut -c -524288' % (commit_hash, path)
         try:
@@ -44,9 +44,9 @@ class GitHandler():
             return None
     
     def repo_log_file(self, repo_path, commit_hash, path):
-        if not self.path_check(repo_path, commit_hash, path):
+        if not self.path_check_chdir(repo_path, commit_hash, path):
             return None
-        command = '/usr/bin/git log -10 --pretty="%%h  %%p  %%t  %%an  %%cn  %%ct  %%s" %s -- %s | /usr/bin/cut -c -524288' % (commit_hash, path)
+        command = '/usr/bin/git log -10 --pretty="%%h %%p %%t %%an %%cn %%ct %%s" %s -- %s | /usr/bin/cut -c -524288' % (commit_hash, path)
         try:
             result = check_output(command, shell=True)
             return result
@@ -55,7 +55,7 @@ class GitHandler():
             return None
     
     def repo_diff(self, repo_path, pre_commit_hash, commit_hash, path):
-        if not self.path_check(repo_path, commit_hash, path) or not re.match('^\w+$', pre_commit_hash):
+        if not self.path_check_chdir(repo_path, commit_hash, path) or not re.match('^\w+$', pre_commit_hash):
             return None
         command = '/usr/bin/git diff %s..%s -- %s | /usr/bin/cut -c -524288' % (pre_commit_hash, commit_hash, path)
         try:
@@ -73,7 +73,6 @@ class GitHandler():
     def read_load_stage_file(self, stage_file):
         if os.path.exists(stage_file):
             try:
-                print stage_file
                 json_data = open(stage_file)
                 result = json.load(json_data)
                 return result
@@ -97,15 +96,20 @@ class GitHandler():
                         relative_path = relative_path[len(path):]
                     if array[1] == 'tree':
                         relative_path = relative_path + '/'
-                    result[relative_path] = array[1:3]
-                    last_commit_command = 'git log -1 --pretty="%%ct  %%s" -- %s | /usr/bin/cut -c -524288' % (array[3])
-                    last_commit_output = check_output(last_commit_command, shell=True)
-                    (unixtime, last_commit) = last_commit_output.split('  ', 1)
-                    result[relative_path].append(unixtime)
-                    result[relative_path].append(last_commit)
-                max = max - 1
+                    if self.is_allowed_path(relative_path):
+                        result[relative_path] = array[1:3]
                 if(max <= 0):
                     break
+                max = max - 1
+            if len(path.split('/')) < 30:
+                last_commit_command = 'for i in %s; do echo -n "$i "; git log -1 --pretty="%%ct %%s" -- $i | /usr/bin/cut -c -524288; done' % (' '.join(result.keys()))
+                last_commit_output = check_output(last_commit_command, shell=True)
+                for last_commit in last_commit_output.split('\n'):
+                    last_commit_array = last_commit.split(' ', 2)
+                    if len(last_commit_array) > 2:
+                        (relative_path, unixtime, last_commit_message) = last_commit_array
+                        result[relative_path].append(unixtime)
+                        result[relative_path].append(last_commit_message)
             return result
         except Exception, e:
             print e
@@ -130,10 +134,12 @@ class GitHandler():
         finally:
             stage_file_w.close()
 
-    def path_check(self, repo_path, commit_hash, path):
+    def path_check_chdir(self, repo_path, commit_hash, path):
         if not self.is_allowed_path(repo_path) or not self.is_allowed_path(path) or not re.match('^\w+$', commit_hash) or not os.path.exists(repo_path):
             return False
         if len(path.split('/')) > 50 or self.chdir(repo_path) is False:
+            return False
+        if len(repo_path) > 256 or len(commit_hash) > 256 or len(path) > 256:
             return False
         return True
     
@@ -172,19 +178,20 @@ class GitHandler():
     
     """ refs: branch, tag """
     def get_commit_hash(self, repo_path, refs):
-        refs_path = '%s/%s' % (repo_path, refs)
-        if '..' in refs_path or not self.is_allowed_path(refs_path):
+        refs_path = '%s/refs/heads/%s' % (repo_path, refs)
+        if not os.path.exists(refs_path):
+            refs_path = '%s/refs/tags/%s' % (repo_path, refs)
+        if not self.is_allowed_path(refs_path) or not os.path.exists(refs_path):
             return self.empty_commit_hash
-        if os.path.exists(refs_path):
-            f = None
-            try:
-                f = open(refs_path, 'r')
-                commit_hash = f.read(40)
-                if re.match('^\w+$', commit_hash):
-                    return commit_hash
-            finally:
-                if f != None:
-                    f.close()
+        f = None
+        try:
+            f = open(refs_path, 'r')
+            commit_hash = f.read(40)
+            if re.match('^\w+$', commit_hash):
+                return commit_hash
+        finally:
+            if f != None:
+                f.close()
         return self.empty_commit_hash
     
     def is_allowed_path(self, path):

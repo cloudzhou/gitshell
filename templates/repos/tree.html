@@ -1,0 +1,31 @@
+{% extends "repos/repos.html" %}
+{% block subcontainer %}
+	<div class="file-list">
+    <h4><a href="">gitshell</a> / bb</h4>
+	<table class="table table-striped">
+			<thead class="fixed">
+			  <tr>
+				<th width="20%">名称</th>
+				<th width="15%">修改时间</th>
+				<th>日志</th>
+			  </tr>
+			</thead>
+			<tbody>
+            {% for file, attrs in tree.items %}
+			  <tr>
+				<td>
+                {% if attrs.0 == 'tree' %}
+                    <i class="icon-folder-open"></i>
+                {% else %}
+                    <i class="icon-file"></i> 
+                {% endif %}
+                    <a href="{{ file }}" title="{{ file }}">{{ file }}</a>
+                </td>
+				<td>{{ attrs.2 }}</td>
+				<td>{{ attrs.3 }}</td>
+			  </tr>
+            {% endfor %}
+			</tbody>
+	</table>
+	</div>		  
+{% endblock %}

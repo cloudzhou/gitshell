@@ -1,6 +1,7 @@
 from django.db import models
 from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, queryraw, execute, count, get_many
+from gitshell.settings import PRIVATE_REPOS_PATH, PUBLIC_REPOS_PATH, GIT_BARE_REPOS_PATH
 
 class Repos(BaseModel):
     user_id = models.IntegerField()
@@ -14,6 +15,15 @@ class Repos(BaseModel):
     watch = models.IntegerField(default=0)
     fork = models.IntegerField(default=0)
     member = models.IntegerField(default=0)
+
+    def get_abs_repopath(self, user_name):
+        parent_path = ""
+        if self.auth_type == 0:
+            parent_path = PUBLIC_REPOS_PATH
+        else:
+            parent_path = PRIVATE_REPOS_PATH
+        repopath = '%s/%s/%s.git' % (parent_path, user_name, self.name)
+        return repopath
 
 class ReposMember(BaseModel):
     repos_id = models.IntegerField()
