@@ -48,7 +48,7 @@ def repos_tree(request, user_name, repo_name, refs, path):
     abs_repopath = repo.get_abs_repopath(user_name)
     commit_hash = gitHandler.get_commit_hash(abs_repopath, refs)
     tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
-    response_dictionary = {'current': 'tree', 'user_name': user_name, 'repos_name': repo_name, 'tree': tree}
+    response_dictionary = {'current': 'tree', 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path, 'tree': tree}
     return render_to_response('repos/tree.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
