@@ -1,9 +1,9 @@
 {% extends "base.html" %}
+{% block css %}
+<link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet' type='text/css' />
+<link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet' type='text/css' />
+{% endblock %}
 {% block container %}
-<style>
-    table { table-layout: fixed; }
-    table th, table td { overflow: hidden; }
-</style>
 <div class="code">
     <div class="page-header" style="padding-bottom: 0px; margin-top: 0px;">
 	    <ul class="breadcrumb" style="margin-bottom: 0px">
@@ -45,7 +45,7 @@
                     <ul class="dropdown-menu">
                     </ul>
                 </li>
-                <li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/tree/">文件列表</a></li>
+                <li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/tree/{{ refs }}/">文件列表</a></li>
                 <li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/commits/">提交信息</a></li>
                 <li {% if current == 'issues' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/issues/">Issues</a></li>
                 <li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repos_name }}/network/">协同</a></li>

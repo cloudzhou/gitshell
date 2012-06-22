@@ -32,13 +32,19 @@ def user_repos_paging(request, user_name, pagenum):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-def repos(request, user_name, repos_name):
-    response_dictionary = {'current': 'index', 'user_name': user_name, 'repos_name': repos_name}
-    return render_to_response('repos/repos.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
+def repos(request, user_name, repo_name):
+    refs = 'master'
+    path = '.'
+    current = 'index'
+    return repos_ls_tree(request, user_name, repo_name, refs, path, current)
 
 def repos_tree(request, user_name, repo_name, refs, path):
+    current = 'tree'
+    return repos_ls_tree(request, user_name, repo_name, refs, path, current)
+
+lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml'}
+brush_aliases = {'AppleScript': 'applescript', 'AS3': 'actionscript3', 'Bash': 'shell', 'ColdFusion': 'coldfusion', 'Cpp': 'cpp', 'CSharp': 'csharp', 'Css': 'css', 'Delphi': 'delphi', 'Diff': 'diff', 'Erlang': 'erlang', 'Groovy': 'groovy', 'JavaFX': 'javafx', 'Java': 'java', 'JScript': 'javascript', 'Perl': 'perl', 'Php': 'php', 'Plain': 'plain', 'PowerShell': 'powershell', 'Python': 'python', 'Ruby': 'ruby', 'Sass': 'sass', 'Scala': 'scala', 'Sql': 'sql', 'Vb': 'vb', 'Xml': 'xml'}
+def repos_ls_tree(request, user_name, repo_name, refs, path, current):
     repo = get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -47,8 +53,19 @@ def repos_tree(request, user_name, repo_name, refs, path):
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath(user_name)
     commit_hash = gitHandler.get_commit_hash(abs_repopath, refs)
-    tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
-    response_dictionary = {'current': 'tree', 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path, 'tree': tree}
+    is_tree = True ; tree = {} ; blob = ''; lang = 'Plain'; brush = 'plain'
+    if path == '.' or path.endswith('/'):
+        tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
+    else:
+        is_tree = False
+        paths = path.split('.')
+        if len(paths) > 0:
+            suffix = paths[-1]
+            if suffix in lang_suffix and lang_suffix[suffix] in brush_aliases:
+                lang = lang_suffix[suffix]
+                brush = brush_aliases[lang]
+        blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
+    response_dictionary = {'current': current, 'repo': repo, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path, 'tree': tree, 'blob': blob, 'is_tree': is_tree, 'lang': lang, 'brush': brush}
     return render_to_response('repos/tree.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

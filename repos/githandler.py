@@ -24,8 +24,8 @@ class GitHandler():
         if not self.path_check_chdir(repo_path, commit_hash, path):
             return None
         stage_file = self.get_stage_file(repo_path, commit_hash, path)
-#        result = self.read_load_stage_file(stage_file)
-        result = None
+        result = self.read_load_stage_file(stage_file)
+#        result = None
         if result is not None:
             return result
         result = self.ls_tree_check_output(commit_hash, path)
