@@ -3,6 +3,10 @@
 	<div class="file-list">
     <h4><a href="/{{user_name}}/{{repos_name}}/tree/{{refs}}/">gitshell</a> /
     <span id="i_repo_path"></span>
+    <a style="margin-left: 5px" href="/{{user_name}}/{{repos_name}}/commits/{{refs}}/{{path}}" class="pull-right"><span class="label label-info">历史</span></a>
+    {% if not is_tree %}
+    <a style="margin-left: 5px" href="/{{user_name}}/{{repos_name}}/raw/tree/{{refs}}/{{path}}" class="pull-right"><span class="label label-info">原始文件</span></a>
+    {% endif %}
     </h4>
     {% if is_tree %}
 <style>
@@ -13,7 +17,7 @@
 			<thead class="fixed">
 			  <tr>
 				<th width="20%">名称</th>
-				<th width="10%">修改时间</th>
+				<th width="10%">时间</th>
 				<th>日志</th>
 			  </tr>
 			</thead>

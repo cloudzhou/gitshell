@@ -7,6 +7,7 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render_to_response
+from django.utils.html import escape
 from gitshell.feed.feed import FeedAction
 from gitshell.repos.Forms import ReposForm
 from gitshell.repos.githandler import GitHandler
@@ -42,6 +43,16 @@ def repos_tree(request, user_name, repo_name, refs, path):
     current = 'tree'
     return repos_ls_tree(request, user_name, repo_name, refs, path, current)
 
+def repos_raw_tree(request, user_name, repo_name, refs, path):
+    repo = get_repo_by_name(user_name, repo_name)
+    if repo is None or path.endswith('/'):
+        raise Http404
+    gitHandler = GitHandler()
+    abs_repopath = repo.get_abs_repopath(user_name)
+    commit_hash = gitHandler.get_commit_hash(abs_repopath, refs)
+    blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
+    return HttpResponse(blob, content_type="text/plain")
+
 lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml'}
 brush_aliases = {'AppleScript': 'applescript', 'AS3': 'actionscript3', 'Bash': 'shell', 'ColdFusion': 'coldfusion', 'Cpp': 'cpp', 'CSharp': 'csharp', 'Css': 'css', 'Delphi': 'delphi', 'Diff': 'diff', 'Erlang': 'erlang', 'Groovy': 'groovy', 'JavaFX': 'javafx', 'Java': 'java', 'JScript': 'javascript', 'Perl': 'perl', 'Php': 'php', 'Plain': 'plain', 'PowerShell': 'powershell', 'Python': 'python', 'Ruby': 'ruby', 'Sass': 'sass', 'Scala': 'scala', 'Sql': 'sql', 'Vb': 'vb', 'Xml': 'xml'}
 def repos_ls_tree(request, user_name, repo_name, refs, path, current):
@@ -70,11 +81,31 @@ def repos_ls_tree(request, user_name, repo_name, refs, path, current):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-def repos_commits(request, user_name, repos_name):
-    response_dictionary = {'current': 'commits', 'user_name': user_name, 'repos_name': repos_name}
-    return render_to_response('repos/repos.html',
+def repos_commits(request, user_name, repo_name, refs, path):
+    repo = get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    if path is None or path == '':
+        path = '.'
+    gitHandler = GitHandler()
+    abs_repopath = repo.get_abs_repopath(user_name)
+    commit_hash = gitHandler.get_commit_hash(abs_repopath, refs)
+    commits = gitHandler.repo_log_file(abs_repopath, commit_hash, path)
+    response_dictionary = {'current': 'commits', 'repo': repo, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path, 'commits': commits}
+    return render_to_response('repos/commits.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path):
+    repo = get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    if path is None or path == '':
+        path = '.'
+    gitHandler = GitHandler()
+    abs_repopath = repo.get_abs_repopath(user_name)
+    diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
+    return HttpResponse(json.dumps({'diff': escape(diff)}), mimetype="application/json")
 
 def repos_issues(request, user_name, repos_name):
     response_dictionary = {'current': 'issues', 'user_name': user_name, 'repos_name': repos_name}
@@ -88,7 +119,7 @@ def repos_network(request, user_name, repos_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-def repos_branches(request, user_name, repos_name):
+def repos_clone_branches(request, user_name, repos_name):
     response_dictionary = {'current': 'branches', 'user_name': user_name, 'repos_name': repos_name}
     return render_to_response('repos/repos.html',
                           response_dictionary,

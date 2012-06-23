@@ -12,6 +12,7 @@ urlpatterns = patterns('gitshell',
     # ajax
     url(r'^ajax/feed/ids/?$', 'feed.views.feedbyids'),
     url(r'^ajax/repo/(\w+)/(\w+)/refs/?$', 'repos.views.repo_refs'),
+    url(r'^ajax/repo/(\w+)/(\w+)/diff/(\w+)/(\w+)/([a-zA-Z0-9_\.\-/]*)$', 'repos.views.repo_diff'),
 
     # gsuser
     url(r'^home/?$', 'feed.views.home'),
@@ -58,9 +59,10 @@ urlpatterns = patterns('gitshell',
     url(r'^\w+/repos/edit/(\d+)/?$', 'repos.views.edit'),
     url(r'^(\w+)/(\w+)/?$', 'repos.views.repos'),
     url(r'^(\w+)/(\w+)/tree/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-/]*)$', 'repos.views.repos_tree'),
-    url(r'^(\w+)/(\w+)/network/?$', 'repos.views.repos_network'),
+    url(r'^(\w+)/(\w+)/raw/tree/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-/]*)$', 'repos.views.repos_raw_tree'),
+    url(r'^(\w+)/(\w+)/commits/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-/]*)$', 'repos.views.repos_commits'),
     url(r'^(\w+)/(\w+)/issues/?$', 'repos.views.repos_issues'),
+    url(r'^(\w+)/(\w+)/network/?$', 'repos.views.repos_network'),
+    url(r'^(\w+)/(\w+)/clone_branches/?$', 'repos.views.repos_clone_branches'),
     url(r'^(\w+)/(\w+)/stats/?$', 'repos.views.repos_stats'),
-    url(r'^(\w+)/(\w+)/commits/?$', 'repos.views.repos_commits'),
-    url(r'^(\w+)/(\w+)/branches/?$', 'repos.views.repos_branches'),
 )

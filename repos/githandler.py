@@ -35,9 +35,14 @@ class GitHandler():
     def repo_cat_file(self, repo_path, commit_hash, path):
         if not self.path_check_chdir(repo_path, commit_hash, path):
             return None
+        stage_file = self.get_stage_file(repo_path, commit_hash, path)
+        result = self.read_load_stage_file(stage_file)
+        if result is not None:
+            return result
         command = '/usr/bin/git show %s:%s | /usr/bin/cut -c -524288' % (commit_hash, path)
         try:
             result = check_output(command, shell=True)
+            self.dumps_write_stage_file(result, stage_file)
             return result
         except Exception, e:
             print e
@@ -46,10 +51,43 @@ class GitHandler():
     def repo_log_file(self, repo_path, commit_hash, path):
         if not self.path_check_chdir(repo_path, commit_hash, path):
             return None
-        command = '/usr/bin/git log -10 --pretty="%%h %%p %%t %%an %%cn %%ct %%s" %s -- %s | /usr/bin/cut -c -524288' % (commit_hash, path)
-        try:
-            result = check_output(command, shell=True)
+        stage_file = self.get_stage_file(repo_path, commit_hash, path)
+        stage_file = stage_file + '.log'
+        result = self.read_load_stage_file(stage_file)
+        if result is not None:
             return result
+        result = self.repo_load_log_file(commit_hash, path)
+        self.dumps_write_stage_file(result, stage_file)
+        return result
+
+    def repo_load_log_file(self, commit_hash, path):
+        commits = []
+        command = '/usr/bin/git log -10 --pretty="%%h %%p %%t %%an %%cn %%ct|%%s" %s -- %s | /usr/bin/cut -c -524288' % (commit_hash, path)
+        try:
+            raw_result = check_output(command, shell=True)
+            for line in raw_result.split('\n'):
+                ars = line.split('|', 1)
+                if len(ars) != 2:
+                    continue
+                attr, commit_message = ars
+                attrs = attr.split(' ', 5)
+                if len(attrs) != 6 and len(attrs) != 5:
+                    continue
+                (commit_hash, parent_hashes, tree_hash, author, committer, committer_date) = ' '*6
+                if len(attrs) == 6:
+                    (commit_hash, parent_hashes, tree_hash, author, committer, committer_date) = (attrs)
+                if len(attrs) == 5:
+                    (commit_hash, tree_hash, author, committer, committer_date) = (attrs)
+                commits.append({
+                    'commit_hash': commit_hash,
+                    'parent_hashes': parent_hashes,
+                    'tree_hash': tree_hash,
+                    'author': author,
+                    'committer': committer,
+                    'committer_date': committer_date,
+                    'commit_message': commit_message,
+                })
+            return commits
         except Exception, e:
             print e
             return None
@@ -107,7 +145,6 @@ class GitHandler():
                     pre_path = ''
                 last_commit_command = 'for i in %s; do echo -n "$i "; git log -1 --pretty="%%ct %%s" -- %s$i | /usr/bin/cut -c -524288; done' % (' '.join(result.keys()), pre_path)
                 last_commit_output = check_output(last_commit_command, shell=True)
-                print last_commit_command
                 for last_commit in last_commit_output.split('\n'):
                     last_commit_array = last_commit.split(' ', 2)
                     if len(last_commit_array) > 2:

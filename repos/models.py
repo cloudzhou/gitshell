@@ -30,7 +30,7 @@ class ReposMember(BaseModel):
     user_id = models.IntegerField()
     permission = models.SmallIntegerField(default=0)
 
-# commit history from git: commit_hash parent_hashes tree_hash committer author committer_date subject
+# commit history from git: commit_hash parent_hashes tree_hash author committer committer_date subject
 # git log -100 --pretty='%h  %p  %t  %an  %cn  %ct  %s'
 class CommitHistory(BaseModel):
     repos_id = models.IntegerField()
