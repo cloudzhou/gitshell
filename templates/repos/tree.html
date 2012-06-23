@@ -39,7 +39,13 @@
 			</tbody>
 	</table>
     {% else %}
-<div>
+<style>
+#i_source_code .container:before, #i_source_code .container:after {
+    content: "";
+    display: none;
+}
+</style>
+<div id="i_source_code">
     <pre class="brush: {{ brush }}; ">{{ blob }}</pre>
 </div>
     {% endif %}
