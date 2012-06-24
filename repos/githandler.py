@@ -62,7 +62,7 @@ class GitHandler():
 
     def repo_load_log_file(self, commit_hash, path):
         commits = []
-        command = '/usr/bin/git log -10 --pretty="%%h %%p %%t %%an %%cn %%ct|%%s" %s -- %s | /usr/bin/cut -c -524288' % (commit_hash, path)
+        command = '/usr/bin/git log -10 --pretty="%%h %%t %%an %%cn %%ct|%%s" %s -- %s | /usr/bin/cut -c -524288' % (commit_hash, path)
         try:
             raw_result = check_output(command, shell=True)
             for line in raw_result.split('\n'):
@@ -71,16 +71,11 @@ class GitHandler():
                     continue
                 attr, commit_message = ars
                 attrs = attr.split(' ', 5)
-                if len(attrs) != 6 and len(attrs) != 5:
+                if len(attrs) != 5:
                     continue
-                (commit_hash, parent_hashes, tree_hash, author, committer, committer_date) = ' '*6
-                if len(attrs) == 6:
-                    (commit_hash, parent_hashes, tree_hash, author, committer, committer_date) = (attrs)
-                if len(attrs) == 5:
-                    (commit_hash, tree_hash, author, committer, committer_date) = (attrs)
+                (commit_hash, tree_hash, author, committer, committer_date) = (attrs)
                 commits.append({
                     'commit_hash': commit_hash,
-                    'parent_hashes': parent_hashes,
                     'tree_hash': tree_hash,
                     'author': author,
                     'committer': committer,
@@ -95,19 +90,31 @@ class GitHandler():
     def repo_diff(self, repo_path, pre_commit_hash, commit_hash, path):
         if not self.path_check_chdir(repo_path, commit_hash, path) or not re.match('^\w+$', pre_commit_hash):
             return None
+        stage_file = self.get_diff_stage_file(repo_path, pre_commit_hash, commit_hash, path)
+        stage_file = stage_file + '.diff'
+        result = self.read_load_stage_file(stage_file)
+        if result is not None:
+            return result
         command = '/usr/bin/git diff %s..%s -- %s | /usr/bin/cut -c -524288' % (pre_commit_hash, commit_hash, path)
         try:
             result = check_output(command, shell=True)
+            self.dumps_write_stage_file(result, stage_file)
             return result
         except Exception, e:
             print e
             return None
+
+    def get_diff_stage_file(self, repo_path, pre_commit_hash, commit_hash, path):
+        (username, reponame) = repo_path.split('/')[-2:]
+        stage_file = '%s/%s/%s/%s' % (self.stage_path, username, reponame, hashlib.md5('%s|%s|%s' % (pre_commit_hash, commit_hash, path)).hexdigest())
+        return stage_file
 
     def get_stage_file(self, repo_path, commit_hash, path):
         (username, reponame) = repo_path.split('/')[-2:]
         stage_file = '%s/%s/%s/%s' % (self.stage_path, username, reponame, hashlib.md5('%s|%s' % (commit_hash, path)).hexdigest())
         return stage_file
         
+    # TODO load or not ?
     def read_load_stage_file(self, stage_file):
         if os.path.exists(stage_file):
             try:
