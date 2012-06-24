@@ -34,11 +34,13 @@ def user_repos_paging(request, user_name, pagenum):
                           context_instance=RequestContext(request))
 
 def repos(request, user_name, repo_name):
-    refs = 'master'
-    path = '.'
-    current = 'index'
+    refs = 'master'; path = '.'; current = 'index'
     return repos_ls_tree(request, user_name, repo_name, refs, path, current)
 
+def repos_default_tree(request, user_name, repo_name):
+    refs = 'master'; path = '.'; current = 'tree'
+    return repos_ls_tree(request, user_name, repo_name, refs, path, current)
+    
 def repos_tree(request, user_name, repo_name, refs, path):
     current = 'tree'
     return repos_ls_tree(request, user_name, repo_name, refs, path, current)
@@ -81,6 +83,10 @@ def repos_ls_tree(request, user_name, repo_name, refs, path, current):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+def repos_default_commits(request, user_name, repo_name):
+    refs = 'master'; path = '.'
+    return repos_commits(request, user_name, repo_name, refs, path)
+    
 def repos_commits(request, user_name, repo_name, refs, path):
     repo = get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -108,25 +114,29 @@ def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path)
     return HttpResponse(json.dumps({'diff': escape(diff)}), mimetype="application/json")
 
 def repos_issues(request, user_name, repos_name):
-    response_dictionary = {'current': 'issues', 'user_name': user_name, 'repos_name': repos_name}
+    refs = 'master'; path = '.'; current = 'issues'
+    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repos_name, 'refs': refs, 'path': path}
     return render_to_response('repos/repos.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def repos_network(request, user_name, repos_name):
-    response_dictionary = {'current': 'network', 'user_name': user_name, 'repos_name': repos_name}
+    refs = 'master'; path = '.'; current = 'network'
+    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repos_name, 'refs': refs, 'path': path}
     return render_to_response('repos/repos.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def repos_clone_branches(request, user_name, repos_name):
-    response_dictionary = {'current': 'branches', 'user_name': user_name, 'repos_name': repos_name}
+    refs = 'master'; path = '.'; current = 'branches'
+    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repos_name, 'refs': refs, 'path': path}
     return render_to_response('repos/repos.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def repos_stats(request, user_name, repos_name):
-    response_dictionary = {'current': 'stats', 'user_name': user_name, 'repos_name': repos_name}
+    refs = 'master'; path = '.'; current = 'stats'
+    response_dictionary = {'current': 'stats', 'user_name': user_name, 'repos_name': repos_name, 'refs': refs, 'path': path}
     return render_to_response('repos/repos.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
