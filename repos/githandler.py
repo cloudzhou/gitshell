@@ -150,13 +150,14 @@ class GitHandler():
                 pre_path = path
                 if path == '.':
                     pre_path = ''
-                last_commit_command = 'for i in %s; do echo -n "$i "; git log -1 --pretty="%%ct %%s" -- %s$i | /usr/bin/cut -c -524288; done' % (' '.join(result.keys()), pre_path)
+                last_commit_command = 'for i in %s; do echo -n "$i "; git log -1 --pretty="%%ct %%an %%s" -- %s$i | /usr/bin/cut -c -524288; done' % (' '.join(result.keys()), pre_path)
                 last_commit_output = check_output(last_commit_command, shell=True)
                 for last_commit in last_commit_output.split('\n'):
-                    last_commit_array = last_commit.split(' ', 2)
-                    if len(last_commit_array) > 2:
-                        (relative_path, unixtime, last_commit_message) = last_commit_array
+                    last_commit_array = last_commit.split(' ', 3)
+                    if len(last_commit_array) > 3:
+                        (relative_path, unixtime, author_name, last_commit_message) = last_commit_array
                         result[relative_path].append(unixtime)
+                        result[relative_path].append(author_name)
                         result[relative_path].append(last_commit_message)
             return result
         except Exception, e:
