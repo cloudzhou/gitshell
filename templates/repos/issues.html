@@ -1,0 +1,66 @@
+{% extends "repos/repos.html" %}
+{% block subcontainer %}
+    <div class="row">
+        <div class="span8">
+            <dl class="dl-horizontal" style="margin: 0px">
+                <dt style="width: 60px; font-weight: normal">指派给:</dt>
+                <dd style="margin-left: 80px"><span class="label">test</span> <span class="label label-success">cloudzhou</span></dd>
+            </dl>
+            <dl class="dl-horizontal" style="margin: 0px">
+                <dt style="width: 60px; font-weight: normal">跟踪:</dt>
+                <dd style="margin-left: 80px">cloudzhou</dd>
+            </dl>
+            <dl class="dl-horizontal" style="margin: 0px">
+                <dt style="width: 60px; font-weight: normal">状态:</dt>
+                <dd style="margin-left: 80px">cloudzhou</dd>
+            </dl>
+            <dl class="dl-horizontal" style="margin: 0px">
+                <dt style="width: 60px; font-weight: normal">优先级:</dt>
+                <dd style="margin-left: 80px">cloudzhou</dd>
+            </dl>
+        </div>
+    </div>
+	<table class="table table-striped">
+			<thead class="fixed">
+			  <tr>
+				<th class="span6">主题</th>
+				<th>跟踪</th>
+				<th>状态</th>
+				<th>指派给</th>
+				<th>优先级</th>
+				<th>类别</th>
+				<th>更新时间</th>
+			  </tr>
+			</thead>
+			<tbody>
+			  <tr>
+				<td><a href="">#190 Show deleted wiki pages or wiki files on the activity on the activity</a></td>
+				<td>功能</td>
+				<td>新</td>
+				<td>cloudzhou</td>
+				<td>高</td>
+				<td>安全</td>
+				<td>3个小时前</td>
+			  </tr>
+			  <tr>
+				<td><a href="">#190 Show deleted wiki pages or wiki files on the activity on the activity</a></td>
+				<td>功能</td>
+				<td>新</td>
+				<td>cloudzhou</td>
+				<td>高</td>
+				<td>安全</td>
+				<td>3个小时前</td>
+			  </tr>
+			</tbody>
+	</table>
+{% endblock %}
+{% block subjs %}
+<script>
+$(function(){
+    $('.c_unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+        $(this).show();
+    });
+});
+</script>
+{% endblock %}
