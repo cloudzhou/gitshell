@@ -116,7 +116,7 @@ def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path)
 def repos_issues(request, user_name, repos_name):
     refs = 'master'; path = '.'; current = 'issues'
     response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repos_name, 'refs': refs, 'path': path}
-    return render_to_response('repos/repos.html',
+    return render_to_response('repos/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 

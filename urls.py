@@ -13,6 +13,8 @@ urlpatterns = patterns('gitshell',
     url(r'^ajax/feed/ids/?$', 'feed.views.feedbyids'),
     url(r'^ajax/repo/(\w+)/(\w+)/refs/?$', 'repos.views.repo_refs'),
     url(r'^ajax/repo/(\w+)/(\w+)/diff/(\w+)/(\w+)/([a-zA-Z0-9_\.\-/]*)$', 'repos.views.repo_diff'),
+    url(r'^ajax/network/watch/(\w+)/', 'repos.views.network_watch'),
+    url(r'^ajax/network/unwatch/(\w+)/', 'repos.views.network_unwatch'),
 
     # gsuser
     url(r'^home/?$', 'feed.views.home'),
