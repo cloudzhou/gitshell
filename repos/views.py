@@ -113,9 +113,47 @@ def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path)
     diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
     return HttpResponse(json.dumps({'diff': escape(diff)}), mimetype="application/json")
 
-def repos_issues(request, user_name, repos_name):
+trackers = ['缺陷', '功能', '支持']
+statuses = ['新建', '已指派', '进行中', '已解决', '已关闭', '已拒绝']
+priorities = ['紧急', '高', '普通', '低']
+def repo_issues(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'issues'
-    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repos_name, 'refs': refs, 'path': path}
+    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path, 'trackers': trackers, 'statuses': statuses, 'priorities': priorities}
+    return render_to_response('repos/issues.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def repo_create_issues(request, user_name, repo_name):
+    refs = 'master'; path = '.'; current = 'issues'
+    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path}
+    return render_to_response('repos/issues.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def repo_delete_issues(request, user_name, repo_name, issue_id):
+    refs = 'master'; path = '.'; current = 'issues'
+    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path}
+    return render_to_response('repos/issues.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def repo_list_issues(request, user_name, repo_name, assigned, tracker, status, priority, orderby, page):
+    refs = 'master'; path = '.'; current = 'issues'
+    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path}
+    return render_to_response('repos/issues.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def repo_create_comment(request, user_name, repo_name, issues_id):
+    refs = 'master'; path = '.'; current = 'issues'
+    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path}
+    return render_to_response('repos/issues.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def repo_delete_comment(request, user_name, repo_name, comment_id):
+    refs = 'master'; path = '.'; current = 'issues'
+    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path}
     return render_to_response('repos/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

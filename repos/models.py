@@ -70,6 +70,23 @@ class ForkHistory(BaseModel):
     repos_id = models.IntegerField()
     fork_repos_id = models.IntegerField()
 
+class Issues(BaseModel):
+    repo_id = models.IntegerField()
+    user_id = models.IntegerField()
+    subject = models.CharField(max_length=128)
+    tracker = models.IntegerField(default=0)
+    status = models.IntegerField(default=0) 
+    assigned = models.IntegerField(default=0)
+    priority = models.IntegerField(default=0)
+    category = models.CharField(max_length=16)
+    content = models.CharField(max_length=1024)
+
+class IssuesComment(BaseModel):
+    issues_id = models.IntegerField()
+    user_id = models.IntegerField()
+    vote = models.IntegerField(default=0)
+    content = models.CharField(max_length=512) 
+
 class ReposManager():
 
     @classmethod
