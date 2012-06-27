@@ -1,0 +1,16 @@
+{% extends "repos/repos.html" %}
+{% block subcontainer %}
+    <div>
+{{repoIssuesCommentForm}}
+    </div>
+{% endblock %}
+{% block subjs %}
+<script>
+$(function(){
+    $('.c_unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+        $(this).show();
+    });
+});
+</script>
+{% endblock %}

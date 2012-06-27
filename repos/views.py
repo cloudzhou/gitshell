@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import render_to_response
 from django.utils.html import escape
 from gitshell.feed.feed import FeedAction
-from gitshell.repos.Forms import ReposForm
+from gitshell.repos.Forms import ReposForm, RepoIssuesForm, RepoIssuesCommentForm
 from gitshell.repos.githandler import GitHandler
 from gitshell.repos.models import Repos, ReposManager
 from gitshell.settings import PRIVATE_REPOS_PATH, PUBLIC_REPOS_PATH, GIT_BARE_REPOS_PATH
@@ -116,23 +116,28 @@ def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path)
 trackers = ['缺陷', '功能', '支持']
 statuses = ['新建', '已指派', '进行中', '已解决', '已关闭', '已拒绝']
 priorities = ['紧急', '高', '普通', '低']
+issues_attrs = { 'trackers': trackers, 'statuses': statuses, 'priorities': priorities }
 def repo_issues(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'issues'
-    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path, 'trackers': trackers, 'statuses': statuses, 'priorities': priorities}
+    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path}
+    response_dictionary.update(issues_attrs)
     return render_to_response('repos/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def repo_create_issues(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'issues'
-    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path}
-    return render_to_response('repos/issues.html',
+    repoIssuesForm = RepoIssuesForm()
+    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesForm': repoIssuesForm}
+    response_dictionary.update(issues_attrs)
+    return render_to_response('repos/create_issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def repo_delete_issues(request, user_name, repo_name, issue_id):
     refs = 'master'; path = '.'; current = 'issues'
     response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path}
+    response_dictionary.update(issues_attrs)
     return render_to_response('repos/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -140,20 +145,24 @@ def repo_delete_issues(request, user_name, repo_name, issue_id):
 def repo_list_issues(request, user_name, repo_name, assigned, tracker, status, priority, orderby, page):
     refs = 'master'; path = '.'; current = 'issues'
     response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path}
+    response_dictionary.update(issues_attrs)
     return render_to_response('repos/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def repo_create_comment(request, user_name, repo_name, issues_id):
     refs = 'master'; path = '.'; current = 'issues'
-    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path}
-    return render_to_response('repos/issues.html',
+    repoIssuesCommentForm = RepoIssuesCommentForm()
+    response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesCommentForm': repoIssuesCommentForm}
+    response_dictionary.update(issues_attrs)
+    return render_to_response('repos/create_comment.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def repo_delete_comment(request, user_name, repo_name, comment_id):
     refs = 'master'; path = '.'; current = 'issues'
     response_dictionary = {'current': current, 'user_name': user_name, 'repos_name': repo_name, 'refs': refs, 'path': path}
+    response_dictionary.update(issues_attrs)
     return render_to_response('repos/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
