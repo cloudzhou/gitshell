@@ -39,7 +39,7 @@ class GitHandler():
         result = self.read_load_stage_file(stage_file)
         if result is not None:
             return result
-        command = '/usr/bin/git show %s:%s | /usr/bin/cut -c -524288' % (commit_hash, path)
+        command = '/usr/bin/git show %s:%s | /usr/bin/head -c 524288' % (commit_hash, path)
         try:
             result = check_output(command, shell=True)
             self.dumps_write_stage_file(result, stage_file)
@@ -62,7 +62,7 @@ class GitHandler():
 
     def repo_load_log_file(self, commit_hash, path):
         commits = []
-        command = '/usr/bin/git log -10 --pretty="%%h %%t %%an %%cn %%ct|%%s" %s -- %s | /usr/bin/cut -c -524288' % (commit_hash, path)
+        command = '/usr/bin/git log -10 --pretty="%%h %%t %%an %%cn %%ct|%%s" %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
         try:
             raw_result = check_output(command, shell=True)
             for line in raw_result.split('\n'):
@@ -95,7 +95,7 @@ class GitHandler():
         result = self.read_load_stage_file(stage_file)
         if result is not None:
             return result
-        command = '/usr/bin/git diff %s..%s -- %s | /usr/bin/cut -c -524288' % (pre_commit_hash, commit_hash, path)
+        command = '/usr/bin/git diff %s..%s -- %s | /usr/bin/head -c 524288' % (pre_commit_hash, commit_hash, path)
         try:
             result = check_output(command, shell=True)
             self.dumps_write_stage_file(result, stage_file)
@@ -128,7 +128,7 @@ class GitHandler():
                 json_data.close()
 
     def ls_tree_check_output(self, commit_hash, path):
-        command = '/usr/bin/git ls-tree %s -- %s | /usr/bin/cut -c -524288' % (commit_hash, path)
+        command = '/usr/bin/git ls-tree %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
         result = {}
         try:
             raw_result = check_output(command, shell=True)
@@ -150,7 +150,7 @@ class GitHandler():
                 pre_path = path
                 if path == '.':
                     pre_path = ''
-                last_commit_command = 'for i in %s; do echo -n "$i "; git log -1 --pretty="%%ct %%an %%s" -- %s$i | /usr/bin/cut -c -524288; done' % (' '.join(result.keys()), pre_path)
+                last_commit_command = 'for i in %s; do echo -n "$i "; git log -1 --pretty="%%ct %%an %%s" -- %s$i | /usr/bin/head -c 524288; done' % (' '.join(result.keys()), pre_path)
                 last_commit_output = check_output(last_commit_command, shell=True)
                 for last_commit in last_commit_output.split('\n'):
                     last_commit_array = last_commit.split(' ', 3)
