@@ -45,7 +45,7 @@ urlpatterns = patterns('gitshell',
     # gitshell openssh keyauth and dist, private for subnetwork access by iptables, nginx port 9000
     url(r'^private/keyauth/([A-Za-z0-9:]+)/?$', 'keyauth.views.pubkey'),
     url(r'^private/keyauth/([A-Za-z0-9:]+)/([A-Za-z0-9_ \-\'"\/]+)$', 'keyauth.views.keyauth'),
-    url(r'^private/dist//(\w+)/(\w+)/?$', 'dist.views.repo'),
+    url(r'^private/dist/repo/(\w+)/(\w+)/?$', 'dist.views.repo'),
     url(r'^private/dist/refresh/?$', 'dist.views.refresh'),
     url(r'^private/dist/echo/?$', 'dist.views.echo'),
 
@@ -56,9 +56,9 @@ urlpatterns = patterns('gitshell',
     # gsuser
     url(r'^(\w+)/?$', 'gsuser.views.user'),
     # 
-    url(r'^(\w+)//?$', 'repo.views.user_repo'),
-    url(r'^(\w+)//(\d+)/?$', 'repo.views.user_repo_paging'),
-    url(r'^\w+//edit/(\d+)/?$', 'repo.views.edit'),
+    url(r'^(\w+)/repo/?$', 'repo.views.user_repo'),
+    url(r'^(\w+)/repo/(\d+)/?$', 'repo.views.user_repo_paging'),
+    url(r'^\w+/repo/edit/(\d+)/?$', 'repo.views.edit'),
     url(r'^(\w+)/(\w+)/?$', 'repo.views.repo'),
     url(r'^(\w+)/(\w+)/tree/?$', 'repo.views.repo_default_tree'),
     url(r'^(\w+)/(\w+)/tree/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-/]*)$', 'repo.views.repo_tree'),
