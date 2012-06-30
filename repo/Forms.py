@@ -1,0 +1,47 @@
+# -*- coding: utf-8 -*-
+from django import forms
+from django.forms.widgets import RadioSelect, CheckboxSelectMultiple
+from gitshell.repo.models import Repo, Issues, IssuesComment
+
+LANG_CHOICES = (('C', 'C'), ('Java', 'Java'), ('C++', 'C++'), ('Objective-C', 'Objective-C'), ('PHP', 'PHP'), ('Python', 'Python'), ('JavaScript', 'JavaScript'), ('Ruby', 'Ruby'), ('C#', 'C#'), ('Erlang', 'Erlang'), ('Bash', 'Bash'), ('Awk', 'Awk'), ('Scala', 'Scala'), ('Haskell', 'Haskell'), ('Perl', 'Perl'), ('Lisp', 'Lisp'), ('PL/SQL', 'PL/SQL'), ('Lua', 'Lua'), ('(Visual)', '(Visual)'), ('Basic', 'Basic'), ('MATLAB', 'MATLAB'), ('Delphi/Object', 'Delphi/Object'), ('Pascal', 'Pascal'), ('Visual', 'Visual'), ('Basic', 'Basic'), ('.NET', '.NET'), ('Pascal', 'Pascal'), ('Ada', 'Ada'), ('Transact-SQL', 'Transact-SQL'), ('Logo', 'Logo'), ('NXT-G', 'NXT-G'), ('SAS', 'SAS'), ('Assembly', 'Assembly'), ('ActionScript', 'ActionScript'), ('Fortran', 'Fortran'), ('RPG', 'RPG'), ('(OS/400)', '(OS/400)'), ('Scheme', 'Scheme'), ('COBOL', 'COBOL'), ('Groovy', 'Groovy'), ('R', 'R'), ('ABAP', 'ABAP'), ('cg', 'cg'), ('Scratch', 'Scratch'), ('D', 'D'), ('Prolog', 'Prolog'), ('F#', 'F#'), ('APL', 'APL'), ('Smalltalk', 'Smalltalk'), ('(Visual)', '(Visual)'), ('FoxPro', 'FoxPro'), ('Forth', 'Forth'), ('ML', 'ML'), ('Alice', 'Alice'), ('CFML', 'CFML'), ('VBScript', 'VBScript'), ('other', '其他'))
+AUTH_TYPE_CHOICES = (('0', '公开'), ('1', '半公开'), ('2', '私有'))
+
+class RepoForm(forms.ModelForm):
+    class Meta:
+        model = Repo
+        fields = ('name', 'desc', 'lang', 'auth_type',)
+        widgets = {
+            'desc': forms.Textarea(attrs={'cols': 50, 'rows': 5, 'maxlength': 512}),
+            'lang': forms.Select(choices=LANG_CHOICES),
+            'auth_type': forms.RadioSelect(choices=AUTH_TYPE_CHOICES),
+        }
+
+TRACKER_CHOICES = (('0', '缺陷'), ('1', '功能'), ('2', '支持'))
+STATUS_CHOICES = (('0', '新建'), ('1', '已指派'), ('2', '进行中'), ('3', '已解决'), ('4', '已关闭'), ('5', '已拒绝'))
+PRIORITY_CHOICES = (('0', '紧急'), ('1', '高'), ('2', '普通'), ('3', '低'))
+ASSIGNED_CHOICES = ()
+
+class RepoIssuesForm(forms.ModelForm):
+
+    def __init__(self, repo_id, *args, **kwargs):
+        super(waypointForm, self).__init__(*args, **kwargs)
+        self.fields['assigned'] = forms.ModelChoiceField(queryset=Waypoint.objects.filter(user=user))
+
+    class Meta:
+        model = Issues
+        fields = ('subject', 'tracker', 'status', 'assigned', 'priority', 'category', 'content',)
+        widgets = {
+            'content': forms.Textarea(attrs={'maxlength': 1024}),
+            'assigned': forms.Select(choices=ASSIGNED_CHOICES),
+            'tracker': forms.Select(choices=TRACKER_CHOICES),
+            'status': forms.Select(choices=STATUS_CHOICES),
+            'priority': forms.Select(choices=PRIORITY_CHOICES),
+        }
+
+class RepoIssuesCommentForm(forms.ModelForm):
+    class Meta:
+        model = IssuesComment
+        fields = ('content',)
+        widgets = {
+            'content': forms.Textarea(attrs={'cols': 50, 'rows': 5, 'maxlength': 1024}),
+        }

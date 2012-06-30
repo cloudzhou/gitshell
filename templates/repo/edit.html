@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block css %}
+<style>
+#id_captcha_1 {display:block;margin-top:10px;}
+</style>
+{% endblock %}
+{% block container %}
+<div class="page-header">
+        <h1>:-), 
+        {% if rid == '0' %}
+        创建仓库
+        {% else %}
+        编辑仓库
+        {% endif %}
+        <small>提交代码需要<a href="/settings/sshpubkey/">设置SSH公钥</a></small></h1>
+</div>
+<div class="row">
+    <div class="span7">
+        <form class="form-horizontal" action="" method="post">
+            {% csrf_token %}
+            <fieldset>
+                <div class="control-group">
+                    <label for="id_name" class="control-label">仓库名称</label>
+                    <div class="controls">
+                        {{ repoForm.name }}
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_desc" class="control-label">简介</label>
+                    <div class="controls">
+                        {{ repoForm.desc }}
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_lang" class="control-label">语言选择</label>
+                    <div class="controls">
+                        {{ repoForm.lang }}
+                    </div>
+                </div>
+                <div id="id_other_lang_group" class="control-group" style="display: none">
+                    <label for="id_other_lang" class="control-label">其他语言</label>
+                    <div class="controls">
+                        <input type="text" maxlength="16" value="" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder="哇！难道你发明了新的语言:-)">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_auth_type" class="control-label">可见度</label>
+                    <div class="controls">
+                        {{ repoForm.auth_type }}
+                    </div>
+                </div>
+                {% if error %}
+                <div class="alert">
+                    <a data-dismiss="alert" class="close">×</a>
+                    <strong>出错了！</strong> {{ error }}
+                </div>
+                {% endif %}
+                <div class="form-actions">
+                    <button id="id_edit_submit" class="btn btn-primary" type="submit">确定</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script src="/static/js/md5.min.js"></script>
+<script>
+/*global jQuery, window */
+$(function(){
+    var edit_init = function() {
+        $('#id_name').addClass('input-xlarge');
+        $('#id_desc').addClass('input-xlarge');
+        $('#id_lang').addClass('input-xlarge');
+        {% if rid == '0' %}
+            $('#id_name').attr('placeholder', '[A-Za-z0-9_]');
+        {% else %}
+            $('#id_name').attr('readonly', 'readonly');
+        {% endif %}
+        $('#id_desc').attr('placeholder', '提供什么功能，解决什么问题');
+    },
+    change_other_lang = function() {
+        if($('#id_lang option:selected').val() == 'other') {
+            $('#id_other_lang_group').show();
+        }
+    };
+    $('#id_lang').click(change_other_lang);
+    edit_init();
+});
+</script>
+{% endblock %}

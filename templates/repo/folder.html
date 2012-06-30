@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block container %}
+<div class="code">
+	<div class="page-header">
+	  <ul class="breadcrumb">
+        <li><a href="#">Home</a> <span class="divider">/</span></li>
+        <li><a href="#">社会贡献项目</a> <span class="divider">/</span></li>
+        <li class="active">关爱生命网站</li>
+      </ul>
+
+
+	</div>
+
+	<div class="row">
+		<div class="span12">
+		
+	  <ul class="nav nav-tabs">
+        <li class="active"><a href="#">文件列表</a></li>
+        <li><a href="#">提交信息</a></li>
+        <li><a href="#">分支</a></li>
+      </ul>
+	<div class="file-list">
+	  <ul class="breadcrumb">
+        <li><a href="#">社会贡献项目</a> <span class="divider">/</span></li>
+        <li><i class="icon-folder-open"></i> <a href="/warehouse">关爱生命网站</a> <span class="divider">/</span></li>
+		<li class="active"><i class="icon-folder-open"></i> <a href="#">img</a></li>
+      </ul>	  
+	<table class="table table-striped">
+			<thead>
+			  <tr>
+				<th></th>
+				<th>名称</th>
+				<th>修改时间</th>
+				<th>日志</th>
+			  </tr>
+			</thead>
+			<tbody>
+			  <tr>
+				<td><i class="icon-file"></i></td>
+				<td><a href="/file" title="base.css">base.css</a></td>
+				<td>2012.02.03</td>
+				<td>增加基础样式文件</td>
+			  </tr>
+			  <tr>
+				<td><i class="icon-file"></i></td>
+				<td><a href="/base.css" title="base.css">javascript.css</a></td>
+				<td>2012.04.13</td>
+				<td>增加用于javascript插件的CSS样式</a></td>
+			  </tr>
+			  <tr>
+				<td><i class="icon-file"></i></td>
+				<td><a href="/base.css" title="base.css">index.html</a></td>
+				<td>2012.03.29</td>
+				<td>首页,项目介绍及入口</td>
+			  </tr>
+			  <tr>
+				<td><i class="icon-folder-close"></i></td>
+				<td><a href="/base.css" title="base.css">img</a></td>
+				<td>2012.04.13</td>
+				<td>新加图片目录,存放网站页面用到的图片</a></td>
+			  </tr>			  
+			</tbody>
+		  </table>
+		</div>		  
+		</div>
+	</div>
+</div>
+{% endblock %}

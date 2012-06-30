@@ -1,0 +1,57 @@
+{% extends "repo/repo.html" %}
+{% block subcontainer %}
+<style type="text/css">
+#id_assigned, #id_tracker, #id_status, #id_priority, #id_category { width: 100px; }
+#id_content { height: 200px; width: 600px; }
+</style>
+    <h3 style="border-bottom:1px solid #EEEEEE; margin-bottom:15px;">
+        创建issues<small>&nbsp;创建issues是一件认真的事情，提交前请回顾</small>
+    </h3>
+    <div>
+        <form class="form-inline" action="" method="post">
+            {% csrf_token %}
+            <div style="margin-bottom: 10px">
+                分配给 {{ repoIssuesForm.assigned }}
+                {{ repoIssuesForm.tracker }}
+                {{ repoIssuesForm.status }}
+                {{ repoIssuesForm.priority }}
+                类别 {{ repoIssuesForm.category }}
+            </div>
+            <div style="margin-bottom: 10px;">
+                {{ repoIssuesForm.content }}
+            </div>
+            <button id="i_submit" style="margin-right: 0px;" class="btn btn-primary" type="submit">确定</button>
+            <div class="hidden">{{ repoIssuesForm.subject }}</div>
+        </form>
+    </div>
+{% endblock %}
+{% block subjs %}
+<script>
+$(function(){
+    var content = $('#id_content').val()
+    if($('#id_subject').val() != '') {
+        $('#id_content').val($('#id_subject').val() + '\n' + content);
+    } else {
+        $('#id_content').val($('#id_subject').val() + content);
+    }
+    $('#id_content').attr('placeholder', '第一行自动作为标题，简单明了描述问题，标题之后作为内容');
+    $('#id_category').attr('placeholder', '优化，安全...');
+    $('#i_submit').click(function(){
+        var line_arr = $('#id_content').val().split('\n');
+        if($('#id_content').val() != '') {
+            var subject = line_arr[0];
+            line_arr.shift();
+            var content = line_arr.join('\n');
+            $('#id_subject').val(subject);
+            $('#id_content').val(content);
+            return true;
+        }
+        return false;
+    });
+    $('.c_unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+        $(this).show();
+    });
+});
+</script>
+{% endblock %}
