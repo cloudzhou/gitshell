@@ -6,12 +6,12 @@ from gitshell import settings
 
 """ feed, sorted sets, random identify hashes keys r, u, wu, bwu, wr, c """
 FEED_TYPE = {
-    'REPOS' : 'r',
+    'REPO' : 'r',
     'PRI_USER' : 'pru',
     'PUB_USER' : 'puu',
     'WATCH_USER' : 'wu',
     'BEWATCH_USER' : 'bwu',
-    'WATCH_REPOS' : 'wr',
+    'WATCH_REPO' : 'wr',
     'COMM' : 'c',
     'IDENTIFY_CHECK' : 'ic',
 }
@@ -27,8 +27,8 @@ class FeedAction():
         )
 
     """ all modify method """
-    def madd_repos_feed(self, repos_id, sortedset_list):
-        key = '%s:%s' % (FEED_TYPE['REPOS'], repos_id)
+    def madd_repo_feed(self, repo_id, sortedset_list):
+        key = '%s:%s' % (FEED_TYPE['REPO'], repo_id)
         self.redis.zadd(key, *tuple(sortedset_list))
         self.redis.zremrangebyrank(key, 100, 200)
 
@@ -42,8 +42,8 @@ class FeedAction():
         self.redis.zadd(key, *tuple(sortedset_list))
         self.redis.zremrangebyrank(key, 100, 200)
 
-    def add_repos_feed(self, repos_id, timestamp, feed_id):
-        self.madd_repos_feed(repos_id, [-timestamp, feed_id])
+    def add_repo_feed(self, repo_id, timestamp, feed_id):
+        self.madd_repo_feed(repo_id, [-timestamp, feed_id])
 
     def add_pri_user_feed(self, user_id, timestamp, feed_id):
         self.madd_pri_user_feed(user_id, [-timestamp, feed_id])
@@ -69,14 +69,14 @@ class FeedAction():
         key = '%s:%s' % (FEED_TYPE['BEWATCH_USER'], user_id)
         self.redis.zrem(key, bewatch_user_id)
 
-    def add_watch_repos(self, user_id, timestamp, watch_repos_id):
-        key = '%s:%s' % (FEED_TYPE['WATCH_REPOS'], user_id)
-        self.redis.zadd(key, -timestamp, watch_repos_id)
+    def add_watch_repo(self, user_id, timestamp, watch_repo_id):
+        key = '%s:%s' % (FEED_TYPE['WATCH_REPO'], user_id)
+        self.redis.zadd(key, -timestamp, watch_repo_id)
         self.redis.zremrangebyrank(key, 100, 200)
 
-    def remove_watch_repos(self, user_id, watch_repos_id):
-        key = '%s:%s' % (FEED_TYPE['WATCH_REPOS'], user_id)
-        self.redis.zrem(key, watch_repos_id)
+    def remove_watch_repo(self, user_id, watch_repo_id):
+        key = '%s:%s' % (FEED_TYPE['WATCH_REPO'], user_id)
+        self.redis.zrem(key, watch_repo_id)
 
     def add_comm_feed(self, user_id, timestamp, feed_id):
         key = '%s:%s' % (FEED_TYPE['COMM'], user_id)
@@ -88,8 +88,8 @@ class FeedAction():
         self.redis.zrem(key, feed_id)
 
     """ all get method """
-    def get_repos_feeds(self, repos_id, start, num_items):
-        key = '%s:%s' % (FEED_TYPE['REPOS'], repos_id)
+    def get_repo_feeds(self, repo_id, start, num_items):
+        key = '%s:%s' % (FEED_TYPE['REPO'], repo_id)
         return self.redis.zrange(key, start, num_items, withscores=True)
 
     def get_pri_user_feeds(self, user_id, start, num_items):
@@ -108,8 +108,8 @@ class FeedAction():
         key = '%s:%s' % (FEED_TYPE['BEWATCH_USER'], user_id)
         return self.redis.zrange(key, start, num_items, withscores=True)
 
-    def get_watch_reposes(self, user_id, start, num_items):
-        key = '%s:%s' % (FEED_TYPE['WATCH_REPOS'], user_id)
+    def get_watch_repoes(self, user_id, start, num_items):
+        key = '%s:%s' % (FEED_TYPE['WATCH_REPO'], user_id)
         return self.redis.zrange(key, start, num_items, withscores=True)
 
     def get_comm_feeds(self, user_id, start, num_items):

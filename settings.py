@@ -103,7 +103,7 @@ INSTALLED_APPS = (
     'gitshell.dist',
     'gitshell.keyvalue',
     'gitshell.gsuser',
-    'gitshell.repos',
+    'gitshell.repo',
     # 'django.contrib.admin',
     # 'django.contrib.admindocs',
 )
@@ -137,9 +137,9 @@ LOGGING = {
     }
 }
 
-PRIVATE_REPOS_PATH = '/opt/repos/private'
-PUBLIC_REPOS_PATH = '/opt/repos/public'
-GIT_BARE_REPOS_PATH = '/opt/repos/gitbare'
+PRIVATE_REPO_PATH = '/opt/repo/private'
+PUBLIC_REPO_PATH = '/opt/repo/public'
+GIT_BARE_REPO_PATH = '/opt/repo/gitbare'
 REDIS_HOST = '127.0.0.1'
 REDIS_PORT = 6379
 REDIS_SOCKET_TIMEOUT = 3

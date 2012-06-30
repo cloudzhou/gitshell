@@ -7,9 +7,9 @@ from subprocess import Popen
 from subprocess import PIPE
 from datetime import datetime
 from django.contrib.auth.models import User
-from gitshell.settings import PRIVATE_REPOS_PATH, PUBLIC_REPOS_PATH
+from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH
 from gitshell.gsuser.models import Userprofile, UserprofileManager
-from gitshell.repos.models import CommitHistory, Repos, ReposManager
+from gitshell.repo.models import CommitHistory, Repo, RepoManager
 from gitshell.feed.feed import FeedAction
 
 def main():
@@ -25,7 +25,7 @@ def main():
             print 'exception: %s' % e
         event_job.delete()
 
-# abspath is the repos hooks directory
+# abspath is the repo hooks directory
 def do_event(event_job):
     event = json.loads(event_job)
     etype = event['type']
@@ -34,14 +34,14 @@ def do_event(event_job):
         abspath = event['abspath'].strip()
         if abspath.endswith('/'):
             abspath = abspath[0 : len(abspath)-1]
-        (username, reposname) = get_username_reposname(abspath)
-        if reposname.endswith('.git'):
-            reposname = reposname[0 : len(reposname)-4]
+        (username, reponame) = get_username_reponame(abspath)
+        if reponame.endswith('.git'):
+            reponame = reponame[0 : len(reponame)-4]
         user = get_user(username)
         gsuser = get_gsuser(user)
-        repos = get_repos(user, reposname)
-        repospath = get_repospath(user, repos)
-        if user is None or gsuser is None or repos is None or not os.path.exists(repospath):
+        repo = get_repo(user, reponame)
+        repopath = get_repopath(user, repo)
+        if user is None or gsuser is None or repo is None or not os.path.exists(repopath):
             return
         rev_ref_arr = event['revrefarr']
         for rev_ref in rev_ref_arr:    
@@ -53,16 +53,16 @@ def do_event(event_job):
             diff_tree_blob_size_params.extend(rev_ref)
             # TODO why master?
             if refname == 'refs/heads/master': 
-                bulk_create_commits(user, gsuser, repos, repospath, oldrev, newrev)
-        update_quote(user, gsuser, repos, repospath, diff_tree_blob_size_params)
+                bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev)
+        update_quote(user, gsuser, repo, repopath, diff_tree_blob_size_params)
         return
     if etype == 1:
         return
     if etype == 2:
         return
 
-def update_quote(user, gsuser, repos, repospath, parameters):
-    args = ['/opt/run/bin/diff-tree-blob-size.sh', repospath]
+def update_quote(user, gsuser, repo, repopath, parameters):
+    args = ['/opt/run/bin/diff-tree-blob-size.sh', repopath]
     args.extend(parameters)
     popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
     result = popen.communicate()[0].strip()
@@ -71,11 +71,11 @@ def update_quote(user, gsuser, repos, repospath, parameters):
         if result.startswith('+') or result.startswith('-'):
             diff_size = int(result)
         else:
-            diff_size = int(result) - repos.used_quote
-    update_gsuser_repos_quote(gsuser, repos, diff_size)
+            diff_size = int(result) - repo.used_quote
+    update_gsuser_repo_quote(gsuser, repo, diff_size)
 
-def bulk_create_commits(user, gsuser, repos, repospath, oldrev, newrev):
-    args = ['/opt/run/bin/git-pretty-log.sh', repospath, oldrev, newrev]
+def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev):
+    args = ['/opt/run/bin/git-pretty-log.sh', repopath, oldrev, newrev]
     popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
     result = popen.communicate()[0].strip()
     commitHistorys = []
@@ -87,7 +87,7 @@ def bulk_create_commits(user, gsuser, repos, repospath, oldrev, newrev):
                 # TODO
                 author_name = items[3][0:30]
                 author_uid = 0
-                commitHistory = CommitHistory.create(repos.id, repos.name, items[0], items[1][0:24], items[2], author_name, items[4][0:30], author_uid, committer_date, items[6][0:512])
+                commitHistory = CommitHistory.create(repo.id, repo.name, items[0], items[1][0:24], items[2], author_name, items[4][0:30], author_uid, committer_date, items[6][0:512])
                 commitHistorys.append(commitHistory)
     for commitHistory in commitHistorys:
         commitHistory.save()
@@ -97,14 +97,14 @@ def bulk_create_commits(user, gsuser, repos, repospath, oldrev, newrev):
     for commitHistory in commitHistorys:
         feed_key_values.append(-float(time.mktime(commitHistory.committer_date.timetuple())))
         feed_key_values.append(commitHistory.id)
-    # total private repos the feed is private
-    if repos.auth_type == 2:
+    # total private repo the feed is private
+    if repo.auth_type == 2:
         feedAction.madd_pri_user_feed(user.id, feed_key_values)
     else:
         feedAction.madd_pub_user_feed(user.id, feed_key_values)
-    feedAction.madd_repos_feed(repos.id, feed_key_values)
+    feedAction.madd_repo_feed(repo.id, feed_key_values)
 
-def get_username_reposname(abspath):
+def get_username_reponame(abspath):
     rfirst_slash_idx = abspath.rfind('/')
     rsecond_slash_idx = abspath.rfind('/', 0, rfirst_slash_idx)
     rthird_slash_idx = abspath.rfind('/', 0, rsecond_slash_idx)
@@ -126,22 +126,22 @@ def get_gsuser(user):
         return None
     return UserprofileManager.get_userprofile_by_id(user.id)
 
-def get_repos(user, reposname):  
+def get_repo(user, reponame):  
     if user is None:
         return None
-    return ReposManager.get_repos_by_userId_name(user.id, reposname)
+    return RepoManager.get_repo_by_userId_name(user.id, reponame)
 
-def get_repospath(user, repos):
-    if repos.auth_type == 0:
-        return ('%s/%s/%s.git') % (PUBLIC_REPOS_PATH, user.username, repos.name)
+def get_repopath(user, repo):
+    if repo.auth_type == 0:
+        return ('%s/%s/%s.git') % (PUBLIC_REPO_PATH, user.username, repo.name)
     else:
-        return ('%s/%s/%s.git') % (PRIVATE_REPOS_PATH, user.username, repos.name)
+        return ('%s/%s/%s.git') % (PRIVATE_REPO_PATH, user.username, repo.name)
 
-def update_gsuser_repos_quote(gsuser, repos, diff_size):
+def update_gsuser_repo_quote(gsuser, repo, diff_size):
     gsuser.used_quote = gsuser.used_quote + diff_size
-    repos.used_quote = repos.used_quote + diff_size
+    repo.used_quote = repo.used_quote + diff_size
     gsuser.save()
-    repos.save()
+    repo.save()
 
 if __name__ == '__main__':
     main()

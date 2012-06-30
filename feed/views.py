@@ -7,7 +7,7 @@ from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.feed.feed import FeedAction
-from gitshell.repos.models import ReposManager
+from gitshell.repo.models import RepoManager
 from gitshell.gsuser.models import UserprofileManager
 
 @login_required
@@ -51,11 +51,11 @@ def get_feeds(ids_str):
     for idstr in ids_str.split('_'):
         if re.match('^\d+$', idstr):
             ids.append(int(idstr))
-    commits = ReposManager.get_commits_by_ids(ids)
+    commits = RepoManager.get_commits_by_ids(ids)
     for commit in commits:
         feed = {}
         feed['id'] = commit.id
-        feed['repos_name'] = commit.repos_name
+        feed['repo_name'] = commit.repo_name
         feed['commit_hash'] = commit.commit_hash
         feed['author'] = commit.author
         feed['committer_date'] = time.mktime(commit.committer_date.timetuple())

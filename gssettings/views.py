@@ -105,9 +105,9 @@ def email(request):
                           context_instance=RequestContext(request))
 
 @login_required
-def repos(request):
+def repo(request):
     response_dictionary = {'hello_world': 'hello world'}
-    return render_to_response('settings/repos.html',
+    return render_to_response('settings/repo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 

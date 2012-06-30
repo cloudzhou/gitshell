@@ -58,7 +58,7 @@ $(function(){
             },
             success: function(json){
                 ordered_date = []
-                ordered_date_reposname = {}
+                ordered_date_reponame = {}
                 display_feeds_map = {}
                 feeds = json.feeds
                 gravatarmap = json.gravatarmap
@@ -68,29 +68,29 @@ $(function(){
                 for(x in feeds) {
                     feed = feeds[x];
                     feed_date_str = moment(new Date(feed.committer_date*1000)).format('MM/DD');
-                    feed_repos_name = feed.repos_name;
+                    feed_repo_name = feed.repo_name;
                     if(!display_feeds_map[feed_date_str]) {
                         ordered_date.push(feed_date_str);
                         display_feeds_map[feed_date_str] = {};
                     }
-                    if(!display_feeds_map[feed_date_str][feed_repos_name]) {
-                        if(!ordered_date_reposname[feed_date_str]) {
-                            ordered_date_reposname[feed_date_str] = [];
+                    if(!display_feeds_map[feed_date_str][feed_repo_name]) {
+                        if(!ordered_date_reponame[feed_date_str]) {
+                            ordered_date_reponame[feed_date_str] = [];
                         }
-                        ordered_date_reposname[feed_date_str].push(feed_repos_name);
-                        display_feeds_map[feed_date_str][feed_repos_name] = [];
+                        ordered_date_reponame[feed_date_str].push(feed_repo_name);
+                        display_feeds_map[feed_date_str][feed_repo_name] = [];
                     }
-                    display_feeds_map[feed_date_str][feed_repos_name].push(feed);
+                    display_feeds_map[feed_date_str][feed_repo_name].push(feed);
                 }
                 html = []
                 for(x in ordered_date) {
                     feed_date = ordered_date[x];
                     html.push('<div class="page-header" style="margin: 0px; padding-bottom: 10px"><h4 class="muted"> ' + feed_date + ' </h4></div><div class="feedtime" style="padding: 10px;"><h3><img style="margin-right: 10px" src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=32"/><a href="/{{ user.username }}/">{{ user.username }}</a>...</h3>');
-                    for(y in ordered_date_reposname[ordered_date[x]]) {
-                        feed_reposname = ordered_date_reposname[ordered_date[x]][y];
-                        html.push('<div style="margin-left: 50px;"><p>commit 到 <a href="">' + feed_reposname + '</a></p><ul>');
-                        for(z in display_feeds_map[feed_date][feed_reposname]) {
-                            feed = display_feeds_map[feed_date][feed_reposname][z];
+                    for(y in ordered_date_reponame[ordered_date[x]]) {
+                        feed_reponame = ordered_date_reponame[ordered_date[x]][y];
+                        html.push('<div style="margin-left: 50px;"><p>commit 到 <a href="">' + feed_reponame + '</a></p><ul>');
+                        for(z in display_feeds_map[feed_date][feed_reponame]) {
+                            feed = display_feeds_map[feed_date][feed_reponame][z];
                             html.push('<li style="margin: 1px"><code><a href="">' + feed.commit_hash + '</a></code> ' + feed.subject + ' <span class="muted pull-right">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></li>');
                         }
                         html.push('</ul></div>');

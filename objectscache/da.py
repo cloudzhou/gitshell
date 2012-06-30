@@ -19,13 +19,13 @@ rawsql = {
         'select * from keyauth_userpubkey where visibly = 0 and fingerprint = %s limit 0, 1',
     'userpubkey_s_userId_fingerprint':
         'select * from keyauth_userpubkey where visibly = 0 and user_id = %s and fingerprint = %s limit 0, 1',
-    # repos #
-    'repos_s_userId_name':
-        'select * from repos_repos where visibly = 0 and user_id = %s and name = %s limit 0, 1',
-    'repos_l_userId':
-        'select * from repos_repos where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
-    'repos_c_userId':
-        'select 0 as id, count(1) as count from repos_repos where visibly = 0 and user_id = %s',
+    # repo #
+    'repo_s_userId_name':
+        'select * from repo_repo where visibly = 0 and user_id = %s and name = %s limit 0, 1',
+    'repo_l_userId':
+        'select * from repo_repo where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
+    'repo_c_userId':
+        'select 0 as id, count(1) as count from repo_repo where visibly = 0 and user_id = %s',
 }
 
 def get_many(model, table, pids):

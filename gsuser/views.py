@@ -25,7 +25,7 @@ def user(request, user_name):
                           context_instance=RequestContext(request))
 
 @login_required
-def repos(request, user_name):
+def repo(request, user_name):
     response_dictionary = {'hello_world': 'hello world1'}
     return render_to_response('home.html',
                           response_dictionary,

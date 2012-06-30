@@ -23,13 +23,13 @@
             <div style="padding: 15px; background-color: #EEEEEE">
                 <p class="muted">♬ commit 历史</p>
                 <ul>
-                    <li style="margin-bottom: 5px"><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-)
+                    <li style="margin-bottom: 5px"><code><a href="">adfe54e9334e</a></code> user.html and repo forms ... :-)
                     <span class="pull-right muted">30分钟前</span></li>
-                    <li style="margin-bottom: 5px"><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-)
+                    <li style="margin-bottom: 5px"><code><a href="">adfe54e9334e</a></code> user.html and repo forms ... :-)
                     <span class="pull-right muted">30分钟前</span></li>
-                    <li style="margin-bottom: 5px"><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-)
+                    <li style="margin-bottom: 5px"><code><a href="">adfe54e9334e</a></code> user.html and repo forms ... :-)
                     <span class="pull-right muted">30分钟前</span></li>
-                    <li style="margin-bottom: 5px"><code><a href="">adfe54e9334e</a></code> user.html and repos forms ... :-)
+                    <li style="margin-bottom: 5px"><code><a href="">adfe54e9334e</a></code> user.html and repo forms ... :-)
                     <span class="pull-right muted">30分钟前</span></li>
                 </ul>
             </div>
@@ -40,7 +40,7 @@
         <div class="page-header" style="padding-bottom: 0px">
             <p class="muted">热门的仓库列表</p>
         </div>
-        <div style="padding: 10px; background-color: rgb(255, 255, 255);" class="c_repos">
+        <div style="padding: 10px; background-color: rgb(255, 255, 255);" class="c_repo">
             <h3>1. <img style="margin-right: 10px;" src="http://www.gravatar.com/avatar/8e580cce03d7a7229981c1acad1313bd?s=20"><a href="/cloudzhou/">cloudzhou</a> / 
             <a href="/cloudzhou/gitshell/">gitshell</a>
             <span style="float: right;">
@@ -53,7 +53,7 @@
             </div>
             <div style="padding: 0px; background-color: #EEEEEE; margin-bottom: 10px">
                 <div class="c_status" style="padding: 2px; background-color: #FFFFFF">
-                    <div id="id_hot_repos_flot" style="height: 60px"></div>
+                    <div id="id_hot_repo_flot" style="height: 60px"></div>
                 </div>
             </div>
         </div>
@@ -62,7 +62,7 @@
         </div>
         <div style="padding: 15px 15px 0px; background-color: #EEEEEE; margin-bottom: 10px">
             <div class="c_status" style="padding: 10px; background-color: #FFFFFF">
-                <div id="id_repos_commit_flot" style="height: 150px"></div>
+                <div id="id_repo_commit_flot" style="height: 150px"></div>
             </div>
             <div style="padding: 15px; background-color: #EEEEEE">
                 <p class="muted">♩ 所有仓库 commit 累计次数</p>
@@ -70,7 +70,7 @@
         </div>
         <div style="padding: 15px 15px 0px; background-color: #EEEEEE; margin-bottom: 10px">
             <div class="c_status" style="padding: 10px; background-color: #FFFFFF">
-                <div id="id_repos_watch_flot" style="height: 150px"></div>
+                <div id="id_repo_watch_flot" style="height: 150px"></div>
             </div>
             <div style="padding: 15px; background-color: #EEEEEE">
                 <p class="muted">♪ 所有仓库 关注 累计次数</p>
@@ -78,7 +78,7 @@
         </div>
         <div style="padding: 15px 15px 0px; background-color: #EEEEEE; margin-bottom: 10px">
             <div class="c_status" style="padding: 10px; background-color: #FFFFFF">
-                <div id="id_repos_fork_flot" style="height: 150px"></div>
+                <div id="id_repo_fork_flot" style="height: 150px"></div>
             </div>
             <div style="padding: 15px; background-color: #EEEEEE">
                 <p class="muted">♫ 所有仓库 fork 累计次数</p>
@@ -87,7 +87,7 @@
     </div>
     <div class="span4" style="padding: 15px 15px 0px;">
         <div class="c_status" style="padding: 10px;">
-            <div id="id_commit_repos_flot" style="height: 300px"></div>
+            <div id="id_commit_repo_flot" style="height: 300px"></div>
         </div>
         <div style="padding: 15px; background-color: #EEEEEE">
             <p class="muted">commit 仓库比例</p>
@@ -134,7 +134,7 @@ $(function(){
         selection: { mode: "x" },
         grid: { hoverable: true, tickColor: '#d0d0d0', borderColor:'#7f7f7f', markingsColor:'#f2f5ff' }
     });
-    var plot0 = $.plot($("#id_hot_repos_flot"), [d1],
+    var plot0 = $.plot($("#id_hot_repo_flot"), [d1],
     {
         bars: { show: true, fill: true },
         xaxis: {show: false},
@@ -143,7 +143,7 @@ $(function(){
         selection: { mode: "x" },
         grid: { hoverable: true, tickColor: '#d0d0d0', borderColor:'#7f7f7f', markingsColor:'#f2f5ff' }
     });
-    var plot2 = $.plot($("#id_repos_commit_flot"), [d1],
+    var plot2 = $.plot($("#id_repo_commit_flot"), [d1],
     {
         bars: { show: true, fill: true },
         yaxis: { min:0, autoscaleMargin: 0.1 },
@@ -151,7 +151,7 @@ $(function(){
         selection: { mode: "x" },
         grid: { hoverable: true, tickColor: '#d0d0d0', borderColor:'#7f7f7f', markingsColor:'#f2f5ff' }
     });
-    var plot3 = $.plot($("#id_repos_watch_flot"), [d1],
+    var plot3 = $.plot($("#id_repo_watch_flot"), [d1],
     {
         bars: { show: true, fill: true },
         yaxis: { min:0, autoscaleMargin: 0.1 },
@@ -159,7 +159,7 @@ $(function(){
         selection: { mode: "x" },
         grid: { hoverable: true, tickColor: '#d0d0d0', borderColor:'#7f7f7f', markingsColor:'#f2f5ff' }
     });
-    var plot4 = $.plot($("#id_repos_fork_flot"), [d1],
+    var plot4 = $.plot($("#id_repo_fork_flot"), [d1],
     {
         bars: { show: true, fill: true },
         yaxis: { min:0, autoscaleMargin: 0.1 },
@@ -175,7 +175,7 @@ $(function(){
         { label: "Series5",  data: 80},
         { label: "Series6",  data: 110}
     ];
-    var plot1 = $.plot($("#id_commit_repos_flot"), data,
+    var plot1 = $.plot($("#id_commit_repo_flot"), data,
     {
         series: { pie: { show: true } },
         legend: { show: false }
@@ -185,12 +185,12 @@ $(function(){
         series: { pie: { show: true } },
         legend: { show: false }
     });
-    $('.c_repos').hover(function() {
+    $('.c_repo').hover(function() {
         $(this).css('background-color', '#D9EDF7');
     }, function(){
         $(this).css('background-color', '#FFFFFF');
     });
-    $('.c_repos').tooltip({
+    $('.c_repo').tooltip({
       selector: "a[rel=tooltip]"
     });
 
