@@ -11,7 +11,9 @@ from django.utils.html import escape
 from gitshell.feed.feed import FeedAction
 from gitshell.repo.Forms import RepoForm, RepoIssuesForm, RepoIssuesCommentForm
 from gitshell.repo.githandler import GitHandler
-from gitshell.repo.models import Repo, RepoManager
+from gitshell.repo.models import Repo, RepoManager, Issues
+from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, ISSUES_ATTRS
+from gitshell.gsuser.models import UserprofileManager
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
 
 @login_required
@@ -46,7 +48,7 @@ def repo_tree(request, user_name, repo_name, refs, path):
     return repo_ls_tree(request, user_name, repo_name, refs, path, current)
 
 def repo_raw_tree(request, user_name, repo_name, refs, path):
-    repo = get_repo_by_name(user_name, repo_name)
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path.endswith('/'):
         raise Http404
     gitHandler = GitHandler()
@@ -58,7 +60,7 @@ def repo_raw_tree(request, user_name, repo_name, refs, path):
 lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml'}
 brush_aliases = {'AppleScript': 'applescript', 'AS3': 'actionscript3', 'Bash': 'shell', 'ColdFusion': 'coldfusion', 'Cpp': 'cpp', 'CSharp': 'csharp', 'Css': 'css', 'Delphi': 'delphi', 'Diff': 'diff', 'Erlang': 'erlang', 'Groovy': 'groovy', 'JavaFX': 'javafx', 'Java': 'java', 'JScript': 'javascript', 'Perl': 'perl', 'Php': 'php', 'Plain': 'plain', 'PowerShell': 'powershell', 'Python': 'python', 'Ruby': 'ruby', 'Sass': 'sass', 'Scala': 'scala', 'Sql': 'sql', 'Vb': 'vb', 'Xml': 'xml'}
 def repo_ls_tree(request, user_name, repo_name, refs, path, current):
-    repo = get_repo_by_name(user_name, repo_name)
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
     if path is None or path == '':
@@ -88,7 +90,7 @@ def repo_default_commits(request, user_name, repo_name):
     return repo_commits(request, user_name, repo_name, refs, path)
     
 def repo_commits(request, user_name, repo_name, refs, path):
-    repo = get_repo_by_name(user_name, repo_name)
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
     if path is None or path == '':
@@ -103,7 +105,7 @@ def repo_commits(request, user_name, repo_name, refs, path):
                           context_instance=RequestContext(request))
 
 def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path):
-    repo = get_repo_by_name(user_name, repo_name)
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
     if path is None or path == '':
@@ -113,23 +115,50 @@ def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path)
     diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
     return HttpResponse(json.dumps({'diff': escape(diff)}), mimetype="application/json")
 
-trackers = ['缺陷', '功能', '支持']
-statuses = ['新建', '已指派', '进行中', '已解决', '已关闭', '已拒绝']
-priorities = ['紧急', '高', '普通', '低']
-issues_attrs = { 'trackers': trackers, 'statuses': statuses, 'priorities': priorities }
 def repo_issues(request, user_name, repo_name):
+    return repo_list_issues(request, user_name, repo_name, None, TRACKERS[0].value, STATUSES[0].value, PRIORITIES[0].value, 'modify_time', 0)
+ 
+def repo_list_issues(request, user_name, repo_name, assigned, tracker, status, priority, orderby, page):
     refs = 'master'; path = '.'; current = 'issues'
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
-    response_dictionary.update(issues_attrs)
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    user_id = request.user.id
+    user_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
+    user_ids.insert(0, repo.user_id)
+    if user_id != repo.user_id and user_id in user_ids:
+        user_ids.remove(user_id)
+        user_ids.insert(0, user_id)
+    assigneds = [o.username for o in UserprofileManager.list_user_by_ids(user_ids)]
+    if assigned is None:
+        assigned = assigneds[0]
+    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page}
+    response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def repo_create_issues(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'issues'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
     repoIssuesForm = RepoIssuesForm()
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesForm': repoIssuesForm}
-    response_dictionary.update(issues_attrs)
+    repoIssuesForm.fill_assigned(repo)
+    error = ''
+    if request.method == 'POST':
+        issues = Issues()
+        issues.user_id = request.user.id
+        issues.repo_id = repo.id
+        repoIssuesForm = RepoIssuesForm(request.POST, instance = issues)
+        repoIssuesForm.fill_assigned(repo)
+        if repoIssuesForm.is_valid():
+            repoIssuesForm.save()
+            return HttpResponseRedirect('/%s/%s/issues/' % (user_name, repo_name))
+        else:
+            error = u'issues 内容不能为空'
+    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error}
+    response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/create_issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -137,15 +166,7 @@ def repo_create_issues(request, user_name, repo_name):
 def repo_delete_issues(request, user_name, repo_name, issue_id):
     refs = 'master'; path = '.'; current = 'issues'
     response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
-    response_dictionary.update(issues_attrs)
-    return render_to_response('repo/issues.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-def repo_list_issues(request, user_name, repo_name, assigned, tracker, status, priority, orderby, page):
-    refs = 'master'; path = '.'; current = 'issues'
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
-    response_dictionary.update(issues_attrs)
+    response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -154,7 +175,7 @@ def repo_create_comment(request, user_name, repo_name, issues_id):
     refs = 'master'; path = '.'; current = 'issues'
     repoIssuesCommentForm = RepoIssuesCommentForm()
     response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesCommentForm': repoIssuesCommentForm}
-    response_dictionary.update(issues_attrs)
+    response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/create_comment.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -162,7 +183,7 @@ def repo_create_comment(request, user_name, repo_name, issues_id):
 def repo_delete_comment(request, user_name, repo_name, comment_id):
     refs = 'master'; path = '.'; current = 'issues'
     response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
-    response_dictionary.update(issues_attrs)
+    response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -189,7 +210,7 @@ def repo_stats(request, user_name, repo_name):
                           context_instance=RequestContext(request))
 
 def repo_refs(request, user_name, repo_name):
-    repo = get_repo_by_name(user_name, repo_name)
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         return HttpResponse(json.dumps({'user_name': user_name, 'repo_name': repo_name, 'branches': [], 'tags': []}), mimetype="application/json")
     repopath = repo.get_abs_repopath(user_name)
@@ -199,13 +220,6 @@ def repo_refs(request, user_name, repo_name):
     tags_refs = gitHandler.repo_ls_tags(repopath)
     response_dictionary = {'user_name': user_name, 'repo_name': repo_name, 'branches': branches_refs, 'tags': tags_refs}
     return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
-
-def get_repo_by_name(user_name, repo_name):
-    try:
-        user = User.objects.get(username=user_name)     
-        return RepoManager.get_repo_by_userId_name(user.id, repo_name)
-    except User.DoesNotExist:
-        return None
 
 def folder(request):
     response_dictionary = {'hello_world': 'hello world'}

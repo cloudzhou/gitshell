@@ -20,6 +20,12 @@
             <div style="margin-bottom: 10px;">
                 {{ repoIssuesForm.content }}
             </div>
+            {% if error %}
+            <div class="alert">
+                <a data-dismiss="alert" class="close">×</a>
+                <strong>出错了！</strong> {{ error }}
+            </div>
+            {% endif %}
             <button id="i_submit" style="margin-right: 0px;" class="btn btn-primary" type="submit">确定</button>
             <div class="hidden">{{ repoIssuesForm.subject }}</div>
         </form>
@@ -44,6 +50,9 @@ $(function(){
             var content = line_arr.join('\n');
             $('#id_subject').val(subject);
             $('#id_content').val(content);
+            if($('#id_category').val() == '') {
+                $('#id_category').val('无')
+            }
             return true;
         }
         return false;

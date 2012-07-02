@@ -5,9 +5,6 @@ from gitshell.objectscache.models import Count
 import time
 
 rawsql = {
-    # userprofile #
-    'userprofile_s_id':
-        'select * from gsuser_userprofile where visibly = 0 and id = %s',
     # userpubkey #
     'userpubkey_l_userId':
         'select * from keyauth_userpubkey where visibly = 0 and user_id = %s limit 0, 10',
@@ -26,6 +23,9 @@ rawsql = {
         'select * from repo_repo where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
     'repo_c_userId':
         'select 0 as id, count(1) as count from repo_repo where visibly = 0 and user_id = %s',
+    # repo_member #
+    'repomember_l_repoId':
+        'select * from repo_repomember where visibly = 0 and repo_id = %s order by modify_time desc',
 }
 
 def get_many(model, table, pids):
@@ -48,7 +48,7 @@ def get(model, table, pid):
     obj = cache.get(id_key)
     if obj is not None:
         return obj
-    obj = model.objects.get(id = pid)
+    obj = model.objects.get(id = pid, visibly = 0)
     cache.add(id_key, obj)
     return obj
 

@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User, UserManager
 from gitshell.objectscache.models import BaseModel
-from gitshell.objectscache.da import query, queryraw, execute, count, countraw
+from gitshell.objectscache.da import query, get, get_many, execute, count, countraw
 
 class Userprofile(BaseModel):
     tweet = models.CharField(max_length=128, null=True)
@@ -22,11 +22,24 @@ class Userprofile(BaseModel):
 class UserprofileManager():
 
     @classmethod
+    def get_user_by_id(self, user_id):
+        return get(User, 'auth_user', user_id)
+
+    @classmethod
+    def get_user_by_name(self, username):
+        try:
+            user = User.objects.get(username=username)
+            return user
+        except User.DoesNotExist:
+            return None 
+
+    @classmethod
+    def list_user_by_ids(self, user_ids):
+        return get_many(User, 'auth_user', user_ids)
+
+    @classmethod
     def get_userprofile_by_id(self, user_id):
-        userprofiles = query(Userprofile, 'gsuser_userprofile', user_id, 'userprofile_s_id', [user_id])
-        if len(list(userprofiles)) > 0:
-            return userprofiles[0]
-        return None
+        return get(Userprofile, 'gsuser_userprofile', user_id)
     
     @classmethod
     def get_userprofile_by_name(self, username):

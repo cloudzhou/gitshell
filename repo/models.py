@@ -1,7 +1,8 @@
 from django.db import models
 from gitshell.objectscache.models import BaseModel
-from gitshell.objectscache.da import query, queryraw, execute, count, get_many
+from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
+from gitshell.gsuser.models import UserprofileManager
 
 class Repo(BaseModel):
     user_id = models.IntegerField()
@@ -73,19 +74,19 @@ class ForkHistory(BaseModel):
 class Issues(BaseModel):
     repo_id = models.IntegerField()
     user_id = models.IntegerField()
-    subject = models.CharField(max_length=128)
+    subject = models.CharField(max_length=128, default='')
     tracker = models.IntegerField(default=0)
     status = models.IntegerField(default=0) 
     assigned = models.IntegerField(default=0)
     priority = models.IntegerField(default=0)
-    category = models.CharField(max_length=16)
-    content = models.CharField(max_length=1024)
+    category = models.CharField(max_length=16, default='')
+    content = models.CharField(max_length=1024, default='')
 
 class IssuesComment(BaseModel):
     issues_id = models.IntegerField()
     user_id = models.IntegerField()
     vote = models.IntegerField(default=0)
-    content = models.CharField(max_length=512) 
+    content = models.CharField(max_length=512, default='') 
 
 class RepoManager():
 
@@ -95,8 +96,15 @@ class RepoManager():
         return list(repoes)
 
     @classmethod
-    def get_repo_by_userId_id(self, user_id, rid):
-        pass
+    def get_repo_by_id(self, repo_id):
+        return get(Repo, 'repo_repo', repo_id)
+
+    @classmethod
+    def get_repo_by_name(self, user_name, repo_name):
+        user = UserprofileManager.get_user_by_name(user_name)
+        if user is None:
+            return None
+        return RepoManager.get_repo_by_userId_name(user.id, repo_name)
 
     @classmethod
     def get_repo_by_userId_name(self, user_id, name):
@@ -114,8 +122,7 @@ class RepoManager():
         return get_many(CommitHistory, 'repo_commithistory', ids)
 
     @classmethod
-    def get_repo_members(self, repo_id):
-        repoes = query(RepoMember, 'repo_repo', user_id, 'repo_s_userId_name', [user_id, name])
-        if len(list(repoes)) > 0:
-            return repoes[0]
-        return None
+    def list_repomember(self, repo_id):
+        repoemembers = query(RepoMember, 'repo_repomember', repo_id, 'repomember_l_repoId', [repo_id])
+        return list(repoemembers)
+

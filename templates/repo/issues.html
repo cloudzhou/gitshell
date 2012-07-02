@@ -4,29 +4,49 @@
         <div class="well" style="padding: 5px; margin: 4px; overflow:hidden">
             <dl class="dl-horizontal" style="margin: 4px">
                 <dt style="width: 60px; font-weight: normal">指派给:</dt>
-                <dd style="margin-left: 80px"><span class="label">test</span> <span class="label label-success">cloudzhou</span></dd>
+                <dd style="margin-left: 80px">
+                {% for iter_assigned in assigneds %}
+                    {%if assigned == iter_assigned%}
+                        <span class="label label-success">{{iter_assigned}}</span>
+                    {%else%}
+                        <a href="javascript:void(0)" value="assigned:{{iter_assigned}}"><span class="label">{{iter_assigned}}</span></a>
+                    {%endif%}
+                {% endfor %}
+                </dd>
             </dl>
             <dl class="dl-horizontal" style="margin: 4px">
                 <dt style="width: 60px; font-weight: normal">跟踪:</dt>
                 <dd style="margin-left: 80px">
-                {%for tracker in trackers%}
-                    <span class="label">{{tracker}}</span>
+                {%for iter_tracker in TRACKERS%}
+                    {%if tracker == iter_tracker.value%}
+                        <span class="label label-success">{{iter_tracker.name}}</span>
+                    {%else%}
+                        <a href="javascript:void(0)" value="tracker:{{iter_tracker.value}}"><span class="label">{{iter_tracker.name}}</span></a>
+                    {%endif%}
                 {%endfor%}
                 </dd>
             </dl>
             <dl class="dl-horizontal" style="margin: 4px">
                 <dt style="width: 60px; font-weight: normal">状态:</dt>
                 <dd style="margin-left: 80px">
-                {%for status in statuses%}
-                    <span class="label">{{status}}</span>
+                {%for iter_status in STATUSES%}
+                    {%if status == iter_status.value%}
+                        <span class="label label-success">{{iter_status.name}}</span>
+                    {%else%}
+                        <a href="javascript:void(0)" value="status:{{iter_status.value}}"><span class="label">{{iter_status.name}}</span></a>
+                    {%endif%}
                 {%endfor%}
                 </dd>
             </dl>
             <dl class="dl-horizontal" style="margin: 4px">
                 <dt style="width: 60px; font-weight: normal">优先级:</dt>
                 <dd style="margin-left: 80px">
-                {%for priority in priorities%}
-                    <span class="label">{{priority}}</span>
+                {%for iter_priority in PRIORITIES%}
+                    {%if priority == iter_priority.value%}
+                        <span class="label label-success">{{iter_priority.name}}</span>
+                    {%else%}
+                        <a href="javascript:void(0)" value="priority:{{iter_priority.value}}"><span class="label">{{iter_priority.name}}</span></a>
+                    {%endif%}
                 {%endfor%}
                 </dd>
             </dl>
