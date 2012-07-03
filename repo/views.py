@@ -12,7 +12,7 @@ from gitshell.feed.feed import FeedAction
 from gitshell.repo.Forms import RepoForm, RepoIssuesForm, RepoIssuesCommentForm
 from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, Issues
-from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, ISSUES_ATTRS
+from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, ISSUES_ATTRS, conver_issues
 from gitshell.gsuser.models import UserprofileManager
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
 
@@ -124,17 +124,39 @@ def repo_list_issues(request, user_name, repo_name, assigned, tracker, status, p
     if repo is None:
         raise Http404
     user_id = request.user.id
-    user_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
-    user_ids.insert(0, repo.user_id)
-    if user_id != repo.user_id and user_id in user_ids:
-        user_ids.remove(user_id)
-        user_ids.insert(0, user_id)
-    assigneds = [o.username for o in UserprofileManager.list_user_by_ids(user_ids)]
+    member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
+    member_ids.insert(0, repo.user_id)
+    if user_id != repo.user_id and user_id in member_ids:
+        member_ids.remove(user_id)
+        member_ids.insert(0, user_id)
+    members = UserprofileManager.list_user_by_ids(member_ids)
+    assigneds = [o.username for o in members]
     if assigned is None:
         assigned = assigneds[0]
+    assigned_id = repo.user_id
+    assigned_user = UserprofileManager.get_user_by_name(assigned)
+    if assigned_user is not None and assigned in assigneds:
+        assigned_id = assigned_user.id
     tracker = int(tracker); status = int(status); priority = int(priority); page = int(page)
     current_attrs = { "assigned": str(assigned), "tracker": tracker, "status": status, "priority": priority, "orderby": str(orderby), "page": page }
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page, 'current_attrs': current_attrs}
+    raw_issues = RepoManager.list_issues(repo.id, assigned_id, tracker, status, priority, orderby, page)
+    reporter_ids = [o.user_id for o in raw_issues]
+    reporters = UserprofileManager.list_user_by_ids(list(set(reporter_ids)-set(member_ids)))
+    user_map = {}
+    for member in members:
+        user_map[member.id] = member.username
+    for reporter in reporters:
+        user_map[reporter.id] = reporter.username
+    issues = conver_issues(raw_issues, user_map)
+
+    hasPre = False ; hasNext = False
+    if page > 0:
+        hasPre = True 
+    if len(issues) > 2:
+        hasNext = True
+        issues.pop()
+    
+    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page, 'current_attrs': current_attrs, 'issues': issues, 'hasPre': hasPre, 'hasNext': hasNext}
     response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues.html',
                           response_dictionary,

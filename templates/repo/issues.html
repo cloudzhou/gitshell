@@ -66,36 +66,56 @@
 			  </tr>
 			</thead>
 			<tbody>
-			  <tr>
-				<td><a href="">#190 Show deleted wiki pages or wiki files on the activity on the activity</a></td>
-				<td>功能</td>
-				<td>新</td>
-				<td>cloudzhou</td>
-				<td>高</td>
-				<td>安全</td>
-				<td>3个小时前</td>
-			  </tr>
-			  <tr>
-				<td><a href="">#190 Show deleted wiki pages or wiki files on the activity on the activity</a></td>
-				<td>功能</td>
-				<td>新</td>
-				<td>cloudzhou</td>
-				<td>高</td>
-				<td>安全</td>
-				<td>3个小时前</td>
-			  </tr>
+                {% for issue in issues %}
+			    <tr>
+				    <td><a href="">#{{issue.id}} {{issue.subject}}</a> [<a href="/{{issue.user_id}}/">{{issue.user_id}}</a>]</td>
+				    <td>{{issue.tracker}}</td>
+				    <td>{{issue.status}}</td>
+				    <td>{{issue.assigned}}</td>
+				    <td>{{issue.priority}}</td>
+				    <td>{{issue.category}}</td>
+				    <td class="c_unixtime">{{issue.create_time}}</td>
+			    </tr>
+                {% endfor %}
 			</tbody>
 	</table>
+    <ul class="pager pull-right">
+        {%if hasPre%}
+            <li><a id="i_index_page" href="javascript:void(0)">首页</a></li>
+            <li><a id="i_pre_page" href="javascript:void(0)">前一页</a></li>
+        {%endif%}
+        {%if hasPre or hasNext%}
+            <li style="padding-left: 6px;padding-right: 6px"> 第{{page}}页 </li>
+        {%endif%}
+        {%if hasNext%}
+            <li><a id="i_next_page" href="javascript:void(0)">后一页</a></li>
+        {%endif%}
+      </ul>
 {% endblock %}
 {% block subjs %}
 <script>
 $(function(){
     var current_attrs = {{current_attrs|safe}};
-    $('.issues_attr').click(function(index){ 
+    $('#i_index_page').click(function(){ 
+        current_attrs['page'] = 0;
+        location_cons()
+    });
+    $('#i_pre_page').click(function(){ 
+        current_attrs['page'] = current_attrs['page'] - 1;
+        location_cons()
+    });
+    $('#i_next_page').click(function(){ 
+        current_attrs['page'] = current_attrs['page'] + 1;
+        location_cons()
+    });
+    $('.issues_attr').click(function(){ 
         var keyValue = $(this).attr('value').split(":")
         current_attrs[keyValue[0]] = keyValue[1];
-        window.location = "/{{user_name}}/{{repo_name}}/issues/list/"+ current_attrs['assigned'] +"/"+ current_attrs['tracker'] +"/"+ current_attrs['status'] +"/"+ current_attrs['priority'] +"/"+ current_attrs['orderby'] +"/"+ current_attrs['page'] +"/";
+        location_cons()
     });
+    location_cons = function() {
+        window.location = "/{{user_name}}/{{repo_name}}/issues/list/"+ current_attrs['assigned'] +"/"+ current_attrs['tracker'] +"/"+ current_attrs['status'] +"/"+ current_attrs['priority'] +"/"+ current_attrs['orderby'] +"/"+ current_attrs['page'] +"/";
+    }
     $('.c_unixtime').each(function(index){ 
         $(this).html(moment(new Date($(this).html()*1000)).fromNow());
         $(this).show();

@@ -126,3 +126,9 @@ class RepoManager():
         repoemembers = query(RepoMember, 'repo_repomember', repo_id, 'repomember_l_repoId', [repo_id])
         return list(repoemembers)
 
+    @classmethod
+    def list_issues(self, repo_id, assigned_id, tracker, status, priority, orderby, page):
+        offset = page*2
+        row_count = 3
+        repoissues = query(Issues, 'repo_issues', repo_id, 'repoissues_l_cons', [repo_id, assigned_id, tracker, status, priority, orderby, offset, row_count]) 
+        return list(repoissues)
