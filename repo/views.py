@@ -132,7 +132,9 @@ def repo_list_issues(request, user_name, repo_name, assigned, tracker, status, p
     assigneds = [o.username for o in UserprofileManager.list_user_by_ids(user_ids)]
     if assigned is None:
         assigned = assigneds[0]
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page}
+    tracker = int(tracker); status = int(status); priority = int(priority); page = int(page)
+    current_attrs = { "assigned": str(assigned), "tracker": tracker, "status": status, "priority": priority, "orderby": str(orderby), "page": page }
+    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page, 'current_attrs': current_attrs}
     response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues.html',
                           response_dictionary,

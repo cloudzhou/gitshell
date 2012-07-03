@@ -9,7 +9,7 @@
                     {%if assigned == iter_assigned%}
                         <span class="label label-success">{{iter_assigned}}</span>
                     {%else%}
-                        <a href="javascript:void(0)" value="assigned:{{iter_assigned}}"><span class="label">{{iter_assigned}}</span></a>
+                        <a class="issues_attr" href="javascript:void(0)" value="assigned:{{iter_assigned}}"><span class="label">{{iter_assigned}}</span></a>
                     {%endif%}
                 {% endfor %}
                 </dd>
@@ -21,7 +21,7 @@
                     {%if tracker == iter_tracker.value%}
                         <span class="label label-success">{{iter_tracker.name}}</span>
                     {%else%}
-                        <a href="javascript:void(0)" value="tracker:{{iter_tracker.value}}"><span class="label">{{iter_tracker.name}}</span></a>
+                        <a class="issues_attr" href="javascript:void(0)" value="tracker:{{iter_tracker.value}}"><span class="label">{{iter_tracker.name}}</span></a>
                     {%endif%}
                 {%endfor%}
                 </dd>
@@ -33,7 +33,7 @@
                     {%if status == iter_status.value%}
                         <span class="label label-success">{{iter_status.name}}</span>
                     {%else%}
-                        <a href="javascript:void(0)" value="status:{{iter_status.value}}"><span class="label">{{iter_status.name}}</span></a>
+                        <a class="issues_attr" href="javascript:void(0)" value="status:{{iter_status.value}}"><span class="label">{{iter_status.name}}</span></a>
                     {%endif%}
                 {%endfor%}
                 </dd>
@@ -45,7 +45,7 @@
                     {%if priority == iter_priority.value%}
                         <span class="label label-success">{{iter_priority.name}}</span>
                     {%else%}
-                        <a href="javascript:void(0)" value="priority:{{iter_priority.value}}"><span class="label">{{iter_priority.name}}</span></a>
+                        <a class="issues_attr" href="javascript:void(0)" value="priority:{{iter_priority.value}}"><span class="label">{{iter_priority.name}}</span></a>
                     {%endif%}
                 {%endfor%}
                 </dd>
@@ -90,6 +90,12 @@
 {% block subjs %}
 <script>
 $(function(){
+    var current_attrs = {{current_attrs|safe}};
+    $('.issues_attr').click(function(index){ 
+        var keyValue = $(this).attr('value').split(":")
+        current_attrs[keyValue[0]] = keyValue[1];
+        window.location = "/{{user_name}}/{{repo_name}}/issues/list/"+ current_attrs['assigned'] +"/"+ current_attrs['tracker'] +"/"+ current_attrs['status'] +"/"+ current_attrs['priority'] +"/"+ current_attrs['orderby'] +"/"+ current_attrs['page'] +"/";
+    });
     $('.c_unixtime').each(function(index){ 
         $(this).html(moment(new Date($(this).html()*1000)).fromNow());
         $(this).show();
