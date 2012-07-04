@@ -21,7 +21,7 @@
         {%if issue_comments%}
 	    <table class="table table-striped">
             {%for issue_comment in issue_comments%}
-			    <tr><td class="span1"><img src="http://www.gravatar.com/avatar/{{ issue_comment.user_img }}?s=32"/> {{issue_comment.user_id}}</td><td>{{issue_comment.content}}</td></tr>
+			    <tr><td>{{issue_comment.content}} <a href="/{{issue_comment.user_id}}/"><img style="margin-left:50px" src="http://www.gravatar.com/avatar/{{ issue_comment.user_img }}?s=20"/> {{issue_comment.user_id}}</a></td></tr>
             {%endfor%}
         </table>
         {%endif%}
