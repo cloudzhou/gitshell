@@ -1,0 +1,58 @@
+{% extends "repo/repo.html" %}
+{% block subcontainer %}
+<style type="text/css">
+#id_content { height: 200px; width: 600px; }
+</style>
+    <div>
+        <div class="page-header" style="margin-bottom: 10px;padding-bottom: 5px">
+            <h3>#{{issue.id}} {{issue.subject}}
+            <small>
+            <a href="/{{issue.assigned}}/">{{issue.assigned}}</a> {{issue.tracker}} {{issue.status}} {{issue.priority}}
+            </small>
+            </h3>
+        </div>
+        <div style="margin-bottom: 10px;padding-bottom: 10px;border-bottom: 1px solid #EEEEEE">{{issue.content}}</div>
+        <div class="pull-right" style="margin-right: 100px; margin-bottom: 10px">
+            by <a href="/{{issue.user_id}}/">{{issue.user_id}}</a>
+            <span class="c_unixtime">{{issue.modify_time}}</span>
+            类别：{{issue.category}}
+        </div>
+        <br/>
+        {%if issue_comments%}
+	    <table class="table table-striped">
+            {%for issue_comment in issue_comments%}
+			    <tr><td class="span1"><img src="http://www.gravatar.com/avatar/{{ issue_comment.user_img }}?s=32"/> {{issue_comment.user_id}}</td><td>{{issue_comment.content}}</td></tr>
+            {%endfor%}
+        </table>
+        {%endif%}
+        <form id="i_comment" class="form-inline" action="" method="post">
+            {% csrf_token %}
+            <div id="i_comment_content" style="margin-bottom: 10px; display: none">
+                {{repoIssuesCommentForm.content}}
+            </div>
+            <button id="i_submit" style="margin-right: 0px;" class="btn btn-primary" type="submit">发表评论</button>
+            <small class="muted">不可修改，严谨发言</small>
+        </form>
+    </div>
+{% endblock %}
+{% block subjs %}
+<script>
+$(function(){
+    $('#i_submit').mouseover(function(){
+        $('#i_comment_content').show();
+        $('#id_content').focus();
+    });
+    $('#i_submit').click(function(){
+        if($('#id_content').val() != '') {
+            $(this).submit();
+            return true;
+        }
+        return false;
+    });
+    $('.c_unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+        $(this).show();
+    });
+});
+</script>
+{% endblock %}

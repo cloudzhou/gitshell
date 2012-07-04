@@ -49,5 +49,5 @@ class RepoIssuesCommentForm(forms.ModelForm):
         model = IssuesComment
         fields = ('content',)
         widgets = {
-            'content': forms.Textarea(attrs={'cols': 50, 'rows': 5, 'maxlength': 1024}),
+            'content': forms.Textarea(attrs={'maxlength': 1024}),
         }

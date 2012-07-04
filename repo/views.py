@@ -9,10 +9,10 @@ from django.contrib.auth.models import User
 from django.shortcuts import render_to_response
 from django.utils.html import escape
 from gitshell.feed.feed import FeedAction
-from gitshell.repo.Forms import RepoForm, RepoIssuesForm, RepoIssuesCommentForm
+from gitshell.repo.Forms import RepoForm, RepoIssuesForm, IssuesComment, RepoIssuesCommentForm
 from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, Issues
-from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, ISSUES_ATTRS, conver_issues
+from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, ISSUES_ATTRS, conver_issues, conver_issue_comments
 from gitshell.gsuser.models import UserprofileManager
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
 
@@ -115,10 +115,10 @@ def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path)
     diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
     return HttpResponse(json.dumps({'diff': escape(diff)}), mimetype="application/json")
 
-def repo_issues(request, user_name, repo_name):
-    return repo_list_issues(request, user_name, repo_name, None, TRACKERS[0].value, STATUSES[0].value, PRIORITIES[0].value, 'modify_time', 0)
+def issues(request, user_name, repo_name):
+    return issues_list(request, user_name, repo_name, None, TRACKERS[0].value, STATUSES[0].value, PRIORITIES[0].value, 'modify_time', 0)
  
-def repo_list_issues(request, user_name, repo_name, assigned, tracker, status, priority, orderby, page):
+def issues_list(request, user_name, repo_name, assigned, tracker, status, priority, orderby, page):
     refs = 'master'; path = '.'; current = 'issues'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -162,7 +162,49 @@ def repo_list_issues(request, user_name, repo_name, assigned, tracker, status, p
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-def repo_create_issues(request, user_name, repo_name):
+def issues_show(request, user_name, repo_name, issues_id, page):
+    refs = 'master'; path = '.'; current = 'issues'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    raw_issue = RepoManager.get_issues(repo.id, issues_id)
+    if raw_issue is None:
+        raise Http404
+    repoIssuesCommentForm = RepoIssuesCommentForm()
+    if request.method == 'POST':
+        issuesComment = IssuesComment() 
+        issuesComment.issues_id = issues_id
+        issuesComment.user_id = request.user.id
+        repoIssuesCommentForm = RepoIssuesCommentForm(request.POST, instance = issuesComment)
+        if repoIssuesCommentForm.is_valid():
+            repoIssuesCommentForm.save()
+            return HttpResponseRedirect('/%s/%s/issues/%s/%s/' % (user_name, repo_name, issues_id, page))
+    issues_id = int(issues_id); page = int(page)
+    user_map = {}
+    users = UserprofileManager.list_user_by_ids([raw_issue.user_id, raw_issue.assigned])
+    for user in users:
+        user_map[user.id] = user.username
+    issue = conver_issues([raw_issue], user_map)[0]
+    
+    user_map = {}
+    user_img_map = {}
+    raw_issue_comments = RepoManager.list_issues_comment(issues_id, page)
+    user_ids = [o.user_id for o in raw_issue_comments]
+    users = UserprofileManager.list_user_by_ids(user_ids)
+    userprofiles = UserprofileManager.list_userprofile_by_ids(user_ids)
+    for user in users:
+        user_map[user.id] = user.username
+    for userprofile in userprofiles:
+       user_img_map[userprofile.id] = userprofile.imgurl 
+    print user_img_map
+    issue_comments = conver_issue_comments(RepoManager.list_issues_comment(issues_id, page), user_map, user_img_map)
+    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm}
+    response_dictionary.update(ISSUES_ATTRS)
+    return render_to_response('repo/issues_show.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def issues_create(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'issues'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -183,11 +225,11 @@ def repo_create_issues(request, user_name, repo_name):
             error = u'issues 内容不能为空'
     response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error}
     response_dictionary.update(ISSUES_ATTRS)
-    return render_to_response('repo/create_issues.html',
+    return render_to_response('repo/issues_create.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-def repo_delete_issues(request, user_name, repo_name, issue_id):
+def issues_delete(request, user_name, repo_name, issue_id):
     refs = 'master'; path = '.'; current = 'issues'
     response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
     response_dictionary.update(ISSUES_ATTRS)
@@ -195,7 +237,7 @@ def repo_delete_issues(request, user_name, repo_name, issue_id):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-def repo_create_comment(request, user_name, repo_name, issues_id):
+def issues_create_comment(request, user_name, repo_name, issues_id):
     refs = 'master'; path = '.'; current = 'issues'
     repoIssuesCommentForm = RepoIssuesCommentForm()
     response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesCommentForm': repoIssuesCommentForm}
@@ -204,7 +246,7 @@ def repo_create_comment(request, user_name, repo_name, issues_id):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-def repo_delete_comment(request, user_name, repo_name, comment_id):
+def issues_delete_comment(request, user_name, repo_name, comment_id):
     refs = 'master'; path = '.'; current = 'issues'
     response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
     response_dictionary.update(ISSUES_ATTRS)

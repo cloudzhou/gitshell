@@ -27,8 +27,14 @@ rawsql = {
     'repomember_l_repoId':
         'select * from repo_repomember where visibly = 0 and repo_id = %s order by modify_time desc',
     # repo_issues #
-    'repoissues_l_cons':
-        'select * from repo_issues where visibly = 0 and repo_id = %s and assigned = %s and tracker = %s and status = %s and priority = %s order by %s desc limit %s, %s',
+    'repoissues_l_cons_modify':
+        'select * from repo_issues where visibly = 0 and repo_id = %s and assigned = %s and tracker = %s and status = %s and priority = %s order by modify_time desc limit %s, %s',
+    'repoissues_l_cons_create':
+        'select * from repo_issues where visibly = 0 and repo_id = %s and assigned = %s and tracker = %s and status = %s and priority = %s order by create_time desc limit %s, %s',
+    'repoissues_s_id':
+        'select * from repo_issues where visibly = 0 and repo_id = %s and id = %s limit 0,1',
+    'issuescomment_l_issuesId':
+        'select * from repo_issuescomment where visibly = 0 and issues_id = %s order by create_time desc limit %s, %s',
 }
 
 def get_many(model, table, pids):

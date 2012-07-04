@@ -24,13 +24,29 @@ def conver_issues(raw_issues, user_map):
         issue = {}
         issue['id'] = raw_issue.id
         issue['subject'] = raw_issue.subject
-        issue['user_id'] = user_map[raw_issue.user_id]
+        issue['content'] = raw_issue.content
+        if raw_issue.user_id in user_map:
+            issue['user_id'] = user_map[raw_issue.user_id]
         issue['tracker'] = REV_TRACKERS[raw_issue.tracker]
         issue['status'] = REV_STATUSES[raw_issue.status]
-        issue['assigned'] = user_map[raw_issue.assigned]
+        if raw_issue.assigned in user_map:
+            issue['assigned'] = user_map[raw_issue.assigned]
         issue['priority'] = REV_PRIORITIES[raw_issue.priority]
         issue['category'] = raw_issue.category
         issue['create_time'] = time.mktime(raw_issue.create_time.timetuple())
         issue['modify_time'] = time.mktime(raw_issue.modify_time.timetuple())
         issues.append(issue)
     return issues
+
+def conver_issue_comments(raw_issue_comments, user_map, user_img_map):
+    issue_comments = []
+    for raw_issue_comment in raw_issue_comments:
+        issue_comment = {}
+        issue_comment['id'] = raw_issue_comment.id
+        if raw_issue_comment.user_id in user_map:
+            issue_comment['user_id'] = user_map[raw_issue_comment.user_id]
+        if raw_issue_comment.user_id in user_img_map:
+            issue_comment['user_img'] = user_img_map[raw_issue_comment.user_id]
+        issue_comment['content'] = raw_issue_comment.content
+        issue_comments.append(issue_comment)
+    return issue_comments

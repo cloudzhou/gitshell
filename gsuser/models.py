@@ -38,6 +38,10 @@ class UserprofileManager():
         return get_many(User, 'auth_user', user_ids)
 
     @classmethod
+    def list_userprofile_by_ids(self, user_ids):
+        return get_many(Userprofile, 'gsuser_userprofile', user_ids)
+
+    @classmethod
     def get_userprofile_by_id(self, user_id):
         return get(Userprofile, 'gsuser_userprofile', user_id)
     

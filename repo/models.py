@@ -130,5 +130,22 @@ class RepoManager():
     def list_issues(self, repo_id, assigned_id, tracker, status, priority, orderby, page):
         offset = page*2
         row_count = 3
-        repoissues = query(Issues, 'repo_issues', repo_id, 'repoissues_l_cons', [repo_id, assigned_id, tracker, status, priority, orderby, offset, row_count]) 
+        rawsql_id = 'repoissues_l_cons_modify'
+        if orderby == 'create_time':
+            rawsql_id = 'repoissues_l_cons_create'
+        repoissues = query(Issues, 'repo_issues', repo_id, rawsql_id, [repo_id, assigned_id, tracker, status, priority, offset, row_count]) 
         return list(repoissues)
+
+    @classmethod
+    def get_issues(self, repo_id, issues_id):
+        issues = query(Issues, 'repo_issues', repo_id, 'repoissues_s_id', [repo_id, issues_id])
+        if len(list(issues)) > 0:
+            return issues[0]
+        return None
+
+    @classmethod
+    def list_issues_comment(self, issues_id, page):
+        offset = page*2
+        row_count = 3
+        issuesComments = query(IssuesComment, 'repo_issuescomment', issues_id, 'issuescomment_l_issuesId', [issues_id, offset, row_count]) 
+        return list(issuesComments)

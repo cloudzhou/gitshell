@@ -62,16 +62,28 @@
 				<th>指派给</th>
 				<th>优先级</th>
 				<th>类别</th>
-				<th>更新时间</th>
+				<th>
+                {%if orderby == 'create_time'%}
+                    <a id="i_modify_time" href="javascript:void(0)">更新</a>
+                {%else%}
+                    更新
+                {%endif%}
+                |
+                {%if orderby == 'modify_time'%}
+                    <a id="i_create_time" href="javascript:void(0)">创建</a>
+                {%else%}
+                    创建
+                {%endif%}
+                </th>
 			  </tr>
 			</thead>
 			<tbody>
                 {% for issue in issues %}
 			    <tr>
-				    <td><a href="">#{{issue.id}} {{issue.subject}}</a> [<a href="/{{issue.user_id}}/">{{issue.user_id}}</a>]</td>
+				    <td><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/0/">#{{issue.id}} {{issue.subject}}</a> [<a href="/{{issue.user_id}}/">{{issue.user_id}}</a>]</td>
 				    <td>{{issue.tracker}}</td>
 				    <td>{{issue.status}}</td>
-				    <td>{{issue.assigned}}</td>
+				    <td><a href="/{{issue.assigned}}/">{{issue.assigned}}</a></td>
 				    <td>{{issue.priority}}</td>
 				    <td>{{issue.category}}</td>
 				    <td class="c_unixtime">{{issue.create_time}}</td>
@@ -106,6 +118,14 @@ $(function(){
     });
     $('#i_next_page').click(function(){ 
         current_attrs['page'] = current_attrs['page'] + 1;
+        location_cons()
+    });
+    $('#i_create_time').click(function(){ 
+        current_attrs['orderby'] = 'create_time';
+        location_cons()
+    });
+    $('#i_modify_time').click(function(){ 
+        current_attrs['orderby'] = 'modify_time';
         location_cons()
     });
     $('.issues_attr').click(function(){ 
