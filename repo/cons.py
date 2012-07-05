@@ -48,5 +48,6 @@ def conver_issue_comments(raw_issue_comments, user_map, user_img_map):
         if raw_issue_comment.user_id in user_img_map:
             issue_comment['user_img'] = user_img_map[raw_issue_comment.user_id]
         issue_comment['content'] = raw_issue_comment.content
+        issue_comment['create_time'] = time.mktime(raw_issue_comment.create_time.timetuple())
         issue_comments.append(issue_comment)
     return issue_comments

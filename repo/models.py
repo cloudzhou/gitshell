@@ -81,6 +81,7 @@ class Issues(BaseModel):
     priority = models.IntegerField(default=0)
     category = models.CharField(max_length=16, default='')
     content = models.CharField(max_length=1024, default='')
+    comment_count = models.IntegerField(default=0)
 
 class IssuesComment(BaseModel):
     issues_id = models.IntegerField()

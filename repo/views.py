@@ -196,7 +196,6 @@ def issues_show(request, user_name, repo_name, issues_id, page):
         user_map[user.id] = user.username
     for userprofile in userprofiles:
        user_img_map[userprofile.id] = userprofile.imgurl 
-    print user_img_map
     issue_comments = conver_issue_comments(RepoManager.list_issues_comment(issues_id, page), user_map, user_img_map)
     response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm}
     response_dictionary.update(ISSUES_ATTRS)
