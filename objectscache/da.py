@@ -34,7 +34,7 @@ rawsql = {
     'repoissues_s_id':
         'select * from repo_issues where visibly = 0 and repo_id = %s and id = %s limit 0,1',
     'issuescomment_l_issuesId':
-        'select * from repo_issuescomment where visibly = 0 and issues_id = %s order by create_time desc limit %s, %s',
+        'select * from repo_issuescomment where visibly = 0 and issues_id = %s order by create_time asc limit %s, %s',
 }
 
 def get_many(model, table, pids):

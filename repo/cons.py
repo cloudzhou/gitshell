@@ -35,6 +35,7 @@ def conver_issues(raw_issues, user_map):
         issue['category'] = raw_issue.category
         issue['create_time'] = time.mktime(raw_issue.create_time.timetuple())
         issue['modify_time'] = time.mktime(raw_issue.modify_time.timetuple())
+        issue['comment_count'] = raw_issue.comment_count
         issues.append(issue)
     return issues
 

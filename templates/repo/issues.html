@@ -50,7 +50,7 @@
                 {%endfor%}
                 </dd>
             </dl>
-            <a style="margin-top:-30px;margin-right:3px" href="/{{user_name}}/{{repo_name}}/issues/create/" class="btn pull-right">创建 issues</a>
+            <a style="margin-top:-30px;margin-right:3px" href="/{{user_name}}/{{repo_name}}/issues/create/0/" class="btn pull-right">创建 issues</a>
         </div>
     </div>
 	<table class="table table-striped">
@@ -80,7 +80,7 @@
 			<tbody>
                 {% for issue in issues %}
 			    <tr>
-				    <td><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/0/">#{{issue.id}} {{issue.subject}}</a> [<a href="/{{issue.user_id}}/">{{issue.user_id}}</a>]</td>
+				    <td><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/">#{{issue.id}} {{issue.subject}}</a> [<a href="/{{issue.user_id}}/">{{issue.user_id}}</a>]</td>
 				    <td>{{issue.tracker}}</td>
 				    <td>{{issue.status}}</td>
 				    <td><a href="/{{issue.assigned}}/">{{issue.assigned}}</a></td>

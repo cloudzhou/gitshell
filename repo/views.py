@@ -162,6 +162,9 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+def issues_default_show(request, user_name, repo_name, issues_id):
+    return issues_show(request, user_name, repo_name, issues_id, None)
+
 def issues_show(request, user_name, repo_name, issues_id, page):
     refs = 'master'; path = '.'; current = 'issues'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -178,48 +181,64 @@ def issues_show(request, user_name, repo_name, issues_id, page):
         repoIssuesCommentForm = RepoIssuesCommentForm(request.POST, instance = issuesComment)
         if repoIssuesCommentForm.is_valid():
             repoIssuesCommentForm.save()
-            return HttpResponseRedirect('/%s/%s/issues/%s/%s/' % (user_name, repo_name, issues_id, page))
-    issues_id = int(issues_id); page = int(page)
+            raw_issue.comment_count = raw_issue.comment_count + 1
+            raw_issue.save()
+            return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, issues_id))
+    issues_id = int(issues_id)
     user_map = {}
     users = UserprofileManager.list_user_by_ids([raw_issue.user_id, raw_issue.assigned])
     for user in users:
         user_map[user.id] = user.username
     issue = conver_issues([raw_issue], user_map)[0]
     
+    total_page = issue['comment_count'] / 2
+    if issue['comment_count'] != 0 and issue['comment_count'] % 2 == 0:
+        total_page = total_page - 1
+    if page is None:
+        page = total_page
+    else:
+        page = int(page)
     user_map = {}
     user_img_map = {}
-    raw_issue_comments = RepoManager.list_issues_comment(issues_id, page)
-    user_ids = [o.user_id for o in raw_issue_comments]
-    users = UserprofileManager.list_user_by_ids(user_ids)
-    userprofiles = UserprofileManager.list_userprofile_by_ids(user_ids)
-    for user in users:
-        user_map[user.id] = user.username
-    for userprofile in userprofiles:
-       user_img_map[userprofile.id] = userprofile.imgurl 
-    issue_comments = conver_issue_comments(RepoManager.list_issues_comment(issues_id, page), user_map, user_img_map)
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm}
+    issue_comments = []
+    if issue['comment_count'] > 0:
+        raw_issue_comments = RepoManager.list_issues_comment(issues_id, page)
+        user_ids = [o.user_id for o in raw_issue_comments]
+        users = UserprofileManager.list_user_by_ids(user_ids)
+        userprofiles = UserprofileManager.list_userprofile_by_ids(user_ids)
+        for user in users:
+            user_map[user.id] = user.username
+        for userprofile in userprofiles:
+            user_img_map[userprofile.id] = userprofile.imgurl 
+        issue_comments = conver_issue_comments(RepoManager.list_issues_comment(issues_id, page), user_map, user_img_map)
+    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0,total_page+1)}
     response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues_show.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-def issues_create(request, user_name, repo_name):
+def issues_create(request, user_name, repo_name, issues_id):
     refs = 'master'; path = '.'; current = 'issues'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
     repoIssuesForm = RepoIssuesForm()
+    issues = Issues()
+    if issues_id != 0:
+        issues = RepoManager.get_issues(repo.id, issues_id)
+        if issues is None:
+            issues = Issues()
+        repoIssuesForm = RepoIssuesForm(instance = issues)
     repoIssuesForm.fill_assigned(repo)
     error = ''
     if request.method == 'POST':
-        issues = Issues()
         issues.user_id = request.user.id
         issues.repo_id = repo.id
         repoIssuesForm = RepoIssuesForm(request.POST, instance = issues)
         repoIssuesForm.fill_assigned(repo)
         if repoIssuesForm.is_valid():
-            repoIssuesForm.save()
-            return HttpResponseRedirect('/%s/%s/issues/' % (user_name, repo_name))
+            nid = repoIssuesForm.save().id
+            return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
         else:
             error = u'issues 内容不能为空'
     response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error}
