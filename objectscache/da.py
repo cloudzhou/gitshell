@@ -25,7 +25,9 @@ rawsql = {
         'select 0 as id, count(1) as count from repo_repo where visibly = 0 and user_id = %s',
     # repo_member #
     'repomember_l_repoId':
-        'select * from repo_repomember where visibly = 0 and repo_id = %s order by modify_time desc',
+        'select * from repo_repomember where visibly = 0 and repo_id = %s order by modify_time asc',
+    'repomember_s_ruid':
+        'select * from repo_repomember where visibly = 0 and repo_id = %s and user_id = %s limit 0, 1',
     # repo_issues #
     'repoissues_l_cons_modify':
         'select * from repo_issues where visibly = 0 and repo_id = %s and assigned = %s and tracker = %s and status = %s and priority = %s order by modify_time desc limit %s, %s',

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-  
 import os, re
 import shutil
-import json
+import json, time
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import render_to_response
 from django.utils.html import escape
 from gitshell.feed.feed import FeedAction
-from gitshell.repo.Forms import RepoForm, RepoIssuesForm, IssuesComment, RepoIssuesCommentForm
+from gitshell.repo.Forms import RepoForm, RepoIssuesForm, IssuesComment, RepoIssuesCommentForm, RepoMemberForm
 from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, Issues
 from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, ISSUES_ATTRS, conver_issues, conver_issue_comments
@@ -275,8 +275,42 @@ def issues_comment_delete(request, user_name, repo_name, comment_id):
 
 def repo_network(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'network'
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
-    return render_to_response('repo/repo.html',
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    repoMemberForm = RepoMemberForm()
+    if request.method == 'POST':
+        repoMemberForm = RepoMemberForm(request.POST)
+        if repoMemberForm.is_valid():
+            username = repoMemberForm.cleaned_data['username'].strip()
+            action = repoMemberForm.cleaned_data['action']
+            if action == 'add_member':
+                RepoManager.add_member(repo.id, username)
+            if action == 'remove_member':
+                RepoManager.remove_member(repo.id, username)
+    user_id = request.user.id
+    member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
+    member_ids.insert(0, repo.user_id)
+    if user_id != repo.user_id and user_id in member_ids:
+        member_ids.remove(user_id)
+        member_ids.insert(0, user_id)
+    members = UserprofileManager.list_user_by_ids(member_ids)
+    member_profiles = UserprofileManager.list_userprofile_by_ids(member_ids)
+    members_map = {}
+    for member in members:
+        if member.id not in members_map:
+            members_map[member.id] = {}
+        members_map[member.id]['id'] = member.id
+        members_map[member.id]['username'] = member.username
+        members_map[member.id]['date_joined'] = time.mktime(member.date_joined.timetuple())
+        members_map[member.id]['last_login'] = time.mktime(member.last_login.timetuple())
+    for member_profile in member_profiles:
+        members_map[member_profile.id]['nickname'] = member_profile.nickname
+        members_map[member_profile.id]['imgurl'] = member_profile.imgurl
+        members_map[member_profile.id]['tweet'] = member_profile.tweet
+    members_vo = [members_map[o] for o in member_ids]
+    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
+    return render_to_response('repo/network.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 

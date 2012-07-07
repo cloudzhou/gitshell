@@ -51,3 +51,7 @@ class RepoIssuesCommentForm(forms.ModelForm):
         widgets = {
             'content': forms.Textarea(attrs={'maxlength': 1024}),
         }
+
+class RepoMemberForm(forms.Form):
+    username = forms.CharField(max_length=30)
+    action = forms.CharField(max_length=30)

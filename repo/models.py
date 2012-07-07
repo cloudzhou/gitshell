@@ -128,6 +128,28 @@ class RepoManager():
         return list(repoemembers)
 
     @classmethod
+    def add_member(self, repo_id, username):
+        user = UserprofileManager.get_user_by_name(user_name)
+        if user is None:
+            return None
+        repoMember = query(RepoMember, 'repo_repomember', repo_id, 'repomember_s_ruid', [repo_id, user.id])
+        if repoMember is None:
+            repoMember = RepoMember()
+            repoMember.repo_id = repo_id
+            repoMember.user_id = user.id
+            repoMember.save()
+
+    @classmethod
+    def remove_member(self, repo_id, username):
+        user = UserprofileManager.get_user_by_name(user_name)
+        if user is None:
+            return None
+        repoMember = query(RepoMember, 'repo_repomember', repo_id, 'repomember_s_ruid', [repo_id, user.id])
+        if repoMember is not None:
+            repoMember.visibly = 1
+            repoMember.save()
+
+    @classmethod
     def list_issues(self, repo_id, assigned_id, tracker, status, priority, orderby, page):
         offset = page*2
         row_count = 3
