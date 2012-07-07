@@ -2,10 +2,10 @@
 {% block subcontainer %}
 <style type="text/css">
 #id_assigned, #id_tracker, #id_status, #id_priority, #id_category { width: 100px; }
-#id_content { height: 200px; width: 600px; }
+#id_merge_content { height: 200px; width: 600px; }
 </style>
     <h3 style="border-bottom:1px solid #EEEEEE; margin-bottom:15px;">
-        创建issues<small>&nbsp;创建issues是一件认真的事情，提交前请回顾</small>
+        创建issues<small>&nbsp;创建issues是一件认真的事情，提交前请检查</small>
     </h3>
     <div>
         <form class="form-inline" action="" method="post">
@@ -18,7 +18,7 @@
                 类别 {{ repoIssuesForm.category }}
             </div>
             <div style="margin-bottom: 10px;">
-                {{ repoIssuesForm.content }}
+                <textarea maxlength="1024" name="merge_content" cols="40" rows="10" id="id_merge_content" placeholder="第一行自动作为标题，简单明了描述问题，标题之后作为内容"></textarea>
             </div>
             {% if error %}
             <div class="alert">
@@ -27,6 +27,8 @@
             </div>
             {% endif %}
             <button id="i_submit" style="margin-right: 0px;" class="btn btn-primary" type="submit">确定</button>
+            <button id="i_delete" style="margin-left: 20px;" class="btn btn-primary btn-danger">删除</button>
+            <div class="hidden">{{ repoIssuesForm.content }}</div>
             <div class="hidden">{{ repoIssuesForm.subject }}</div>
         </form>
     </div>
@@ -34,24 +36,46 @@
 {% block subjs %}
 <script>
 $(function(){
-    var content = $('#id_content').val()
+    $('#id_merge_content').val('');
+    var subject = $('#id_subject').val();
+    var content = $('#id_content').val();
     if($('#id_subject').val() != '') {
-        $('#id_content').val($('#id_subject').val() + '\n' + content);
+        $('#id_merge_content').val(subject + '\n' + content);
     } else {
-        $('#id_content').val($('#id_subject').val() + content);
+        $('#id_merge_content').val(content);
     }
-    $('#id_content').attr('placeholder', '第一行自动作为标题，简单明了描述问题，标题之后作为内容');
+    $('#i_delete').click(function(){
+        var text = $(this).text();
+        if(text == '删除') {
+            $(this).text('确定删除');
+        }
+        if(text == '确定删除') {
+            $.ajax({
+                url: '/ajax/repo/{{user_name}}/{{repo_name}}/issues/delete/{{issues_id}}/',
+                type: 'POST',
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+                dataType: 'json',
+                timeout: 5000,
+                error: function(){
+                },
+                success: function(json){
+                    window.location = '/{{user_name}}/{{repo_name}}/issues/'
+                },
+            });
+        }
+        return false;
+    });
     $('#id_category').attr('placeholder', '优化，安全...');
     $('#i_submit').click(function(){
-        var line_arr = $('#id_content').val().split('\n');
-        if($('#id_content').val() != '') {
+        var line_arr = $('#id_merge_content').val().split('\n');
+        if($('#id_merge_content').val() != '') {
             var subject = line_arr[0];
             line_arr.shift();
             var content = line_arr.join('\n');
             $('#id_subject').val(subject);
             $('#id_content').val(content);
             if($('#id_category').val() == '') {
-                $('#id_category').val('无')
+                $('#id_category').val('无');
             }
             return true;
         }

@@ -80,6 +80,19 @@ $(function(){
         }
     });
     $('.c_rm_rf_comment').click(function(){
+        var comment_id = $(this).attr('value');
+        $.ajax({
+            url: '/ajax/repo/{{user_name}}/{{repo_name}}/issues/comment/delete/' + comment_id + '/',
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 5000,
+            error: function(){
+            },
+            success: function(json){
+                window.location = '/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{page}}/'
+            },
+        });
     });
     $('.c_rm_rf_comment').blur(function(){
         $(this).hide();

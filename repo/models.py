@@ -145,6 +145,11 @@ class RepoManager():
         return None
 
     @classmethod
+    def get_issues_comment(self, comment_id):
+        issues_comment = get(IssuesComment, 'repo_issuescomment', comment_id)
+        return issues_comment
+
+    @classmethod
     def list_issues_comment(self, issues_id, page):
         offset = page*2
         row_count = 2

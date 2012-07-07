@@ -194,7 +194,7 @@ def issues_show(request, user_name, repo_name, issues_id, page):
     total_page = issue['comment_count'] / 2
     if issue['comment_count'] != 0 and issue['comment_count'] % 2 == 0:
         total_page = total_page - 1
-    if page is None:
+    if page is None or int(page) > total_page:
         page = total_page
     else:
         page = int(page)
@@ -241,36 +241,37 @@ def issues_create(request, user_name, repo_name, issues_id):
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
         else:
             error = u'issues 内容不能为空'
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error}
+    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error, 'issues_id': issues_id}
     response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues_create.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+#TODO
 def issues_delete(request, user_name, repo_name, issue_id):
-    refs = 'master'; path = '.'; current = 'issues'
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
-    response_dictionary.update(ISSUES_ATTRS)
-    return render_to_response('repo/issues.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    issues = RepoManager.get_issues(repo.id, issue_id)
+    if issues is not None:
+        issues.visibly = 1
+        issues.save()
+    return HttpResponse(json.dumps({'result': 'ok'}), mimetype="application/json")
 
-def issues_create_comment(request, user_name, repo_name, issues_id):
-    refs = 'master'; path = '.'; current = 'issues'
-    repoIssuesCommentForm = RepoIssuesCommentForm()
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesCommentForm': repoIssuesCommentForm}
-    response_dictionary.update(ISSUES_ATTRS)
-    return render_to_response('repo/create_comment.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-def issues_delete_comment(request, user_name, repo_name, comment_id):
-    refs = 'master'; path = '.'; current = 'issues'
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
-    response_dictionary.update(ISSUES_ATTRS)
-    return render_to_response('repo/issues.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
+#TODO
+def issues_comment_delete(request, user_name, repo_name, comment_id):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    issues_comment = RepoManager.get_issues_comment(comment_id)
+    if issues_comment is not None:
+        issues = RepoManager.get_issues(repo.id, issues_comment.issues_id)
+        if issues is not None:
+            issues_comment.visibly = 1
+            issues_comment.save()
+            issues.comment_count = issues.comment_count - 1
+            issues.save()
+    return HttpResponse(json.dumps({'result': 'ok'}), mimetype="application/json")
 
 def repo_network(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'network'
