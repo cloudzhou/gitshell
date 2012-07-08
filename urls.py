@@ -73,6 +73,6 @@ urlpatterns = patterns('gitshell',
 	url(r'^(\w+)/(\w+)/issues/list/(\w+)/(\d+)/(\d+)/(\d+)/(\w+)/(\d+)/?$', 'repo.views.issues_list'),
 	url(r'^ajax/repo/(\w+)/(\w+)/issues/comment/delete/(\w+)/?$', 'repo.views.issues_comment_delete'),
     url(r'^(\w+)/(\w+)/network/?$', 'repo.views.repo_network'),
-    url(r'^(\w+)/(\w+)/clone_branches/?$', 'repo.views.repo_clone_branches'),
+    url(r'^(\w+)/(\w+)/clone_watch/?$', 'repo.views.repo_clone_watch'),
     url(r'^(\w+)/(\w+)/stats/?$', 'repo.views.repo_stats'),
 )

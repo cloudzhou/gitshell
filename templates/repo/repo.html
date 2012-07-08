@@ -51,7 +51,7 @@
                 <li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/">提交信息</a></li>
                 <li {% if current == 'issues' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/issues/">Issues</a></li>
                 <li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/network/">协同</a></li>
-                <li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/clone_branches/">clone 分支</a></li>
+                <li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/clone_watch/">衍生&amp;关注</a></li>
                 <li {% if current == 'stats' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/stats/">统计</a></li>
             </ul>
     {% block subcontainer %}{% endblock %}

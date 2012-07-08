@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import time
-from gitshell.repo.models import Issues
+from gitshell.repo.models import Repo, Issues
+from gitshell.gsuser.models import UserprofileManager
+from django.forms.models import model_to_dict
 
 class RepoIssuesAttrs():
 
@@ -52,3 +54,16 @@ def conver_issue_comments(raw_issue_comments, user_map, user_img_map):
         issue_comment['create_time'] = time.mktime(raw_issue_comment.create_time.timetuple())
         issue_comments.append(issue_comment)
     return issue_comments
+
+def conver_repos(raw_repos, map_users):
+    repos_vo = []
+    for raw_repo in raw_repos:
+        repo_dict = model_to_dict(raw_repo, fields=[field.name for field in Repo._meta.fields])
+        repo_dict['id'] = raw_repo.id
+        repo_dict['create_time'] = time.mktime(raw_repo.create_time.timetuple())
+        repo_dict['modify_time'] = time.mktime(raw_repo.modify_time.timetuple())
+        if raw_repo.user_id in map_users:
+            repo_dict['username'] = map_users[raw_repo.user_id]['username']
+            repo_dict['imgurl'] = map_users[raw_repo.user_id]['imgurl']
+        repos_vo.append(repo_dict) 
+    return repos_vo

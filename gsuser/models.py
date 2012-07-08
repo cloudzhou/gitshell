@@ -1,3 +1,4 @@
+import time
 from django.db import models
 from django.contrib.auth.models import User, UserManager
 from gitshell.objectscache.models import BaseModel
@@ -52,3 +53,27 @@ class UserprofileManager():
         except User.DoesNotExist:
             return None 
         return self.get_userprofile_by_id(user.id)
+
+    @classmethod
+    def map_users(self, user_ids):
+        users = self.list_user_by_ids(user_ids)
+        userprofiles = self.list_userprofile_by_ids(user_ids)
+        return self.merge_user_map(users, userprofiles)
+        
+    @classmethod
+    def merge_user_map(self, users, userprofiles):
+        users_map = {}
+        for user in users:
+            if user.id not in users_map:
+                users_map[user.id] = {}
+            users_map[user.id]['id'] = user.id
+            users_map[user.id]['username'] = user.username
+            users_map[user.id]['date_joined'] = time.mktime(user.date_joined.timetuple())
+            users_map[user.id]['last_login'] = time.mktime(user.last_login.timetuple())
+        for userprofile in userprofiles:
+            if userprofile.id not in users_map:
+                users_map[userprofile.id] = {}
+            users_map[userprofile.id]['nickname'] = userprofile.nickname
+            users_map[userprofile.id]['imgurl'] = userprofile.imgurl
+            users_map[userprofile.id]['tweet'] = userprofile.tweet
+        return users_map

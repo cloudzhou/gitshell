@@ -37,6 +37,12 @@ rawsql = {
         'select * from repo_issues where visibly = 0 and repo_id = %s and id = %s limit 0,1',
     'issuescomment_l_issuesId':
         'select * from repo_issuescomment where visibly = 0 and issues_id = %s order by create_time asc limit %s, %s',
+    # repo_forkhistory #
+    'forkhistory_l_repoId':
+        'select * from repo_forkhistory where repo_id = %s order by modify_time desc limit 0, 50',
+    # repo_watchhistory #
+    'watchhistory_l_repoId':
+        'select * from repo_watchhistory where watch_repo_id = %s order by modify_time desc limit 0, 50',
 }
 
 def get_many(model, table, pids):

@@ -12,7 +12,7 @@ from gitshell.feed.feed import FeedAction
 from gitshell.repo.Forms import RepoForm, RepoIssuesForm, IssuesComment, RepoIssuesCommentForm, RepoMemberForm
 from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, Issues
-from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, ISSUES_ATTRS, conver_issues, conver_issue_comments
+from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, ISSUES_ATTRS, conver_issues, conver_issue_comments, conver_repos
 from gitshell.gsuser.models import UserprofileManager
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
 
@@ -294,39 +294,53 @@ def repo_network(request, user_name, repo_name):
     if user_id != repo.user_id and user_id in member_ids:
         member_ids.remove(user_id)
         member_ids.insert(0, user_id)
-    members = UserprofileManager.list_user_by_ids(member_ids)
-    member_profiles = UserprofileManager.list_userprofile_by_ids(member_ids)
-    members_map = {}
-    for member in members:
-        if member.id not in members_map:
-            members_map[member.id] = {}
-        members_map[member.id]['id'] = member.id
-        members_map[member.id]['username'] = member.username
-        members_map[member.id]['date_joined'] = time.mktime(member.date_joined.timetuple())
-        members_map[member.id]['last_login'] = time.mktime(member.last_login.timetuple())
-    for member_profile in member_profiles:
-        members_map[member_profile.id]['nickname'] = member_profile.nickname
-        members_map[member_profile.id]['imgurl'] = member_profile.imgurl
-        members_map[member_profile.id]['tweet'] = member_profile.tweet
-    members_vo = [members_map[o] for o in member_ids]
+    merge_user_map = UserprofileManager.map_users(member_ids)
+    members_vo = [merge_user_map[o] for o in member_ids]
     response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
     return render_to_response('repo/network.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-def repo_clone_branches(request, user_name, repo_name):
+def repo_clone_watch(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'branches'
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
-    return render_to_response('repo/repo.html',
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    raw_fork_repos_tree = []
+    fork_repo_id = repo.fork_repo_id
+    if fork_repo_id != 0:
+        fork_repo = RepoManager.get_repo_by_id(fork_repo_id)
+        if fork_repo is not None:
+            raw_fork_repos_tree.append([fork_repo])
+    else:
+        raw_fork_repos_tree.append([])
+    raw_fork_repos_tree.append([repo])
+    fork_me_repos = RepoManager.list_fork_repo(repo.id)
+    raw_fork_repos_tree.append(fork_me_repos)
+    fork_repos_tree = change_to_vo(raw_fork_repos_tree)
+    watch_users = RepoManager.list_watch_user(repo.id)
+    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'fork_repos_tree': fork_repos_tree, 'watch_users': watch_users, 'test': {1, 1}}
+    return render_to_response('repo/clone_watch.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def repo_stats(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'stats'
     response_dictionary = {'current': 'stats', 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
-    return render_to_response('repo/repo.html',
+    return render_to_response('repo/clone_watch.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+def change_to_vo(raw_fork_repos_tree):
+    user_ids = []
+    for raw_fork_repos in raw_fork_repos_tree:
+        for raw_fork_repo in raw_fork_repos:
+            user_ids.append(raw_fork_repo.user_id)
+    fork_repos_tree = []
+    user_map = UserprofileManager.map_users(user_ids)
+    for raw_fork_repos in raw_fork_repos_tree:
+        fork_repos_tree.append(conver_repos(raw_fork_repos, user_map))
+    return fork_repos_tree
 
 def repo_refs(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -340,17 +354,6 @@ def repo_refs(request, user_name, repo_name):
     response_dictionary = {'user_name': user_name, 'repo_name': repo_name, 'branches': branches_refs, 'tags': tags_refs}
     return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
 
-def folder(request):
-    response_dictionary = {'hello_world': 'hello world'}
-    return render_to_response('repo/folder.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-def file(request):
-    response_dictionary = {'hello_world': 'hello world'}
-    return render_to_response('repo/file.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))						  
 # TODO
 @login_required
 def edit(request, rid):

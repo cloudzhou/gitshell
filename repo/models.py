@@ -6,6 +6,7 @@ from gitshell.gsuser.models import UserprofileManager
 
 class Repo(BaseModel):
     user_id = models.IntegerField()
+    fork_repo_id = models.IntegerField()
     name = models.CharField(max_length=64)
     desc = models.CharField(max_length=512, default='')
     lang = models.CharField(max_length=16)
@@ -67,9 +68,9 @@ class WatchHistory(BaseModel):
     watch_user_id = models.IntegerField(default=0)
 
 class ForkHistory(BaseModel):
-    user_id = models.IntegerField(default=0)
     repo_id = models.IntegerField()
     fork_repo_id = models.IntegerField()
+    user_id = models.IntegerField(default=0)
 
 class Issues(BaseModel):
     repo_id = models.IntegerField()
@@ -177,3 +178,32 @@ class RepoManager():
         row_count = 2
         issuesComments = query(IssuesComment, 'repo_issuescomment', issues_id, 'issuescomment_l_issuesId', [issues_id, offset, row_count]) 
         return list(issuesComments)
+
+    @classmethod
+    def list_fork_repo(self, repo_id):
+        forkHistorys = query(ForkHistory, 'repo_forkhistory', repo_id, 'forkhistory_l_repoId', [repo_id]) 
+        repo_ids = [o.fork_repo_id for o in forkHistorys]
+        unorder_repos = get_many(Repo, 'repo_repo', repo_ids)
+        repo_map = {}
+        for repo in unorder_repos:
+            repo_map[repo.id] = repo
+        order_repos = [] 
+        for repo_id in repo_ids:
+            if repo_id in repo_map:
+                order_repos.append(repo_map[repo_id])
+        return order_repos
+
+    @classmethod
+    def list_watch_user(self, repo_id):
+        watchHistory = query(WatchHistory, 'repo_watchhistory', repo_id, 'watchhistory_l_repoId', [repo_id])
+        user_ids = [o.user_id for o in watchHistory]
+        user_map = UserprofileManager.map_users(user_ids)
+        watch_user = []
+        for user_id in user_ids:
+            if user_id in user_map:
+                watch_user.append(user_map[user_id])
+        return watch_user
+
+
+
+
