@@ -1,0 +1,20 @@
+{% extends "repo/repo.html" %}
+{% block subcontainer %}
+<style>
+#i_repomembers td { border-top: 0px; font-size: 16px}
+</style>
+<div style="margin-top: 0px; margin-bottom: 10px;padding-bottom: 8px" class="page-header">
+    <h3>仓库成员列表<small> 所有成员对仓库有完全的读写权限 <button id="i_add_member"class="btn btn-mini">添加新成员</button></small>
+    </h3>
+</div>
+{% endblock %}
+{% block subjs %}
+<script>
+$(function(){
+    $('.c_unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+        $(this).show();
+    });
+});
+</script>
+{% endblock %}
