@@ -2,18 +2,91 @@
 {% block subcontainer %}
 <style>
 #i_repomembers td { border-top: 0px; font-size: 16px}
+.small-header {margin-top: 0px; margin-bottom: 10px;padding-bottom: 8px}
+.repo_chart {min-width: 400px; height: 200px; margin: 0 auto}
 </style>
-<div style="margin-top: 0px; margin-bottom: 10px;padding-bottom: 8px" class="page-header">
-    <h3>仓库成员列表<small> 所有成员对仓库有完全的读写权限 <button id="i_add_member"class="btn btn-mini">添加新成员</button></small>
-    </h3>
+<div class="span6">
+    <div class="page-header small-header">
+        <h4>最近一天提交<small>
+        </small></h4>
+    </div>
+    <div><div id="id_day_container" class="repo_chart"></div></div>
+    <div class="page-header small-header">
+        <h4>最近一周提交<small>
+        </small></h4>
+    </div>
+    <div><div id="id_week_container" class="repo_chart"></div></div>
+    <div class="page-header small-header">
+        <h4>最近一月提交<small>
+        </small></h4>
+    </div>
+    <div><div id="id_month_container" class="repo_chart"></div></div>
+    <div class="page-header small-header">
+        <h4>最近一年提交<small>
+        </small></h4>
+    </div>
+    <div><div id="id_year_container" class="repo_chart"></div></div>
+</div>
+<div class="span5">
+    <div class="page-header small-header">
+        <h4>贡献者<small>
+    </div>
+    <div><div id="id_contributor_container" class="repo_chart"></div></div>
+    <div class="page-header small-header">
+        <h4>空间使用情况<small>
+    </div>
+    <div><div id="id_space_container" class="repo_chart"></div></div>
 </div>
 {% endblock %}
 {% block subjs %}
+<script src="/static/js/app/highcharts/highcharts.js"></script>
 <script>
 $(function(){
     $('.c_unixtime').each(function(index){ 
         $(this).html(moment(new Date($(this).html()*1000)).fromNow());
         $(this).show();
+    });
+    var day_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_day_container', type: 'line'},title: {text: ''},
+        yAxis: { title: { text: '提交次数' } },
+        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
+        xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+        series: [{ name: '24 小时提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
+    });
+    var week_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_week_container', type: 'line'},title: {text: ''},
+        yAxis: { title: { text: '提交次数' } },
+        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
+        xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+        series: [{ name: '1 周提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
+    });
+    var month_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_month_container', type: 'line'},title: {text: ''},
+        yAxis: { title: { text: '提交次数' } },
+        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
+        xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+        series: [{ name: '1 月提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
+    });
+    var year_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_year_container', type: 'line'},title: {text: ''},
+        yAxis: { title: { text: '提交次数' } },
+        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
+        xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+        series: [{ name: '1 年提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
+    });
+    var contributor_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_1contributor_container', type: 'line'},title: {text: ''},
+        yAxis: { title: { text: '提交次数' } },
+        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
+        xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+        series: [{ name: '24 小时提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
+    });
+    var space_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_1space_container', type: 'line'},title: {text: ''},
+        yAxis: { title: { text: '提交次数' } },
+        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
+        xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+        series: [{ name: '24 小时提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
     });
 });
 </script>

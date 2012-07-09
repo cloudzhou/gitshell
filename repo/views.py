@@ -327,7 +327,7 @@ def repo_clone_watch(request, user_name, repo_name):
 def repo_stats(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'stats'
     response_dictionary = {'current': 'stats', 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
-    return render_to_response('repo/clone_watch.html',
+    return render_to_response('repo/stats.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
