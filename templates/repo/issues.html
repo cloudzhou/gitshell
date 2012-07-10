@@ -1,5 +1,9 @@
 {% extends "repo/repo.html" %}
 {% block subcontainer %}
+<style>
+.issues_attr { margin: 3px }
+.issues_attr_hovered { border: dashed 2px #cccccc ; padding: 1px}
+</style>
     <div>
         <div class="well" style="padding: 5px; margin: 4px; overflow:hidden">
             <dl class="dl-horizontal" style="margin: 4px">
@@ -80,7 +84,9 @@
 			<tbody>
                 {% for issue in issues %}
 			    <tr>
-				    <td><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/">#{{issue.id}} {{issue.subject}}</a> [<a href="/{{issue.user_id}}/">{{issue.user_id}}</a>]</td>
+				    <td class="c_issue">
+                    <a href="" style="margin-right: 0px" rel="tooltip" data-original-title="拖动到上面"><img class="c_drag_setting" value="{{issue.id}}" src="/static/img/glyphicons_019_cogwheel.png"/></a>
+                    <a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/">#{{issue.id}} {{issue.subject}}</a> [<a href="/{{issue.user_id}}/">{{issue.user_id}}</a>]</td>
 				    <td>{{issue.tracker}}</td>
 				    <td>{{issue.status}}</td>
 				    <td><a href="/{{issue.assigned}}/">{{issue.assigned}}</a></td>
@@ -105,6 +111,7 @@
       </ul>
 {% endblock %}
 {% block subjs %}
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
 <script>
 $(function(){
     var current_attrs = {{current_attrs|safe}};
@@ -140,6 +147,25 @@ $(function(){
         $(this).html(moment(new Date($(this).html()*1000)).fromNow());
         $(this).show();
     });
+    $('.c_issue').tooltip({
+      selector: "a[rel=tooltip]"
+    })
+    $('.c_drag_setting').draggable({
+        cursor: 'move',
+        revert: true
+    });
+    $('.issues_attr').droppable({
+        accept: '.c_drag_setting',
+        hoverClass: 'issues_attr_hovered',
+        drop: handleIssueDrop
+    });
+    function handleIssueDrop(event, ui){
+        var issue_id = $(this).attr('value');
+        var issue_attr = ui.draggable.attr('value');
+        // TODO and reload
+        alert(issue_id + ' ' + issue_attr);
+        location_cons()
+    }
 });
 </script>
 {% endblock %}
