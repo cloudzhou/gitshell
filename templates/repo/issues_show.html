@@ -3,12 +3,18 @@
 <style type="text/css">
 #id_content { height: 200px; width: 600px; }
 #i_issue_comments td { border-top: 0px; }
+.issues_attr { margin: 3px }
+.issues_attr_hovered { border: dashed 2px #cccccc ; padding: 2px}
 pre { border: 0px; background-color: transparent; }
 </style>
+    <div id="id_issues_condition" style="display:none" class="span8">
+        {%include "repo/condition.html"%}
+    </div>
     <div class="span8">
-        <div class="page-header" style="margin-top: 0px; margin-bottom: 10px;padding-bottom: 8px">
+        <div class="c_issue page-header" style="margin-top: 0px; margin-bottom: 10px;padding-bottom: 8px">
             <h3 id="i_issue_subject">
             <a id="i_issue_edit" style="font-weight: normal; font-size: 12px; display: none" class="muted pull-right" href="/{{user_name}}/{{repo_name}}/issues/create/{{issue.id}}/">修改</a>
+            <a href="" style="margin-right: 0px" rel="tooltip" data-original-title="可拖动到上面"><img class="c_drag_setting" value="{{issue.id}}" src="/static/img/glyphicons_019_cogwheel.png"/></a>
             <a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/">#{{issue.id}} {{issue.subject}}</a>
             </h3>
         </div>
@@ -63,6 +69,7 @@ pre { border: 0px; background-color: transparent; }
     </div>
 {% endblock %}
 {% block subjs %}
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
 <script>
 $(function(){
     $('#i_issue_subject').live('mouseover mouseout', function(event) {
@@ -78,6 +85,10 @@ $(function(){
         } else {
             $(this).find('.c_rm_comment').hide();
         }
+    });
+    $('.c_drag_setting').mouseover(function() {
+        $('.c_create_issues_btn').hide();
+        $('#id_issues_condition').show();
     });
     $('.c_rm_rf_comment').click(function(){
         var comment_id = $(this).attr('value');
@@ -125,6 +136,34 @@ $(function(){
         $(this).html(moment(new Date($(this).html()*1000)).fromNow());
         $(this).show();
     });
+    $('.c_issue').tooltip({
+      selector: "a[rel=tooltip]"
+    })
+    $('.c_drag_setting').draggable({
+        cursor: 'move',
+        revert: true
+    });
+    $('.issues_attr').droppable({
+        accept: '.c_drag_setting',
+        hoverClass: 'issues_attr_hovered',
+        drop: handleIssueDrop,
+    });
+    function handleIssueDrop(event, ui){
+        var issue_id = ui.draggable.attr('value');
+        var issue_attr = $(this).attr('value');
+        $.ajax({
+            url: '/ajax/repo/{{user_name}}/{{repo_name}}/issues/update/' + {{issue.id}} + '/' + issue_attr + '/',
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 5000,
+            error: function(){
+            },
+            success: function(json){
+                window.location = '/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{page}}/'
+            },
+        });
+    }
 });
 </script>
 {% endblock %}

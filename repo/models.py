@@ -129,11 +129,18 @@ class RepoManager():
         return list(repoemembers)
 
     @classmethod
+    def get_repo_member(self, repo_id, user_id):
+        repoMembers = query(RepoMember, 'repo_repomember', repo_id, 'repomember_s_ruid', [repo_id, user.id])
+        if len(list(repoMembers)) > 0:
+            return repoMembers[0]
+        return None
+
+    @classmethod
     def add_member(self, repo_id, username):
         user = UserprofileManager.get_user_by_name(user_name)
         if user is None:
             return None
-        repoMember = query(RepoMember, 'repo_repomember', repo_id, 'repomember_s_ruid', [repo_id, user.id])
+        repoMember = self.get_repo_member(repo_id, user.id)
         if repoMember is None:
             repoMember = RepoMember()
             repoMember.repo_id = repo_id
@@ -145,7 +152,7 @@ class RepoManager():
         user = UserprofileManager.get_user_by_name(user_name)
         if user is None:
             return None
-        repoMember = query(RepoMember, 'repo_repomember', repo_id, 'repomember_s_ruid', [repo_id, user.id])
+        repoMember = self.get_repo_member(repo_id, user.id)
         if repoMember is not None:
             repoMember.visibly = 1
             repoMember.save()

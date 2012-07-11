@@ -2,60 +2,10 @@
 {% block subcontainer %}
 <style>
 .issues_attr { margin: 3px }
-.issues_attr_hovered { border: dashed 2px #cccccc ; padding: 1px}
+.issues_attr_hovered { border: dashed 2px #cccccc ; padding: 2px}
 </style>
     <div>
-        <div class="well" style="padding: 5px; margin: 4px; overflow:hidden">
-            <dl class="dl-horizontal" style="margin: 6px">
-                <dt style="width: 60px; font-weight: normal">指派给:</dt>
-                <dd style="margin-left: 80px">
-                {% for iter_assigned in assigneds %}
-                    {%if assigned == iter_assigned%}
-                        <span class="label label-success">{{iter_assigned}}</span>
-                    {%else%}
-                        <a class="issues_attr" href="javascript:void(0)" value="assigned:{{iter_assigned}}"><span class="label">{{iter_assigned}}</span></a>
-                    {%endif%}
-                {% endfor %}
-                </dd>
-            </dl>
-            <dl class="dl-horizontal" style="margin: 6px">
-                <dt style="width: 60px; font-weight: normal">跟踪:</dt>
-                <dd style="margin-left: 80px">
-                {%for iter_tracker in TRACKERS%}
-                    {%if tracker == iter_tracker.value%}
-                        <span class="label label-success">{{iter_tracker.name}}</span>
-                    {%else%}
-                        <a class="issues_attr" href="javascript:void(0)" value="tracker:{{iter_tracker.value}}"><span class="label">{{iter_tracker.name}}</span></a>
-                    {%endif%}
-                {%endfor%}
-                </dd>
-            </dl>
-            <dl class="dl-horizontal" style="margin: 6px">
-                <dt style="width: 60px; font-weight: normal">状态:</dt>
-                <dd style="margin-left: 80px">
-                {%for iter_status in STATUSES%}
-                    {%if status == iter_status.value%}
-                        <span class="label label-success">{{iter_status.name}}</span>
-                    {%else%}
-                        <a class="issues_attr" href="javascript:void(0)" value="status:{{iter_status.value}}"><span class="label">{{iter_status.name}}</span></a>
-                    {%endif%}
-                {%endfor%}
-                </dd>
-            </dl>
-            <dl class="dl-horizontal" style="margin: 6px">
-                <dt style="width: 60px; font-weight: normal">优先级:</dt>
-                <dd style="margin-left: 80px">
-                {%for iter_priority in PRIORITIES%}
-                    {%if priority == iter_priority.value%}
-                        <span class="label label-success">{{iter_priority.name}}</span>
-                    {%else%}
-                        <a class="issues_attr" href="javascript:void(0)" value="priority:{{iter_priority.value}}"><span class="label">{{iter_priority.name}}</span></a>
-                    {%endif%}
-                {%endfor%}
-                </dd>
-            </dl>
-            <a style="margin-top:-30px;margin-right:3px" href="/{{user_name}}/{{repo_name}}/issues/create/0/" class="btn pull-right">创建 issues</a>
-        </div>
+    {%include "repo/condition.html"%}
     </div>
 	<table class="table table-striped">
 			<thead class="fixed">
@@ -136,7 +86,7 @@ $(function(){
         location_cons()
     });
     $('.issues_attr').click(function(){ 
-        var keyValue = $(this).attr('value').split(":")
+        var keyValue = $(this).attr('value').split("___")
         current_attrs[keyValue[0]] = keyValue[1];
         location_cons()
     });
@@ -160,11 +110,20 @@ $(function(){
         drop: handleIssueDrop
     });
     function handleIssueDrop(event, ui){
-        var issue_id = $(this).attr('value');
-        var issue_attr = ui.draggable.attr('value');
-        // TODO and reload
-        alert(issue_id + ' ' + issue_attr);
-        location_cons()
+        var issue_id = ui.draggable.attr('value');
+        var issue_attr = $(this).attr('value');
+        $.ajax({
+            url: '/ajax/repo/{{user_name}}/{{repo_name}}/issues/update/' + issue_id + '/' + issue_attr + '/',
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 5000,
+            error: function(){
+            },
+            success: function(json){
+                location_cons()
+            },
+        });
     }
 });
 </script>

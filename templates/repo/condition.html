@@ -1,0 +1,51 @@
+        <div class="well" style="padding: 5px; margin: 4px; overflow:hidden">
+            <dl class="dl-horizontal" style="margin: 6px">
+                <dt style="width: 60px; font-weight: normal">指派给:</dt>
+                <dd style="margin-left: 80px">
+                {% for iter_assigned in assigneds %}
+                    {%if assigned == iter_assigned%}
+                        <span class="label label-success">{{iter_assigned}}</span>
+                    {%else%}
+                        <a class="issues_attr" href="javascript:void(0)" value="assigned___{{iter_assigned}}"><span class="label">{{iter_assigned}}</span></a>
+                    {%endif%}
+                {% endfor %}
+                </dd>
+            </dl>
+            <dl class="dl-horizontal" style="margin: 6px">
+                <dt style="width: 60px; font-weight: normal">跟踪:</dt>
+                <dd style="margin-left: 80px">
+                {%for iter_tracker in TRACKERS%}
+                    {%if tracker == iter_tracker.value%}
+                        <span class="label label-success">{{iter_tracker.name}}</span>
+                    {%else%}
+                        <a class="issues_attr" href="javascript:void(0)" value="tracker___{{iter_tracker.value}}"><span class="label">{{iter_tracker.name}}</span></a>
+                    {%endif%}
+                {%endfor%}
+                </dd>
+            </dl>
+            <dl class="dl-horizontal" style="margin: 6px">
+                <dt style="width: 60px; font-weight: normal">状态:</dt>
+                <dd style="margin-left: 80px">
+                {%for iter_status in STATUSES%}
+                    {%if status == iter_status.value%}
+                        <span class="label label-success">{{iter_status.name}}</span>
+                    {%else%}
+                        <a class="issues_attr" href="javascript:void(0)" value="status___{{iter_status.value}}"><span class="label">{{iter_status.name}}</span></a>
+                    {%endif%}
+                {%endfor%}
+                </dd>
+            </dl>
+            <dl class="dl-horizontal" style="margin: 6px">
+                <dt style="width: 60px; font-weight: normal">优先级:</dt>
+                <dd style="margin-left: 80px">
+                {%for iter_priority in PRIORITIES%}
+                    {%if priority == iter_priority.value%}
+                        <span class="label label-success">{{iter_priority.name}}</span>
+                    {%else%}
+                        <a class="issues_attr" href="javascript:void(0)" value="priority___{{iter_priority.value}}"><span class="label">{{iter_priority.name}}</span></a>
+                    {%endif%}
+                {%endfor%}
+                </dd>
+            </dl>
+            <a class="c_create_issues_btn" style="margin-top:-30px;margin-right:3px" href="/{{user_name}}/{{repo_name}}/issues/create/0/" class="btn pull-right">创建 issues</a>
+        </div>

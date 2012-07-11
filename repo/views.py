@@ -211,7 +211,16 @@ def issues_show(request, user_name, repo_name, issues_id, page):
         for userprofile in userprofiles:
             user_img_map[userprofile.id] = userprofile.imgurl 
         issue_comments = conver_issue_comments(RepoManager.list_issues_comment(issues_id, page), user_map, user_img_map)
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0,total_page+1)}
+
+    member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
+    member_ids.insert(0, repo.user_id)
+    if raw_issue.user_id != repo.user_id and user_id in member_ids:
+        member_ids.remove(user_id)
+        member_ids.insert(0, user_id)
+    members = UserprofileManager.list_user_by_ids(member_ids)
+    assigneds = [o.username for o in members]
+
+    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0,total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority}
     response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues_show.html',
                           response_dictionary,
@@ -256,6 +265,33 @@ def issues_delete(request, user_name, repo_name, issue_id):
     if issues is not None:
         issues.visibly = 1
         issues.save()
+    return HttpResponse(json.dumps({'result': 'ok'}), mimetype="application/json")
+
+def issues_update(request, user_name, repo_name, issue_id, attr):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    issues = RepoManager.get_issues(repo.id, issue_id)
+    (key, value) = attr.split('___', 1)
+    if key == 'assigned':
+        userprofile = UserprofileManager.get_user_by_name(value)
+        if userprofile is not None:
+            repoMember = RepoManager.get_repo_member(repo.id, userprofile.id)
+            if repoMember is not None:
+                issues.assigned = repoMember.user_id
+                issues.save()
+        return json_ok()
+    value = int(value)
+    if key == 'tracker':
+        issues.tracker = value
+    elif key == 'status':
+        issues.status = value
+    elif key == 'priority':
+        issues.priority = value
+    issues.save()
+    return json_ok()
+
+def json_ok():
     return HttpResponse(json.dumps({'result': 'ok'}), mimetype="application/json")
 
 #TODO
