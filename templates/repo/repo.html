@@ -9,15 +9,31 @@
 <div class="code">
     <div class="page-header" style="padding-bottom: 0px; margin-top: 0px;">
 	    <ul class="breadcrumb" style="margin-bottom: 0px">
-            <li>Private: </li>
+            <li style="margin-right: 5px">
+            {% if repo.auth_type == 0 %}
+                <img src="/static/img/glyphicons_203_lock.png"/>
+            {% else %}
+                <img src="/static/img/glyphicons_204_unlock.png"/>
+            {% endif %}
+            </li>
             <li><h4><a href="/{{ user_name }}/">{{ user_name }}</a> <span class="divider">/</span></h4></li>
             <li><h4><a href="/{{ user_name }}/{{ repo_name }}/">{{ repo_name }}</a></h4></li>
+            <li class="pull-right">
+                <span style="margin-right: 5px">
+                    <a href=""><img src="/static/img/glyphicons_051_eye_open.png"/></a>
+                    <a style="font-size: 15px" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</a>
+                </span>
+                <span style="margin-right: 5px">
+                    <a href=""><img src="/static/img/glyphicons_114_list.png"/></a>
+                    <a style="font-size: 15px" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.fork}}</a>
+                </span>
+            </li>
         </ul>
         {% if current == 'index' %}
         <div class="breadcrumb" style="border-top: 0px; padding: 8px;">
     	    <div class="row">
     			<div class="span9">
-    			    <p>zzzzzzzzzz — <a href="#README.md">更多介绍</a></p>
+    			    <p>{{repo.desc}} — <a href="#README.md">更多介绍</a></p>
     			</div>
     		</div>
     		<div class="row">

@@ -156,7 +156,7 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
         hasNext = True
         issues.pop()
     
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page, 'current_attrs': current_attrs, 'issues': issues, 'hasPre': hasPre, 'hasNext': hasNext}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page, 'current_attrs': current_attrs, 'issues': issues, 'hasPre': hasPre, 'hasNext': hasNext}
     response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues.html',
                           response_dictionary,
@@ -220,7 +220,7 @@ def issues_show(request, user_name, repo_name, issues_id, page):
     members = GsuserManager.list_user_by_ids(member_ids)
     assigneds = [o.username for o in members]
 
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0,total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0,total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority}
     response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues_show.html',
                           response_dictionary,
@@ -250,7 +250,7 @@ def issues_create(request, user_name, repo_name, issues_id):
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
         else:
             error = u'issues 内容不能为空'
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error, 'issues_id': issues_id}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error, 'issues_id': issues_id}
     response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues_create.html',
                           response_dictionary,
@@ -332,7 +332,7 @@ def repo_network(request, user_name, repo_name):
         member_ids.insert(0, user_id)
     merge_user_map = GsuserManager.map_users(member_ids)
     members_vo = [merge_user_map[o] for o in member_ids]
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
     return render_to_response('repo/network.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -355,7 +355,7 @@ def repo_clone_watch(request, user_name, repo_name):
     raw_fork_repos_tree.append(fork_me_repos)
     fork_repos_tree = change_to_vo(raw_fork_repos_tree)
     watch_users = RepoManager.list_watch_user(repo.id)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'fork_repos_tree': fork_repos_tree, 'watch_users': watch_users, 'test': {1, 1}}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'fork_repos_tree': fork_repos_tree, 'watch_users': watch_users, 'test': {1, 1}}
     return render_to_response('repo/clone_watch.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
