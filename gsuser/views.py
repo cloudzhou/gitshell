@@ -13,32 +13,86 @@ from django.contrib.auth import authenticate as auth_authenticate, login as auth
 from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
 from gitshell.gsuser.Forms import LoginForm, JoinForm0, JoinForm1, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
-from gitshell.gsuser.models import Userprofile
+from gitshell.gsuser.models import Userprofile, UserprofileManager
+from gitshell.repo.models import RepoManager
+from gitshell.feed.feed import FeedAction
 
-@login_required
 def user(request, user_name):
-    skillsForm = SkillsForm()
+    gsuser = UserprofileManager.get_user_by_name(user_name)
+    if gsuser is None:
+        raise Http404
+    gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
     recommendsForm = RecommendsForm()
-    response_dictionary = {'mainnav': 'user', 'ii': range(0, 5), 'jj': range(0, 3), 'kk': range(0, 10), 'skillsForm': skillsForm, 'recommendsForm': recommendsForm}
+    feedAction = FeedAction()
+    repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 20)
+    watch_users = feedAction.get_watch_users(gsuser.id, 0, 20)
+    bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 20)
+    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
     return render_to_response('user/user.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+def active(request, user_name):
+    gsuser = UserprofileManager.get_user_by_name(user_name)
+    if gsuser is None:
+        raise Http404
+    gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
+    response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
+    return render_to_response('user/active.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def stats(request, user_name):
+    gsuser = UserprofileManager.get_user_by_name(user_name)
+    if gsuser is None:
+        raise Http404
+    gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
+    response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
+    return render_to_response('user/stats.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def watch_user(request, user_name):
+    gsuser = UserprofileManager.get_user_by_name(user_name)
+    if gsuser is None:
+        raise Http404
+    gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
+    response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
+    return render_to_response('user/watch_user.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def watch_repo(request, user_name):
+    gsuser = UserprofileManager.get_user_by_name(user_name)
+    if gsuser is None:
+        raise Http404
+    gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
+    response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
+    return render_to_response('user/watch_repo.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def recommend(request, user_name):
+    gsuser = UserprofileManager.get_user_by_name(user_name)
+    if gsuser is None:
+        raise Http404
+    gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
+    response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
+    return render_to_response('user/recommend.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
 @login_required
-def network_watch(request):
-    response_dictionary = {'mainnav': 'user', 'ii': range(0, 5), 'jj': range(0, 3), 'kk': range(0, 10), 'skillsForm': skillsForm, 'recommendsForm': recommendsForm}
-    return render_to_response('user/user.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-def network_unwatch(request):
-    response_dictionary = {'mainnav': 'user', 'ii': range(0, 5), 'jj': range(0, 3), 'kk': range(0, 10), 'skillsForm': skillsForm, 'recommendsForm': recommendsForm}
+def network_watch(request, user_name):
+    response_dictionary = {'mainnav': 'user'}
     return render_to_response('user/user.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
-def repo(request, user_name):
-    response_dictionary = {'hello_world': 'hello world1'}
-    return render_to_response('home.html',
+def network_unwatch(request, user_name):
+    response_dictionary = {'mainnav': 'user'}
+    return render_to_response('user/user.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 

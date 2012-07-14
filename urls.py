@@ -55,7 +55,12 @@ urlpatterns = patterns('gitshell',
     # write middleware to rewrite urlconf, by add 'urlconf' attribute to HttpRequest
     # gsuser
     url(r'^(\w+)/?$', 'gsuser.views.user'),
-    # 
+    url(r'^(\w+)/active/?$', 'gsuser.views.active'),
+    url(r'^(\w+)/watch/repo/?$', 'gsuser.views.watch_repo'),
+    url(r'^(\w+)/watch/user/?$', 'gsuser.views.watch_user'),
+    url(r'^(\w+)/recommend/?$', 'gsuser.views.recommend'),
+    url(r'^(\w+)/stats/?$', 'gsuser.views.stats'),
+    # repo
     url(r'^(\w+)/repo/?$', 'repo.views.user_repo'),
     url(r'^(\w+)/repo/(\d+)/?$', 'repo.views.user_repo_paging'),
     url(r'^\w+/repo/edit/(\d+)/?$', 'repo.views.edit'),

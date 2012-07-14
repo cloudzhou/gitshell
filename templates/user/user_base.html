@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block css %}
+<style>
+#id_user_detail dt {text-align: left; font-weight: normal; color: #999999;}
+#id_user_detail .dl-horizontal {margin-top: 0px;}
+#id_user_resume strong {font-size: 12px; font-weight: 300}
+.small_page-header { padding-bottom: 2px; margin-bottom: 10px; }
+.more { float:right; font-size: 13px; color: #999999 }
+.big_font { font-size: 25px; font-weight: 400 }
+.zero_border_table td { border-top: 0px; }
+</style>
+{% endblock %}
+{% block container %}
+<div class="page-header">
+    <div class="row">
+        <div class="span1">
+            <a href="http://www.gravatar.com/"><img src="http://www.gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=40"/></a>
+        </div>
+        <div class="span6">
+            <div style="margin-bottom: 5px">
+                <span class="big_font">{{ gsuser.username }}
+                {% if gsuserprofile.nickname %}
+                    ({{ gsuserprofile.nickname }})
+                {% endif %}
+                <a href="">+</a></span>
+            </div>
+            <span class="muted">{{ gsuserprofile.tweet }}</span>
+        </div>
+        <div class="span">
+            <a href="/cloudzhou/repo/"><span class="big_font">{{ gsuserprofile.pubrepo }}</span></a>
+            <br/><span class="muted">仓库</span>
+        </div>
+        <div class="span">
+            <a href="/cloudzhou/watch/repo/"><span class="big_font">{{ gsuserprofile.pubrepo }}</span></a>
+            <br/><span class="muted">关注仓库</span>
+        </div>
+        <div class="span">
+            <a href="/cloudzhou/watch/user/"><span class="big_font">{{ gsuserprofile.watch }}</span></a>
+            <br/><span class="muted">关注</span>
+        </div>
+        <div class="span">
+            <a href="/cloudzhou/watch/user/"><span class="big_font">{{ gsuserprofile.be_watched }}</span></a>
+            <br/><span class="muted">被关注</span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="span7">
+        <div id="id_user_detail">
+            <dl class="dl-horizontal">
+                {% if gsuserprofile.website %}
+                    <dt>网站</dt>
+                    <dd><a href="{{ gsuserprofile.website }}">{{ gsuserprofile.website }}</a></dd>
+                {% endif %}
+                {% if gsuserprofile.company %}
+                    <dt>公司</dt>
+                    <dd>{{ gsuserprofile.company }}</dd>
+                {% endif %}
+                {% if gsuserprofile.location %}
+                    <dt>所在地</dt>
+                    <dd>{{ gsuserprofile.location }}</dd>
+                {% endif %}
+                <dt>加入gitshell</dt>
+                <dd>{{ gsuserprofile.create_time|date:"Y-m-t" }}</dd>
+            </dl>
+        </div>
+        <div>
+            {% block left_sub_container %}{% endblock %}
+        </div>
+    </div>
+    <div class="span5">
+        {% block right_sub_container %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

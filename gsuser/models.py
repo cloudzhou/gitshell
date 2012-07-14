@@ -15,6 +15,7 @@ class Userprofile(BaseModel):
 
     pubrepo = models.IntegerField(null=False, default=0) 
     prirepo = models.IntegerField(null=False, default=0)
+    #watchrepo = models.IntegerField(null=False, default=0)
     watch = models.IntegerField(null=False, default=0)
     be_watched = models.IntegerField(null=False, default=0)
     quote = models.BigIntegerField(null=False, default=67108864)
@@ -48,10 +49,9 @@ class UserprofileManager():
     
     @classmethod
     def get_userprofile_by_name(self, username):
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            return None 
+        user = self.get_user_by_name(username)
+        if user is None:
+            return None
         return self.get_userprofile_by_id(user.id)
 
     @classmethod

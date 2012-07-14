@@ -1,0 +1,33 @@
+{% extends "user/user_base.html" %}
+{% block left_sub_container %}
+        <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
+            <h2>关注</h2>
+        </div>
+        <div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="span2">用户</th>
+                        <th class="span5">简介</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
+                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
+                    </tr>
+                    <tr>
+                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
+                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+{% endblock %}
+{% block js %}
+<script>
+/*global jQuery, window */
+$(function(){
+});
+</script>
+{% endblock %}
