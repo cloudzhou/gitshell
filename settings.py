@@ -81,6 +81,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.csrf',
     'gitshell.gsuser.middleware.userprofile',
+    'gitshell.gsuser.middleware.mainnav',
 )
 
 ROOT_URLCONF = 'gitshell.urls'

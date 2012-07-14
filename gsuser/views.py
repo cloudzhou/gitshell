@@ -19,18 +19,18 @@ from gitshell.gsuser.models import Userprofile
 def user(request, user_name):
     skillsForm = SkillsForm()
     recommendsForm = RecommendsForm()
-    response_dictionary = {'ii': range(0, 5), 'jj': range(0, 3), 'kk': range(0, 10), 'skillsForm': skillsForm, 'recommendsForm': recommendsForm}
+    response_dictionary = {'mainnav': 'user', 'ii': range(0, 5), 'jj': range(0, 3), 'kk': range(0, 10), 'skillsForm': skillsForm, 'recommendsForm': recommendsForm}
     return render_to_response('user/user.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 @login_required
 def network_watch(request):
-    response_dictionary = {'ii': range(0, 5), 'jj': range(0, 3), 'kk': range(0, 10), 'skillsForm': skillsForm, 'recommendsForm': recommendsForm}
+    response_dictionary = {'mainnav': 'user', 'ii': range(0, 5), 'jj': range(0, 3), 'kk': range(0, 10), 'skillsForm': skillsForm, 'recommendsForm': recommendsForm}
     return render_to_response('user/user.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 def network_unwatch(request):
-    response_dictionary = {'ii': range(0, 5), 'jj': range(0, 3), 'kk': range(0, 10), 'skillsForm': skillsForm, 'recommendsForm': recommendsForm}
+    response_dictionary = {'mainnav': 'user', 'ii': range(0, 5), 'jj': range(0, 3), 'kk': range(0, 10), 'skillsForm': skillsForm, 'recommendsForm': recommendsForm}
     return render_to_response('user/user.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

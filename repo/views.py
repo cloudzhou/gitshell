@@ -30,7 +30,7 @@ def user_repo_paging(request, user_name, pagenum):
         feeds = feedAction.get_repo_feeds(repo.id, 0, 4)
         for feed in feeds:
             repo_commit_map[str(repo.name)].append(feed[0])
-    response_dictionary = {'user_name': user_name, 'repo_list': repo_list, 'repo_commit_map': repo_commit_map}
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_list': repo_list, 'repo_commit_map': repo_commit_map}
     return render_to_response('repo/user_repo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -80,7 +80,7 @@ def repo_ls_tree(request, user_name, repo_name, refs, path, current):
                 lang = lang_suffix[suffix]
                 brush = brush_aliases[lang]
         blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
-    response_dictionary = {'current': current, 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'tree': tree, 'blob': blob, 'is_tree': is_tree, 'lang': lang, 'brush': brush}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'tree': tree, 'blob': blob, 'is_tree': is_tree, 'lang': lang, 'brush': brush}
     return render_to_response('repo/tree.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -99,7 +99,7 @@ def repo_commits(request, user_name, repo_name, refs, path):
     abs_repopath = repo.get_abs_repopath(user_name)
     commit_hash = gitHandler.get_commit_hash(abs_repopath, refs)
     commits = gitHandler.repo_log_file(abs_repopath, commit_hash, path)
-    response_dictionary = {'current': 'commits', 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'commits': commits}
+    response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'commits': commits}
     return render_to_response('repo/commits.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -156,7 +156,7 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
         hasNext = True
         issues.pop()
     
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page, 'current_attrs': current_attrs, 'issues': issues, 'hasPre': hasPre, 'hasNext': hasNext}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page, 'current_attrs': current_attrs, 'issues': issues, 'hasPre': hasPre, 'hasNext': hasNext}
     response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues.html',
                           response_dictionary,
@@ -220,7 +220,7 @@ def issues_show(request, user_name, repo_name, issues_id, page):
     members = UserprofileManager.list_user_by_ids(member_ids)
     assigneds = [o.username for o in members]
 
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0,total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0,total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority}
     response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues_show.html',
                           response_dictionary,
@@ -250,7 +250,7 @@ def issues_create(request, user_name, repo_name, issues_id):
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
         else:
             error = u'issues 内容不能为空'
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error, 'issues_id': issues_id}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error, 'issues_id': issues_id}
     response_dictionary.update(ISSUES_ATTRS)
     return render_to_response('repo/issues_create.html',
                           response_dictionary,
@@ -332,7 +332,7 @@ def repo_network(request, user_name, repo_name):
         member_ids.insert(0, user_id)
     merge_user_map = UserprofileManager.map_users(member_ids)
     members_vo = [merge_user_map[o] for o in member_ids]
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
     return render_to_response('repo/network.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -355,14 +355,14 @@ def repo_clone_watch(request, user_name, repo_name):
     raw_fork_repos_tree.append(fork_me_repos)
     fork_repos_tree = change_to_vo(raw_fork_repos_tree)
     watch_users = RepoManager.list_watch_user(repo.id)
-    response_dictionary = {'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'fork_repos_tree': fork_repos_tree, 'watch_users': watch_users, 'test': {1, 1}}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'fork_repos_tree': fork_repos_tree, 'watch_users': watch_users, 'test': {1, 1}}
     return render_to_response('repo/clone_watch.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def repo_stats(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'stats'
-    response_dictionary = {'current': 'stats', 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
+    response_dictionary = {'mainnav': 'repo', 'current': 'stats', 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path}
     return render_to_response('repo/stats.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -387,7 +387,7 @@ def repo_refs(request, user_name, repo_name):
     gitHandler = GitHandler()
     branches_refs = gitHandler.repo_ls_branches(repopath)
     tags_refs = gitHandler.repo_ls_tags(repopath)
-    response_dictionary = {'user_name': user_name, 'repo_name': repo_name, 'branches': branches_refs, 'tags': tags_refs}
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'branches': branches_refs, 'tags': tags_refs}
     return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
 
 # TODO
@@ -410,7 +410,7 @@ def edit(request, rid):
             return HttpResponseRedirect('/' + request.user.username + '/repo/')
         else:
             error = u'输入正确的仓库名称[A-Za-z0-9_]，选择好语言和可见度'
-    response_dictionary = {'repoForm': repoForm, 'rid': rid, 'error': error}
+    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'rid': rid, 'error': error}
     return render_to_response('repo/edit.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

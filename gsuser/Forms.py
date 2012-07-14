@@ -4,7 +4,7 @@ from captcha.fields import CaptchaField
 class LoginForm(forms.Form):
     email = forms.EmailField(max_length=64)
     password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False))
-    captcha = CaptchaField()
+    #captcha = CaptchaField()
     rememberme = forms.BooleanField(required=False)
 
 class JoinForm0(forms.Form):
