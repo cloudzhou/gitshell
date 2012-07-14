@@ -31,6 +31,7 @@ class SkillsForm(forms.Form):
 
 class RecommendsForm(forms.Form):
     rid = forms.IntegerField()
-    recommends = forms.CharField(max_length=64)
+    recommend = forms.CharField(max_length=64)
     uid = forms.IntegerField()
     action = forms.CharField(max_length=3)
+

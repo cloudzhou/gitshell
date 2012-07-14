@@ -108,7 +108,7 @@ class FeedAction():
         key = '%s:%s' % (FEED_TYPE['BEWATCH_USER'], user_id)
         return self.redis.zrange(key, start, num_items, withscores=True)
 
-    def get_watch_repoes(self, user_id, start, num_items):
+    def get_watch_repos(self, user_id, start, num_items):
         key = '%s:%s' % (FEED_TYPE['WATCH_REPO'], user_id)
         return self.redis.zrange(key, start, num_items, withscores=True)
 

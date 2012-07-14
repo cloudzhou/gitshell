@@ -24,9 +24,13 @@ def user(request, user_name):
     gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
     recommendsForm = RecommendsForm()
     feedAction = FeedAction()
-    repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 20)
-    watch_users = feedAction.get_watch_users(gsuser.id, 0, 20)
-    bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 20)
+    repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 10)
+    recommends = UserprofileManager.list_recommend_by_id(gsuser.id, 0, 20)
+
+    raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
+    raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
+    raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 10)
+
     response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
     return render_to_response('user/user.html',
                           response_dictionary,
@@ -57,6 +61,9 @@ def watch_user(request, user_name):
     if gsuser is None:
         raise Http404
     gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
+    raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
+    raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 10)
+
     response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
     return render_to_response('user/watch_user.html',
                           response_dictionary,
@@ -67,6 +74,7 @@ def watch_repo(request, user_name):
     if gsuser is None:
         raise Http404
     gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
+    raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
     response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
     return render_to_response('user/watch_repo.html',
                           response_dictionary,
@@ -77,6 +85,8 @@ def recommend(request, user_name):
     if gsuser is None:
         raise Http404
     gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
+    recommends = UserprofileManager.list_recommend_by_id(gsuser.id, 0, 50)
+
     response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
     return render_to_response('user/recommend.html',
                           response_dictionary,

@@ -21,6 +21,11 @@ class Userprofile(BaseModel):
     quote = models.BigIntegerField(null=False, default=67108864)
     used_quote = models.BigIntegerField(null=False, default=0)
 
+class Recommend(BaseModel):
+    user_id = models.IntegerField(null=False, default=0)
+    content = models.CharField(max_length=128, null=False)
+    from_user_id = models.IntegerField(null=False, default=0)
+
 class UserprofileManager():
 
     @classmethod
@@ -77,3 +82,9 @@ class UserprofileManager():
             users_map[userprofile.id]['imgurl'] = userprofile.imgurl
             users_map[userprofile.id]['tweet'] = userprofile.tweet
         return users_map
+
+    @classmethod
+    def list_recommend_by_id(self, user_id, offset, row_count):
+        rawsql_id = 'recommend_l_userId'
+        recommends = query(Recommend, 'gsuser_recommend', user_id, rawsql_id, [user_id, offset, row_count]) 
+        return list(recommends)

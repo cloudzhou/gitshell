@@ -148,8 +148,8 @@
                 {% endfor %}
                 <form class="form-inline" action="/{{user.username}}/recommends/" method="post">
                     {% csrf_token %}
-                    {{ recommendsForm.recommends }}
-                    <button id="id_recommends_submit" class="btn hide" type="submit">确定</button>
+                    {{ recommendsForm.recommend }}
+                    <button id="id_recommend_submit" class="btn hide" type="submit">确定</button>
                 </form>
             </blockquote>
         </div>
@@ -170,13 +170,13 @@ $(function(){
     };
     resume_md_converter();
 {% endif %}
-    $('#id_recommends').attr('placeholder', '言简意赅评论一下他，希望你确实了解他');
-    $('#id_recommends').addClass('input-xlarge');
-    $('#id_recommends').click(function() {
-        $('#id_recommends_submit').show();
+    $('#id_recommend').attr('placeholder', '言简意赅评论一下他，希望你确实了解他');
+    $('#id_recommend').addClass('input-xlarge');
+    $('#id_recommend').click(function() {
+        $('#id_recommend_submit').show();
     });
-    $('#id_recommends').blur(function() {
-        $('#id_recommends_submit').hide();
+    $('#id_recommend').blur(function() {
+        $('#id_recommend_submit').hide();
     });
 });
 </script>

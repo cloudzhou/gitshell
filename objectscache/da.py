@@ -16,6 +16,9 @@ rawsql = {
         'select * from keyauth_userpubkey where visibly = 0 and fingerprint = %s limit 0, 1',
     'userpubkey_s_userId_fingerprint':
         'select * from keyauth_userpubkey where visibly = 0 and user_id = %s and fingerprint = %s limit 0, 1',
+    # user #
+    'recommend_l_userId':
+        'select * from gsuser_recommend where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
     # repo #
     'repo_s_userId_name':
         'select * from repo_repo where visibly = 0 and user_id = %s and name = %s limit 0, 1',
