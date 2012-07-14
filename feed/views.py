@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.feed.feed import FeedAction
 from gitshell.repo.models import RepoManager
-from gitshell.gsuser.models import UserprofileManager
+from gitshell.gsuser.models import GsuserManager
 
 @login_required
 def home(request):
@@ -37,7 +37,7 @@ def get_gravatarmap(feeds):
     for feed in feeds:
         username = feed['author']
         if username not in gravatarmap:
-            userprofile = UserprofileManager.get_userprofile_by_name(username)
+            userprofile = GsuserManager.get_userprofile_by_name(username)
             if userprofile is not None:
                 gravatarmap[username] = userprofile.imgurl
                 continue

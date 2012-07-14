@@ -2,12 +2,12 @@ from django.contrib import auth
 from django.utils.functional import lazy
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.functional import SimpleLazyObject
-from gitshell.gsuser.models import UserprofileManager
+from gitshell.gsuser.models import GsuserManager
 
 def get_userprofile(request):
     if not hasattr(request, '_cached_userprofile'):
         if request.user.is_authenticated():
-            request._cached_userprofile = UserprofileManager.get_userprofile_by_id(request.user.id)
+            request._cached_userprofile = GsuserManager.get_userprofile_by_id(request.user.id)
     return request._cached_userprofile
 
 

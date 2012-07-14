@@ -2,7 +2,7 @@
 
 import time
 from gitshell.repo.models import Repo, Issues
-from gitshell.gsuser.models import UserprofileManager
+from gitshell.gsuser.models import GsuserManager
 from django.forms.models import model_to_dict
 
 class RepoIssuesAttrs():

@@ -26,7 +26,7 @@ class Recommend(BaseModel):
     content = models.CharField(max_length=128, null=False)
     from_user_id = models.IntegerField(null=False, default=0)
 
-class UserprofileManager():
+class GsuserManager():
 
     @classmethod
     def get_user_by_id(self, user_id):

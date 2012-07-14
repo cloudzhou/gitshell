@@ -2,7 +2,7 @@ import re
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.models import User
 from gitshell.repo.models import RepoManager
-from gitshell.gsuser.models import UserprofileManager
+from gitshell.gsuser.models import GsuserManager
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH
 from gitshell.dist.views import repo as dist_repo
@@ -51,7 +51,7 @@ def keyauth(request, fingerprint, command):
         pre_repo_path = PRIVATE_REPO_PATH
         if repo.auth_type == 0:
             pre_repo_path = PUBLIC_REPO_PATH
-        userprofile = UserprofileManager.get_userprofile_by_id(user.id)
+        userprofile = GsuserManager.get_userprofile_by_id(user.id)
         if userprofile.used_quote > userprofile.quote:
             return not_git_command()
 

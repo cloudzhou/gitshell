@@ -8,7 +8,7 @@ from subprocess import PIPE
 from datetime import datetime
 from django.contrib.auth.models import User
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH
-from gitshell.gsuser.models import Userprofile, UserprofileManager
+from gitshell.gsuser.models import Userprofile, GsuserManager
 from gitshell.repo.models import CommitHistory, Repo, RepoManager
 from gitshell.feed.feed import FeedAction
 
@@ -124,7 +124,7 @@ def get_user(username):
 def get_gsuser(user):
     if user is None:
         return None
-    return UserprofileManager.get_userprofile_by_id(user.id)
+    return GsuserManager.get_userprofile_by_id(user.id)
 
 def get_repo(user, reponame):  
     if user is None:

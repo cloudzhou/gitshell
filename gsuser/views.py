@@ -13,19 +13,19 @@ from django.contrib.auth import authenticate as auth_authenticate, login as auth
 from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
 from gitshell.gsuser.Forms import LoginForm, JoinForm0, JoinForm1, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
-from gitshell.gsuser.models import Userprofile, UserprofileManager
+from gitshell.gsuser.models import Userprofile, GsuserManager
 from gitshell.repo.models import RepoManager
 from gitshell.feed.feed import FeedAction
 
 def user(request, user_name):
-    gsuser = UserprofileManager.get_user_by_name(user_name)
+    gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
-    gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
+    gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     recommendsForm = RecommendsForm()
     feedAction = FeedAction()
     repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 10)
-    recommends = UserprofileManager.list_recommend_by_id(gsuser.id, 0, 20)
+    recommends = GsuserManager.list_recommend_by_id(gsuser.id, 0, 20)
 
     raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
     raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
@@ -37,30 +37,30 @@ def user(request, user_name):
                           context_instance=RequestContext(request))
 
 def active(request, user_name):
-    gsuser = UserprofileManager.get_user_by_name(user_name)
+    gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
-    gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
+    gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
     return render_to_response('user/active.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def stats(request, user_name):
-    gsuser = UserprofileManager.get_user_by_name(user_name)
+    gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
-    gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
+    gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
     return render_to_response('user/stats.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def watch_user(request, user_name):
-    gsuser = UserprofileManager.get_user_by_name(user_name)
+    gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
-    gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
+    gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
     raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 10)
 
@@ -70,10 +70,10 @@ def watch_user(request, user_name):
                           context_instance=RequestContext(request))
 
 def watch_repo(request, user_name):
-    gsuser = UserprofileManager.get_user_by_name(user_name)
+    gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
-    gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
+    gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
     response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
     return render_to_response('user/watch_repo.html',
@@ -81,11 +81,11 @@ def watch_repo(request, user_name):
                           context_instance=RequestContext(request))
 
 def recommend(request, user_name):
-    gsuser = UserprofileManager.get_user_by_name(user_name)
+    gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
-    gsuserprofile = UserprofileManager.get_userprofile_by_id(gsuser.id)
-    recommends = UserprofileManager.list_recommend_by_id(gsuser.id, 0, 50)
+    gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
+    recommends = GsuserManager.list_recommend_by_id(gsuser.id, 0, 50)
 
     response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
     return render_to_response('user/recommend.html',
@@ -94,6 +94,9 @@ def recommend(request, user_name):
 
 @login_required
 def network_watch(request, user_name):
+    gsuser = GsuserManager.get_user_by_name(user_name)
+    if gsuser is None:
+        raise Http404
     response_dictionary = {'mainnav': 'user'}
     return render_to_response('user/user.html',
                           response_dictionary,
@@ -101,6 +104,9 @@ def network_watch(request, user_name):
 
 @login_required
 def network_unwatch(request, user_name):
+    gsuser = GsuserManager.get_user_by_name(user_name)
+    if gsuser is None:
+        raise Http404
     response_dictionary = {'mainnav': 'user'}
     return render_to_response('user/user.html',
                           response_dictionary,

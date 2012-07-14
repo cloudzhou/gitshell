@@ -13,7 +13,7 @@ from gitshell.repo.Forms import RepoForm, RepoIssuesForm, IssuesComment, RepoIss
 from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, Issues
 from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, ISSUES_ATTRS, conver_issues, conver_issue_comments, conver_repos
-from gitshell.gsuser.models import UserprofileManager
+from gitshell.gsuser.models import GsuserManager
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
 
 @login_required
@@ -129,19 +129,19 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
     if user_id != repo.user_id and user_id in member_ids:
         member_ids.remove(user_id)
         member_ids.insert(0, user_id)
-    members = UserprofileManager.list_user_by_ids(member_ids)
+    members = GsuserManager.list_user_by_ids(member_ids)
     assigneds = [o.username for o in members]
     if assigned is None:
         assigned = assigneds[0]
     assigned_id = repo.user_id
-    assigned_user = UserprofileManager.get_user_by_name(assigned)
+    assigned_user = GsuserManager.get_user_by_name(assigned)
     if assigned_user is not None and assigned in assigneds:
         assigned_id = assigned_user.id
     tracker = int(tracker); status = int(status); priority = int(priority); page = int(page)
     current_attrs = { "assigned": str(assigned), "tracker": tracker, "status": status, "priority": priority, "orderby": str(orderby), "page": page }
     raw_issues = RepoManager.list_issues(repo.id, assigned_id, tracker, status, priority, orderby, page)
     reporter_ids = [o.user_id for o in raw_issues]
-    reporters = UserprofileManager.list_user_by_ids(list(set(reporter_ids)-set(member_ids)))
+    reporters = GsuserManager.list_user_by_ids(list(set(reporter_ids)-set(member_ids)))
     user_map = {}
     for member in members:
         user_map[member.id] = member.username
@@ -186,7 +186,7 @@ def issues_show(request, user_name, repo_name, issues_id, page):
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, issues_id))
     issues_id = int(issues_id)
     user_map = {}
-    users = UserprofileManager.list_user_by_ids([raw_issue.user_id, raw_issue.assigned])
+    users = GsuserManager.list_user_by_ids([raw_issue.user_id, raw_issue.assigned])
     for user in users:
         user_map[user.id] = user.username
     issue = conver_issues([raw_issue], user_map)[0]
@@ -204,8 +204,8 @@ def issues_show(request, user_name, repo_name, issues_id, page):
     if issue['comment_count'] > 0:
         raw_issue_comments = RepoManager.list_issues_comment(issues_id, page)
         user_ids = [o.user_id for o in raw_issue_comments]
-        users = UserprofileManager.list_user_by_ids(user_ids)
-        userprofiles = UserprofileManager.list_userprofile_by_ids(user_ids)
+        users = GsuserManager.list_user_by_ids(user_ids)
+        userprofiles = GsuserManager.list_userprofile_by_ids(user_ids)
         for user in users:
             user_map[user.id] = user.username
         for userprofile in userprofiles:
@@ -217,7 +217,7 @@ def issues_show(request, user_name, repo_name, issues_id, page):
     if raw_issue.user_id != repo.user_id and user_id in member_ids:
         member_ids.remove(user_id)
         member_ids.insert(0, user_id)
-    members = UserprofileManager.list_user_by_ids(member_ids)
+    members = GsuserManager.list_user_by_ids(member_ids)
     assigneds = [o.username for o in members]
 
     response_dictionary = {'mainnav': 'repo', 'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0,total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority}
@@ -274,7 +274,7 @@ def issues_update(request, user_name, repo_name, issue_id, attr):
     issues = RepoManager.get_issues(repo.id, issue_id)
     (key, value) = attr.split('___', 1)
     if key == 'assigned':
-        userprofile = UserprofileManager.get_user_by_name(value)
+        userprofile = GsuserManager.get_user_by_name(value)
         if userprofile is not None:
             repoMember = RepoManager.get_repo_member(repo.id, userprofile.id)
             if repoMember is not None:
@@ -330,7 +330,7 @@ def repo_network(request, user_name, repo_name):
     if user_id != repo.user_id and user_id in member_ids:
         member_ids.remove(user_id)
         member_ids.insert(0, user_id)
-    merge_user_map = UserprofileManager.map_users(member_ids)
+    merge_user_map = GsuserManager.map_users(member_ids)
     members_vo = [merge_user_map[o] for o in member_ids]
     response_dictionary = {'mainnav': 'repo', 'current': current, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
     return render_to_response('repo/network.html',
@@ -373,7 +373,7 @@ def change_to_vo(raw_fork_repos_tree):
         for raw_fork_repo in raw_fork_repos:
             user_ids.append(raw_fork_repo.user_id)
     fork_repos_tree = []
-    user_map = UserprofileManager.map_users(user_ids)
+    user_map = GsuserManager.map_users(user_ids)
     for raw_fork_repos in raw_fork_repos_tree:
         fork_repos_tree.append(conver_repos(raw_fork_repos, user_map))
     return fork_repos_tree

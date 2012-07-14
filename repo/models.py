@@ -2,7 +2,7 @@ from django.db import models
 from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
-from gitshell.gsuser.models import UserprofileManager
+from gitshell.gsuser.models import GsuserManager
 
 class Repo(BaseModel):
     user_id = models.IntegerField()
@@ -103,7 +103,7 @@ class RepoManager():
 
     @classmethod
     def get_repo_by_name(self, user_name, repo_name):
-        user = UserprofileManager.get_user_by_name(user_name)
+        user = GsuserManager.get_user_by_name(user_name)
         if user is None:
             return None
         return RepoManager.get_repo_by_userId_name(user.id, repo_name)
@@ -137,7 +137,7 @@ class RepoManager():
 
     @classmethod
     def add_member(self, repo_id, username):
-        user = UserprofileManager.get_user_by_name(user_name)
+        user = GsuserManager.get_user_by_name(user_name)
         if user is None:
             return None
         repoMember = self.get_repo_member(repo_id, user.id)
@@ -149,7 +149,7 @@ class RepoManager():
 
     @classmethod
     def remove_member(self, repo_id, username):
-        user = UserprofileManager.get_user_by_name(user_name)
+        user = GsuserManager.get_user_by_name(user_name)
         if user is None:
             return None
         repoMember = self.get_repo_member(repo_id, user.id)
@@ -204,13 +204,11 @@ class RepoManager():
     def list_watch_user(self, repo_id):
         watchHistory = query(WatchHistory, 'repo_watchhistory', repo_id, 'watchhistory_l_repoId', [repo_id])
         user_ids = [o.user_id for o in watchHistory]
-        user_map = UserprofileManager.map_users(user_ids)
+        user_map = GsuserManager.map_users(user_ids)
         watch_user = []
         for user_id in user_ids:
             if user_id in user_map:
                 watch_user.append(user_map[user_id])
         return watch_user
-
-
 
 
