@@ -37,19 +37,19 @@ class RepoMember(BaseModel):
 class CommitHistory(BaseModel):
     repo_id = models.IntegerField()
     repo_name = models.CharField(max_length=64)
+    commit_id = models.IntegerField()
     commit_hash = models.CharField(max_length=12)
     parent_hashes = models.CharField(max_length=24)
     tree_hash = models.CharField(max_length=12)
     committer = models.CharField(max_length=30)
     author = models.CharField(max_length=30)
-    author_id = models.IntegerField(default=0)
     committer_date = models.DateTimeField()
     subject = models.CharField(max_length=512)
-    #refname = models.CharField(max_length=32)
+    refname = models.CharField(max_length=32)
 
     @classmethod
-    def create(self, repo_id, repo_name, commit_hash, parent_hashes, tree_hash, committer, author, author_id, committer_date, subject):
-        return CommitHistory(
+    def create(self, repo_id, repo_name, commit_hash, parent_hashes, tree_hash, committer, author, committer_date, subject, refname):
+        commitHistory = CommitHistory(
             repo_id = repo_id,
             repo_name = repo_name,
             commit_hash = commit_hash,
@@ -57,10 +57,12 @@ class CommitHistory(BaseModel):
             tree_hash = tree_hash,
             committer = committer,
             author = author,
-            author_id = author_id,
             committer_date = committer_date,
-            subject = subject
+            subject = subject,
+            refname = refname
         )
+        commitHistory.commit_id = int(commit_hash[0:7], 16)
+        return commitHistory
 
 class WatchHistory(BaseModel):
     user_id = models.IntegerField(default=0)

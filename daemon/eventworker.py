@@ -14,7 +14,7 @@ from gitshell.feed.feed import FeedAction
 
 def main():
     beanstalk = beanstalkc.Connection(host='localhost', port=11300)
-    #beanstalk.use('high_priority')
+    beanstalk.use('commit_event')
     exit_flag = False
     while not exit_flag:
         event_job = beanstalk.reserve()
@@ -86,8 +86,7 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev):
                 committer_date = datetime.fromtimestamp(int(items[5])) 
                 # TODO
                 author_name = items[3][0:30]
-                author_uid = 0
-                commitHistory = CommitHistory.create(repo.id, repo.name, items[0], items[1][0:24], items[2], author_name, items[4][0:30], author_uid, committer_date, items[6][0:512])
+                commitHistory = CommitHistory.create(repo.id, repo.name, items[0], items[1][0:24], items[2], author_name, items[4][0:30], committer_date, items[6][0:512])
                 commitHistorys.append(commitHistory)
     for commitHistory in commitHistorys:
         commitHistory.save()
