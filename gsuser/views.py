@@ -14,6 +14,7 @@ from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
 from gitshell.gsuser.Forms import LoginForm, JoinForm0, JoinForm1, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
 from gitshell.gsuser.models import Userprofile, GsuserManager
+from gitshell.gsuser.middleware import MAIN_NAVS
 from gitshell.repo.models import RepoManager
 from gitshell.feed.feed import FeedAction
 
@@ -182,7 +183,7 @@ def join(request, step):
                 return HttpResponseRedirect('/join/4/')
             name = joinForm1.cleaned_data['name']
             password = joinForm1.cleaned_data['password']
-            if name is not None and re.match("^\w+$", name):
+            if name is not None and re.match("^\w+$", name) and name not in MAIN_NAVS:
                 try:
                     user = User.objects.create_user(name, email, password)
                 except IntegrityError:

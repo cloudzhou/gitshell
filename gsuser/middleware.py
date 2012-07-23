@@ -22,7 +22,7 @@ def userprofile(request):
         userprofile = Userprofile()
     return {'userprofile': userprofile }
 
-mainnavs = ['index', 'stats', 'skills', 'home', 'login', 'logout', 'join', 'resetpassword', 'help', 'settings', 'private', 'captcha', 'ajax']
+MAIN_NAVS = ['index', 'stats', 'skills', 'home', 'login', 'logout', 'join', 'resetpassword', 'help', 'settings', 'private', 'captcha', 'ajax']
 def mainnav(request):
     path = request.path
     if path == '' or path == '/':

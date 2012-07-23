@@ -105,6 +105,7 @@ INSTALLED_APPS = (
     'gitshell.keyvalue',
     'gitshell.gsuser',
     'gitshell.repo',
+    'gitshell.stats',
     # 'django.contrib.admin',
     # 'django.contrib.admindocs',
 )

@@ -31,7 +31,8 @@
     <div class="page-header small-header">
         <h4>贡献者<small>
     </div>
-    <div><div id="id_contributor_container" class="repo_chart"></div></div>
+    <div><div id="id_contributor_week_container" class="repo_chart"></div></div>
+    <div><div id="id_contributor_month_container" class="repo_chart"></div></div>
     <div class="page-header small-header">
         <h4>空间使用情况<small>
     </div>
@@ -46,6 +47,10 @@ $(function(){
         $(this).html(moment(new Date($(this).html()*1000)).fromNow());
         $(this).show();
     });
+    var last12hours = {{last12hours}};
+    var last7days = {{last7days}};
+    var last30days = {{last30days}};
+    var last12months = {{last12months}};
     var day_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_day_container', type: 'line'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
@@ -74,19 +79,26 @@ $(function(){
         xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
         series: [{ name: '1 年提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
     });
-    var contributor_chart = new Highcharts.Chart({
-        chart: { renderTo: 'id_1contributor_container', type: 'line'},title: {text: ''},
-        yAxis: { title: { text: '提交次数' } },
-        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
-        xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
-        series: [{ name: '1 天提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
+    var contributor_week_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_contributor_week_container', type: 'bar'},title: {text: ''},
+        yAxis: { title: { text: '空间使用情况' } },
+        plotOptions: { bar: { dataLabels: { enabled: true } } },
+        xAxis: { categories: ['使用空间', '全部空间'] },
+        series: [{ name: '一周贡献者提交统计', data: [100, 20] }]
+    });
+    var contributor_month_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_contributor_month_container', type: 'bar'},title: {text: ''},
+        yAxis: { title: { text: '空间使用情况' } },
+        plotOptions: { bar: { dataLabels: { enabled: true } } },
+        xAxis: { categories: ['使用空间', '全部空间'] },
+        series: [{ name: '一月贡献者提交统计', data: [100, 20] }]
     });
     var space_chart = new Highcharts.Chart({
-        chart: { renderTo: 'id_1space_container', type: 'line'},title: {text: ''},
-        yAxis: { title: { text: '提交次数' } },
-        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
-        xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
-        series: [{ name: '1 天提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
+        chart: { renderTo: 'id_space_container', type: 'bar'},title: {text: ''},
+        yAxis: { title: { text: '空间使用情况' } },
+        plotOptions: { bar: { dataLabels: { enabled: true } } },
+        xAxis: { categories: ['使用空间', '全部空间'] },
+        series: [{ name: '单位 kb', data: [100, 20] }]
     });
 });
 </script>
