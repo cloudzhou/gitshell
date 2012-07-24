@@ -1,5 +1,6 @@
 from django.db import models
 from gitshell.objectscache.models import BaseModel
+from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many
 
 # limit sql update count !
 # statstype {0: sum, 1: per}
@@ -10,7 +11,7 @@ from gitshell.objectscache.models import BaseModel
 # repo:
 # id repo_id user_id commit_count
 
-class user(models.Model):
+class StatsUser(models.Model):
     statstype = models.SmallIntegerField(default=0)
     datetype = models.SmallIntegerField(default=0)
     date = models.DateTimeField()
@@ -22,7 +23,7 @@ class user(models.Model):
     def create_stats_user(self, statstype, datetype, date, user_id, repo_id, count):
         return user(statstype=statstype, datetype=datetype, date=date, user_id=user_id, repo_id=repo_id, count=count)
 
-class repo(models.Model):
+class StatsRepo(models.Model):
     statstype = models.SmallIntegerField(default=0)
     datetype = models.SmallIntegerField(default=0)
     date = models.DateTimeField()
@@ -37,19 +38,30 @@ class repo(models.Model):
 
 class StatsManager():
 
+    datetypeDict = {
+        'hour': 0,
+        'day': 1,
+        'week': 2,
+        'month': 3,
+        'year': 4,
+    }
     @classmethod
-    def list_user_stats(stats_type, datetype):
+    def list_user_stats(self, datetypeStr, fromDateTime, toDateTime):
         pass
 
     @classmethod
-    def list_user_repo_stats(stats_type, datetype):
+    def list_user_repo_stats(self, datetypeStr, fromDateTime, toDateTime):
         pass
 
     @classmethod
-    def list_repo_stats(stats_type, datetype):
-        pass
+    def list_repo_stats(self, repo_id, datetypeStr, fromDateTime, toDateTime):
+        if datetypeStr not in self.datetypeDict:
+            return []
+        datetype = self.datetypeDict[datetypeStr]
+        repo_stats = query(StatsRepo, 'stats_statsrepo', repo_id, 'statsrepo_l_cons', [repo_id, 0, datetype, fromDateTime, toDateTime])
+        return list(repo_stats)
 
     @classmethod
-    def list_repo_user_stats(stats_type, datetype):
+    def list_repo_user_stats(self, repo_id, datetypeStr, fromDateTime, toDateTime):
         pass
 

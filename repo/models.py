@@ -213,4 +213,3 @@ class RepoManager():
                 watch_user.append(user_map[user_id])
         return watch_user
 
-

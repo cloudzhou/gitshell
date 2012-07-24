@@ -46,6 +46,15 @@ rawsql = {
     # repo_watchhistory #
     'watchhistory_l_repoId':
         'select * from repo_watchhistory where watch_repo_id = %s order by modify_time desc limit 0, 50',
+    # stats #
+    'statsrepo_l_cons':
+        'select * from stats_statsrepo where repo_id = %s and statstype = %s and datetype = %s and date between %s and %s',
+    'statsuser_l_cons':
+        'select * from stats_statsuser where user_id = %s and statstype = %s and datetype = %s and date between %s and %s',
+    'per_statsrepo_l_cons':
+        'select * from stats_statsrepo where repo_id = %s and statstype = %s and datetype = %s and date = %s order by count desc limit 0, 10',
+    'per_statsuser_l_cons':
+        'select * from stats_statsuser where user_id = %s and statstype = %s and datetype = %s and date = %s order by count desc limit 0, 10',
 }
 
 def get_many(model, table, pids):

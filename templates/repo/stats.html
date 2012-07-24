@@ -51,32 +51,54 @@ $(function(){
     var last7days = {{last7days}};
     var last30days = {{last30days}};
     var last12months = {{last12months}};
+    var last12hoursAsCat = [];
+    var last7daysAsCat = [];
+    var last30daysAsCat = [];
+    var last12monthsAsCat = [];
+    for(x in last12hours) {
+        last12hoursAsCat.push(new Date(last12hours[x]*1000).getHours() + 'h');
+    }
+    last12hoursAsCat.reverse()
+    for(x in last7days) {
+        var d = new Date(last7days[x]*1000) 
+        last7daysAsCat.push(d.getMonth()+1+'/'+d.getDate());
+    }
+    last7daysAsCat.reverse()
+    for(x in last30days) {
+        last30daysAsCat.push(new Date(last30days[x]*1000).getDate());
+    }
+    last30daysAsCat.reverse()
+    for(x in last12months) {
+        last12monthsAsCat.push((new Date(last12months[x]*1000).getMonth()+1) + 'm');
+    }
+    last12monthsAsCat.reverse()
+    
     var day_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_day_container', type: 'line'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
         plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
-        xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+        xAxis: { categories: last12hoursAsCat },
         series: [{ name: '1 天提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
     });
     var week_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_week_container', type: 'line'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
         plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
-        xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
-        series: [{ name: '1 周提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
+        xAxis: { categories: last7daysAsCat },
+        series: [{ name: '1 周提交', data: [1, 2, 3, 4, 5, 6, 7] }]
     });
     var month_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_month_container', type: 'line'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
         plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
-        xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
-        series: [{ name: '1 月提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
+        xAxis: { categories: last30daysAsCat },
+        series: [{ name: '1 月提交', data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] }]
     });
     var year_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_year_container', type: 'line'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
         plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
-        xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+        xAxis: { categories: last12monthsAsCat },
         series: [{ name: '1 年提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
     });
     var contributor_week_chart = new Highcharts.Chart({
