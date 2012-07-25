@@ -51,6 +51,7 @@ $(function(){
     var last7days = {{last7days}};
     var last30days = {{last30days}};
     var last12months = {{last12months}};
+
     var last12hoursAsCat = [];
     var last7daysAsCat = [];
     var last30daysAsCat = [];
@@ -73,33 +74,74 @@ $(function(){
     }
     last12monthsAsCat.reverse()
     
+    var last12hours_commit = {{last12hours_commit}};
+    var last30days_commit = {{last30days_commit}};
+    var last12months_commit = {{last12months_commit}};
+    var last12hoursAsData = [];
+    var last7daysAsData = [];
+    var last30daysAsData = [];
+    var last12monthsAsData = [];
+    for(x in last12hours) {
+        if(last12hours[x] in last12hours_commit) {
+            last12hoursAsData.push(last12hours_commit[last12hours[x]]);
+            continue;
+        }
+        last12hoursAsData.push(0);
+    }
+    last12hoursAsData.reverse();
+    for(x in last7days) {
+        if(last7days[x] in last30days_commit) {
+            last7daysAsData.push(last30days_commit[last7days[x]]);
+            continue;
+        }
+        last7daysAsData.push(0);
+    }
+    last7daysAsData.reverse();
+    for(x in last30days) {
+        if(last30days[x] in last30days_commit) {
+            last30daysAsData.push(last30days_commit[last30days[x]]);
+            continue;
+        }
+        last30daysAsData.push(0);
+    }
+    last30daysAsData.reverse();
+    for(x in last12months) {
+        if(last12months[x] in last12months_commit) {
+            last12monthsAsData.push(last12months_commit[last12months[x]]);
+            continue;
+        }
+        last12monthsAsData.push(0);
+    }
+    last12monthsAsData.reverse();
+
+    var quotes = {{quotes|safe}};
     var day_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_day_container', type: 'line'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
         plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
         xAxis: { categories: last12hoursAsCat },
-        series: [{ name: '1 天提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
+        series: [{ name: '1 天提交', data: last12hoursAsData }]
     });
     var week_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_week_container', type: 'line'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
         plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
         xAxis: { categories: last7daysAsCat },
-        series: [{ name: '1 周提交', data: [1, 2, 3, 4, 5, 6, 7] }]
+        series: [{ name: '1 周提交', data: last7daysAsData }]
     });
     var month_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_month_container', type: 'line'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
         plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
         xAxis: { categories: last30daysAsCat },
-        series: [{ name: '1 月提交', data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] }]
+        series: [{ name: '1 月提交', data: last30daysAsData }]
     });
     var year_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_year_container', type: 'line'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
         plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
         xAxis: { categories: last12monthsAsCat },
-        series: [{ name: '1 年提交', data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8] }]
+        series: [{ name: '1 年提交', data: last12monthsAsData }]
     });
     var contributor_week_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_contributor_week_container', type: 'bar'},title: {text: ''},
@@ -120,7 +162,7 @@ $(function(){
         yAxis: { title: { text: '空间使用情况' } },
         plotOptions: { bar: { dataLabels: { enabled: true } } },
         xAxis: { categories: ['使用空间', '全部空间'] },
-        series: [{ name: '单位 kb', data: [100, 20] }]
+        series: [{ name: '单位 kb', data: [quotes.used_quote, quotes.total_quote] }]
     });
 });
 </script>

@@ -18,14 +18,18 @@
             </li>
             <li><h4><a href="/{{ user_name }}/">{{ user_name }}</a> <span class="divider">/</span></h4></li>
             <li><h4><a href="/{{ user_name }}/{{ repo_name }}/">{{ repo_name }}</a></h4></li>
-            <li class="pull-right">
+            <li class="pull-right" id="eye-box">
+                <style>
+                    #eye-box span,#eye-box a{display:inline-block;height:18px;line-height:18px}
+                    #eye-box a.count {top:4px;position:relative}
+                </style>
                 <span style="margin-right: 5px">
-                    <a href=""><img src="/static/img/glyphicons_051_eye_open.png"/></a>
-                    <a style="font-size: 15px" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</a>
+                    <a href="" style="display:inline-block"><img src="/static/img/glyphicons_051_eye_open.png" align="absmiddle"/></a>
+                    <a class="count" style="font-size: 20px; font-weight: bold" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</a>
                 </span>
                 <span style="margin-right: 5px">
                     <a href=""><img src="/static/img/glyphicons_114_list.png"/></a>
-                    <a style="font-size: 15px" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.fork}}</a>
+                    <a class="count" style="font-size: 20px; font-weight: bold" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.fork}}</a>
                 </span>
             </li>
         </ul>

@@ -369,16 +369,20 @@ def repo_stats(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    raw_fork_repos_tree = []
+    userprofile = GsuserManager.get_userprofile_by_id(repo.user_id)
     now = datetime.now()
     last12hours = getlast12hours(now)
     last7days = getlast7days(now)
     last30days = getlast30days(now)
     last12months = getlast12months(now)
-    last12hours_commit = StatsManager.list_repo_stats(repo.id, 'hour', datetime.fromtimestamp(last12hours[-1]), datetime.fromtimestamp(last12hours[0]))
-    last30days_commit = StatsManager.list_repo_stats(repo.id, 'day', datetime.fromtimestamp(last30days[-1]), datetime.fromtimestamp(last30days[0]))
-    last12months_commit = StatsManager.list_repo_stats(repo.id, 'month', datetime.fromtimestamp(last12months[-1]), datetime.fromtimestamp(last12months[0]))
-    response_dictionary = {'mainnav': 'repo', 'current': 'stats', 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months}
+    raw_last12hours_commit = StatsManager.list_repo_stats(repo.id, 'hour', datetime.fromtimestamp(last12hours[-1]), datetime.fromtimestamp(last12hours[0]))
+    last12hours_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_last12hours_commit])
+    raw_last30days_commit = StatsManager.list_repo_stats(repo.id, 'day', datetime.fromtimestamp(last30days[-1]), datetime.fromtimestamp(last30days[0]))
+    last30days_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_last30days_commit])
+    raw_last12months_commit = StatsManager.list_repo_stats(repo.id, 'month', datetime.fromtimestamp(last12months[-1]), datetime.fromtimestamp(last12months[0]))
+    last12months_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_last12months_commit])
+    quotes = {'used_quote': int(repo.used_quote), 'total_quote': int(userprofile.quote)}
+    response_dictionary = {'mainnav': 'repo', 'current': 'stats', 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes}
     return render_to_response('repo/stats.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
