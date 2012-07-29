@@ -46,8 +46,12 @@ class StatsManager():
         'year': 4,
     }
     @classmethod
-    def list_user_stats(self, datetypeStr, fromDateTime, toDateTime):
-        pass
+    def list_user_stats(self, user_id, datetypeStr, fromDateTime, toDateTime):
+        if datetypeStr not in self.datetypeDict:
+            return []
+        datetype = self.datetypeDict[datetypeStr]
+        user_stats = query(StatsRepo, 'stats_statsuser', user_id, 'statsuser_l_cons', [user_id, 0, datetype, fromDateTime, toDateTime])
+        return list(user_stats)
 
     @classmethod
     def list_user_repo_stats(self, datetypeStr, fromDateTime, toDateTime):
@@ -62,6 +66,10 @@ class StatsManager():
         return list(repo_stats)
 
     @classmethod
-    def list_repo_user_stats(self, repo_id, datetypeStr, fromDateTime, toDateTime):
-        pass
+    def list_repo_user_stats(self, repo_id, datetypeStr, fromDateTime):
+        if datetypeStr not in self.datetypeDict:
+            return []
+        datetype = self.datetypeDict[datetypeStr]
+        repo_stats = query(StatsRepo, 'stats_statsrepo', repo_id, 'per_statsrepo_l_cons', [repo_id, 1, datetype, fromDateTime])
+        return list(repo_stats)
 

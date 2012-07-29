@@ -114,6 +114,8 @@ $(function(){
     }
     last12monthsAsData.reverse();
 
+    var per_last_week_commit = {{per_last_week_commit}};
+    var per_last_month_commit = {{per_last_month_commit}};
     var quotes = {{quotes|safe}};
     var day_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_day_container', type: 'line'},title: {text: ''},
@@ -148,14 +150,14 @@ $(function(){
         yAxis: { title: { text: '空间使用情况' } },
         plotOptions: { bar: { dataLabels: { enabled: true } } },
         xAxis: { categories: ['使用空间', '全部空间'] },
-        series: [{ name: '一周贡献者提交统计', data: [100, 20] }]
+        series: [{ name: '本周（{{round_week|date:"y/m/d"}}以来）贡献者提交统计', data: [100, 20] }]
     });
     var contributor_month_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_contributor_month_container', type: 'bar'},title: {text: ''},
         yAxis: { title: { text: '空间使用情况' } },
         plotOptions: { bar: { dataLabels: { enabled: true } } },
         xAxis: { categories: ['使用空间', '全部空间'] },
-        series: [{ name: '一月贡献者提交统计', data: [100, 20] }]
+        series: [{ name: '本月（{{round_month|date:"y/m/d"}}以来）贡献者提交统计', data: [100, 20] }]
     });
     var space_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_space_container', type: 'bar'},title: {text: ''},
