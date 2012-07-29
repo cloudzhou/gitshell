@@ -4,7 +4,6 @@ import shutil
 import json, time
 from datetime import datetime
 from datetime import timedelta
-from dateutil.relativedelta import relativedelta
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
@@ -17,6 +16,7 @@ from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, Issues
 from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, ISSUES_ATTRS, conver_issues, conver_issue_comments, conver_repos
 from gitshell.gsuser.models import GsuserManager
+from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
 
@@ -371,38 +371,41 @@ def repo_stats(request, user_name, repo_name):
         raise Http404
     userprofile = GsuserManager.get_userprofile_by_id(repo.user_id)
     now = datetime.now()
-    last12hours = getlast12hours(now)
-    last7days = getlast7days(now)
-    last30days = getlast30days(now)
-    last12months = getlast12months(now)
+    last12hours = timeutils.getlast12hours(now)
+    last7days = timeutils.getlast7days(now)
+    last30days = timeutils.getlast30days(now)
+    last12months = timeutils.getlast12months(now)
     raw_last12hours_commit = StatsManager.list_repo_stats(repo.id, 'hour', datetime.fromtimestamp(last12hours[-1]), datetime.fromtimestamp(last12hours[0]))
     last12hours_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_last12hours_commit])
     raw_last30days_commit = StatsManager.list_repo_stats(repo.id, 'day', datetime.fromtimestamp(last30days[-1]), datetime.fromtimestamp(last30days[0]))
     last30days_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_last30days_commit])
+    last7days_commit = {}
+    for x in last7days:
+        if x in raw_last30days_commit:
+            last7days_commit[x] = raw_last30days_commit[x].count
     raw_last12months_commit = StatsManager.list_repo_stats(repo.id, 'month', datetime.fromtimestamp(last12months[-1]), datetime.fromtimestamp(last12months[0]))
     last12months_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_last12months_commit])
 
-    round_week = get_round_week(now)
-    round_month = get_round_month(now)
+    round_week = timeutils.get_round_week(now)
+    round_month = timeutils.get_round_month(now)
+    round_year = timeutils.get_round_year(now)
     raw_per_last_week_commit = StatsManager.list_repo_user_stats(repo.id, 'week', round_week)
     raw_per_last_month_commit = StatsManager.list_repo_user_stats(repo.id, 'month', round_month)
+    raw_per_last_year_commit = StatsManager.list_repo_user_stats(repo.id, 'year', round_year)
     per_last_week_commit = [int(x.count) for x in raw_per_last_week_commit]
     per_last_month_commit = [int(x.count) for x in raw_per_last_month_commit]
+    per_last_year_commit = [int(x.count) for x in raw_per_last_year_commit]
     raw_per_user_week_commit = [x.user_id for x in raw_per_last_week_commit]
     raw_per_user_month_commit = [x.user_id for x in raw_per_last_month_commit]
-    mergedlist = list(set(raw_per_user_week_commit + raw_per_user_month_commit))
+    raw_per_user_year_commit = [x.user_id for x in raw_per_last_year_commit]
+    mergedlist = list(set(raw_per_user_week_commit + raw_per_user_month_commit + raw_per_user_year_commit))
     user_dict = GsuserManager.map_users(mergedlist)
     per_user_week_commit = [str(user_dict[x]['username']) if x in user_dict else 'unknow' for x in raw_per_user_week_commit]
     per_user_month_commit = [str(user_dict[x]['username']) if x in user_dict else 'unknow' for x in raw_per_user_month_commit]
-    if len(per_last_week_commit) == 0:
-        per_last_week_commit = [0]
-        per_user_week_commit = ['nobody']
-    if len(per_last_month_commit) == 0:
-        per_last_month_commit = [0]
-        per_user_month_commit = ['nobody']
+    per_user_year_commit = [str(user_dict[x]['username']) if x in user_dict else 'unknow' for x in raw_per_user_year_commit]
 
     quotes = {'used_quote': int(repo.used_quote), 'total_quote': int(userprofile.quote)}
-    response_dictionary = {'mainnav': 'repo', 'current': 'stats', 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'round_week': round_week, 'round_month': round_month, 'per_last_week_commit': per_last_week_commit, 'per_last_month_commit':per_last_month_commit, 'per_user_week_commit': per_user_week_commit, 'per_user_month_commit': per_user_month_commit}
+    response_dictionary = {'mainnav': 'repo', 'current': 'stats', 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last7days_commit': last7days_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'round_week': round_week, 'round_month': round_month, 'round_year': round_year, 'per_last_week_commit': per_last_week_commit, 'per_last_month_commit': per_last_month_commit, 'per_last_year_commit': per_last_year_commit, 'per_user_week_commit': per_user_week_commit, 'per_user_month_commit': per_user_month_commit, 'per_user_year_commit': per_user_year_commit}
     return render_to_response('repo/stats.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -477,83 +480,4 @@ def fulfill_gitrepo(username, reponame, auth_type):
                 shutil.move(pub_repo_path, pri_repo_path)
             else:
                 shutil.copytree(GIT_BARE_REPO_PATH, pri_repo_path)             
-
-# NOTE: not multi thread safe
-round_hours_dict = {}
-round_days_dict = {}
-round_months_dict = {}
-
-def getlast12hours(now):
-    global round_hours_dict
-    if now is None:
-        now = datetime.now()
-    now_hour = datetime(now.year, now.month, now.day, now.hour)
-    mktime_now_hour = time.mktime(now_hour.timetuple())
-    if mktime_now_hour in round_hours_dict:
-        return round_hours_dict[mktime_now_hour]
-    if len(round_hours_dict) > 100:
-        round_hours_dict = {}
-    round_hours = []
-    i = 0
-    while i < 12:
-        delta_hour = now_hour + timedelta(hours=-i)
-        i = i + 1
-        round_hours.append(time.mktime(delta_hour.timetuple()))
-    round_hours_dict[mktime_now_hour] = round_hours
-    return round_hours
-
-def getlast7days(now):
-    return getlast30days(now)[0:7]
-
-def getlast30days(now):
-    global round_days_dict
-    if now is None:
-        now = datetime.now()
-    now_day = datetime(now.year, now.month, now.day)
-    mktime_now_day = time.mktime(now_day.timetuple())
-    if mktime_now_day in round_days_dict:
-        return round_days_dict[mktime_now_day]
-    if len(round_days_dict) > 100:
-        round_days_dict = {}
-    fullfill_days_dict(now_day)
-    return round_days_dict[mktime_now_day]
-
-def getlast12months(now):
-    global round_months_dict
-    if now is None:
-        now = datetime.now()
-    now_month = datetime(now.year, now.month, 1)
-    mktime_now_month = time.mktime(now_month.timetuple())
-    if mktime_now_month in round_months_dict:
-        return round_months_dict[mktime_now_month]
-    if len(round_months_dict) > 100:
-        round_months_dict = {}
-    round_months = []
-    i = 0
-    while i < 12:
-        delta_month = now_month + relativedelta(months=-i)
-        i = i + 1
-        round_months.append(time.mktime(delta_month.timetuple()))
-    round_months_dict[mktime_now_month] = round_months
-    return round_months
-
-def get_round_week(now):
-    round_day = datetime(now.year, now.month, now.day)
-    round_week = round_day + timedelta(days=-now.weekday())
-    return round_week
-
-def get_round_month(now):
-    round_month = datetime(now.year, now.month, 1)
-    return round_month
-
-def fullfill_days_dict(now_day):
-    global round_days_dict
-    round_days = []
-    i = 0
-    while i < 30:
-        delta_day = now_day + timedelta(days=-i)
-        i = i + 1
-        round_days.append(time.mktime(delta_day.timetuple()))
-    mktime_now_day = time.mktime(now_day.timetuple())
-    round_days_dict[mktime_now_day] = round_days
 
