@@ -54,7 +54,7 @@ class StatsManager():
         return list(user_stats)
 
     @classmethod
-    def list_user_repo_stats(self, datetypeStr, fromDateTime, toDateTime):
+    def list_user_repo_stats(self, user_id, datetypeStr, fromDateTime):
         if datetypeStr not in self.datetypeDict:
             return []
         datetype = self.datetypeDict[datetypeStr]

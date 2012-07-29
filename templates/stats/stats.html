@@ -175,7 +175,7 @@ if(per_user_week_commit.length > 0) {
     $('#id_contributor_week_container').show();
     var contributor_week_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_contributor_week_container', type: 'bar'},title: {text: ''},
-        yAxis: { title: { text: '前十位参与仓库' } },
+        yAxis: { title: { text: '前十个参与仓库' } },
         plotOptions: { bar: { dataLabels: { enabled: true } } },
         xAxis: { categories: per_user_week_commit },
         series: [{ name: '本周（{{round_week|date:"y/m/d"}}以来）仓库提交统计', data: per_last_week_commit }]
@@ -185,7 +185,7 @@ if(per_user_month_commit.length > 0) {
     $('#id_contributor_month_container').show();
     var contributor_month_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_contributor_month_container', type: 'bar'},title: {text: ''},
-        yAxis: { title: { text: '前十位参与仓库' } },
+        yAxis: { title: { text: '前十个参与仓库' } },
         plotOptions: { bar: { dataLabels: { enabled: true } } },
         xAxis: { categories: per_user_month_commit },
         series: [{ name: '本月（{{round_month|date:"y/m/d"}}以来）仓库提交统计', data: per_last_month_commit }]
@@ -195,7 +195,7 @@ if(per_user_year_commit.length > 0) {
     $('#id_contributor_year_container').show();
     var contributor_year_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_contributor_year_container', type: 'bar'},title: {text: ''},
-        yAxis: { title: { text: '前十位参与仓库' } },
+        yAxis: { title: { text: '前十个参与仓库' } },
         plotOptions: { bar: { dataLabels: { enabled: true } } },
         xAxis: { categories: per_user_year_commit },
         series: [{ name: '今年（{{round_year|date:"y/m/d"}}以来）仓库提交统计', data: per_last_year_commit }]
