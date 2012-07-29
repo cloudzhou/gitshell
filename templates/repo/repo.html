@@ -23,13 +23,13 @@
                     #eye-box span,#eye-box a{display:inline-block;height:18px;line-height:18px}
                     #eye-box a.count {top:4px;position:relative}
                 </style>
-                <span style="margin-right: 5px">
-                    <a href="" style="display:inline-block"><img src="/static/img/glyphicons_051_eye_open.png" align="absmiddle"/></a>
-                    <a class="count" style="font-size: 20px; font-weight: bold" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</a>
+                <span style="margin-right: 5px" class="c_repo_action">
+                    <a id="i_watch" data-original-title="关注该项目" rel="tooltip" href="javascript: void(0)" style="display:inline-block"><img src="/static/img/glyphicons_051_eye_open.png" align="absmiddle"/></a>
+                    <a class="count" title="关注次数" style="font-size: 20px; font-weight: bold" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</a>
                 </span>
-                <span style="margin-right: 5px">
-                    <a href=""><img src="/static/img/glyphicons_114_list.png"/></a>
-                    <a class="count" style="font-size: 20px; font-weight: bold" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.fork}}</a>
+                <span style="margin-right: 5px" class="c_repo_action">
+                    <a id="i_folk" data-original-title="衍生作为本地仓库" rel="tooltip" href="javascript: void(0)"><img src="/static/img/glyphicons_114_list.png"/></a>
+                    <a class="count" title="衍生次数" style="font-size: 20px; font-weight: bold" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.fork}}</a>
                 </span>
             </li>
         </ul>
@@ -119,6 +119,9 @@ $(function(){
         if($('#i_refs .dropdown-menu li').size() == 0) {
             do_refs();
         }
+    });
+    $('.c_repo_action').tooltip({
+        selector: "a[rel=tooltip]"
     });
 });
 </script>
