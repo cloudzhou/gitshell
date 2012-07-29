@@ -100,6 +100,10 @@ class RepoManager():
         return list(repoes)
 
     @classmethod
+    def list_repo_by_ids(self, ids):
+        return get_many(Repo, 'repo_repo', ids)
+
+    @classmethod
     def get_repo_by_id(self, repo_id):
         return get(Repo, 'repo_repo', repo_id)
 

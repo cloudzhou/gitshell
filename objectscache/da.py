@@ -55,6 +55,8 @@ rawsql = {
         'select * from stats_statsrepo where statstype = %s and datetype = %s and date = %s and repo_id = %s order by count desc limit 0, 10',
     'per_statsuser_l_cons':
         'select * from stats_statsuser where statstype = %s and datetype = %s and date = %s and user_id = %s order by count desc limit 0, 10',
+    'allstatsrepo_l_cons':
+        'select * from stats_statsrepo where statstype = %s and datetype = %s and date = %s order by count desc limit %s, %s',
 }
 
 def get_many(model, table, pids):

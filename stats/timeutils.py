@@ -63,6 +63,10 @@ def getlast12months(now):
     round_months_dict[mktime_now_month] = round_months
     return round_months
 
+def get_round_day(now):
+    round_day = datetime(now.year, now.month, now.day)
+    return round_day
+
 def get_round_week(now):
     round_day = datetime(now.year, now.month, now.day)
     round_week = round_day + timedelta(days=-now.weekday())

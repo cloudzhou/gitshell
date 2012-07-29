@@ -77,3 +77,12 @@ class StatsManager():
         repo_stats = query(StatsRepo, 'stats_statsrepo', repo_id, 'per_statsrepo_l_cons', [1, datetype, fromDateTime, repo_id])
         return list(repo_stats)
 
+    @classmethod
+    def list_allrepo_stats(self, datetypeStr, fromDateTime, offset, row_count):
+        if datetypeStr not in self.datetypeDict:
+            return []
+        datetype = self.datetypeDict[datetypeStr]
+        repo_stats = query(StatsRepo, 'stats_statsrepo', None, 'allstatsrepo_l_cons', [1, datetype, fromDateTime, offset, row_count])
+        return list(repo_stats)
+
+
