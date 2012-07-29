@@ -381,14 +381,28 @@ def repo_stats(request, user_name, repo_name):
     last30days_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_last30days_commit])
     raw_last12months_commit = StatsManager.list_repo_stats(repo.id, 'month', datetime.fromtimestamp(last12months[-1]), datetime.fromtimestamp(last12months[0]))
     last12months_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_last12months_commit])
+
     round_week = get_round_week(now)
     round_month = get_round_month(now)
     raw_per_last_week_commit = StatsManager.list_repo_user_stats(repo.id, 'week', round_week)
     raw_per_last_month_commit = StatsManager.list_repo_user_stats(repo.id, 'month', round_month)
-    per_last_week_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_per_last_week_commit])
-    per_last_month_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_per_last_month_commit])
+    per_last_week_commit = [int(x.count) for x in raw_per_last_week_commit]
+    per_last_month_commit = [int(x.count) for x in raw_per_last_month_commit]
+    raw_per_user_week_commit = [x.user_id for x in raw_per_last_week_commit]
+    raw_per_user_month_commit = [x.user_id for x in raw_per_last_month_commit]
+    mergedlist = list(set(raw_per_user_week_commit + raw_per_user_month_commit))
+    user_dict = GsuserManager.map_users(mergedlist)
+    per_user_week_commit = [str(user_dict[x]['username']) if x in user_dict else 'unknow' for x in raw_per_user_week_commit]
+    per_user_month_commit = [str(user_dict[x]['username']) if x in user_dict else 'unknow' for x in raw_per_user_month_commit]
+    if len(per_last_week_commit) == 0:
+        per_last_week_commit = [0]
+        per_user_week_commit = ['nobody']
+    if len(per_last_month_commit) == 0:
+        per_last_month_commit = [0]
+        per_user_month_commit = ['nobody']
+
     quotes = {'used_quote': int(repo.used_quote), 'total_quote': int(userprofile.quote)}
-    response_dictionary = {'mainnav': 'repo', 'current': 'stats', 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'round_week': round_week, 'round_month': round_month, 'per_last_week_commit': per_last_week_commit, 'per_last_month_commit':per_last_month_commit}
+    response_dictionary = {'mainnav': 'repo', 'current': 'stats', 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'round_week': round_week, 'round_month': round_month, 'per_last_week_commit': per_last_week_commit, 'per_last_month_commit':per_last_month_commit, 'per_user_week_commit': per_user_week_commit, 'per_user_month_commit': per_user_month_commit}
     return render_to_response('repo/stats.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

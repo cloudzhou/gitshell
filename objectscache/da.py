@@ -48,13 +48,13 @@ rawsql = {
         'select * from repo_watchhistory where watch_repo_id = %s order by modify_time desc limit 0, 50',
     # stats #
     'statsrepo_l_cons':
-        'select * from stats_statsrepo where repo_id = %s and statstype = %s and datetype = %s and date between %s and %s',
+        'select * from stats_statsrepo where statstype = %s and datetype = %s and date between %s and %s and repo_id = %s',
     'statsuser_l_cons':
-        'select * from stats_statsuser where user_id = %s and statstype = %s and datetype = %s and date between %s and %s',
+        'select * from stats_statsuser where statstype = %s and datetype = %s and date between %s and %s and user_id = %s',
     'per_statsrepo_l_cons':
-        'select * from stats_statsrepo where repo_id = %s and statstype = %s and datetype = %s and date = %s order by count desc limit 0, 10',
+        'select * from stats_statsrepo where statstype = %s and datetype = %s and date = %s and repo_id = %s order by count desc limit 0, 10',
     'per_statsuser_l_cons':
-        'select * from stats_statsuser where user_id = %s and statstype = %s and datetype = %s and date = %s order by count desc limit 0, 10',
+        'select * from stats_statsuser where statstype = %s and datetype = %s and date = %s and user_id = %s order by count desc limit 0, 10',
 }
 
 def get_many(model, table, pids):

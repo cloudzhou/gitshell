@@ -21,7 +21,7 @@ class StatsUser(models.Model):
 
     @classmethod
     def create_stats_user(self, statstype, datetype, date, user_id, repo_id, count):
-        return user(statstype=statstype, datetype=datetype, date=date, user_id=user_id, repo_id=repo_id, count=count)
+        return StatsUser(statstype=statstype, datetype=datetype, date=date, user_id=user_id, repo_id=repo_id, count=count)
 
 class StatsRepo(models.Model):
     statstype = models.SmallIntegerField(default=0)
@@ -33,7 +33,7 @@ class StatsRepo(models.Model):
 
     @classmethod
     def create_stats_repo(self, statstype, datetype, date, repo_id, user_id, count):
-        return repo(statstype=statstype, datetype=datetype, date=date, repo_id=repo_id, user_id=user_id, count=count)
+        return StatsRepo(statstype=statstype, datetype=datetype, date=date, repo_id=repo_id, user_id=user_id, count=count)
 
 
 class StatsManager():
@@ -50,19 +50,23 @@ class StatsManager():
         if datetypeStr not in self.datetypeDict:
             return []
         datetype = self.datetypeDict[datetypeStr]
-        user_stats = query(StatsRepo, 'stats_statsuser', user_id, 'statsuser_l_cons', [user_id, 0, datetype, fromDateTime, toDateTime])
+        user_stats = query(StatsUser, 'stats_statsuser', user_id, 'statsuser_l_cons', [0, datetype, fromDateTime, toDateTime, user_id])
         return list(user_stats)
 
     @classmethod
     def list_user_repo_stats(self, datetypeStr, fromDateTime, toDateTime):
-        pass
+        if datetypeStr not in self.datetypeDict:
+            return []
+        datetype = self.datetypeDict[datetypeStr]
+        user_stats = query(StatsUser, 'stats_statsuser', user_id, 'per_statsuser_l_cons', [1, datetype, fromDateTime, user_id])
+        return list(user_stats)
 
     @classmethod
     def list_repo_stats(self, repo_id, datetypeStr, fromDateTime, toDateTime):
         if datetypeStr not in self.datetypeDict:
             return []
         datetype = self.datetypeDict[datetypeStr]
-        repo_stats = query(StatsRepo, 'stats_statsrepo', repo_id, 'statsrepo_l_cons', [repo_id, 0, datetype, fromDateTime, toDateTime])
+        repo_stats = query(StatsRepo, 'stats_statsrepo', repo_id, 'statsrepo_l_cons', [0, datetype, fromDateTime, toDateTime, repo_id])
         return list(repo_stats)
 
     @classmethod
@@ -70,6 +74,6 @@ class StatsManager():
         if datetypeStr not in self.datetypeDict:
             return []
         datetype = self.datetypeDict[datetypeStr]
-        repo_stats = query(StatsRepo, 'stats_statsrepo', repo_id, 'per_statsrepo_l_cons', [repo_id, 1, datetype, fromDateTime])
+        repo_stats = query(StatsRepo, 'stats_statsrepo', repo_id, 'per_statsrepo_l_cons', [1, datetype, fromDateTime, repo_id])
         return list(repo_stats)
 

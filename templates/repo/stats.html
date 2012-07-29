@@ -114,9 +114,6 @@ $(function(){
     }
     last12monthsAsData.reverse();
 
-    var per_last_week_commit = {{per_last_week_commit}};
-    var per_last_month_commit = {{per_last_month_commit}};
-    var quotes = {{quotes|safe}};
     var day_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_day_container', type: 'line'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
@@ -145,19 +142,24 @@ $(function(){
         xAxis: { categories: last12monthsAsCat },
         series: [{ name: '1 年提交', data: last12monthsAsData }]
     });
+    var per_last_week_commit = {{per_last_week_commit}};
+    var per_user_week_commit = {{per_user_week_commit|safe}};
+    var per_last_month_commit = {{per_last_month_commit}};
+    var per_user_month_commit = {{per_user_month_commit|safe}};
+    var quotes = {{quotes|safe}};
     var contributor_week_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_contributor_week_container', type: 'bar'},title: {text: ''},
-        yAxis: { title: { text: '空间使用情况' } },
+        yAxis: { title: { text: '前十位活跃开发者' } },
         plotOptions: { bar: { dataLabels: { enabled: true } } },
-        xAxis: { categories: ['使用空间', '全部空间'] },
-        series: [{ name: '本周（{{round_week|date:"y/m/d"}}以来）贡献者提交统计', data: [100, 20] }]
+        xAxis: { categories: per_user_week_commit },
+        series: [{ name: '本周（{{round_week|date:"y/m/d"}}以来）开发者提交统计', data: per_last_week_commit }]
     });
     var contributor_month_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_contributor_month_container', type: 'bar'},title: {text: ''},
-        yAxis: { title: { text: '空间使用情况' } },
+        yAxis: { title: { text: '前十位活跃开发者' } },
         plotOptions: { bar: { dataLabels: { enabled: true } } },
-        xAxis: { categories: ['使用空间', '全部空间'] },
-        series: [{ name: '本月（{{round_month|date:"y/m/d"}}以来）贡献者提交统计', data: [100, 20] }]
+        xAxis: { categories: per_user_month_commit },
+        series: [{ name: '本月（{{round_month|date:"y/m/d"}}以来）开发者提交统计', data: per_last_month_commit }]
     });
     var space_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_space_container', type: 'bar'},title: {text: ''},
