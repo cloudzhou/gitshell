@@ -136,7 +136,7 @@ class RepoManager():
 
     @classmethod
     def get_repo_member(self, repo_id, user_id):
-        repoMembers = query(RepoMember, 'repo_repomember', repo_id, 'repomember_s_ruid', [repo_id, user.id])
+        repoMembers = query(RepoMember, 'repo_repomember', repo_id, 'repomember_s_ruid', [repo_id, user_id])
         if len(list(repoMembers)) > 0:
             return repoMembers[0]
         return None
