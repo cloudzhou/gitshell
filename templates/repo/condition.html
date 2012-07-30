@@ -3,10 +3,20 @@
                 <dt style="width: 60px; font-weight: normal">指派给:</dt>
                 <dd style="margin-left: 80px">
                 {% for iter_assigned in assigneds %}
-                    {%if assigned == iter_assigned%}
-                        <span class="label label-success">{{iter_assigned}}</span>
+                    {%if assigned == iter_assigned %}
+                        <span class="untrack_issues_attr label label-success">
+                        {%if assigned == '0' %}
+                            所有
+                        {%else%}
+                            {{iter_assigned}}
+                        {%endif%}
+                        </span>
                     {%else%}
-                        <a class="issues_attr" href="javascript:void(0)" value="assigned___{{iter_assigned}}"><span class="label">{{iter_assigned}}</span></a>
+                        {%if iter_assigned == '0' %}
+                            <a class="issues_attr" href="javascript:void(0)" value="assigned___0"><span class="label">所有</span></a>
+                        {%else%}
+                            <a class="issues_attr" href="javascript:void(0)" value="assigned___{{iter_assigned}}"><span class="label">{{iter_assigned}}</span></a>
+                        {%endif%}
                     {%endif%}
                 {% endfor %}
                 </dd>
@@ -16,7 +26,7 @@
                 <dd style="margin-left: 80px">
                 {%for iter_tracker in TRACKERS%}
                     {%if tracker == iter_tracker.value%}
-                        <span class="label label-success">{{iter_tracker.name}}</span>
+                        <span class="untrack_issues_attr label label-success">{{iter_tracker.name}}</span>
                     {%else%}
                         <a class="issues_attr" href="javascript:void(0)" value="tracker___{{iter_tracker.value}}"><span class="label">{{iter_tracker.name}}</span></a>
                     {%endif%}
@@ -28,7 +38,7 @@
                 <dd style="margin-left: 80px">
                 {%for iter_status in STATUSES%}
                     {%if status == iter_status.value%}
-                        <span class="label label-success">{{iter_status.name}}</span>
+                        <span class="untrack_issues_attr label label-success">{{iter_status.name}}</span>
                     {%else%}
                         <a class="issues_attr" href="javascript:void(0)" value="status___{{iter_status.value}}"><span class="label">{{iter_status.name}}</span></a>
                     {%endif%}
@@ -40,7 +50,7 @@
                 <dd style="margin-left: 80px">
                 {%for iter_priority in PRIORITIES%}
                     {%if priority == iter_priority.value%}
-                        <span class="label label-success">{{iter_priority.name}}</span>
+                        <span class="untrack_issues_attr label label-success">{{iter_priority.name}}</span>
                     {%else%}
                         <a class="issues_attr" href="javascript:void(0)" value="priority___{{iter_priority.value}}"><span class="label">{{iter_priority.name}}</span></a>
                     {%endif%}

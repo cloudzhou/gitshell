@@ -14,7 +14,7 @@ from gitshell.feed.feed import FeedAction
 from gitshell.repo.Forms import RepoForm, RepoIssuesForm, IssuesComment, RepoIssuesCommentForm, RepoMemberForm
 from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, Issues
-from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, ISSUES_ATTRS, conver_issues, conver_issue_comments, conver_repos
+from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, TRACKERS_VAL, STATUSES_VAL, PRIORITIES_VAL, ISSUES_ATTRS, conver_issues, conver_issue_comments, conver_repos
 from gitshell.gsuser.models import GsuserManager
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
@@ -117,10 +117,10 @@ def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path)
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath(user_name)
     diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
-    return HttpResponse(json.dumps({'diff': escape(diff)}), mimetype="application/json")
+    return HttpResponse(json.dumps({'diff': escape(diff)}), mimetype='application/json')
 
 def issues(request, user_name, repo_name):
-    return issues_list(request, user_name, repo_name, None, TRACKERS[0].value, STATUSES[0].value, PRIORITIES[0].value, 'modify_time', 0)
+    return issues_list(request, user_name, repo_name, '0', '0', '0', '0', 'modify_time', 0)
  
 def issues_list(request, user_name, repo_name, assigned, tracker, status, priority, orderby, page):
     refs = 'master'; path = '.'; current = 'issues'
@@ -135,15 +135,26 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
         member_ids.insert(0, user_id)
     members = GsuserManager.list_user_by_ids(member_ids)
     assigneds = [o.username for o in members]
+    assigneds.insert(0, '0')
     if assigned is None:
         assigned = assigneds[0]
-    assigned_id = repo.user_id
+    assigned_id = 0
     assigned_user = GsuserManager.get_user_by_name(assigned)
     if assigned_user is not None and assigned in assigneds:
         assigned_id = assigned_user.id
     tracker = int(tracker); status = int(status); priority = int(priority); page = int(page)
-    current_attrs = { "assigned": str(assigned), "tracker": tracker, "status": status, "priority": priority, "orderby": str(orderby), "page": page }
-    raw_issues = RepoManager.list_issues(repo.id, assigned_id, tracker, status, priority, orderby, page)
+    current_attrs = { 'assigned': str(assigned), 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': str(orderby), 'page': page }
+    raw_issues = []
+    if assigned_id == 0 and tracker == 0 and status == 0 and priority == 0:
+        raw_issues = RepoManager.list_issues(repo.id, orderby, page)
+    else:
+        assigned_ids = member_ids if assigned_id == 0 else [assigned_id]
+        trackeres = TRACKERS_VAL if tracker == 0 else [tracker]
+        statuses = STATUSES_VAL if status == 0 else [status]
+        priorities = PRIORITIES_VAL if priority == 0 else [priority] 
+        raw_issues = RepoManager.list_issues_cons(repo.id, assigned_ids, trackeres, statuses, priorities, orderby, page)
+    from django.db import connection
+    print connection.queries
     reporter_ids = [o.user_id for o in raw_issues]
     reporters = GsuserManager.list_user_by_ids(list(set(reporter_ids)-set(member_ids)))
     user_map = {}
@@ -269,7 +280,7 @@ def issues_delete(request, user_name, repo_name, issue_id):
     if issues is not None:
         issues.visibly = 1
         issues.save()
-    return HttpResponse(json.dumps({'result': 'ok'}), mimetype="application/json")
+    return HttpResponse(json.dumps({'result': 'ok'}), mimetype='application/json')
 
 def issues_update(request, user_name, repo_name, issue_id, attr):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -296,7 +307,7 @@ def issues_update(request, user_name, repo_name, issue_id, attr):
     return json_ok()
 
 def json_ok():
-    return HttpResponse(json.dumps({'result': 'ok'}), mimetype="application/json")
+    return HttpResponse(json.dumps({'result': 'ok'}), mimetype='application/json')
 
 #TODO
 def issues_comment_delete(request, user_name, repo_name, comment_id):
@@ -311,7 +322,7 @@ def issues_comment_delete(request, user_name, repo_name, comment_id):
             issues_comment.save()
             issues.comment_count = issues.comment_count - 1
             issues.save()
-    return HttpResponse(json.dumps({'result': 'ok'}), mimetype="application/json")
+    return HttpResponse(json.dumps({'result': 'ok'}), mimetype='application/json')
 
 def repo_network(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'network'
@@ -424,14 +435,14 @@ def change_to_vo(raw_fork_repos_tree):
 def repo_refs(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
-        return HttpResponse(json.dumps({'user_name': user_name, 'repo_name': repo_name, 'branches': [], 'tags': []}), mimetype="application/json")
+        return HttpResponse(json.dumps({'user_name': user_name, 'repo_name': repo_name, 'branches': [], 'tags': []}), mimetype='application/json')
     repopath = repo.get_abs_repopath(user_name)
 
     gitHandler = GitHandler()
     branches_refs = gitHandler.repo_ls_branches(repopath)
     tags_refs = gitHandler.repo_ls_tags(repopath)
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'branches': branches_refs, 'tags': tags_refs}
-    return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
+    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
 
 # TODO
 @login_required

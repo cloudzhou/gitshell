@@ -2,6 +2,7 @@
 {% block subcontainer %}
 <style>
 .issues_attr { margin: 3px }
+.untrack_issues_attr { margin: 3px }
 .issues_attr_hovered { border: dashed 2px #cccccc ; padding: 2px}
 </style>
     <div>
@@ -42,7 +43,13 @@
 				    <td><a href="/{{issue.assigned}}/">{{issue.assigned}}</a></td>
 				    <td>{{issue.priority}}</td>
 				    <td>{{issue.category}}</td>
-				    <td class="c_unixtime">{{issue.create_time}}</td>
+				    <td><span style="display:none" class="c_unixtime">
+                        {%if orderby == 'modify_time'%}
+                            {{issue.modify_time}}
+                        {%else%}
+                            {{issue.create_time}}
+                        {%endif%}
+                    </span></td>
 			    </tr>
                 {% endfor %}
 			</tbody>
@@ -87,6 +94,9 @@ $(function(){
     });
     $('.issues_attr').click(function(){ 
         var keyValue = $(this).attr('value').split("___")
+        if(keyValue[0] == 'assigned' && keyValue[1] == '所有') {
+            keyValue[1] = '0';
+        }
         current_attrs[keyValue[0]] = keyValue[1];
         location_cons()
     });

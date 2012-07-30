@@ -17,9 +17,9 @@ class RepoForm(forms.ModelForm):
             'auth_type': forms.RadioSelect(choices=AUTH_TYPE_CHOICES),
         }
 
-TRACKER_CHOICES = (('0', '缺陷'), ('1', '功能'), ('2', '支持'))
-STATUS_CHOICES = (('0', '新建'), ('1', '已指派'), ('2', '进行中'), ('3', '已解决'), ('4', '已关闭'), ('5', '已拒绝'))
-PRIORITY_CHOICES = (('0', '紧急'), ('1', '高'), ('2', '普通'), ('3', '低'))
+TRACKER_CHOICES = (('1', '缺陷'), ('2', '功能'), ('3', '支持'))
+STATUS_CHOICES = (('1', '新建'), ('2', '已指派'), ('3', '进行中'), ('4', '已解决'), ('5', '已关闭'), ('6', '已拒绝'))
+PRIORITY_CHOICES = (('1', '紧急'), ('2', '高'), ('3', '普通'), ('4', '低'))
 ASSIGNED_CHOICES = ()
 
 class RepoIssuesForm(forms.ModelForm):

@@ -164,13 +164,21 @@ class RepoManager():
             repoMember.save()
 
     @classmethod
-    def list_issues(self, repo_id, assigned_id, tracker, status, priority, orderby, page):
+    def list_issues_cons(self, repo_id, assigned_ids, trackers, statuses, priorities, orderby, page):
+        offset = page*2
+        row_count = 3
+        # diff between multi filter and single filter
+        issues = Issues.objects.filter(visibly=0).filter(assigned__in=assigned_ids).filter(tracker__in=trackers).filter(status__in=statuses).filter(priority__in=priorities).order_by('-'+orderby)[offset : offset+row_count]
+        return list(issues)
+
+    @classmethod
+    def list_issues(self, repo_id, orderby, page):
         offset = page*2
         row_count = 3
         rawsql_id = 'repoissues_l_cons_modify'
         if orderby == 'create_time':
             rawsql_id = 'repoissues_l_cons_create'
-        repoissues = query(Issues, 'repo_issues', repo_id, rawsql_id, [repo_id, assigned_id, tracker, status, priority, offset, row_count]) 
+        repoissues = query(Issues, 'repo_issues', repo_id, rawsql_id, [repo_id, offset, row_count]) 
         return list(repoissues)
 
     @classmethod
