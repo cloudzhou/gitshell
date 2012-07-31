@@ -20,10 +20,13 @@
                     </div>
                 </div>
                 <div class="control-group">
-                    <label for="id_password" class="control-label">密码</label>
+                    <label for="id_unencrypt_password" class="control-label">密码</label>
                     <div class="controls">
-                        {{ loginForm.password }}
+                        <input type="password" maxlength="64" name="password" id="id_unencrypt_password" placeholder="输入密码，注意大小写">
                     </div>
+                    <span style="display: none">
+                        {{ loginForm.password }}
+                    </span>
                 </div>
                 <!--div class="control-group">
                     <label for="id_captcha_1" class="control-label">验证码</label>
@@ -59,11 +62,10 @@
 /*global jQuery, window */
 $(function(){
     var md5_user_passwd = function() {
-        $('#id_password').val(window.md5($('#id_password').val()));
+        $('#id_password').val(window.md5($('#id_unencrypt_password').val()));
     },
     login_init = function() {
         $('#id_email').attr('placeholder', '输入邮箱');
-        $('#id_password').attr('placeholder', '输入密码，注意大小写');
         $('#id_captcha_1').attr('placeholder', '输入验证码');
     };
     login_init();
