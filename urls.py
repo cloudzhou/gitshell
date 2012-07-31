@@ -8,6 +8,8 @@ urlpatterns = patterns('gitshell',
 
     # stats
     url(r'^stats/?$', 'stats.views.stats'),
+    # explore
+    url(r'^explore/?$', 'explore.views.explore'),
 
     # ajax
     url(r'^ajax/feed/ids/?$', 'feed.views.feedbyids'),

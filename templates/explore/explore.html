@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load gstools %}
+{% block css %}
+<style>
+.user_chart {min-width: 400px; height: 200px; margin: 0 auto}
+.c_repo_attr {margin-right: 20px}
+</style>
+{% endblock %}
+{% block container %}
+<div class="page-header" style="padding-bottom: 0px">
+    <div style="margin-bottom: 10px">
+        <h3>个人提交统计</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="span7">
+        <div><div style="display: none" id="id_day_container" class="user_chart"></div></div>
+        <div><div style="display: none" id="id_week_container" class="user_chart"></div></div>
+        <div><div style="display: none" id="id_month_container" class="user_chart"></div></div>
+        <div><div style="display: none" id="id_year_container" class="user_chart"></div></div>
+        <div class="page-header" style="padding-bottom: 0px">
+            <div style="margin-bottom: 10px">
+                <h3>活跃仓库列表</h3>
+            </div>
+        </div>
+        {%for repo in repos%}
+        <div class="c_repo">
+            <h3>1. <img style="margin: 10px;" src="http://www.gravatar.com/avatar/{{userimgurl_dict|keyvalue:repo.user_id}}?s=20"><a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
+            <a href="/{{username_dict|keyvalue:repo.user_id}}/{{repo.name}}/">{{repo.name}}</a>
+            <span style="float: right;">
+            <a data-original-title="提交次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♯ {{repo.commit}}</a>
+            <a data-original-title="关注数量" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♥ {{repo.watch}}</a>
+            <a data-original-title="衍生次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♂ {{repo.fork}}</a></span></h3>
+            <div style="margin-left: 30px;">
+                <h6 style="margin-bottom: 3px">
+                创建于 {{repo.modify_time|date:'y/m/d'}}，最近更新 {{repo.create_time|date:'y/m/d'}}</h6> 
+                <p>{{repo.desc}}</p>
+            </div>
+        </div>
+        {%endfor%}
+    </div>
+    <div class="span4">
+    <div><div style="display: none" id="id_contributor_week_container" class="user_chart"></div></div>
+    <div><div style="display: none" id="id_contributor_month_container" class="user_chart"></div></div>
+    <div><div style="display: none" id="id_contributor_year_container" class="user_chart"></div></div>
+    <div><div style="display: none" id="id_space_container" class="user_chart"></div></div>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script src="/static/js/app/highcharts/highcharts.js"></script>
+<script>
+/*global jQuery, window */
+$(function(){
+    $('.c_unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+        $(this).show();
+    });
+    var last12hours = {{last12hours}};
+    var last7days = {{last7days}};
+    var last30days = {{last30days}};
+    var last12months = {{last12months}};
+
+    var last12hoursAsCat = [];
+    var last7daysAsCat = [];
+    var last30daysAsCat = [];
+    var last12monthsAsCat = [];
+    for(x in last12hours) {
+        last12hoursAsCat.push(new Date(last12hours[x]*1000).getHours() + 'h');
+    }
+    last12hoursAsCat.reverse()
+    for(x in last7days) {
+        var d = new Date(last7days[x]*1000) 
+        last7daysAsCat.push(d.getMonth()+1+'/'+d.getDate());
+    }
+    last7daysAsCat.reverse()
+    for(x in last30days) {
+        last30daysAsCat.push(new Date(last30days[x]*1000).getDate());
+    }
+    last30daysAsCat.reverse()
+    for(x in last12months) {
+        last12monthsAsCat.push((new Date(last12months[x]*1000).getMonth()+1) + 'm');
+    }
+    last12monthsAsCat.reverse()
+    
+    var last12hours_commit = {{last12hours_commit}};
+    var last7days_commit = {{last7days_commit}};
+    var last30days_commit = {{last30days_commit}};
+    var last12months_commit = {{last12months_commit}};
+    var last12hoursAsData = [];
+    var last7daysAsData = [];
+    var last30daysAsData = [];
+    var last12monthsAsData = [];
+    for(x in last12hours) {
+        if(last12hours[x] in last12hours_commit) {
+            last12hoursAsData.push(last12hours_commit[last12hours[x]]);
+            continue;
+        }
+        last12hoursAsData.push(0);
+    }
+    last12hoursAsData.reverse();
+    for(x in last7days) {
+        if(last7days[x] in last30days_commit) {
+            last7daysAsData.push(last30days_commit[last7days[x]]);
+            continue;
+        }
+        last7daysAsData.push(0);
+    }
+    last7daysAsData.reverse();
+    for(x in last30days) {
+        if(last30days[x] in last30days_commit) {
+            last30daysAsData.push(last30days_commit[last30days[x]]);
+            continue;
+        }
+        last30daysAsData.push(0);
+    }
+    last30daysAsData.reverse();
+    for(x in last12months) {
+        if(last12months[x] in last12months_commit) {
+            last12monthsAsData.push(last12months_commit[last12months[x]]);
+            continue;
+        }
+        last12monthsAsData.push(0);
+    }
+    last12monthsAsData.reverse();
+
+if(Object.keys(last12hours_commit).length > 0) {
+    $('#id_day_container').show();
+    var day_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_day_container', type: 'line'},title: {text: ''},
+        yAxis: { title: { text: '提交次数' } },
+        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
+        xAxis: { categories: last12hoursAsCat },
+        series: [{ name: '1 天提交', data: last12hoursAsData }]
+    });
+}
+if(Object.keys(last7days_commit).length > 0) {
+    $('#id_week_container').show();
+    var week_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_week_container', type: 'line'},title: {text: ''},
+        yAxis: { title: { text: '提交次数' } },
+        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
+        xAxis: { categories: last7daysAsCat },
+        series: [{ name: '1 周提交', data: last7daysAsData }]
+    });
+}
+if(Object.keys(last30days_commit).length > 0) {
+    $('#id_month_container').show();
+    var month_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_month_container', type: 'line'},title: {text: ''},
+        yAxis: { title: { text: '提交次数' } },
+        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
+        xAxis: { categories: last30daysAsCat },
+        series: [{ name: '1 月提交', data: last30daysAsData }]
+    });
+}
+if(Object.keys(last12months_commit).length > 0) {
+    $('#id_year_container').show();
+    var year_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_year_container', type: 'line'},title: {text: ''},
+        yAxis: { title: { text: '提交次数' } },
+        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
+        xAxis: { categories: last12monthsAsCat },
+        series: [{ name: '1 年提交', data: last12monthsAsData }]
+    });
+}
+    var per_last_week_commit = {{per_last_week_commit}};
+    var per_user_week_commit = {{per_user_week_commit|safe}};
+    var per_last_month_commit = {{per_last_month_commit}};
+    var per_user_month_commit = {{per_user_month_commit|safe}};
+    var per_last_year_commit = {{per_last_year_commit}};
+    var per_user_year_commit = {{per_user_year_commit|safe}};
+    var quotes = {{quotes|safe}};
+if(per_user_week_commit.length > 0) {
+    $('#id_contributor_week_container').show();
+    var contributor_week_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_contributor_week_container', type: 'bar'},title: {text: ''},
+        yAxis: { title: { text: '前十个参与仓库' } },
+        plotOptions: { bar: { dataLabels: { enabled: true } } },
+        xAxis: { categories: per_user_week_commit },
+        series: [{ name: '本周（{{round_week|date:"y/m/d"}}以来）仓库提交统计', data: per_last_week_commit }]
+    });
+}
+if(per_user_month_commit.length > 0) {
+    $('#id_contributor_month_container').show();
+    var contributor_month_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_contributor_month_container', type: 'bar'},title: {text: ''},
+        yAxis: { title: { text: '前十个参与仓库' } },
+        plotOptions: { bar: { dataLabels: { enabled: true } } },
+        xAxis: { categories: per_user_month_commit },
+        series: [{ name: '本月（{{round_month|date:"y/m/d"}}以来）仓库提交统计', data: per_last_month_commit }]
+    });
+}
+if(per_user_year_commit.length > 0) {
+    $('#id_contributor_year_container').show();
+    var contributor_year_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_contributor_year_container', type: 'bar'},title: {text: ''},
+        yAxis: { title: { text: '前十个参与仓库' } },
+        plotOptions: { bar: { dataLabels: { enabled: true } } },
+        xAxis: { categories: per_user_year_commit },
+        series: [{ name: '今年（{{round_year|date:"y/m/d"}}以来）仓库提交统计', data: per_last_year_commit }]
+    });
+}
+    var space_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_space_container', type: 'bar'},title: {text: ''},
+        yAxis: { title: { text: '空间使用情况' } },
+        plotOptions: { bar: { dataLabels: { enabled: true } } },
+        xAxis: { categories: ['使用空间', '全部空间'] },
+        series: [{ name: '单位 kb', data: [quotes.used_quote, quotes.total_quote] }]
+    });
+    $('.c_repo').tooltip({
+      selector: "a[rel=tooltip]"
+    });
+
+});
+</script>
+{% endblock %}

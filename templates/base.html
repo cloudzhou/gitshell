@@ -43,14 +43,16 @@
                             {% endif %}
                                 <!--li><a href="/skills/">技能</a></li-->
                                 <li {%if mainnav == 'stats'%} class="active" {%else%} class="unactive" {%endif%}><a href="/stats/">统计</a></li>
-                                <li {%if mainnav == 'help'%} class="active" {%else%} class="unactive" {%endif%}><a href="/help/">帮助</a></li>
+                                <li {%if mainnav == 'explore'%} class="active" {%else%} class="unactive" {%endif%}><a href="/explore/">浏览</a></li>
                         </ul>
                         <ul class="nav" style="float:right">
                             {% if user.is_authenticated %}
                                 <li {%if mainnav == 'settings'%} class="active" {%else%} class="unactive" {%endif%}><a href="/settings/">设置</a></li>
+                                <li {%if mainnav == 'help'%} class="active" {%else%} class="unactive" {%endif%}><a href="/help/">帮助</a></li>
                                 <li {%if mainnav == 'logout'%} class="active" {%else%} class="unactive" {%endif%}><a href="/logout/">退出</a></li>
                             {% else %}
                                 <li {%if mainnav == 'login'%} class="active" {%else%} class="unactive" {%endif%}><a href="/login/">登录</a></li>
+                                <li {%if mainnav == 'help'%} class="active" {%else%} class="unactive" {%endif%}><a href="/help/">帮助</a></li>
                                 <li {%if mainnav == 'join'%} class="active" {%else%} class="unactive" {%endif%}><a href="/join/0/">注册</a></li>
                             {% endif %}
                         </ul>
