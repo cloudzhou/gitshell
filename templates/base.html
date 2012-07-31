@@ -36,13 +36,13 @@
                                 <li {%if mainnav == 'home'%} class="active" {%else%} class="unactive" {%endif%}><a href="/home/">首页</a></li>
                                 <li {%if mainnav == 'repo'%} class="active" {%else%} class="unactive" {%endif%}><a href="/{{ user.username }}/repo/">仓库</a></li>
                                 <li {%if mainnav == 'user'%} class="active" {%else%} class="unactive" {%endif%}><a href="/{{ user.username }}/">@{{ user.username }}</a></li>
+                                <li {%if mainnav == 'stats'%} class="active" {%else%} class="unactive" {%endif%}><a href="/stats/">统计</a></li>
                             {% else %}
                                 <li><a href="/">首页</a></li>
                                 <li><a href="/join/">仓库</a></li>
                                 <li><a href="/join/">+You</a></li>
                             {% endif %}
                                 <!--li><a href="/skills/">技能</a></li-->
-                                <li {%if mainnav == 'stats'%} class="active" {%else%} class="unactive" {%endif%}><a href="/stats/">统计</a></li>
                                 <li {%if mainnav == 'explore'%} class="active" {%else%} class="unactive" {%endif%}><a href="/explore/">浏览</a></li>
                         </ul>
                         <ul class="nav" style="float:right">
@@ -51,8 +51,8 @@
                                 <li {%if mainnav == 'help'%} class="active" {%else%} class="unactive" {%endif%}><a href="/help/">帮助</a></li>
                                 <li {%if mainnav == 'logout'%} class="active" {%else%} class="unactive" {%endif%}><a href="/logout/">退出</a></li>
                             {% else %}
-                                <li {%if mainnav == 'login'%} class="active" {%else%} class="unactive" {%endif%}><a href="/login/">登录</a></li>
                                 <li {%if mainnav == 'help'%} class="active" {%else%} class="unactive" {%endif%}><a href="/help/">帮助</a></li>
+                                <li {%if mainnav == 'login'%} class="active" {%else%} class="unactive" {%endif%}><a href="/login/">登录</a></li>
                                 <li {%if mainnav == 'join'%} class="active" {%else%} class="unactive" {%endif%}><a href="/join/0/">注册</a></li>
                             {% endif %}
                         </ul>
