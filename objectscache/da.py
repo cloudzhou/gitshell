@@ -36,16 +36,18 @@ rawsql = {
         'select * from repo_issues where visibly = 0 and repo_id = %s order by modify_time desc limit %s, %s',
     'repoissues_l_cons_create':
         'select * from repo_issues where visibly = 0 and repo_id = %s order by create_time desc limit %s, %s',
+    'repoissues_l_userId_modify':
+        'select * from repo_issues where visibly = 0 and repo_id = %s and user_id = %s order by modify_time desc limit %s, %s',
     'repoissues_s_id':
         'select * from repo_issues where visibly = 0 and repo_id = %s and id = %s limit 0,1',
     'issuescomment_l_issuesId':
         'select * from repo_issuescomment where visibly = 0 and issues_id = %s order by create_time asc limit %s, %s',
     # repo_forkhistory #
     'forkhistory_l_repoId':
-        'select * from repo_forkhistory where repo_id = %s order by modify_time desc limit 0, 50',
+        'select * from repo_forkhistory where visibly = 0 and repo_id = %s order by modify_time desc limit 0, 50',
     # repo_watchhistory #
     'watchhistory_l_repoId':
-        'select * from repo_watchhistory where watch_repo_id = %s order by modify_time desc limit 0, 50',
+        'select * from repo_watchhistory where visibly = 0 and watch_repo_id = %s order by modify_time desc limit 0, 50',
     # stats #
     'statsrepo_l_cons':
         'select * from stats_statsrepo where statstype = %s and datetype = %s and date between %s and %s and repo_id = %s',
