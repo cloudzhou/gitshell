@@ -206,7 +206,7 @@ class RepoManager():
     @classmethod
     def list_issues_comment(self, issues_id, page):
         offset = page*2
-        row_count = 3
+        row_count = 2
         issuesComments = query(IssuesComment, 'repo_issuescomment', issues_id, 'issuescomment_l_issuesId', [issues_id, offset, row_count]) 
         return list(issuesComments)
 
