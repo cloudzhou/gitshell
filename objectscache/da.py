@@ -36,8 +36,10 @@ rawsql = {
         'select * from repo_issues where visibly = 0 and repo_id = %s order by modify_time desc limit %s, %s',
     'repoissues_l_cons_create':
         'select * from repo_issues where visibly = 0 and repo_id = %s order by create_time desc limit %s, %s',
-    'repoissues_l_userId_modify':
-        'select * from repo_issues where visibly = 0 and repo_id = %s and user_id = %s order by modify_time desc limit %s, %s',
+    'repoissues_l_assigned_modify':
+        'select * from repo_issues where visibly = 0 and assigned = %s order by status, modify_time desc limit %s, %s',
+    'repoissues_l_assigned_create':
+        'select * from repo_issues where visibly = 0 and assigned = %s order by status, create_time desc limit %s, %s',
     'repoissues_s_id':
         'select * from repo_issues where visibly = 0 and repo_id = %s and id = %s limit 0,1',
     'issuescomment_l_issuesId':

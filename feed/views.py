@@ -7,7 +7,8 @@ from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.feed.feed import FeedAction
-from gitshell.repo.models import RepoManager
+from gitshell.repo.models import RepoManager, IssuesComment
+from gitshell.repo.cons import conver_issues
 from gitshell.gsuser.models import GsuserManager
 
 @login_required
@@ -41,12 +42,70 @@ def git(request):
                           response_dictionary,
                           context_instance=RequestContext(request))
 @login_required
-def issues(request):
+def issues_default(request):
+    return issues(request, 0)
+
+@login_required
+def issues(request, page):
     current = 'issues'
-    response_dictionary = {'current': current}
+    page = int(page)
+    raw_issues = RepoManager.list_assigned_issues(request.user.id, 'modify_time', page)
+    username_map = {}
+    reponame_map = {}
+    for raw_issue in raw_issues:
+        if raw_issue.user_id not in username_map:
+            username_map[raw_issue.user_id] = ''
+        if raw_issue.assigned not in username_map:
+            username_map[raw_issue.assigned] = ''
+        if raw_issue.repo_id not in reponame_map:
+            reponame_map[raw_issue.repo_id] = ''
+    repos = RepoManager.list_repo_by_ids(reponame_map.keys())
+    users = GsuserManager.list_user_by_ids(username_map.keys())
+    reponame_map = dict([(x.id, x.name) for x in repos])
+    username_map = dict([(x.id, x.username) for x in users])
+    issues = conver_issues(raw_issues, username_map, reponame_map)
+
+    hasPre = False ; hasNext = False
+    if page > 0:
+        hasPre = True 
+    if len(issues) > 2:
+        hasNext = True
+        issues.pop()
+    response_dictionary = {'current': current, 'issues': issues, 'page': page, 'hasPre': hasPre, 'hasNext': hasNext}
     return render_to_response('user/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+@login_required
+def doissues(request):
+    action = request.POST.get('action', '')
+    comment = request.POST.get('comment', '')
+    repo_id = request.POST.get('repo_id', '')
+    issues_id = request.POST.get('issues_id', '')
+    if action == '' or repo_id == '' or issues_id == '':
+        response_dictionary = {'result': 'failed'}
+        return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
+    issues = RepoManager.get_issues(int(repo_id), int(issues_id))
+    if issues is None or issues.user_id != request.user.id:
+        response_dictionary = {'result': 'failed'}
+        return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
+    if action == 'fixed':
+        issues.status = 4
+    elif action == 'close':
+        issues.status = 5
+    elif action == 'reject':
+        issues.status = 6
+    if comment != '':
+        issuesComment = IssuesComment() 
+        issuesComment.issues_id = issues.id
+        issuesComment.user_id = request.user.id
+        issuesComment.content = comment
+        issuesComment.save()
+        issues.comment_count = issues.comment_count + 1
+    issues.save()
+    response_dictionary = {'result': 'sucess'}
+    return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
+        
+
 @login_required
 def explore(request):
     current = 'explore'

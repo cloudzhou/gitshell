@@ -24,24 +24,27 @@ REV_TRACKERS = {1: '缺陷', 2: '功能', 3: '支持'}
 REV_STATUSES = {1: '新建', 2: '已指派', 3: '进行中', 4: '已解决', 5: '已关闭', 6: '已拒绝'}
 REV_PRIORITIES = {1: '紧急', 2: '高', 3: '普通', 4: '低'}
 
-def conver_issues(raw_issues, user_map):
+def conver_issues(raw_issues, username_map, reponame_map):
     issues = []
     for raw_issue in raw_issues:
         issue = {}
         issue['id'] = raw_issue.id
         issue['subject'] = raw_issue.subject
         issue['content'] = raw_issue.content
-        if raw_issue.user_id in user_map:
-            issue['user_id'] = user_map[raw_issue.user_id]
+        if raw_issue.user_id in username_map:
+            issue['user_id'] = username_map[raw_issue.user_id]
         issue['tracker'] = REV_TRACKERS[raw_issue.tracker]
         issue['status'] = REV_STATUSES[raw_issue.status]
-        if raw_issue.assigned in user_map:
-            issue['assigned'] = user_map[raw_issue.assigned]
+        if raw_issue.assigned in username_map:
+            issue['assigned'] = username_map[raw_issue.assigned]
         issue['priority'] = REV_PRIORITIES[raw_issue.priority]
         issue['category'] = raw_issue.category
         issue['create_time'] = time.mktime(raw_issue.create_time.timetuple())
         issue['modify_time'] = time.mktime(raw_issue.modify_time.timetuple())
         issue['comment_count'] = raw_issue.comment_count
+        issue['repo_id'] = raw_issue.repo_id
+        if raw_issue.repo_id in reponame_map:
+            issue['reponame'] = reponame_map[raw_issue.repo_id]
         issues.append(issue)
     return issues
 

@@ -157,12 +157,12 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
     print connection.queries
     reporter_ids = [o.user_id for o in raw_issues]
     reporters = GsuserManager.list_user_by_ids(list(set(reporter_ids)-set(member_ids)))
-    user_map = {}
+    username_map = {}
     for member in members:
-        user_map[member.id] = member.username
+        username_map[member.id] = member.username
     for reporter in reporters:
-        user_map[reporter.id] = reporter.username
-    issues = conver_issues(raw_issues, user_map)
+        username_map[reporter.id] = reporter.username
+    issues = conver_issues(raw_issues, username_map, {repo.id: repo.name})
 
     hasPre = False ; hasNext = False
     if page > 0:
@@ -200,11 +200,11 @@ def issues_show(request, user_name, repo_name, issues_id, page):
             raw_issue.save()
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, issues_id))
     issues_id = int(issues_id)
-    user_map = {}
+    username_map = {}
     users = GsuserManager.list_user_by_ids([raw_issue.user_id, raw_issue.assigned])
     for user in users:
-        user_map[user.id] = user.username
-    issue = conver_issues([raw_issue], user_map)[0]
+        username_map[user.id] = user.username
+    issue = conver_issues([raw_issue], username_map, {repo.id: repo.name})[0]
     
     total_page = issue['comment_count'] / 2
     if issue['comment_count'] != 0 and issue['comment_count'] % 2 == 0:
@@ -213,7 +213,6 @@ def issues_show(request, user_name, repo_name, issues_id, page):
         page = total_page
     else:
         page = int(page)
-    user_map = {}
     user_img_map = {}
     issue_comments = []
     if issue['comment_count'] > 0:
@@ -222,10 +221,10 @@ def issues_show(request, user_name, repo_name, issues_id, page):
         users = GsuserManager.list_user_by_ids(user_ids)
         userprofiles = GsuserManager.list_userprofile_by_ids(user_ids)
         for user in users:
-            user_map[user.id] = user.username
+            username_map[user.id] = user.username
         for userprofile in userprofiles:
             user_img_map[userprofile.id] = userprofile.imgurl 
-        issue_comments = conver_issue_comments(RepoManager.list_issues_comment(issues_id, page), user_map, user_img_map)
+        issue_comments = conver_issue_comments(RepoManager.list_issues_comment(issues_id, page), username_map, user_img_map)
 
     member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
     member_ids.insert(0, repo.user_id)

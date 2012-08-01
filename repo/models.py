@@ -182,6 +182,16 @@ class RepoManager():
         return list(repoissues)
 
     @classmethod
+    def list_assigned_issues(self, assigned, orderby, page):
+        offset = page*2
+        row_count = 3
+        rawsql_id = 'repoissues_l_assigned_modify'
+        if orderby == 'create_time':
+            rawsql_id = 'repoissues_l_assigned_create'
+        repoissues = query(Issues, 'repo_issues', None, rawsql_id, [assigned, offset, row_count]) 
+        return list(repoissues)
+
+    @classmethod
     def get_issues(self, repo_id, issues_id):
         issues = query(Issues, 'repo_issues', repo_id, 'repoissues_s_id', [repo_id, issues_id])
         if len(list(issues)) > 0:
@@ -196,7 +206,7 @@ class RepoManager():
     @classmethod
     def list_issues_comment(self, issues_id, page):
         offset = page*2
-        row_count = 2
+        row_count = 3
         issuesComments = query(IssuesComment, 'repo_issuescomment', issues_id, 'issuescomment_l_issuesId', [issues_id, offset, row_count]) 
         return list(issuesComments)
 
