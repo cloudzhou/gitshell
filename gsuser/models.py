@@ -21,6 +21,9 @@ class Userprofile(BaseModel):
     quote = models.BigIntegerField(null=False, default=67108864)
     used_quote = models.BigIntegerField(null=False, default=0)
 
+    def get_total_repo(self):
+        return self.prirepo + self.pubrepo
+
 class Recommend(BaseModel):
     user_id = models.IntegerField(null=False, default=0)
     content = models.CharField(max_length=128, null=False)

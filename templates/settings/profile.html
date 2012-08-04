@@ -69,12 +69,15 @@
 <script>
 /*global jQuery, window */
 $(function(){
+    $('#id_repo_count').width({{userprofile.get_total_repo}} + '%')
+    $('#id_quote_used').width({{userprofile.used_quote}}*100.0/{{userprofile.quote}} + '%')
     var changepassword_init = function() {
         $('#id_old_password').attr('placeholder', '如果忘记了选择重置密码');
         $('#id_password').attr('placeholder', '保持一定复杂度');
         $('.control-group input').addClass('input-xlarge');
         $('.control-group textarea').addClass('input-xlarge');
         $('#id_resume').addClass('wmd-input');
+        $('#id_resume').attr('placeholder', '使用Markdown语法');
         $('#id_resume').attr("id","wmd-input");
         var converter = Markdown.getSanitizingConverter();
         var editor = new Markdown.Editor(converter);

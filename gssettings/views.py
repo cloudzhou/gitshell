@@ -7,17 +7,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, UserprofileForm, DoSshpubkeyForm
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
-from gitshell.gsuser.models import Userprofile
+from gitshell.gsuser.models import Userprofile, GsuserManager
 
 @login_required
 def profile(request):
-    userprofile = Userprofile()
-    try:
-        userprofile = Userprofile.objects.get(id = request.user.id)
-    except Userprofile.DoesNotExist:
-        userprofile.id = request.user.id
-        userprofile.imgurl = hashlib.md5(request.user.email.lower()).hexdigest()
-    userprofileForm = UserprofileForm(instance = userprofile)
+    userprofileForm = UserprofileForm(instance = request.userprofile)
     if request.method == 'POST':
         userprofileForm = UserprofileForm(request.POST, instance = userprofile)
         if userprofileForm.is_valid():
