@@ -1,35 +1,83 @@
 {% extends "base.html" %}
+{% block css %}
+<style>
+pre { border: 0px; }
+</style>
+{% endblock %}
 {% block container %}
 <div class="page-header">
         <h1>:-), 帮助 <small>gitshell介绍，使用，git入门...</small></h1>
 </div>
 <div class="row">
 <div class="span3">
-<div style="padding: 8px 0;" class="well">
-    <ul class="nav nav-list">
-        <li class="nav-header">about gitshell</li>
-        <li><a href="#about">关于</a></li>
-        <li><a href="#mission">愿景</a></li>
-        <li><a href="#faq">FAQ</a></li>
-        <li><a href="#mission">服务条款</a></li>
-        <li><a href="#mission">联系方式 </a></li>
-        <li class="nav-header">快速入门</li>
-        <li><a href="#join.login">注册·登录</a></li>
-        <li><a href="#join.login">管理ssh key</a></li>
-        <li><a href="#mission">创建仓库</a></li>
-        <li><a href="#mission">clone·push·pull代码</a></li>
-        <li><a href="#mission">协同开发</a></li>
-        <li class="nav-header">git 新手</li>
-        <li><a href="#">Profile</a></li>
-        <li><a href="#">Settings</a></li>
-        <li class="divider"></li>
-        <li><a href="#">git外部学习资源</a></li>
-    </ul>
+    <div style="padding: 8px 0;" class="well">
+        <ul class="nav nav-list">
+            <li class="nav-header">about gitshell</li>
+            <li><a href="#about">关于</a></li>
+            <li><a href="#mission">愿景</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#service">服务条款</a></li>
+            <li><a href="#contact">联系方式 </a></li>
+            <li class="nav-header">快速入门</li>
+            <li><a href="#join_login">注册·登录</a></li>
+            <li><a href="#sshkey">管理ssh key</a></li>
+            <li><a href="#repo">管理仓库</a></li>
+            <li><a href="#code">clone·push·pull代码</a></li>
+            <li><a href="#group">协同开发</a></li>
+            <li class="nav-header">git 学习</li>
+            <li><a href="#learn">从实践中学习</a></li>
+            <li><a href="#resource">git外部学习资源</a></li>
+        </ul>
+    </div>
+</div>
+<div id="id_help" class="span9">
+        <h3 id="about">关于</h3><p></p>
+        <pre>
+        </pre>
+        <h3 id="mission">愿景</h3><p></p>
+        <pre>
+        </pre>
+        <h3 id="faq">FAQ</h3><p></p>
+        <pre>
+        </pre>
+        <h3 id="service">服务条款</h3><p></p>
+        <pre>
+        </pre>
+        <h3 id="contact">联系方式</h3><p></p>
+        <pre>
+        </pre>
+        <h3 id="join_login">注册·登录</h3><p></p>
+        <pre>
+        </pre>
+        <h3 id="sshkey">管理ssh key</h3><p></p>
+        <pre>
+        </pre>
+        <h3 id="repo">管理仓库</h3><p></p>
+        <pre>
+        </pre>
+        <h3 id="code">clone·push·pull代码</h3><p></p>
+        <pre>
+        </pre>
+        <h3 id="group">协同开发</h3><p></p>
+        <pre>
+        </pre>
+        <h3 id="learn">从实践中学习</h3><p></p>
+        <pre>
+        </pre>
+        <h3 id="resource">git外部学习资源</h3><p></p>
+        <pre>
+        </pre>
 </div>
 </div>
-<div class="span9">
-        <h3>愿景</h3>
-        <p>aa</p>
-</div>
-</div>
+{% endblock %}
+{% block js %}
+<script>
+$(function(){
+    $(".nav-list li a").click(function(){
+      var pos = $( $(this).attr('href')).offset();
+        $(window).scrollTop(pos.top - 50);
+        return false;
+    });
+});
+</script>
 {% endblock %}
