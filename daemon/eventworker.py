@@ -15,8 +15,7 @@ from gitshell.feed.feed import FeedAction
 def main():
     beanstalk = beanstalkc.Connection(host='localhost', port=11300)
     beanstalk.use('commit_event')
-    exit_flag = False
-    while not exit_flag:
+    while True:
         event_job = beanstalk.reserve()
         try:
             do_event(event_job.body)
