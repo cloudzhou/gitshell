@@ -34,6 +34,9 @@ def do_event(event_job):
     args = ['/usr/bin/git gc']
     popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
     result = popen.communicate()[0].strip()
+    to_repo_dirname = os.path.dirname(to_repo_path)
+    if not os.path.exists(to_repo_dirname):
+        os.makedirs(to_repo_dirname)
     shutil.copytree(from_repo_path, to_repo_path) 
 
 def update_repo_status(to_repo_id):
