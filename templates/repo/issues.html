@@ -36,7 +36,7 @@
                 {% for issue in issues %}
 			    <tr>
 				    <td class="c_issue">
-                    <a href="" style="margin-right: 0px" rel="tooltip" data-original-title="可拖动到上面"><img class="c_drag_setting" value="{{issue.id}}" src="/static/img/glyphicons_019_cogwheel.png"/></a>
+                    <a href="" style="margin-right: 0px" rel="tooltip" data-original-title="拖动到上面做属性更改"><img class="c_drag_setting" value="{{issue.id}}" src="/static/img/glyphicons_019_cogwheel.png"/></a>
                     <a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/">#{{issue.id}} {{issue.subject}}</a> [<a href="/{{issue.user_id}}/">{{issue.user_id}}</a>]</td>
 				    <td>{{issue.tracker}}</td>
 				    <td>{{issue.status}}</td>
