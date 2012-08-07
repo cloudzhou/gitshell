@@ -14,6 +14,7 @@ urlpatterns = patterns('gitshell',
     # ajax
     url(r'^ajax/feed/ids/?$', 'feed.views.feedbyids'),
     url(r'^ajax/repo/(\w+)/(\w+)/refs/?$', 'repo.views.repo_refs'),
+    url(r'^ajax/repo/(\w+)/(\w+)/fork/?$', 'repo.views.repo_fork'),
     url(r'^ajax/repo/(\w+)/(\w+)/diff/(\w+)/(\w+)/([a-zA-Z0-9_\.\-/]*)$', 'repo.views.repo_diff'),
     url(r'^ajax/network/watch/(\w+)/', 'gsuser.views.network_watch'),
     url(r'^ajax/network/unwatch/(\w+)/', 'gsuser.views.network_unwatch'),
@@ -35,6 +36,7 @@ urlpatterns = patterns('gitshell',
     # help
     url(r'^help/?$', 'help.views.default'),
     url(r'^help/quickstart/?$', 'help.views.quickstart'),
+    url(r'^help/error/?$', 'help.views.default'),
 
     # settings
     url(r'^settings/?$', 'gssettings.views.profile'),

@@ -28,7 +28,7 @@
                     <a class="count" title="关注次数" style="font-size: 20px; font-weight: bold" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</a>
                 </span>
                 <span style="margin-right: 5px" class="c_repo_action">
-                    <a id="i_folk" data-original-title="衍生作为本地仓库" rel="tooltip" href="javascript: void(0)"><img src="/static/img/glyphicons_114_list.png"/></a>
+                    <a id="i_fork" data-original-title="衍生作为本地仓库" rel="tooltip" href="javascript: void(0)"><img src="/static/img/glyphicons_114_list.png"/></a>
                     <a class="count" title="衍生次数" style="font-size: 20px; font-weight: bold" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.fork}}</a>
                 </span>
             </li>
@@ -116,7 +116,7 @@ $(function(){
         })
     }
     var disabled_watch = false;
-    var disabled_folk = false;
+    var disabled_fork = false;
     $('#i_watch').click(function() {
         if(disabled_watch) {
             return false;
@@ -137,11 +137,11 @@ $(function(){
             },
         })
     })
-    $('#i_folk').click(function() {
-        if(disabled_folk) {
+    $('#i_fork').click(function() {
+        if(disabled_fork) {
             return false;
         }
-        disabled_folk = true;
+        disabled_fork = true;
         $.ajax({
             url: '/ajax/repo/{{user_name}}/{{repo_name}}/refs/',
             type: 'POST',
@@ -149,7 +149,7 @@ $(function(){
             dataType: 'json',
             timeout: 5000,
             error: function(){
-                disabled_folk = false;
+                disabled_fork = false;
                 //alert('');
             },
             success: function(json){

@@ -24,10 +24,10 @@ def user(request, user_name):
         raise Http404
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     recommendsForm = RecommendsForm()
-    feedAction = FeedAction()
     repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 10)
     recommends = GsuserManager.list_recommend_by_id(gsuser.id, 0, 20)
 
+    feedAction = FeedAction()
     raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
     raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
     raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 10)
@@ -62,6 +62,7 @@ def watch_user(request, user_name):
     if gsuser is None:
         raise Http404
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
+    feedAction = FeedAction()
     raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
     raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 10)
 
@@ -75,6 +76,7 @@ def watch_repo(request, user_name):
     if gsuser is None:
         raise Http404
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
+    feedAction = FeedAction()
     raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
     response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
     return render_to_response('user/watch_repo.html',

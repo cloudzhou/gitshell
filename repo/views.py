@@ -16,6 +16,7 @@ from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, Issues
 from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, TRACKERS_VAL, STATUSES_VAL, PRIORITIES_VAL, ISSUES_ATTRS, conver_issues, conver_issue_comments, conver_repos
 from gitshell.gsuser.models import GsuserManager
+from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
@@ -39,18 +40,22 @@ def user_repo_paging(request, user_name, pagenum):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@repo_permission_check
 def repo(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'index'
     return repo_ls_tree(request, user_name, repo_name, refs, path, current)
 
+@repo_permission_check
 def repo_default_tree(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'tree'
     return repo_ls_tree(request, user_name, repo_name, refs, path, current)
     
+@repo_permission_check
 def repo_tree(request, user_name, repo_name, refs, path):
     current = 'tree'
     return repo_ls_tree(request, user_name, repo_name, refs, path, current)
 
+@repo_permission_check
 def repo_raw_tree(request, user_name, repo_name, refs, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path.endswith('/'):
@@ -63,6 +68,7 @@ def repo_raw_tree(request, user_name, repo_name, refs, path):
 
 lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml'}
 brush_aliases = {'AppleScript': 'applescript', 'AS3': 'actionscript3', 'Bash': 'shell', 'ColdFusion': 'coldfusion', 'Cpp': 'cpp', 'CSharp': 'csharp', 'Css': 'css', 'Delphi': 'delphi', 'Diff': 'diff', 'Erlang': 'erlang', 'Groovy': 'groovy', 'JavaFX': 'javafx', 'Java': 'java', 'JScript': 'javascript', 'Perl': 'perl', 'Php': 'php', 'Plain': 'plain', 'PowerShell': 'powershell', 'Python': 'python', 'Ruby': 'ruby', 'Sass': 'sass', 'Scala': 'scala', 'Sql': 'sql', 'Vb': 'vb', 'Xml': 'xml'}
+@repo_permission_check
 def repo_ls_tree(request, user_name, repo_name, refs, path, current):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -89,10 +95,12 @@ def repo_ls_tree(request, user_name, repo_name, refs, path, current):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@repo_permission_check
 def repo_default_commits(request, user_name, repo_name):
     refs = 'master'; path = '.'
     return repo_commits(request, user_name, repo_name, refs, path)
     
+@repo_permission_check
 def repo_commits(request, user_name, repo_name, refs, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -108,6 +116,7 @@ def repo_commits(request, user_name, repo_name, refs, path):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@repo_permission_check
 def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -119,9 +128,11 @@ def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path)
     diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
     return HttpResponse(json.dumps({'diff': escape(diff)}), mimetype='application/json')
 
+@repo_permission_check
 def issues(request, user_name, repo_name):
     return issues_list(request, user_name, repo_name, '0', '0', '0', '0', 'modify_time', 0)
  
+@repo_permission_check
 def issues_list(request, user_name, repo_name, assigned, tracker, status, priority, orderby, page):
     refs = 'master'; path = '.'; current = 'issues'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -177,9 +188,11 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@repo_permission_check
 def issues_default_show(request, user_name, repo_name, issues_id):
     return issues_show(request, user_name, repo_name, issues_id, None)
 
+@repo_permission_check
 def issues_show(request, user_name, repo_name, issues_id, page):
     refs = 'master'; path = '.'; current = 'issues'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -240,6 +253,7 @@ def issues_show(request, user_name, repo_name, issues_id, page):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@repo_permission_check
 def issues_create(request, user_name, repo_name, issues_id):
     refs = 'master'; path = '.'; current = 'issues'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -271,6 +285,7 @@ def issues_create(request, user_name, repo_name, issues_id):
                           context_instance=RequestContext(request))
 
 #TODO
+@repo_permission_check
 def issues_delete(request, user_name, repo_name, issue_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -281,6 +296,7 @@ def issues_delete(request, user_name, repo_name, issue_id):
         issues.save()
     return HttpResponse(json.dumps({'result': 'ok'}), mimetype='application/json')
 
+@repo_permission_check
 def issues_update(request, user_name, repo_name, issue_id, attr):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -309,6 +325,7 @@ def json_ok():
     return HttpResponse(json.dumps({'result': 'ok'}), mimetype='application/json')
 
 #TODO
+@repo_permission_check
 def issues_comment_delete(request, user_name, repo_name, comment_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -323,6 +340,7 @@ def issues_comment_delete(request, user_name, repo_name, comment_id):
             issues.save()
     return HttpResponse(json.dumps({'result': 'ok'}), mimetype='application/json')
 
+@repo_permission_check
 def repo_network(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'network'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -351,6 +369,7 @@ def repo_network(request, user_name, repo_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@repo_permission_check
 def repo_clone_watch(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'branches'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -374,6 +393,7 @@ def repo_clone_watch(request, user_name, repo_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@repo_permission_check
 def repo_stats(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'stats'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -431,6 +451,7 @@ def change_to_vo(raw_fork_repos_tree):
         fork_repos_tree.append(conver_repos(raw_fork_repos, user_map))
     return fork_repos_tree
 
+@repo_permission_check
 def repo_refs(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -441,6 +462,10 @@ def repo_refs(request, user_name, repo_name):
     branches_refs = gitHandler.repo_ls_branches(repopath)
     tags_refs = gitHandler.repo_ls_tags(repopath)
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'branches': branches_refs, 'tags': tags_refs}
+    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
+
+def repo_fork(request, user_name, repo_name):
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
     return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
 
 # TODO

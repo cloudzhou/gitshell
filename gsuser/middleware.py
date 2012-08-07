@@ -4,6 +4,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.functional import SimpleLazyObject
 from gitshell.gsuser.models import GsuserManager
 
+MAIN_NAVS = ['index', 'stats', 'skills', 'home', 'login', 'logout', 'join', 'resetpassword', 'help', 'settings', 'private', 'captcha', 'ajax', 'explore', 'error']
+
 def get_userprofile(request):
     if not hasattr(request, '_cached_userprofile'):
         if request.user.is_authenticated():
@@ -22,7 +24,6 @@ def userprofile(request):
         userprofile = Userprofile()
     return {'userprofile': userprofile }
 
-MAIN_NAVS = ['index', 'stats', 'skills', 'home', 'login', 'logout', 'join', 'resetpassword', 'help', 'settings', 'private', 'captcha', 'ajax', 'explore']
 def mainnav(request):
     path = request.path
     if path == '' or path == '/':
