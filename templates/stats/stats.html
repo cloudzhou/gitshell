@@ -181,6 +181,7 @@ if(per_user_year_commit.length > 0) {
         series: [{ name: '今年（{{round_year|date:"y/m/d"}}以来）仓库提交统计', data: per_last_year_commit }]
     });
 }
+    $('#id_space_container').show();
     var space_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_space_container', type: 'bar'},title: {text: ''},
         yAxis: { title: { text: '空间使用情况' } },

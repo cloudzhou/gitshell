@@ -98,7 +98,9 @@ $(function(){
         $('#i_repo_path').html(path_href_html);
     };
     set_path_href();
+{% if not is_tree %}
     SyntaxHighlighter.all();
+{% endif %}
 });
 </script>
 {% endblock %}

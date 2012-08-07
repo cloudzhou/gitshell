@@ -12,10 +12,9 @@ from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
 from gitshell.gsuser.models import GsuserManager
 
+@login_required
 def stats(request):
-    stats_dict = {}
-    if request.user.is_authenticated():
-        stats_dict = get_stats_dict(request)
+    stats_dict = get_stats_dict(request)
     response_dictionary = {}
     response_dictionary.update(stats_dict)
     return render_to_response('stats/stats.html',

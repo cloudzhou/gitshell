@@ -18,7 +18,7 @@ class Repo(BaseModel):
     fork = models.IntegerField(default=0)
     member = models.IntegerField(default=0)
 
-    #status = models.IntegerField(default=0) 
+    status = models.IntegerField(default=0) 
 
     def get_abs_repopath(self, user_name):
         parent_path = ""
