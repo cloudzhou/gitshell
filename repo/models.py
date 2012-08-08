@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-  
 from django.db import models
 from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many

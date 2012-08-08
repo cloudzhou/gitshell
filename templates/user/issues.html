@@ -122,7 +122,7 @@ $(function(){
             type: 'POST',
             data: {'issues_id': id, 'repo_id': repo_id, 'comment': comment, 'action': action, csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
-            timeout: 5000,
+            timeout: 10000,
             error: function(){
             },
             success: function(json){

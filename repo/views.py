@@ -487,18 +487,18 @@ def repo_fork(request, user_name, repo_name):
     message = 'success'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
-        message = '仓库不存在'
-        has_error = True
+        message = u'仓库不存在'
+        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
     userprofile = request.userprofile
     if (userprofile.pubrepo + userprofile.prirepo) >= 100:
-        message = '您的仓库总数量已经超过限制'
+        message = u'您的仓库总数量已经超过限制'
         has_error = True
     if (userprofile.used_quote + repo.used_quote) >= userprofile.quote:
-        message = '您剩余空间不足，总空间 %s kb，剩余 %s kb' % (userprofile.quote, userprofile.used_quote)
+        message = u'您剩余空间不足，总空间 %s kb，剩余 %s kb' % (userprofile.quote, userprofile.used_quote)
         has_error = True
     fork_repo = RepoManager.get_repo_by_name(request.user.username, repo.name);
     if fork_repo is not None:
-        message = '您已经有一个名字相同的仓库: %s' % repo.name
+        message = u'您已经有一个名字相同的仓库: %s' % (repo.name)
         has_error = True
     if has_error:
         return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
@@ -516,14 +516,27 @@ def repo_fork(request, user_name, repo_name):
 @login_required
 @require_http_methods(["POST"])
 def repo_watch(request, user_name, repo_name):
-    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
+    response_dictionary = {'result': 'success'}
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        message = u'仓库不存在'
+        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
+    if not RepoManager.watch_repo(request.userprofile, repo.id):
+        message = u'关注失败，关注数量超过限制或者仓库不允许关注'
+        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
     return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
 
-@repo_permission_check
 @login_required
 @require_http_methods(["POST"])
 def repo_unwatch(request, user_name, repo_name):
-    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
+    response_dictionary = {'result': 'success'}
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        message = u'仓库不存在'
+        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
+    if not RepoManager.unwatch_repo(request.userprofile, repo.id):
+        message = u'取消关注失败，可能仓库未被关注'
+        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
     return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
 
 @repo_permission_check

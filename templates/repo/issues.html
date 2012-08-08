@@ -127,7 +127,7 @@ $(function(){
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
-            timeout: 5000,
+            timeout: 10000,
             error: function(){
             },
             success: function(json){

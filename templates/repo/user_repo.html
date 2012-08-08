@@ -61,7 +61,7 @@ $(function(){
             type: 'POST',
             data: {'ids_str': all_ids_str, csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
-            timeout: 5000,
+            timeout: 10000,
             error: function(){
                 //alert('');
             },

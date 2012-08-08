@@ -104,7 +104,7 @@ $(function(){
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
-            timeout: 5000,
+            timeout: 10000,
             error: function(){
                 //alert('');
             },
@@ -136,13 +136,19 @@ $(function(){
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
-            timeout: 5000,
+            timeout: 10000,
             error: function(){
                 disabled_watch = false;
                 $('#id_repo_alert').show();
                 $('#id_alert_message').html('网络原因，请求失败，请刷新再次尝试');
             },
             success: function(json){
+                if(json.result == 'success') {
+                    window.location = window.location
+                    return true;
+                }
+                $('#id_repo_alert').show();
+                $('#id_alert_message').html(json.message);
             },
         })
     })
@@ -156,13 +162,19 @@ $(function(){
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
-            timeout: 5000,
+            timeout: 10000,
             error: function(){
                 disabled_watch = false;
                 $('#id_repo_alert').show();
                 $('#id_alert_message').html('网络原因，请求失败，请刷新再次尝试');
             },
             success: function(json){
+                if(json.result == 'success') {
+                    window.location = window.location
+                    return true;
+                }
+                $('#id_repo_alert').show();
+                $('#id_alert_message').html(json.message);
             },
         })
     })
@@ -176,7 +188,7 @@ $(function(){
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
-            timeout: 5000,
+            timeout: 10000,
             error: function(){
                 disabled_fork = false;
                 $('#id_repo_alert').show();
