@@ -15,7 +15,7 @@ class Userprofile(BaseModel):
 
     pubrepo = models.IntegerField(null=False, default=0) 
     prirepo = models.IntegerField(null=False, default=0)
-    #watchrepo = models.IntegerField(null=False, default=0)
+    watchrepo = models.IntegerField(null=False, default=0)
     watch = models.IntegerField(null=False, default=0)
     be_watched = models.IntegerField(null=False, default=0)
     quote = models.BigIntegerField(null=False, default=67108864)

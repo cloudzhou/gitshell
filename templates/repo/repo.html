@@ -143,7 +143,7 @@ $(function(){
         }
         disabled_fork = true;
         $.ajax({
-            url: '/ajax/repo/{{user_name}}/{{repo_name}}/refs/',
+            url: '/ajax/repo/{{user_name}}/{{repo_name}}/fork/',
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',

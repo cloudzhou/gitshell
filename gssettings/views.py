@@ -13,7 +13,7 @@ from gitshell.gsuser.models import Userprofile, GsuserManager
 def profile(request):
     userprofileForm = UserprofileForm(instance = request.userprofile)
     if request.method == 'POST':
-        userprofileForm = UserprofileForm(request.POST, instance = userprofile)
+        userprofileForm = UserprofileForm(request.POST, instance = request.userprofile)
         if userprofileForm.is_valid():
             userprofileForm.save()
     response_dictionary = {'userprofileForm': userprofileForm}

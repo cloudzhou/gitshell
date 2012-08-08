@@ -464,7 +464,26 @@ def repo_refs(request, user_name, repo_name):
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'branches': branches_refs, 'tags': tags_refs}
     return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
 
+@login_required
+@repo_permission_check
 def repo_fork(request, user_name, repo_name):
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
+    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
+
+@login_required
+@repo_permission_check
+def repo_watch(request, user_name, repo_name):
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
+    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
+
+@login_required
+@repo_permission_check
+def repo_unwatch(request, user_name, repo_name):
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
+    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
+
+@login_required
+def repo_delete(request, user_name, repo_name):
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
     return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
 
