@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-  
-import random
-import re
+import random, re, json, time
 import base64, hashlib
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
@@ -9,6 +8,7 @@ from django.core.mail import send_mail
 from django.core.cache import cache
 from django.core.validators import email_re
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate as auth_authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
@@ -32,7 +32,8 @@ def user(request, user_name):
     raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
     raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 10)
 
-    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
+    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm}
+    response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/user.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -42,7 +43,8 @@ def active(request, user_name):
     if gsuser is None:
         raise Http404
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
-    response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
+    response_dictionary = {'mainnav': 'user'}
+    response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/active.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -52,7 +54,8 @@ def stats(request, user_name):
     if gsuser is None:
         raise Http404
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
-    response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
+    response_dictionary = {'mainnav': 'user'}
+    response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/stats.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -66,7 +69,8 @@ def watch_user(request, user_name):
     raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
     raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 10)
 
-    response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
+    response_dictionary = {'mainnav': 'user'}
+    response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/watch_user.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -78,7 +82,8 @@ def watch_repo(request, user_name):
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     feedAction = FeedAction()
     raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
-    response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
+    response_dictionary = {'mainnav': 'user'}
+    response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/watch_repo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -90,30 +95,38 @@ def recommend(request, user_name):
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     recommends = GsuserManager.list_recommend_by_id(gsuser.id, 0, 50)
 
-    response_dictionary = {'mainnav': 'user', 'gsuser': gsuser, 'gsuserprofile': gsuserprofile}
+    response_dictionary = {'mainnav': 'user'}
+    response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/recommend.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
+@require_http_methods(["POST"])
 def network_watch(request, user_name):
+    response_dictionary = {'result': 'success'}
     gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
-        raise Http404
-    response_dictionary = {'mainnav': 'user'}
-    return render_to_response('user/user.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
+        message = u'用户不存在'
+        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
+    if not RepoManager.watch_user(request.userprofile, gsuser.id):
+        message = u'关注失败，关注数量超过限制或者用户不允许关注'
+        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
+    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
 
 @login_required
+@require_http_methods(["POST"])
 def network_unwatch(request, user_name):
+    response_dictionary = {'result': 'success'}
     gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
-        raise Http404
-    response_dictionary = {'mainnav': 'user'}
-    return render_to_response('user/user.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
+        message = u'用户不存在'
+        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
+    if not RepoManager.unwatch_user(request.userprofile, gsuser.id):
+        message = u'取消关注失败，可能用户未被关注'
+        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
+    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
+
 
 def login(request):
     loginForm = LoginForm()
@@ -256,5 +269,11 @@ def resetpassword(request, step):
     return render_to_response('user/resetpassword.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+def get_common_user_dict(request, gsuser, gsuserprofile):
+    is_watched_user = False
+    if request.user.is_authenticated():
+        is_watched_user = RepoManager.is_watched_user(request.user.id, gsuser.id)
+    return {'gsuser': gsuser, 'gsuserprofile': gsuserprofile, 'is_watched_user': is_watched_user}
 
 # TODO note: add email unique support ! UNIQUE KEY `email` (`email`) #

@@ -8,6 +8,8 @@
 .more { float:right; font-size: 13px; color: #999999 }
 .big_font { font-size: 25px; font-weight: 400 }
 .zero_border_table td { border-top: 0px; }
+#id_watch_user { font-size: 35px; }
+#id_unwatch_user { font-size: 35px; }
 </style>
 {% endblock %}
 {% block container %}
@@ -22,7 +24,15 @@
                 {% if gsuserprofile.nickname %}
                     ({{ gsuserprofile.nickname }})
                 {% endif %}
-                <a href="">+</a></span>
+                {% if not is_watched_user %}
+                    <a id="id_watch_user" href="javascript: void(0)">+</a>
+                {% else %}
+                    <a id="id_unwatch_user" href="javascript: void(0)">-</a>
+                {% endif %}
+                </span>
+                <span id="id_user_alert" class="alert alert-error" style="display: none">
+                    <strong>失败!</strong> <span id="id_alert_message"></span>
+                </span>
             </div>
             <span class="muted">{{ gsuserprofile.tweet }}</span>
         </div>
@@ -72,4 +82,62 @@
         {% block right_sub_container %}{% endblock %}
     </div>
 </div>
+{% endblock %}
+{% block js %}
+    <script>
+    var disabled_watch = false;
+    $('#id_watch_user').click(function() {
+        if(disabled_watch) {
+            return false;
+        }
+        disabled_watch = true;
+        $.ajax({
+            url: '/ajax/network/watch/{{ gsuser.username }}/',
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 10000,
+            error: function(){
+                disabled_watch = false;
+                $('#id_user_alert').show();
+                $('#id_alert_message').html('网络原因，请求失败，请刷新再次尝试');
+            },
+            success: function(json){
+                if(json.result == 'success') {
+                    window.location = window.location
+                    return true;
+                }
+                $('#id_user_alert').show();
+                $('#id_alert_message').html(json.message);
+            },
+        })
+    })
+    $('#id_unwatch_user').click(function() {
+        if(disabled_watch) {
+            return false;
+        }
+        disabled_watch = true;
+        $.ajax({
+            url: '/ajax/network/unwatch/{{ gsuser.username }}/',
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 10000,
+            error: function(){
+                disabled_watch = false;
+                $('#id_user_alert').show();
+                $('#id_alert_message').html('网络原因，请求失败，请刷新再次尝试');
+            },
+            success: function(json){
+                if(json.result == 'success') {
+                    window.location = window.location
+                    return true;
+                }
+                $('#id_user_alert').show();
+                $('#id_alert_message').html(json.message);
+            },
+        })
+    })
+    </script>
+    {% block subjs %}{% endblock %}
 {% endblock %}
