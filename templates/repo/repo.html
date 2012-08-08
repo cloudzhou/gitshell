@@ -4,6 +4,10 @@
 <link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet' type='text/css' />
 <link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet' type='text/css' />
 {% endif %}
+<style>
+#eye-box span,#eye-box a{display:inline-block;height:18px;line-height:18px}
+#eye-box a.count {top:4px;position:relative}
+</style>
 {% endblock %}
 {% block container %}
 <div class="code">
@@ -18,13 +22,18 @@
             </li>
             <li><h4><a href="/{{ user_name }}/">{{ user_name }}</a> <span class="divider">/</span></h4></li>
             <li><h4><a href="/{{ user_name }}/{{ repo_name }}/">{{ repo_name }}</a></h4></li>
+            <li id="id_repo_alert" style="display: none">
+                <span class="alert alert-error">
+                    <strong>失败!</strong> <span id="id_alert_message"></span>
+                </span>
+            </li>
             <li class="pull-right" id="eye-box">
-                <style>
-                    #eye-box span,#eye-box a{display:inline-block;height:18px;line-height:18px}
-                    #eye-box a.count {top:4px;position:relative}
-                </style>
                 <span style="margin-right: 5px" class="c_repo_action">
-                    <a id="i_watch" data-original-title="关注该项目" rel="tooltip" href="javascript: void(0)" style="display:inline-block"><img src="/static/img/glyphicons_051_eye_open.png" align="absmiddle"/></a>
+                    {% if not is_watched_repo %}
+                        <a id="i_watch" data-original-title="关注该项目" rel="tooltip" href="javascript: void(0)" style="display:inline-block"><img src="/static/img/glyphicons_051_eye_open.png" align="absmiddle"/></a>
+                    {% else %}
+                        <a id="i_unwatch" data-original-title="取消关注该项目" rel="tooltip" href="javascript: void(0)" style="display:inline-block"><img src="/static/img/glyphicons_052_eye_close.png" align="absmiddle"/></a>
+                    {% endif %}
                     <a class="count" title="关注次数" style="font-size: 20px; font-weight: bold" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</a>
                 </span>
                 <span style="margin-right: 5px" class="c_repo_action">
@@ -123,17 +132,37 @@ $(function(){
         }
         disabled_watch = true;
         $.ajax({
-            url: '/ajax/repo/{{user_name}}/{{repo_name}}/refs/',
+            url: '/ajax/repo/{{user_name}}/{{repo_name}}/watch/',
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
             timeout: 5000,
             error: function(){
                 disabled_watch = false;
-                //alert('');
+                $('#id_repo_alert').show();
+                $('#id_alert_message').html('网络原因，请求失败，请刷新再次尝试');
             },
             success: function(json){
-                alert('ff');
+            },
+        })
+    })
+    $('#i_unwatch').click(function() {
+        if(disabled_watch) {
+            return false;
+        }
+        disabled_watch = true;
+        $.ajax({
+            url: '/ajax/repo/{{user_name}}/{{repo_name}}/unwatch/',
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 5000,
+            error: function(){
+                disabled_watch = false;
+                $('#id_repo_alert').show();
+                $('#id_alert_message').html('网络原因，请求失败，请刷新再次尝试');
+            },
+            success: function(json){
             },
         })
     })
@@ -150,10 +179,16 @@ $(function(){
             timeout: 5000,
             error: function(){
                 disabled_fork = false;
-                //alert('');
+                $('#id_repo_alert').show();
+                $('#id_alert_message').html('网络原因，请求失败，请刷新再次尝试');
             },
             success: function(json){
-                alert('ff');
+                if(json.result == 'success') {
+                    window.location = '/{{user.username}}/{{repo_name}}/';
+                    return true;
+                }
+                $('#id_repo_alert').show();
+                $('#id_alert_message').html(json.message);
             },
         })
     })

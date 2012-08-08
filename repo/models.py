@@ -20,6 +20,19 @@ class Repo(BaseModel):
 
     status = models.IntegerField(default=0) 
 
+    @classmethod
+    def create(self, user_id, fork_repo_id, name, desc, lang, auth_type, used_quote):
+        repo = Repo(
+            user_id = user_id,
+            fork_repo_id = fork_repo_id,
+            name = name,
+            desc = desc,
+            lang = lang,
+            auth_type = auth_type,
+            used_quote = used_quote,
+        )
+        return repo
+
     def get_abs_repopath(self, user_name):
         parent_path = ""
         if self.auth_type == 0:
@@ -226,6 +239,7 @@ class RepoManager():
                 order_repos.append(repo_map[repo_id])
         return order_repos
 
+    #TODO about pk
     @classmethod
     def list_watch_user(self, repo_id):
         watchHistory = query(WatchHistory, 'repo_watchhistory', repo_id, 'watchhistory_l_repoId', [repo_id])
@@ -237,3 +251,73 @@ class RepoManager():
                 watch_user.append(user_map[user_id])
         return watch_user
 
+    # TODO change to redis query
+    @classmethod
+    def is_watched_user(self, user_id, watch_user_id):
+        watchHistorys = query(WatchHistory, 'repo_watchhistory', user_id, 'watchhistory_s_user', [user_id, watch_user_id])
+        if len(list(watchHistorys)) > 0:
+            return True
+        return False
+
+    @classmethod
+    def is_watched_repo(self, user_id, watch_repo_id):
+        watchHistorys = query(WatchHistory, 'repo_watchhistory', user_id, 'watchhistory_s_repo', [user_id, watch_repo_id])
+        if len(list(watchHistorys)) > 0:
+            return True
+        return False
+
+    @classmethod
+    def watch_user(self, userprofile, watch_user_id):
+        if userprofile.watch >= 100:
+            return False
+        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_user', [userprofile.id, watch_user_id])
+        if len(list(watchHistorys)) > 0:
+            return False
+        watchHistory = WatchHistory()
+        watchHistory.user_id = userprofile.id
+        watchHistory.watch_user_id = watch_user_id
+        watchHistory.save()
+        # TODO redis action
+        return True
+
+    @classmethod
+    def unwatch_user(self, userprofile, watch_user_id):
+        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_user', [userprofile.id, watch_user_id])
+        watchHistory = None
+        if len(list(watchHistorys)) > 0:
+            watchHistory = watchHistorys[0]
+        if watchHistory is not None:
+            watchHistory.visibly = 1
+            watchHistory.save()
+            userprofile.watch = userprofile.watch - 1
+            userprofile.save()
+        # TODO redis action
+        return True
+
+    @classmethod
+    def watch_repo(self, userprofile, watch_repo_id):
+        if userprofile.watchrepo >= 100:
+            return False
+        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo_id])
+        if len(list(watchHistorys)) > 0:
+            return False
+        watchHistory = WatchHistory()
+        watchHistory.user_id = userprofile.id
+        watchHistory.watch_repo_id = watch_repo_id
+        watchHistory.save()
+        # TODO redis action
+        return True
+
+    @classmethod
+    def unwatch_repo(self, userprofile, watch_repo_id):
+        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo_id])
+        watchHistory = None
+        if len(list(watchHistorys)) > 0:
+            watchHistory = watchHistorys[0]
+        if watchHistory is not None:
+            watchHistory.visibly = 1
+            watchHistory.save()
+            userprofile.watchrepo = userprofile.watchrepo - 1
+            userprofile.save()
+        # TODO redis action
+        return True

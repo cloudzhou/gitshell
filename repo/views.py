@@ -7,6 +7,7 @@ from datetime import timedelta
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
 from django.shortcuts import render_to_response
 from django.utils.html import escape
@@ -90,7 +91,8 @@ def repo_ls_tree(request, user_name, repo_name, refs, path, current):
                 lang = lang_suffix[suffix]
                 brush = brush_aliases[lang]
         blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'tree': tree, 'blob': blob, 'is_tree': is_tree, 'lang': lang, 'brush': brush}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'blob': blob, 'is_tree': is_tree, 'lang': lang, 'brush': brush}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/tree.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -111,12 +113,15 @@ def repo_commits(request, user_name, repo_name, refs, path):
     abs_repopath = repo.get_abs_repopath(user_name)
     commit_hash = gitHandler.get_commit_hash(abs_repopath, refs)
     commits = gitHandler.repo_log_file(abs_repopath, commit_hash, path)
-    response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'commits': commits}
+    response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'path': path, 'commits': commits}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/commits.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+#TODO xss
 @repo_permission_check
+@require_http_methods(["POST"])
 def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -182,8 +187,9 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
         hasNext = True
         issues.pop()
     
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page, 'current_attrs': current_attrs, 'issues': issues, 'hasPre': hasPre, 'hasNext': hasNext}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page, 'current_attrs': current_attrs, 'issues': issues, 'hasPre': hasPre, 'hasNext': hasNext}
     response_dictionary.update(ISSUES_ATTRS)
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -247,8 +253,9 @@ def issues_show(request, user_name, repo_name, issues_id, page):
     members = GsuserManager.list_user_by_ids(member_ids)
     assigneds = [o.username for o in members]
 
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0,total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0,total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority}
     response_dictionary.update(ISSUES_ATTRS)
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/issues_show.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -278,8 +285,9 @@ def issues_create(request, user_name, repo_name, issues_id):
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
         else:
             error = u'issues 内容不能为空'
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error, 'issues_id': issues_id}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error, 'issues_id': issues_id}
     response_dictionary.update(ISSUES_ATTRS)
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/issues_create.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -297,6 +305,7 @@ def issues_delete(request, user_name, repo_name, issue_id):
     return HttpResponse(json.dumps({'result': 'ok'}), mimetype='application/json')
 
 @repo_permission_check
+@require_http_methods(["POST"])
 def issues_update(request, user_name, repo_name, issue_id, attr):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -326,6 +335,7 @@ def json_ok():
 
 #TODO
 @repo_permission_check
+@require_http_methods(["POST"])
 def issues_comment_delete(request, user_name, repo_name, comment_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -364,7 +374,8 @@ def repo_network(request, user_name, repo_name):
         member_ids.insert(0, user_id)
     merge_user_map = GsuserManager.map_users(member_ids)
     members_vo = [merge_user_map[o] for o in member_ids]
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/network.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -388,7 +399,8 @@ def repo_clone_watch(request, user_name, repo_name):
     raw_fork_repos_tree.append(fork_me_repos)
     fork_repos_tree = change_to_vo(raw_fork_repos_tree)
     watch_users = RepoManager.list_watch_user(repo.id)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'fork_repos_tree': fork_repos_tree, 'watch_users': watch_users, 'test': {1, 1}}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'fork_repos_tree': fork_repos_tree, 'watch_users': watch_users, 'test': {1, 1}}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/clone_watch.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -435,7 +447,8 @@ def repo_stats(request, user_name, repo_name):
     per_user_year_commit = [str(user_dict[x]['username']) if x in user_dict else 'unknow' for x in raw_per_user_year_commit]
 
     quotes = {'used_quote': int(repo.used_quote), 'total_quote': int(userprofile.quote)}
-    response_dictionary = {'mainnav': 'repo', 'current': 'stats', 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'path': path, 'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last7days_commit': last7days_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'round_week': round_week, 'round_month': round_month, 'round_year': round_year, 'per_last_week_commit': per_last_week_commit, 'per_last_month_commit': per_last_month_commit, 'per_last_year_commit': per_last_year_commit, 'per_user_week_commit': per_user_week_commit, 'per_user_month_commit': per_user_month_commit, 'per_user_year_commit': per_user_year_commit}
+    response_dictionary = {'mainnav': 'repo', 'current': 'stats', 'path': path, 'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last7days_commit': last7days_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'round_week': round_week, 'round_month': round_month, 'round_year': round_year, 'per_last_week_commit': per_last_week_commit, 'per_last_month_commit': per_last_month_commit, 'per_last_year_commit': per_last_year_commit, 'per_user_week_commit': per_user_week_commit, 'per_user_month_commit': per_user_month_commit, 'per_user_year_commit': per_user_year_commit}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/stats.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -452,6 +465,7 @@ def change_to_vo(raw_fork_repos_tree):
     return fork_repos_tree
 
 @repo_permission_check
+@require_http_methods(["POST"])
 def repo_refs(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -464,25 +478,57 @@ def repo_refs(request, user_name, repo_name):
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'branches': branches_refs, 'tags': tags_refs}
     return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
 
-@login_required
 @repo_permission_check
+@login_required
+@require_http_methods(["POST"])
 def repo_fork(request, user_name, repo_name):
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
+    has_error = False
+    message = 'success'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        message = '仓库不存在'
+        has_error = True
+    userprofile = request.userprofile
+    if (userprofile.pubrepo + userprofile.prirepo) >= 100:
+        message = '您的仓库总数量已经超过限制'
+        has_error = True
+    if (userprofile.used_quote + repo.used_quote) >= userprofile.quote:
+        message = '您剩余空间不足，总空间 %s kb，剩余 %s kb' % (userprofile.quote, userprofile.used_quote)
+        has_error = True
+    fork_repo = RepoManager.get_repo_by_name(request.user.username, repo.name);
+    if fork_repo is not None:
+        message = '您已经有一个名字相同的仓库: %s' % repo.name
+        has_error = True
+    if has_error:
+        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
+    fork_repo = Repo.create(request.user.id, repo.id, repo.name, repo.desc, repo.lang, repo.auth_type, repo.used_quote)
+    fork_repo.status = 1
+    fork_repo.save()
+    userprofile.used_quote = userprofile.used_quote + repo.used_quote
+    userprofile.save()
+    # send fork message, copy repo tree
+    # mark TODO
+    response_dictionary.update({'result': 'success', 'message': 'fork done, start copy repo tree...'})
     return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
 
-@login_required
 @repo_permission_check
+@login_required
+@require_http_methods(["POST"])
 def repo_watch(request, user_name, repo_name):
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
     return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
 
-@login_required
 @repo_permission_check
+@login_required
+@require_http_methods(["POST"])
 def repo_unwatch(request, user_name, repo_name):
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
     return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
 
+@repo_permission_check
 @login_required
+@require_http_methods(["POST"])
 def repo_delete(request, user_name, repo_name):
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
     return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
@@ -535,3 +581,6 @@ def fulfill_gitrepo(username, reponame, auth_type):
             else:
                 shutil.copytree(GIT_BARE_REPO_PATH, pri_repo_path)             
 
+def get_common_repo_dict(request, repo, user_name, repo_name, refs):
+    is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo }

@@ -23,7 +23,7 @@
             {%for fork_repo in fork_repos%}
                 <tr class="c_tr_{{forloop.parentloop.counter}}"><td>
                 <a class="c_img_{{forloop.parentloop.counter}}" href="/{{fork_repo.username}}/"><img src="http://www.gravatar.com/avatar/{{fork_repo.imgurl}}?s=32"/></a>
-                <a style="margin-left: 5px" href="/{{fork_repo.username}}/">{{fork_repo.username}}</a>
+                <a style="margin-left: 5px" href="/{{fork_repo.username}}/{{fork_repo.name}}/">{{fork_repo.username}}</a>
                 <span>{{fork_repo.desc}}</span>
                 <a href="javascript:void(0)" style="margin-right: 5px" rel="tooltip" data-original-title="commit {{ fork_repo.commit }}次数">♯ {{ fork_repo.commit }}</a>
                 <a href="javascript:void(0)" style="margin-right: 5px" rel="tooltip" data-original-title="watch {{ fork_repo.watch }}次数">♥ {{ fork_repo.watch }}</a>
