@@ -80,7 +80,12 @@ def get_many(model, table, pids):
         objects = model.objects.filter(id__in=uncache_ids)
         add_many(table, objects)
         many_objects.extend(objects)
-    return many_objects
+    objects_map = dict([(x.id, x) for x in many_objects])
+    order_many_objects = []
+    for pid in pids:
+        if pid in objects_map:
+            order_many_objects.append(objects_map[pid])
+    return order_many_objects
 
 def get(model, table, pid):
     id_key = get_id_key(table, pid)

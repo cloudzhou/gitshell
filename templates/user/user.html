@@ -9,7 +9,7 @@
                   <tr>
                     <th class="span1">事件</th>
                     <th class="span5">详细</th>
-                    <th class="span1">时间</th>
+                    <th class="">时间</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -69,16 +69,13 @@
                     </tr>
                 </thead>
                 <tbody>
+                {% for watch_repo in watch_repos %}
                     <tr>
-                        <td><a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td>没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                        <td>1小时前</td>
+                        <td><a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a></td>
+                        <td>{{watch_repo.desc}}</td>
+                        <td><span style="display:none" class="c_unixtime">{{watch_repo.modify_time}}</span></td>
                     </tr>
-                    <tr>
-                        <td><a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td>没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                        <td>1小时前</td>
-                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -94,14 +91,12 @@
                     </tr>
                 </thead>
                 <tbody>
+                {% for watch_user in watch_users %}
                     <tr>
-                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
+                        <td><img src="http://www.gravatar.com/avatar/{{watch_user.imgurl}}?s=32"/> <a href="/{{watch_user.username}}/">{{watch_user.username}}</a></td>
+                        <td style="vertical-align: middle">{{watch_user.tweet}}</td>
                     </tr>
-                    <tr>
-                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -112,19 +107,17 @@
             <table class="table table-striped zero_border_table">
                 <thead>
                     <tr>
-                        <th class="span2">名称</th>
+                        <th class="span2">用户</th>
                         <th class="span5">简介</th>
                     </tr>
                 </thead>
                 <tbody>
+                {% for bewatch_user in bewatch_users %}
                     <tr>
-                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
+                        <td><img src="http://www.gravatar.com/avatar/{{bewatch_user.imgurl}}?s=32"/> <a href="/{{bewatch_user.username}}/">{{bewatch_user.username}}</a></td>
+                        <td style="vertical-align: middle">{{bewatch_user.tweet}}</td>
                     </tr>
-                    <tr>
-                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td>没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -161,6 +154,11 @@
 <script>
 /*global jQuery, window */
 $(function(){
+    moment.lang('zh-cn');
+    $('.c_unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+        $(this).show();
+    });
 {% if userprofile.resume %}
     var resume_md_converter = function() {
         var converter = new Markdown.getSanitizingConverter();

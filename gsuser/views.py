@@ -31,8 +31,17 @@ def user(request, user_name):
     raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
     raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
     raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 10)
+    watch_repo_ids = [int(x[0]) for x in raw_watch_repos]
+    watch_user_ids = [int(x[0]) for x in raw_watch_users]
+    bewatch_user_ids = [int(x[0]) for x in raw_bewatch_users]
+    watch_repos_map = RepoManager.merge_repo_map(watch_repo_ids)
+    watch_users_map = GsuserManager.map_users(watch_user_ids)
+    bewatch_users_map = GsuserManager.map_users(bewatch_user_ids)
+    watch_repos = [watch_repos_map[x] for x in watch_repo_ids if x in watch_repos_map]
+    watch_users = [watch_users_map[x] for x in watch_user_ids if x in watch_users_map]
+    bewatch_users = [bewatch_users_map[x] for x in bewatch_user_ids if x in bewatch_users_map]
 
-    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm}
+    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'watch_repos': watch_repos, 'watch_users': watch_users, 'bewatch_users': bewatch_users}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/user.html',
                           response_dictionary,

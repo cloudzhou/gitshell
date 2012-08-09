@@ -84,7 +84,10 @@
 </div>
 {% endblock %}
 {% block js %}
-    <script>
+<script src="/static/js/moment.min.js"></script>
+<script src="/static/js/moment.zh-cn.js"></script>
+<script>
+$(function(){
     var disabled_watch = false;
     $('#id_watch_user').click(function() {
         if(disabled_watch) {
@@ -138,6 +141,7 @@
             },
         })
     })
-    </script>
+});
+</script>
     {% block subjs %}{% endblock %}
 {% endblock %}
