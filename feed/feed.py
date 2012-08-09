@@ -100,6 +100,11 @@ class FeedAction():
         key = '%s:%s' % (FEED_TYPE['PUB_USER'], user_id)
         return self.redis.zrange(key, start, num_items, withscores=True)
 
+    def is_watch_user(self, user_id, watch_user_id):
+        key = '%s:%s' % (FEED_TYPE['WATCH_USER'], user_id)
+        score = self.redis.zscore(key, watch_user_id)
+        return score is not None
+
     def get_watch_users(self, user_id, start, num_items):
         key = '%s:%s' % (FEED_TYPE['WATCH_USER'], user_id)
         return self.redis.zrange(key, start, num_items, withscores=True)
@@ -107,6 +112,11 @@ class FeedAction():
     def get_bewatch_users(self, user_id, start, num_items):
         key = '%s:%s' % (FEED_TYPE['BEWATCH_USER'], user_id)
         return self.redis.zrange(key, start, num_items, withscores=True)
+
+    def is_watch_repo(self, user_id, watch_repo_id):
+        key = '%s:%s' % (FEED_TYPE['WATCH_REPO'], user_id)
+        score = self.redis.zscore(key, watch_repo_id)
+        return score is not None
 
     def get_watch_repos(self, user_id, start, num_items):
         key = '%s:%s' % (FEED_TYPE['WATCH_REPO'], user_id)

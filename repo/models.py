@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-  
+import time
 from django.db import models
 from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
+from gitshell.feed.feed import FeedAction
 
 class Repo(BaseModel):
     user_id = models.IntegerField()
@@ -252,29 +254,28 @@ class RepoManager():
                 watch_user.append(user_map[user_id])
         return watch_user
 
-    # TODO change to redis query
     @classmethod
     def is_watched_user(self, user_id, watch_user_id):
-        watchHistorys = query(WatchHistory, 'repo_watchhistory', user_id, 'watchhistory_s_user', [user_id, watch_user_id])
-        if len(list(watchHistorys)) > 0:
-            return True
-        return False
+        feedAction = FeedAction()
+        return feedAction.is_watch_user(user_id, watch_user_id)
 
     @classmethod
     def is_watched_repo(self, user_id, watch_repo_id):
-        watchHistorys = query(WatchHistory, 'repo_watchhistory', user_id, 'watchhistory_s_repo', [user_id, watch_repo_id])
-        if len(list(watchHistorys)) > 0:
-            return True
-        return False
+        feedAction = FeedAction()
+        return feedAction.is_watch_repo(user_id, watch_repo_id)
 
     @classmethod
     def watch_user(self, userprofile, watch_userprofile):
         if userprofile.watch >= 100:
             return False
         watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_user', [userprofile.id, watch_userprofile.id])
+        feedAction = FeedAction()
+        timestamp = int(time.time())
         if len(list(watchHistorys)) > 0:
-            # TODO redis action
-            return False
+            # redis action
+            feedAction.add_watch_user(userprofile.id, timestamp, watch_userprofile.id)
+            feedAction.add_bewatch_user(watch_userprofile.id, timestamp, userprofile.id)
+            return True
         watchHistory = WatchHistory()
         watchHistory.user_id = userprofile.id
         watchHistory.watch_user_id = watch_userprofile.id
@@ -283,7 +284,9 @@ class RepoManager():
         userprofile.save()
         watch_userprofile.be_watched = watch_userprofile.be_watched + 1
         watch_userprofile.save()
-        # TODO redis action
+        # redis action
+        feedAction.add_watch_user(userprofile.id, timestamp, watch_userprofile.id)
+        feedAction.add_bewatch_user(watch_userprofile.id, timestamp, userprofile.id)
         return True
 
     @classmethod
@@ -301,7 +304,10 @@ class RepoManager():
             if watch_userprofile.be_watched < 0:
                 watch_userprofile.be_watched = 0
             watch_userprofile.be_watched.save()
-        # TODO redis action
+        # redis action
+        feedAction = FeedAction()
+        feedAction.remove_watch_user(userprofile.id, watch_userprofile.id)
+        feedAction.remove_bewatch_user(watch_userprofile.id, userprofile.id)
         return True
 
     @classmethod
@@ -309,9 +315,12 @@ class RepoManager():
         if userprofile.watchrepo >= 100:
             return False
         watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo.id])
+        feedAction = FeedAction()
+        timestamp = int(time.time())
         if len(list(watchHistorys)) > 0:
-            # TODO redis action
-            return False
+            # redis action
+            feedAction.add_watch_repo(userprofile.id, timestamp, watch_repo.id)
+            return True
         watchHistory = WatchHistory()
         watchHistory.user_id = userprofile.id
         watchHistory.watch_repo_id = watch_repo.id
@@ -320,7 +329,8 @@ class RepoManager():
         userprofile.save()
         watch_repo.watch = watch_repo.watch + 1
         watch_repo.save()
-        # TODO redis action
+        # redis action
+        feedAction.add_watch_repo(userprofile.id, timestamp, watch_repo.id)
         return True
 
     @classmethod
@@ -338,5 +348,7 @@ class RepoManager():
             if watch_repo.watch < 0:
                 watch_repo.watch = 0
             watch_repo.save()
-        # TODO redis action
+        # redis action
+        feedAction = FeedAction()
+        feedAction.remove_watch_repo(userprofile.id, watch_repo.id)
         return True
