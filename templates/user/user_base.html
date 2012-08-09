@@ -37,19 +37,19 @@
             <span class="muted">{{ gsuserprofile.tweet }}</span>
         </div>
         <div class="span">
-            <a href="/cloudzhou/repo/"><span class="big_font">{{ gsuserprofile.pubrepo }}</span></a>
+            <a href="/{{ gsuser.username }}/repo/"><span class="big_font">{{ gsuserprofile.pubrepo }}</span></a>
             <br/><span class="muted">仓库</span>
         </div>
         <div class="span">
-            <a href="/cloudzhou/watch/repo/"><span class="big_font">{{ gsuserprofile.pubrepo }}</span></a>
+            <a href="/{{ gsuser.username }}/watch/repo/"><span class="big_font">{{ gsuserprofile.pubrepo }}</span></a>
             <br/><span class="muted">关注仓库</span>
         </div>
         <div class="span">
-            <a href="/cloudzhou/watch/user/"><span class="big_font">{{ gsuserprofile.watch }}</span></a>
+            <a href="/{{ gsuser.username }}/watch/user/"><span class="big_font">{{ gsuserprofile.watch }}</span></a>
             <br/><span class="muted">关注</span>
         </div>
         <div class="span">
-            <a href="/cloudzhou/watch/user/"><span class="big_font">{{ gsuserprofile.be_watched }}</span></a>
+            <a href="/{{ gsuser.username }}/watch/user/"><span class="big_font">{{ gsuserprofile.be_watched }}</span></a>
             <br/><span class="muted">被关注</span>
         </div>
     </div>

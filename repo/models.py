@@ -268,22 +268,27 @@ class RepoManager():
         return False
 
     @classmethod
-    def watch_user(self, userprofile, watch_user_id):
+    def watch_user(self, userprofile, watch_userprofile):
         if userprofile.watch >= 100:
             return False
-        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_user', [userprofile.id, watch_user_id])
+        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_user', [userprofile.id, watch_userprofile.id])
         if len(list(watchHistorys)) > 0:
+            # TODO redis action
             return False
         watchHistory = WatchHistory()
         watchHistory.user_id = userprofile.id
-        watchHistory.watch_user_id = watch_user_id
+        watchHistory.watch_user_id = watch_userprofile.id
         watchHistory.save()
+        userprofile.watch = userprofile.watch + 1
+        userprofile.save()
+        watch_userprofile.be_watched = watch_userprofile.be_watched + 1
+        watch_userprofile.save()
         # TODO redis action
         return True
 
     @classmethod
-    def unwatch_user(self, userprofile, watch_user_id):
-        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_user', [userprofile.id, watch_user_id])
+    def unwatch_user(self, userprofile, watch_userprofile):
+        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_user', [userprofile.id, watch_userprofile.id])
         watchHistory = None
         if len(list(watchHistorys)) > 0:
             watchHistory = watchHistorys[0]
@@ -292,26 +297,35 @@ class RepoManager():
             watchHistory.save()
             userprofile.watch = userprofile.watch - 1
             userprofile.save()
+            watch_userprofile.be_watched = watch_userprofile.be_watched - 1
+            if watch_userprofile.be_watched < 0:
+                watch_userprofile.be_watched = 0
+            watch_userprofile.be_watched.save()
         # TODO redis action
         return True
 
     @classmethod
-    def watch_repo(self, userprofile, watch_repo_id):
+    def watch_repo(self, userprofile, watch_repo):
         if userprofile.watchrepo >= 100:
             return False
-        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo_id])
+        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo.id])
         if len(list(watchHistorys)) > 0:
+            # TODO redis action
             return False
         watchHistory = WatchHistory()
         watchHistory.user_id = userprofile.id
-        watchHistory.watch_repo_id = watch_repo_id
+        watchHistory.watch_repo_id = watch_repo.id
         watchHistory.save()
+        userprofile.watchrepo = userprofile.watchrepo + 1
+        userprofile.save()
+        watch_repo.watch = watch_repo.watch + 1
+        watch_repo.save()
         # TODO redis action
         return True
 
     @classmethod
-    def unwatch_repo(self, userprofile, watch_repo_id):
-        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo_id])
+    def unwatch_repo(self, userprofile, watch_repo):
+        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo.id])
         watchHistory = None
         if len(list(watchHistorys)) > 0:
             watchHistory = watchHistorys[0]
@@ -320,5 +334,9 @@ class RepoManager():
             watchHistory.save()
             userprofile.watchrepo = userprofile.watchrepo - 1
             userprofile.save()
+            watch_repo.watch = watch_repo.watch - 1
+            if watch_repo.watch < 0:
+                watch_repo.watch = 0
+            watch_repo.save()
         # TODO redis action
         return True

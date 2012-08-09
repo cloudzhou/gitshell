@@ -521,7 +521,7 @@ def repo_watch(request, user_name, repo_name):
     if repo is None:
         message = u'仓库不存在'
         return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
-    if not RepoManager.watch_repo(request.userprofile, repo.id):
+    if not RepoManager.watch_repo(request.userprofile, repo):
         message = u'关注失败，关注数量超过限制或者仓库不允许关注'
         return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
     return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
@@ -534,7 +534,7 @@ def repo_unwatch(request, user_name, repo_name):
     if repo is None:
         message = u'仓库不存在'
         return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
-    if not RepoManager.unwatch_repo(request.userprofile, repo.id):
+    if not RepoManager.unwatch_repo(request.userprofile, repo):
         message = u'取消关注失败，可能仓库未被关注'
         return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
     return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
