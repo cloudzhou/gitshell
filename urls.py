@@ -7,7 +7,7 @@ urlpatterns = patterns('gitshell',
     # url(r'^skills/?$', 'skills.views.skills'),
 
     # stats
-    url(r'^(\w+)/stats/?$', 'stats.views.stats'),
+    url(r'^stats/(\w+)/?$', 'stats.views.stats'),
     # explore
     url(r'^explore/?$', 'explore.views.explore'),
 

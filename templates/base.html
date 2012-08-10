@@ -36,7 +36,7 @@
                                 <li {%if mainnav == 'home'%} class="active" {%else%} class="unactive" {%endif%}><a href="/home/">首页</a></li>
                                 <li {%if mainnav == 'repo'%} class="active" {%else%} class="unactive" {%endif%}><a href="/{{ user.username }}/repo/">仓库</a></li>
                                 <li {%if mainnav == 'user'%} class="active" {%else%} class="unactive" {%endif%}><a href="/{{ user.username }}/">@{{ user.username }}</a></li>
-                                <li {%if mainnav == 'stats'%} class="active" {%else%} class="unactive" {%endif%}><a href="/{{ user.username }}/stats/">统计</a></li>
+                                <li {%if mainnav == 'stats'%} class="active" {%else%} class="unactive" {%endif%}><a href="/stats/{{ user.username }}/">统计</a></li>
                             {% else %}
                                 <li><a href="/">首页</a></li>
                                 <li><a href="/join/">仓库</a></li>
