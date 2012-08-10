@@ -1,5 +1,7 @@
 {% extends "user/user_base.html" %}
-{% block left_sub_container %}
+{% block row_sub_container %}
+<div class="row">
+    <div class="span6">
         <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
             <h2>关注</h2>
         </div>
@@ -12,17 +14,40 @@
                     </tr>
                 </thead>
                 <tbody>
+                {% for watch_user in watch_users %}
                     <tr>
-                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
+                        <td><img src="http://www.gravatar.com/avatar/{{watch_user.imgurl}}?s=32"/> <a href="/{{watch_user.username}}/">{{watch_user.username}}</a></td>
+                        <td style="vertical-align: middle">{{watch_user.tweet}}</td>
                     </tr>
-                    <tr>
-                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
+    <div class="span6">
+        <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
+            <h2>被关注</h2>
+        </div>
+        <div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="span2">用户</th>
+                        <th class="span5">简介</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for bewatch_user in bewatch_users %}
+                    <tr>
+                        <td><img src="http://www.gravatar.com/avatar/{{bewatch_user.imgurl}}?s=32"/> <a href="/{{bewatch_user.username}}/">{{bewatch_user.username}}</a></td>
+                        <td style="vertical-align: middle">{{bewatch_user.tweet}}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}
 {% block subjs %}
 <script>

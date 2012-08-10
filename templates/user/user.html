@@ -1,5 +1,8 @@
 {% extends "user/user_base.html" %}
 {% block left_sub_container %}
+        <style>
+.user_chart {min-width: 400px; height: 200px; margin: 0 auto}
+        </style>
         <div class="page-header small_page-header">
             <h2>最近 <small><a href="/{{gsuser.username}}/active/" class="more">more</a></small></h2>
         </div>
@@ -26,7 +29,7 @@
         </div>
         <div id="id_user_stats">
             <div id="figure-a" class="figure lg">
-                <div id="id_placeholder" style="height:200px"></div>
+                <div style="display: none" id="id_month_container" class="user_chart"></div>
                 <div class="muted">统计最近一月 <strong>commit</strong> 次数 异步统计，仅供参考</div>
             </div>
         </div>
@@ -43,16 +46,13 @@
                     </tr>
                 </thead>
                 <tbody>
+                {% for repo in repos %}
                     <tr>
-                        <td><a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td>没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                        <td>1小时前</td>
+                        <td><a href="/{{gsuser.username}}/{{repo.name}}/">{{repo.name}}</a></td>
+                        <td>{{repo.desc}}</td>
+                        <td><span style="display:none" class="c_unixtime">{{repo.modify_time|date:"U"}}</span></td>
                     </tr>
-                    <tr>
-                        <td><a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td>没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                        <td>1小时前</td>
-                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -148,6 +148,7 @@
         </div>
 {% endblock %}
 {% block subjs %}
+<script src="/static/js/app/highcharts/highcharts.js"></script>
 <script src="/static/js/Markdown.Converter.js"></script>
 <script src="/static/js/Markdown.Editor.js"></script>
 <script src="/static/js/Markdown.Sanitizer.js"></script>
@@ -159,6 +160,32 @@ $(function(){
         $(this).html(moment(new Date($(this).html()*1000)).fromNow());
         $(this).show();
     });
+    var last30days = {{last30days}};
+    var last30daysAsCat = [];
+    for(x in last30days) {
+        last30daysAsCat.push(new Date(last30days[x]*1000).getDate());
+    }
+    last30daysAsCat.reverse()
+    var last30days_commit = {{last30days_commit}};
+    var last30daysAsData = [];
+    for(x in last30days) {
+        if(last30days[x] in last30days_commit) {
+            last30daysAsData.push(last30days_commit[last30days[x]]);
+            continue;
+        }
+        last30daysAsData.push(0);
+    }
+    last30daysAsData.reverse();
+if(Object.keys(last30days_commit).length > 0) {
+    $('#id_month_container').show();
+    var month_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_month_container', type: 'line'},title: {text: ''},
+        yAxis: { title: { text: '提交次数' } },
+        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
+        xAxis: { categories: last30daysAsCat },
+        series: [{ name: '1 月提交', data: last30daysAsData }]
+    });
+}
 {% if userprofile.resume %}
     var resume_md_converter = function() {
         var converter = new Markdown.getSanitizingConverter();

@@ -41,7 +41,7 @@
             <br/><span class="muted">仓库</span>
         </div>
         <div class="span">
-            <a href="/{{ gsuser.username }}/watch/repo/"><span class="big_font">{{ gsuserprofile.pubrepo }}</span></a>
+            <a href="/{{ gsuser.username }}/watch/repo/"><span class="big_font">{{ gsuserprofile.watchrepo }}</span></a>
             <br/><span class="muted">关注仓库</span>
         </div>
         <div class="span">
@@ -82,6 +82,7 @@
         {% block right_sub_container %}{% endblock %}
     </div>
 </div>
+{% block row_sub_container %}{% endblock %}
 {% endblock %}
 {% block js %}
 <script src="/static/js/moment.min.js"></script>

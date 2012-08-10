@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-  
 import random, re, json, time
+from datetime import datetime
 import base64, hashlib
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
@@ -16,7 +17,9 @@ from gitshell.gsuser.Forms import LoginForm, JoinForm0, JoinForm1, Resetpassword
 from gitshell.gsuser.models import Userprofile, GsuserManager
 from gitshell.gsuser.middleware import MAIN_NAVS
 from gitshell.repo.models import RepoManager
+from gitshell.stats.models import StatsManager
 from gitshell.feed.feed import FeedAction
+from gitshell.stats import timeutils
 
 def user(request, user_name):
     gsuser = GsuserManager.get_user_by_name(user_name)
@@ -41,7 +44,11 @@ def user(request, user_name):
     watch_users = [watch_users_map[x] for x in watch_user_ids if x in watch_users_map]
     bewatch_users = [bewatch_users_map[x] for x in bewatch_user_ids if x in bewatch_users_map]
 
-    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'watch_repos': watch_repos, 'watch_users': watch_users, 'bewatch_users': bewatch_users}
+    now = datetime.now()
+    last30days = timeutils.getlast30days(now)
+    last30days_commit = get_last30days_commit(gsuser)
+
+    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'repos': repos, 'watch_repos': watch_repos, 'watch_users': watch_users, 'bewatch_users': bewatch_users, 'last30days': last30days, 'last30days_commit': last30days_commit}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/user.html',
                           response_dictionary,
@@ -63,7 +70,10 @@ def stats(request, user_name):
     if gsuser is None:
         raise Http404
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
-    response_dictionary = {'mainnav': 'user'}
+    now = datetime.now()
+    last30days = timeutils.getlast30days(now)
+    last30days_commit = get_last30days_commit(gsuser)
+    response_dictionary = {'mainnav': 'user', 'last30days': last30days, 'last30days_commit': last30days_commit}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/stats.html',
                           response_dictionary,
@@ -74,11 +84,29 @@ def watch_user(request, user_name):
     if gsuser is None:
         raise Http404
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
-    feedAction = FeedAction()
-    raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
-    raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 10)
 
-    response_dictionary = {'mainnav': 'user'}
+    feedAction = FeedAction()
+    raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 100)
+    watch_user_ids = [int(x[0]) for x in raw_watch_users]
+    watch_users_map = GsuserManager.map_users(watch_user_ids)
+    watch_users = [watch_users_map[x] for x in watch_user_ids if x in watch_users_map]
+
+    raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 100)
+    bewatch_user_ids = [int(x[0]) for x in raw_bewatch_users]
+    bewatch_users_map = GsuserManager.map_users(bewatch_user_ids)
+    bewatch_users = [bewatch_users_map[x] for x in bewatch_user_ids if x in bewatch_users_map]
+    # fixed on detect
+    need_fix = False
+    if len(watch_users) != gsuserprofile.watch:
+        gsuserprofile.watch = len(watch_users)
+        need_fix = True
+    if len(bewatch_users) < 100 and len(bewatch_users) != gsuserprofile.be_watched:
+        gsuserprofile.be_watched = len(bewatch_users) 
+        need_fix = True
+    if need_fix:
+        gsuserprofile.save()
+
+    response_dictionary = {'mainnav': 'user', 'watch_users': watch_users, 'bewatch_users': bewatch_users}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/watch_user.html',
                           response_dictionary,
@@ -89,9 +117,19 @@ def watch_repo(request, user_name):
     if gsuser is None:
         raise Http404
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
+
     feedAction = FeedAction()
-    raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
-    response_dictionary = {'mainnav': 'user'}
+    raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 100)
+    watch_repo_ids = [int(x[0]) for x in raw_watch_repos]
+    watch_repos_map = RepoManager.merge_repo_map(watch_repo_ids)
+    watch_repos = [watch_repos_map[x] for x in watch_repo_ids if x in watch_repos_map]
+
+    response_dictionary = {'mainnav': 'user', 'watch_repos': watch_repos}
+    # fixed on detect
+    if len(watch_repos) != gsuserprofile.watchrepo:
+        gsuserprofile.watchrepo = len(watch_repos)
+        gsuserprofile.save()
+
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/watch_repo.html',
                           response_dictionary,
@@ -285,4 +323,10 @@ def get_common_user_dict(request, gsuser, gsuserprofile):
         is_watched_user = RepoManager.is_watched_user(request.user.id, gsuser.id)
     return {'gsuser': gsuser, 'gsuserprofile': gsuserprofile, 'is_watched_user': is_watched_user}
 
+def get_last30days_commit(gsuser):
+    now = datetime.now()
+    last30days = timeutils.getlast30days(now)
+    raw_last30days_commit = StatsManager.list_user_stats(gsuser.id, 'day', datetime.fromtimestamp(last30days[-1]), datetime.fromtimestamp(last30days[0]))
+    last30days_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_last30days_commit])
+    return last30days_commit
 # TODO note: add email unique support ! UNIQUE KEY `email` (`email`) #

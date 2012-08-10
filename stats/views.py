@@ -12,22 +12,23 @@ from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
 from gitshell.gsuser.models import GsuserManager
 
-@login_required
-def stats(request):
-    stats_dict = get_stats_dict(request)
+def stats(request, user_name):
+    user = GsuserManager.get_user_by_name(user_name)
+    if user is None:
+        raise Http404
+    stats_dict = get_stats_dict(request, user)
     response_dictionary = {}
     response_dictionary.update(stats_dict)
     return render_to_response('stats/stats.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-def get_stats_dict(request):
+def get_stats_dict(request, user):
     now = datetime.now()
     last12hours = timeutils.getlast12hours(now)
     last7days = timeutils.getlast7days(now)
     last30days = timeutils.getlast30days(now)
     last12months = timeutils.getlast12months(now)
-    user = request.user
     raw_last12hours_commit = StatsManager.list_user_stats(user.id, 'hour', datetime.fromtimestamp(last12hours[-1]), datetime.fromtimestamp(last12hours[0]))
     last12hours_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_last12hours_commit])
     raw_last30days_commit = StatsManager.list_user_stats(user.id, 'day', datetime.fromtimestamp(last30days[-1]), datetime.fromtimestamp(last30days[0]))

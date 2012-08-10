@@ -1,25 +1,23 @@
 {% extends "user/user_base.html" %}
 {% block left_sub_container %}
         <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
-            <h2>关注</h2>
+            <h2>关注仓库</h2>
         </div>
         <div>
             <table class="table">
                 <thead>
                     <tr>
-                        <th class="span2">用户</th>
+                        <th class="span2">仓库</th>
                         <th class="span5">简介</th>
                     </tr>
                 </thead>
                 <tbody>
+                {% for watch_repo in watch_repos %}
                     <tr>
-                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
+                        <td><a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a></td>
+                        <td>{{watch_repo.desc}}</td>
                     </tr>
-                    <tr>
-                        <td><img src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>

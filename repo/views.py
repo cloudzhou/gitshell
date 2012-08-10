@@ -28,14 +28,33 @@ def user_repo(request, user_name):
 
 @login_required
 def user_repo_paging(request, user_name, pagenum):
-    repo_list = RepoManager.list_repo_by_userId(request.user.id, 0, 25)
+    user = GsuserManager.get_user_by_name(user_name)
+    userprofile = GsuserManager.get_userprofile_by_name(user_name)
+    if user is None:
+        raise Http404
+    repo_list = RepoManager.list_repo_by_userId(user.id, 0, 100)
     repo_commit_map = {}
     feedAction = FeedAction()
+    i = 0
     for repo in repo_list:
         repo_commit_map[str(repo.name)] = []
         feeds = feedAction.get_repo_feeds(repo.id, 0, 4)
         for feed in feeds:
             repo_commit_map[str(repo.name)].append(feed[0])
+        i = i + 1
+        if i > 10:
+            break
+    # fix on error detect
+    pubrepo = 0
+    for repo in repo_list:
+        if repo.auth_type == 0:
+            pubrepo = pubrepo + 1
+    prirepo = len(repo_list) - pubrepo
+    if pubrepo != userprofile.pubrepo or prirepo != userprofile.prirepo:
+        userprofile.pubrepo = pubrepo
+        userprofile.prirepo = prirepo
+        userprofile.save()
+
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_list': repo_list, 'repo_commit_map': repo_commit_map}
     return render_to_response('repo/user_repo.html',
                           response_dictionary,

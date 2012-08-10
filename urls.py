@@ -7,7 +7,7 @@ urlpatterns = patterns('gitshell',
     # url(r'^skills/?$', 'skills.views.skills'),
 
     # stats
-    url(r'^stats/?$', 'stats.views.stats'),
+    url(r'^(\w+)/stats/?$', 'stats.views.stats'),
     # explore
     url(r'^explore/?$', 'explore.views.explore'),
 
@@ -68,7 +68,7 @@ urlpatterns = patterns('gitshell',
     url(r'^(\w+)/watch/repo/?$', 'gsuser.views.watch_repo'),
     url(r'^(\w+)/watch/user/?$', 'gsuser.views.watch_user'),
     url(r'^(\w+)/recommend/?$', 'gsuser.views.recommend'),
-    url(r'^(\w+)/stats/?$', 'gsuser.views.stats'),
+    #url(r'^(\w+)/stats/?$', 'gsuser.views.stats'),
     # repo
     url(r'^(\w+)/repo/?$', 'repo.views.user_repo'),
     url(r'^(\w+)/repo/(\d+)/?$', 'repo.views.user_repo_paging'),
