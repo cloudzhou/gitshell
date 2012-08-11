@@ -316,6 +316,7 @@ class RepoManager():
         feedAction.remove_bewatch_user(watch_userprofile.id, userprofile.id)
         return True
 
+    # TODO private
     @classmethod
     def watch_repo(self, userprofile, watch_repo):
         if userprofile.watchrepo >= 100:
