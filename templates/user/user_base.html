@@ -24,11 +24,13 @@
                 {% if gsuserprofile.nickname %}
                     ({{ gsuserprofile.nickname }})
                 {% endif %}
+            {% if user.username != gsuser.username %}
                 {% if not is_watched_user %}
                     <a id="id_watch_user" href="javascript: void(0)">+</a>
                 {% else %}
                     <a id="id_unwatch_user" href="javascript: void(0)">-</a>
                 {% endif %}
+            {% endif %}
                 </span>
                 <span id="id_user_alert" class="alert alert-error" style="display: none">
                     <strong>失败!</strong> <span id="id_alert_message"></span>

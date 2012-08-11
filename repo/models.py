@@ -266,6 +266,8 @@ class RepoManager():
 
     @classmethod
     def watch_user(self, userprofile, watch_userprofile):
+        if userprofile.id == watch_userprofile.id:
+            return False
         if userprofile.watch >= 100:
             return False
         watchHistorys = query(WatchHistory, userprofile.id, 'watchhistory_s_user', [userprofile.id, watch_userprofile.id])
@@ -291,6 +293,8 @@ class RepoManager():
 
     @classmethod
     def unwatch_user(self, userprofile, watch_userprofile):
+        if userprofile.id == watch_userprofile.id:
+            return False
         watchHistorys = query(WatchHistory, userprofile.id, 'watchhistory_s_user', [userprofile.id, watch_userprofile.id])
         watchHistory = None
         if len(watchHistorys) > 0:
@@ -299,6 +303,8 @@ class RepoManager():
             watchHistory.visibly = 1
             watchHistory.save()
             userprofile.watch = userprofile.watch - 1
+            if userprofile.watch < 0:
+                userprofile.watch = 0
             userprofile.save()
             watch_userprofile.be_watched = watch_userprofile.be_watched - 1
             if watch_userprofile.be_watched < 0:
@@ -343,6 +349,8 @@ class RepoManager():
             watchHistory.visibly = 1
             watchHistory.save()
             userprofile.watchrepo = userprofile.watchrepo - 1
+            if userprofile.watchrepo < 0:
+                userprofile.watchrepo = 0
             userprofile.save()
             watch_repo.watch = watch_repo.watch - 1
             if watch_repo.watch < 0:
