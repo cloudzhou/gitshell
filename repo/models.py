@@ -316,9 +316,12 @@ class RepoManager():
         feedAction.remove_bewatch_user(watch_userprofile.id, userprofile.id)
         return True
 
-    # TODO private
     @classmethod
     def watch_repo(self, userprofile, watch_repo):
+        if watch_repo.auth_type == 2:
+            member = self.get_repo_member(watch_repo.id, userprofile.id)
+            if member == None:
+                return False
         if userprofile.watchrepo >= 100:
             return False
         watchHistorys = query(WatchHistory, userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo.id])
