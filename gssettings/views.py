@@ -87,7 +87,11 @@ def sshpubkey_remove(request):
     if request.method == 'POST':
         doSshpubkeyForm = DoSshpubkeyForm(request.POST)
         if doSshpubkeyForm.is_valid():
-            KeyauthManager.update_userpubkey_by_id(doSshpubkeyForm.cleaned_data['pubkey_id'])
+            pubkey_id = doSshpubkeyForm.cleaned_data['pubkey_id']
+            userPubkey = KeyauthManager.get_userpubkey_by_id(request.user.id, pubkey_id)
+            if userPubkey != None:
+                userPubkey.visibly = 1
+                userPubkey.save()
             return HttpResponseRedirect('/settings/sshpubkey/')
     return render_to_response('settings/sshpubkey.html', {}, context_instance=RequestContext(request))
 

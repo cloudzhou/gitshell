@@ -114,16 +114,16 @@ class RepoManager():
 
     @classmethod
     def list_repo_by_userId(self, user_id, offset, row_count):
-        repoes = query(Repo, 'repo_repo', user_id, 'repo_l_userId', [user_id, offset, row_count])
-        return list(repoes)
+        repoes = query(Repo, user_id, 'repo_l_userId', [user_id, offset, row_count])
+        return repoes
 
     @classmethod
     def list_repo_by_ids(self, ids):
-        return get_many(Repo, 'repo_repo', ids)
+        return get_many(Repo, ids)
 
     @classmethod
     def get_repo_by_id(self, repo_id):
-        return get(Repo, 'repo_repo', repo_id)
+        return get(Repo, repo_id)
 
     @classmethod
     def get_repo_by_name(self, user_name, repo_name):
@@ -134,8 +134,8 @@ class RepoManager():
 
     @classmethod
     def get_repo_by_userId_name(self, user_id, name):
-        repoes = query(Repo, 'repo_repo', user_id, 'repo_s_userId_name', [user_id, name])
-        if len(list(repoes)) > 0:
+        repoes = query(Repo, user_id, 'repo_s_userId_name', [user_id, name])
+        if len(repoes) > 0:
             return repoes[0]
         return None
 
@@ -145,17 +145,17 @@ class RepoManager():
 
     @classmethod
     def get_commits_by_ids(self, ids):
-        return get_many(CommitHistory, 'repo_commithistory', ids)
+        return get_many(CommitHistory, ids)
 
     @classmethod
     def list_repomember(self, repo_id):
-        repoemembers = query(RepoMember, 'repo_repomember', repo_id, 'repomember_l_repoId', [repo_id])
-        return list(repoemembers)
+        repoemembers = query(RepoMember, repo_id, 'repomember_l_repoId', [repo_id])
+        return repoemembers
 
     @classmethod
     def get_repo_member(self, repo_id, user_id):
-        repoMembers = query(RepoMember, 'repo_repomember', repo_id, 'repomember_s_ruid', [repo_id, user_id])
-        if len(list(repoMembers)) > 0:
+        repoMembers = query(RepoMember, repo_id, 'repomember_s_ruid', [repo_id, user_id])
+        if len(repoMembers) > 0:
             return repoMembers[0]
         return None
 
@@ -196,8 +196,8 @@ class RepoManager():
         rawsql_id = 'repoissues_l_cons_modify'
         if orderby == 'create_time':
             rawsql_id = 'repoissues_l_cons_create'
-        repoissues = query(Issues, 'repo_issues', repo_id, rawsql_id, [repo_id, offset, row_count]) 
-        return list(repoissues)
+        repoissues = query(Issues, repo_id, rawsql_id, [repo_id, offset, row_count]) 
+        return repoissues
 
     @classmethod
     def list_assigned_issues(self, assigned, orderby, page):
@@ -206,33 +206,33 @@ class RepoManager():
         rawsql_id = 'repoissues_l_assigned_modify'
         if orderby == 'create_time':
             rawsql_id = 'repoissues_l_assigned_create'
-        repoissues = query(Issues, 'repo_issues', None, rawsql_id, [assigned, offset, row_count]) 
-        return list(repoissues)
+        repoissues = query(Issues, None, rawsql_id, [assigned, offset, row_count]) 
+        return repoissues
 
     @classmethod
     def get_issues(self, repo_id, issues_id):
-        issues = query(Issues, 'repo_issues', repo_id, 'repoissues_s_id', [repo_id, issues_id])
-        if len(list(issues)) > 0:
+        issues = query(Issues, repo_id, 'repoissues_s_id', [repo_id, issues_id])
+        if len(issues) > 0:
             return issues[0]
         return None
 
     @classmethod
     def get_issues_comment(self, comment_id):
-        issues_comment = get(IssuesComment, 'repo_issuescomment', comment_id)
+        issues_comment = get(IssuesComment, comment_id)
         return issues_comment
 
     @classmethod
     def list_issues_comment(self, issues_id, page):
         offset = page*2
         row_count = 2
-        issuesComments = query(IssuesComment, 'repo_issuescomment', issues_id, 'issuescomment_l_issuesId', [issues_id, offset, row_count]) 
-        return list(issuesComments)
+        issuesComments = query(IssuesComment, issues_id, 'issuescomment_l_issuesId', [issues_id, offset, row_count]) 
+        return issuesComments
 
     @classmethod
     def list_fork_repo(self, repo_id):
-        forkHistorys = query(ForkHistory, 'repo_forkhistory', repo_id, 'forkhistory_l_repoId', [repo_id]) 
+        forkHistorys = query(ForkHistory, repo_id, 'forkhistory_l_repoId', [repo_id]) 
         repo_ids = [o.fork_repo_id for o in forkHistorys]
-        unorder_repos = get_many(Repo, 'repo_repo', repo_ids)
+        unorder_repos = get_many(Repo, repo_ids)
         repo_map = {}
         for repo in unorder_repos:
             repo_map[repo.id] = repo
@@ -245,7 +245,7 @@ class RepoManager():
     #TODO about pk
     @classmethod
     def list_watch_user(self, repo_id):
-        watchHistory = query(WatchHistory, 'repo_watchhistory', repo_id, 'watchhistory_l_repoId', [repo_id])
+        watchHistory = query(WatchHistory, repo_id, 'watchhistory_l_repoId', [repo_id])
         user_ids = [o.user_id for o in watchHistory]
         user_map = GsuserManager.map_users(user_ids)
         watch_user = []
@@ -268,10 +268,10 @@ class RepoManager():
     def watch_user(self, userprofile, watch_userprofile):
         if userprofile.watch >= 100:
             return False
-        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_user', [userprofile.id, watch_userprofile.id])
+        watchHistorys = query(WatchHistory, userprofile.id, 'watchhistory_s_user', [userprofile.id, watch_userprofile.id])
         feedAction = FeedAction()
         timestamp = int(time.time())
-        if len(list(watchHistorys)) > 0:
+        if len(watchHistorys) > 0:
             # redis action
             feedAction.add_watch_user(userprofile.id, timestamp, watch_userprofile.id)
             feedAction.add_bewatch_user(watch_userprofile.id, timestamp, userprofile.id)
@@ -291,9 +291,9 @@ class RepoManager():
 
     @classmethod
     def unwatch_user(self, userprofile, watch_userprofile):
-        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_user', [userprofile.id, watch_userprofile.id])
+        watchHistorys = query(WatchHistory, userprofile.id, 'watchhistory_s_user', [userprofile.id, watch_userprofile.id])
         watchHistory = None
-        if len(list(watchHistorys)) > 0:
+        if len(watchHistorys) > 0:
             watchHistory = watchHistorys[0]
         if watchHistory is not None:
             watchHistory.visibly = 1
@@ -314,10 +314,10 @@ class RepoManager():
     def watch_repo(self, userprofile, watch_repo):
         if userprofile.watchrepo >= 100:
             return False
-        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo.id])
+        watchHistorys = query(WatchHistory, userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo.id])
         feedAction = FeedAction()
         timestamp = int(time.time())
-        if len(list(watchHistorys)) > 0:
+        if len(watchHistorys) > 0:
             # redis action
             feedAction.add_watch_repo(userprofile.id, timestamp, watch_repo.id)
             return True
@@ -335,9 +335,9 @@ class RepoManager():
 
     @classmethod
     def unwatch_repo(self, userprofile, watch_repo):
-        watchHistorys = query(WatchHistory, 'repo_watchhistory', userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo.id])
+        watchHistorys = query(WatchHistory, userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo.id])
         watchHistory = None
-        if len(list(watchHistorys)) > 0:
+        if len(watchHistorys) > 0:
             watchHistory = watchHistorys[0]
         if watchHistory is not None:
             watchHistory.visibly = 1

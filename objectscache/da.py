@@ -2,14 +2,32 @@
 from django.core.cache import cache
 from django.db import connection, transaction
 from gitshell.objectscache.models import Count
+from django.db.models.signals import post_save
 import time
 
+# table field partitioning #
+table_ptkey_field = {
+    'auth_user': 'id',
+    'gsuser_recommend': 'user_id',
+    'gsuser_userprofile': 'id',
+    'keyauth_userpubkey': 'user_id',
+    'keyvalue_keyvalue': 'user_id',
+    'repo_commithistory': 'repo_id',
+    'repo_forkhistory': 'repo_id',
+    'repo_issues': 'repo_id',
+    'repo_issuescomment': 'issues_id',
+    'repo_repo': 'id',
+    'repo_repomember': 'repo_id',
+    'repo_watchhistory': 'user_id',
+    'stats_statsrepo': 'repo_id',
+    'stats_statsuser': 'user_id',
+}
 rawsql = {
     # userpubkey #
     'userpubkey_l_userId':
         'select * from keyauth_userpubkey where visibly = 0 and user_id = %s limit 0, 10',
-    'userpubkey_u_id':
-        'update keyauth_userpubkey set visibly = 1 where visibly = 0 and user_id = %s and id = %s',
+    #'userpubkey_u_id':
+    #    'update keyauth_userpubkey set visibly = 1 where visibly = 0 and user_id = %s and id = %s',
     'userpubkey_c_fingerprint':
         'select 0 as id, count(1) as count from keyauth_userpubkey where visibly = 0 and fingerprint = %s limit 0, 10',
     'userpubkey_s_fingerprint':
@@ -67,66 +85,72 @@ rawsql = {
         'select * from stats_statsrepo where statstype = %s and datetype = %s and date = %s order by count desc limit %s, %s',
 }
 
-def get_many(model, table, pids):
-    if len(pids) == 0:
-        return []
-    ids_key = get_ids_key(table, pids)
-    cache_objs_map = cache.get_many(ids_key)
-    many_objects = [cache_objs_map[key] for key in cache_objs_map]
-    uncache_ids_key = list( set(ids_key) - set(cache_objs_map.keys()) )
-    uncache_ids = get_uncache_ids(uncache_ids_key)
-    
-    if len(uncache_ids) > 0:
-        objects = model.objects.filter(id__in=uncache_ids)
-        add_many(table, objects)
-        many_objects.extend(objects)
-    objects_map = dict([(x.id, x) for x in many_objects])
-    order_many_objects = []
-    for pid in pids:
-        if pid in objects_map:
-            order_many_objects.append(objects_map[pid])
-    return order_many_objects
-
-def get(model, table, pid):
-    id_key = get_id_key(table, pid)
+def get(model, pkid):
+    table = model._meta.db_table
+    id_key = __get_idkey(table, pkid)
     obj = cache.get(id_key)
     if obj is not None:
         return obj
-    obj = model.objects.get(id = pid, visibly = 0)
+    obj = model.objects.get(visibly = 0, id = pkid)
     cache.add(id_key, obj)
     return obj
 
-def query(model, table, pt_id, rawsql_id, parameters):
-    return model.objects.raw(rawsql[rawsql_id], parameters) 
-    if pt_id == None:
-        return model.objects.raw(rawsql[rawsql_id], parameters)
-    ver_key = get_ver_key(table, pt_id)
-    version = cache.get(ver_key)
-    if version is not None:
-        version = int(time.time()*1000-1334000000000)
-        cache.add(ver_key, version)
-        ids = []
-        for obj in model.objects.raw(rawsql[rawsql_id], parameters):
-            ids.append(obj.id)
-        lis_key = get_lis_key(version, rawsql_id, parameters)
-        cache.add(lis_key, ids)
-        ids_key = get_ids_key(table, ids)
-        cache_obj_dict = cache.get_many(ids_key)
-        un_cache_ids_key = list( set(ids) - set(cache_obj_dict.keys()) )
-        un_cache_ids = get_un_cache_ids(un_cache_ids_key)
-        objects = model.objects.filter(id__in=un_cache_ids)
+def get_many(model, pkids):
+    table = model._meta.db_table
+    if len(pkids) == 0:
+        return []
+    ids_key = __get_idskey(table, pkids)
+    cache_objs_map = cache.get_many(ids_key)
+    many_objects = [cache_objs_map[key] for key in cache_objs_map]
+    uncache_ids_key = list( set(ids_key) - set(cache_objs_map.keys()) )
+    uncache_ids = __get_uncache_ids(uncache_ids_key)
+    
+    if len(uncache_ids) > 0:
+        objects = model.objects.filter(id__in=uncache_ids)
+        if hasattr(model, 'visibly'):
+            visibly_objects = [obj for obj in objects if obj.visibly == 0]
+            objects = visibly_objects
+        __add_many(table, objects)
+        many_objects.extend(objects)
+    objects_map = dict([(x.id, x) for x in many_objects])
+    order_many_objects = []
+    for pkid in pkids:
+        if pkid in objects_map:
+            order_many_objects.append(objects_map[pkid])
+    return order_many_objects
+
+def query(model, pt_id, rawsql_id, parameters):
+    table = model._meta.db_table
+    if pt_id is None:
+        return queryraw(model, rawsql_id, parameters)
+    version = __get_version(table, pt_id)
+    sqlkey = __get_sqlkey(version, rawsql_id, parameters)
+    value = cache.get(sqlkey)
+    if value is None:
+        value = []
+        objects = queryraw(model, rawsql_id, parameters)
         for obj in objects:
-            cache.add(get_id_key(table, obj.id), obj)
-            cache_obj_dict.add(get_id_key(table, obj.id), obj)
-        return [cache_obj_dict.get(get_id_key(table, id)) for id in ids]
-    else:
-        pass
-    return model.objects.raw(rawsql[rawsql_id], parameters)
+            value.append(obj.id)
+            id_key = __get_idkey(table, obj.id)
+            cache.add(id_key, obj)
+        print sqlkey, value
+        cache.add(sqlkey, value)
+    return get_many(model, value)
 
 def queryraw(model, rawsql_id, parameters):
     return model.objects.raw(rawsql[rawsql_id], parameters)
     
-def count(model, table, pt_id, rawsql_id, parameters):
+def count(model, pt_id, rawsql_id, parameters):
+    table = model._meta.db_table
+    if pt_id is not None:
+        version = __get_version(table, pt_id)
+        sqlkey = __get_sqlkey(version, rawsql_id, parameters)
+        value = cache.get(sqlkey)
+        if value is not None:
+            return value
+        value = countraw(rawsql_id, parameters)
+        cache.add(sqlkey, value)
+        return value
     return countraw(rawsql_id, parameters)
 
 def countraw(rawsql_id, parameters):
@@ -138,22 +162,46 @@ def execute(rawsql_id, parameters):
     cursor.execute(rawsql[rawsql_id], parameters)
     transaction.commit_unless_managed()
 
-def get_ver_key(table, pt_id):
+def da_post_save(mobject):
+    table = mobject._meta.db_table
+    id_key = __get_idkey(table, mobject.id)
+    cache.delete(id_key)
+    if table in table_ptkey_field:
+        ptkey_field = table_ptkey_field[table]
+        ptkey_value = getattr(mobject, ptkey_field)
+        version = __get_current_version()
+        cache.set(__get_verkey(table, ptkey_value), version)
+
+def __get_version(table, pt_id):
+    verkey = __get_verkey(table, pt_id)
+    version = cache.get(verkey)
+    if version is not None:
+        return version
+    version = __get_current_version()
+    cache.set(verkey, version)
+    return version
+
+def __get_verkey(table, pt_id):
     return 'ver_%s|%s' % (table, pt_id)
 
-def get_lis_key(version, rawsql_id, parameters):
-    p_len = len(parameters) 
-    return ('lis_%s|%s' + '|%s'*p_len) % tuple([version, rawsql_id] + parameters)
+def __get_sqlkey(version, rawsql_id, parameters):
+    filter_parameters = [str(x).replace(' ', '') for x in parameters]
+    p_len = len(filter_parameters) 
+    return ('lis_%s|%s' + '|%s'*p_len) % tuple([version, rawsql_id] + filter_parameters)
 
-def get_id_key(table, id):
+def __get_idkey(table, id):
     return 'id_%s|%s' % (table, id)
 
-def get_ids_key(table, ids):
-    return [get_id_key(table, id) for id in ids]
+def __get_idskey(table, ids):
+    return [__get_idkey(table, id) for id in ids]
 
-def get_uncache_ids(uncache_ids_key):
+def __get_uncache_ids(uncache_ids_key):
     return [key.split('|')[1] for key in uncache_ids_key] 
 
-def add_many(table, objects):
+def __add_many(table, objects):
     for sobject in objects: 
-        cache.add(get_id_key(table, sobject.id), sobject)
+        cache.add(__get_idkey(table, sobject.id), sobject)
+
+def __get_current_version():
+    return int(time.time()*1000-1334000000000)
+    

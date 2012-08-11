@@ -33,7 +33,7 @@ class GsuserManager():
 
     @classmethod
     def get_user_by_id(self, user_id):
-        return get(User, 'auth_user', user_id)
+        return get(User, user_id)
 
     @classmethod
     def get_user_by_name(self, username):
@@ -45,15 +45,15 @@ class GsuserManager():
 
     @classmethod
     def list_user_by_ids(self, user_ids):
-        return get_many(User, 'auth_user', user_ids)
+        return get_many(User, user_ids)
 
     @classmethod
     def list_userprofile_by_ids(self, user_ids):
-        return get_many(Userprofile, 'gsuser_userprofile', user_ids)
+        return get_many(Userprofile, user_ids)
 
     @classmethod
     def get_userprofile_by_id(self, user_id):
-        return get(Userprofile, 'gsuser_userprofile', user_id)
+        return get(Userprofile, user_id)
     
     @classmethod
     def get_userprofile_by_name(self, username):
@@ -89,5 +89,5 @@ class GsuserManager():
     @classmethod
     def list_recommend_by_id(self, user_id, offset, row_count):
         rawsql_id = 'recommend_l_userId'
-        recommends = query(Recommend, 'gsuser_recommend', user_id, rawsql_id, [user_id, offset, row_count]) 
-        return list(recommends)
+        recommends = query(Recommend, user_id, rawsql_id, [user_id, offset, row_count]) 
+        return recommends
