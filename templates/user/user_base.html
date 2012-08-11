@@ -39,7 +39,11 @@
             <span class="muted">{{ gsuserprofile.tweet }}</span>
         </div>
         <div class="span">
-            <a href="/{{ gsuser.username }}/repo/"><span class="big_font">{{ gsuserprofile.pubrepo }}</span></a>
+            {% if user.username == gsuser.username %}
+                <a href="/{{ gsuser.username }}/repo/"><span class="big_font">{{ gsuserprofile.pubrepo|add:gsuserprofile.prirepo }}</span></a>
+            {% else %}
+                <a href="/{{ gsuser.username }}/repo/"><span class="big_font">{{ gsuserprofile.pubrepo }}</span></a>
+            {% endif %}
             <br/><span class="muted">仓库</span>
         </div>
         <div class="span">
