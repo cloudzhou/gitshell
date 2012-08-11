@@ -9,7 +9,7 @@ from gitshell.feed.feed import FeedAction
 
 class Repo(BaseModel):
     user_id = models.IntegerField()
-    fork_repo_id = models.IntegerField()
+    fork_repo_id = models.IntegerField(default=0)
     name = models.CharField(max_length=64)
     desc = models.CharField(max_length=512, default='')
     lang = models.CharField(max_length=16)
@@ -114,7 +114,7 @@ class RepoManager():
 
     @classmethod
     def list_repo_by_userId(self, user_id, offset, row_count):
-        repoes = query(Repo, user_id, 'repo_l_userId', [user_id, offset, row_count])
+        repoes = query(Repo, None, 'repo_l_userId', [user_id, offset, row_count])
         return repoes
 
     @classmethod
@@ -134,7 +134,7 @@ class RepoManager():
 
     @classmethod
     def get_repo_by_userId_name(self, user_id, name):
-        repoes = query(Repo, user_id, 'repo_s_userId_name', [user_id, name])
+        repoes = query(Repo, None, 'repo_s_userId_name', [user_id, name])
         if len(repoes) > 0:
             return repoes[0]
         return None

@@ -14,3 +14,9 @@ def quickstart(request):
     return render_to_response('help/default.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+def error(request):
+    response_dictionary = {'hello_world': 'hello world'}
+    return render_to_response('help/error.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))

@@ -91,9 +91,12 @@ def get(model, pkid):
     obj = cache.get(id_key)
     if obj is not None:
         return obj
-    obj = model.objects.get(visibly = 0, id = pkid)
-    cache.add(id_key, obj)
-    return obj
+    try:
+        obj = model.objects.get(visibly = 0, id = pkid)
+        cache.add(id_key, obj)
+        return obj
+    except:
+        return None
 
 def get_many(model, pkids):
     table = model._meta.db_table
@@ -106,7 +109,11 @@ def get_many(model, pkids):
     uncache_ids = __get_uncache_ids(uncache_ids_key)
     
     if len(uncache_ids) > 0:
-        objects = model.objects.filter(id__in=uncache_ids)
+        objects = []
+        try:
+            objects = model.objects.filter(id__in=uncache_ids)
+        except:
+            pass
         if hasattr(model, 'visibly'):
             visibly_objects = [obj for obj in objects if obj.visibly == 0]
             objects = visibly_objects
@@ -137,7 +144,10 @@ def query(model, pt_id, rawsql_id, parameters):
     return get_many(model, value)
 
 def queryraw(model, rawsql_id, parameters):
-    return list(model.objects.raw(rawsql[rawsql_id], parameters))
+    try:
+        return list(model.objects.raw(rawsql[rawsql_id], parameters))
+    except:
+        return []
     
 def count(model, pt_id, rawsql_id, parameters):
     table = model._meta.db_table
@@ -163,6 +173,8 @@ def execute(rawsql_id, parameters):
 
 def da_post_save(mobject):
     table = mobject._meta.db_table
+    if not hasattr(mobject, 'id'):
+        return False
     id_key = __get_idkey(table, mobject.id)
     cache.delete(id_key)
     if table in table_ptkey_field:
@@ -170,6 +182,7 @@ def da_post_save(mobject):
         ptkey_value = getattr(mobject, ptkey_field)
         version = __get_current_version()
         cache.set(__get_verkey(table, ptkey_value), version)
+    return True
 
 def __get_version(table, pt_id):
     verkey = __get_verkey(table, pt_id)

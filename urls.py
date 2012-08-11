@@ -39,7 +39,7 @@ urlpatterns = patterns('gitshell',
     # help
     url(r'^help/?$', 'help.views.default'),
     url(r'^help/quickstart/?$', 'help.views.quickstart'),
-    url(r'^help/error/?$', 'help.views.default'),
+    url(r'^help/error/?$', 'help.views.error'),
 
     # settings
     url(r'^settings/?$', 'gssettings.views.profile'),
@@ -90,4 +90,7 @@ urlpatterns = patterns('gitshell',
     url(r'^(\w+)/(\w+)/network/?$', 'repo.views.repo_network'),
     url(r'^(\w+)/(\w+)/clone_watch/?$', 'repo.views.repo_clone_watch'),
     url(r'^(\w+)/(\w+)/stats/?$', 'repo.views.repo_stats'),
+    
 )
+handler404 = 'gitshell.help.views.error'
+handler500 = 'gitshell.help.views.error'

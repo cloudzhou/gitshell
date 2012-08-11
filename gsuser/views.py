@@ -270,6 +270,7 @@ def join(request, step):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@login_required
 def resetpassword(request, step):
     if step is None:
         step = '0'

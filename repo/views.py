@@ -98,18 +98,20 @@ def repo_ls_tree(request, user_name, repo_name, refs, path, current):
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath(user_name)
     commit_hash = gitHandler.get_commit_hash(abs_repopath, refs)
-    is_tree = True ; tree = {} ; blob = ''; lang = 'Plain'; brush = 'plain'
-    if path == '.' or path.endswith('/'):
-        tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
-    else:
-        is_tree = False
-        paths = path.split('.')
-        if len(paths) > 0:
-            suffix = paths[-1]
-            if suffix in lang_suffix and lang_suffix[suffix] in brush_aliases:
-                lang = lang_suffix[suffix]
-                brush = brush_aliases[lang]
-        blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
+    is_tree = True ; tree = {} ; blob = u''; lang = 'Plain'; brush = 'plain'
+    is_member = __is_repo_member(repo, request.user)
+    if is_member:
+        if path == '.' or path.endswith('/'):
+            tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
+        else:
+            is_tree = False
+            paths = path.split('.')
+            if len(paths) > 0:
+                suffix = paths[-1]
+                if suffix in lang_suffix and lang_suffix[suffix] in brush_aliases:
+                    lang = lang_suffix[suffix]
+                    brush = brush_aliases[lang]
+            blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'blob': blob, 'is_tree': is_tree, 'lang': lang, 'brush': brush}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/tree.html',
@@ -149,7 +151,10 @@ def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path)
         path = '.'
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath(user_name)
-    diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
+    diff = u'+++没有源代码，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
+    is_member = __is_repo_member(repo, request.user)
+    if is_member:
+        diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
     return HttpResponse(json.dumps({'diff': escape(diff)}), mimetype='application/json')
 
 @repo_permission_check
@@ -227,7 +232,7 @@ def issues_show(request, user_name, repo_name, issues_id, page):
     if raw_issue is None:
         raise Http404
     repoIssuesCommentForm = RepoIssuesCommentForm()
-    if request.method == 'POST':
+    if request.method == 'POST' and request.user.is_authenticated():
         issuesComment = IssuesComment() 
         issuesComment.issues_id = issues_id
         issuesComment.user_id = request.user.id
@@ -294,7 +299,7 @@ def issues_create(request, user_name, repo_name, issues_id):
         repoIssuesForm = RepoIssuesForm(instance = issues)
     repoIssuesForm.fill_assigned(repo)
     error = ''
-    if request.method == 'POST':
+    if request.method == 'POST' and request.user.is_authenticated():
         issues.user_id = request.user.id
         issues.repo_id = repo.id
         repoIssuesForm = RepoIssuesForm(request.POST, instance = issues)
@@ -376,7 +381,7 @@ def repo_network(request, user_name, repo_name):
     if repo is None:
         raise Http404
     repoMemberForm = RepoMemberForm()
-    if request.method == 'POST':
+    if request.method == 'POST' and request.user.is_authenticated():
         repoMemberForm = RepoMemberForm(request.POST)
         if repoMemberForm.is_valid():
             username = repoMemberForm.cleaned_data['username'].strip()
@@ -569,22 +574,24 @@ def repo_delete(request, user_name, repo_name):
 @login_required
 def edit(request, rid):
     error = u''
-    repo = Repo()
-    if rid != '0':
-        try:
-            repo = Repo.objects.get(id = rid, user_id = request.user.id)
-        except Repo.DoesNotExist:
-            pass
-    repoForm = RepoForm(instance = repo)
+    repo = RepoManager.get_repo_by_id(int(rid))
+    if repo is None:
+        repo = Repo()
+    elif repo.user_id != request.user.id:
+        raise Http404
     repo.user_id = request.user.id
+    repoForm = RepoForm(instance = repo)
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
-        if repoForm.is_valid() and re.match("^\w+$", repoForm.cleaned_data['name']):
-            fulfill_gitrepo(request.user.username, repoForm.cleaned_data['name'], repoForm.cleaned_data['auth_type'])
-            repoForm.save()
-            return HttpResponseRedirect('/' + request.user.username + '/repo/')
-        else:
-            error = u'输入正确的仓库名称[A-Za-z0-9_]，选择好语言和可见度'
+        if repoForm.is_valid():
+            name = repoForm.cleaned_data['name']
+            if re.match("^\w+$", name):
+                desc_repo = RepoManager.get_repo_by_userId_name(request.user.id, name)
+                if desc_repo is None or (repo.id is not None and desc_repo.id == repo.id):
+                    fulfill_gitrepo(request.user.username, name, repoForm.cleaned_data['auth_type'])
+                    repoForm.save()
+                    return HttpResponseRedirect('/' + request.user.username + '/repo/')
+        error = u'输入正确的仓库名称[A-Za-z0-9_]，选择好语言和可见度，仓库名字不能重复'
     response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'rid': rid, 'error': error}
     return render_to_response('repo/edit.html',
                           response_dictionary,
@@ -616,3 +623,10 @@ def fulfill_gitrepo(username, reponame, auth_type):
 def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)
     return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo }
+
+def __is_repo_member(repo, user):
+    if user.is_authenticated():
+        member = RepoManager.get_repo_member(repo.id, user.id)
+        if member is not None:
+            return True
+    return False
