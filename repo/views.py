@@ -624,9 +624,3 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)
     return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo }
 
-def __is_repo_member(repo, user):
-    if user.is_authenticated():
-        member = RepoManager.get_repo_member(repo.id, user.id)
-        if member is not None:
-            return True
-    return False

@@ -181,6 +181,15 @@ class RepoManager():
             repoMember.visibly = 1
             repoMember.save()
 
+    def is_repo_member(repo, user):
+        if user.is_authenticated():
+            if repo.user_id == user.id:
+                return True
+            member = self.get_repo_member(repo.id, user.id)
+            if member is not None:
+                return True
+        return False
+
     @classmethod
     def list_issues_cons(self, repo_id, assigned_ids, trackers, statuses, priorities, orderby, page):
         offset = page*2
@@ -383,3 +392,4 @@ class RepoManager():
             repo_vo['modify_time'] = time.mktime(repo.modify_time.timetuple())
             repo_vo_dict[repo.id] = repo_vo
         return repo_vo_dict
+

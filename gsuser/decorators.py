@@ -11,14 +11,9 @@ def repo_permission_check(function):
             repo = RepoManager.get_repo_by_name(user_name, repo_name)
             if repo is None:
                 return HttpResponseRedirect('/help/error/')
-            if request.user.is_authenticated() and repo.user_id == request.user.id:
-                return function(request, *args, **kwargs)
             # half private, code is keep
             if repo.auth_type == 2:
-                if not request.user.is_authenticated():
-                    return HttpResponseRedirect('/help/error/')
-                member = RepoManager.get_repo_member(repo.id, request.user.id)
-                if member is None:
+                if not RepoManager.is_repo_member(repo, request.user):
                     return HttpResponseRedirect('/help/error/')
         return function(request, *args, **kwargs)
     wrap.__doc__=function.__doc__
