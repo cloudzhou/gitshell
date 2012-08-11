@@ -133,12 +133,11 @@ def query(model, pt_id, rawsql_id, parameters):
             value.append(obj.id)
             id_key = __get_idkey(table, obj.id)
             cache.add(id_key, obj)
-        print sqlkey, value
         cache.add(sqlkey, value)
     return get_many(model, value)
 
 def queryraw(model, rawsql_id, parameters):
-    return model.objects.raw(rawsql[rawsql_id], parameters)
+    return list(model.objects.raw(rawsql[rawsql_id], parameters))
     
 def count(model, pt_id, rawsql_id, parameters):
     table = model._meta.db_table
