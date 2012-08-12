@@ -21,7 +21,7 @@ def start():
     while True:
         event_job = beanstalk.reserve()
         try:
-            event = json.loads(event_job)
+            event = json.loads(event_job.body)
             # exit signal
             if event['type'] == -1:
                 event_job.delete()
