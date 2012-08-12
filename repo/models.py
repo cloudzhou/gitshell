@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-  
 import time
 from django.db import models
+from django.core.cache import cache
 from gitshell.objectscache.models import BaseModel
-from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many
+from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many, get_version, get_sqlkey
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
@@ -192,17 +193,27 @@ class RepoManager():
         return False
 
     @classmethod
-    def list_issues_cons(self, repo_id, assigned_ids, trackers, statuses, priorities, orderby, page):
-        offset = page*2
-        row_count = 3
+    def list_issues_cons(self, repo_id, assigned_ids, trackers, statuses, priorities, orderby, offset, row_count):
         # diff between multi filter and single filter
-        issues = Issues.objects.filter(visibly=0).filter(assigned__in=assigned_ids).filter(tracker__in=trackers).filter(status__in=statuses).filter(priority__in=priorities).order_by('-'+orderby)[offset : offset+row_count]
+        rawsql_id = 'issues.list_issues_cons'
+        parameters = [
+            ','.join(str(x) for x in assigned_ids),
+            ','.join(str(x) for x in trackers),
+            ','.join(str(x) for x in statuses),
+            ','.join(str(x) for x in priorities),
+            orderby, offset, row_count]
+        version = get_version(Issues, repo_id)
+        sqlkey = get_sqlkey(version, rawsql_id, parameters)
+        value = cache.get(sqlkey)
+        if value is not None:
+            return get_many(Issues, value)
+        issues = Issues.objects.filter(visibly=0).filter(repo_id=repo_id).filter(assigned__in=assigned_ids).filter(tracker__in=trackers).filter(status__in=statuses).filter(priority__in=priorities).order_by('-'+orderby)[offset : offset+row_count]
+        issues_ids = [x.id for x in issues]
+        cache.add(sqlkey, issues_ids)
         return list(issues)
 
     @classmethod
-    def list_issues(self, repo_id, orderby, page):
-        offset = page*2
-        row_count = 3
+    def list_issues(self, repo_id, orderby, offset, row_count):
         rawsql_id = 'repoissues_l_cons_modify'
         if orderby == 'create_time':
             rawsql_id = 'repoissues_l_cons_create'
@@ -210,9 +221,7 @@ class RepoManager():
         return repoissues
 
     @classmethod
-    def list_assigned_issues(self, assigned, orderby, page):
-        offset = page*2
-        row_count = 3
+    def list_assigned_issues(self, assigned, orderby, offset, row_count):
         rawsql_id = 'repoissues_l_assigned_modify'
         if orderby == 'create_time':
             rawsql_id = 'repoissues_l_assigned_create'
@@ -232,9 +241,7 @@ class RepoManager():
         return issues_comment
 
     @classmethod
-    def list_issues_comment(self, issues_id, page):
-        offset = page*2
-        row_count = 2
+    def list_issues_comment(self, issues_id, offset, row_count):
         issuesComments = query(IssuesComment, issues_id, 'issuescomment_l_issuesId', [issues_id, offset, row_count]) 
         return issuesComments
 

@@ -184,6 +184,13 @@ def da_post_save(mobject):
         cache.set(__get_verkey(table, ptkey_value), version)
     return True
 
+def get_version(model, pt_id):
+    table = model._meta.db_table
+    return __get_version(table, pt_id)
+
+def get_sqlkey(version, rawsql_id, parameters):
+    return __get_sqlkey(version, rawsql_id, parameters)
+
 def __get_version(table, pt_id):
     verkey = __get_verkey(table, pt_id)
     version = cache.get(verkey)

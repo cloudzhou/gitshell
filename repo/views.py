@@ -188,16 +188,17 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
     tracker = int(tracker); status = int(status); priority = int(priority); page = int(page)
     current_attrs = { 'assigned': str(assigned), 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': str(orderby), 'page': page }
     raw_issues = []
+    page_size = 2
+    offset = page*page_size
+    row_count = page_size + 1
     if assigned_id == 0 and tracker == 0 and status == 0 and priority == 0:
-        raw_issues = RepoManager.list_issues(repo.id, orderby, page)
+        raw_issues = RepoManager.list_issues(repo.id, orderby, offset, row_count)
     else:
         assigned_ids = member_ids if assigned_id == 0 else [assigned_id]
         trackeres = TRACKERS_VAL if tracker == 0 else [tracker]
         statuses = STATUSES_VAL if status == 0 else [status]
         priorities = PRIORITIES_VAL if priority == 0 else [priority] 
-        raw_issues = RepoManager.list_issues_cons(repo.id, assigned_ids, trackeres, statuses, priorities, orderby, page)
-    from django.db import connection
-    print connection.queries
+        raw_issues = RepoManager.list_issues_cons(repo.id, assigned_ids, trackeres, statuses, priorities, orderby, offset, row_count)
     reporter_ids = [o.user_id for o in raw_issues]
     reporters = GsuserManager.list_user_by_ids(list(set(reporter_ids)-set(member_ids)))
     username_map = {}
@@ -210,7 +211,7 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
     hasPre = False ; hasNext = False
     if page > 0:
         hasPre = True 
-    if len(issues) > 2:
+    if len(issues) > page_size:
         hasNext = True
         issues.pop()
     
@@ -252,8 +253,10 @@ def issues_show(request, user_name, repo_name, issues_id, page):
         username_map[user.id] = user.username
     issue = conver_issues([raw_issue], username_map, {repo.id: repo.name})[0]
     
-    total_page = issue['comment_count'] / 2
-    if issue['comment_count'] != 0 and issue['comment_count'] % 2 == 0:
+    page_size = 2
+    total_count = issue['comment_count']
+    total_page = issue['comment_count'] / page_size
+    if issue['comment_count'] != 0 and issue['comment_count'] % page_size == 0:
         total_page = total_page - 1
     if page is None or int(page) > total_page:
         page = total_page
@@ -261,8 +264,10 @@ def issues_show(request, user_name, repo_name, issues_id, page):
         page = int(page)
     user_img_map = {}
     issue_comments = []
-    if issue['comment_count'] > 0:
-        raw_issue_comments = RepoManager.list_issues_comment(issues_id, page)
+    if total_count > 0:
+        offset = page*page_size
+        row_count = page_size
+        raw_issue_comments = RepoManager.list_issues_comment(issues_id, offset, row_count)
         user_ids = [o.user_id for o in raw_issue_comments]
         users = GsuserManager.list_user_by_ids(user_ids)
         userprofiles = GsuserManager.list_userprofile_by_ids(user_ids)
@@ -270,7 +275,7 @@ def issues_show(request, user_name, repo_name, issues_id, page):
             username_map[user.id] = user.username
         for userprofile in userprofiles:
             user_img_map[userprofile.id] = userprofile.imgurl 
-        issue_comments = conver_issue_comments(RepoManager.list_issues_comment(issues_id, page), username_map, user_img_map)
+        issue_comments = conver_issue_comments(raw_issue_comments, username_map, user_img_map)
 
     member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
     member_ids.insert(0, repo.user_id)
@@ -280,7 +285,7 @@ def issues_show(request, user_name, repo_name, issues_id, page):
     members = GsuserManager.list_user_by_ids(member_ids)
     assigneds = [o.username for o in members]
 
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0,total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0, total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority}
     response_dictionary.update(ISSUES_ATTRS)
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/issues_show.html',

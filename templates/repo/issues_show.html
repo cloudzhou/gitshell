@@ -106,7 +106,11 @@ $(function(){
         });
     });
     $('.c_rm_rf_comment').blur(function(){
-        $(this).hide();
+        setTimeout(
+            function(event) {
+                $(this).hide();
+            }
+        , 300);
     });
     $('.c_rm_comment').click(function(){
         $(this).next().show();
