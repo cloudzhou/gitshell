@@ -399,6 +399,7 @@ class RepoManager():
             repo_vo['create_time'] = time.mktime(repo.create_time.timetuple())
             repo_vo['modify_time'] = time.mktime(repo.modify_time.timetuple())
             repo_vo['auth_type'] = repo.auth_type
+            repo_vo['status'] = repo.status
             repo_vo_dict[repo.id] = repo_vo
         return repo_vo_dict
 

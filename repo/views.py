@@ -630,5 +630,7 @@ def fulfill_gitrepo(username, reponame, auth_type):
 
 def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo }
+    is_repo_member = RepoManager.is_repo_member(repo, request.user)
+    has_fork_right = (repo.auth_type == 0 or is_repo_member)
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'has_fork_right': has_fork_right}
 

@@ -50,19 +50,26 @@
     			</div>
     		</div>
     		<div class="row">
-    			<div class="span1">
-    				<button href="#" class="btn btn-small"><i class="icon-download"></i> ZIP</button>
-    			</div>
-    			<div class="pull-left" style="margin-left: 30px">
-    				<div data-toggle="buttons-radio" class="btn-group">
-                        <button class="btn active">HTTP</button>
-                        <button class="btn">SSH</button>
-                    </div>				
-                </div>				
-    			<div class="pull-left">
-    				<input id="i_git_url" style="margin-bottom: 0px;" type="text" value="http://gitshell.com/{{ user_name }}/{{ repo_name }}.git" class="span5">
-    				<i class="icon-list-alt"></i> 只读
-    			</div>
+    			<div class="span10">
+                    {% if repo.status != 0 %}
+                    <div style="margin-bottom: 5px">
+                        <span class="label label-important">
+                            仓库正在初始化中...暂时不能提交代码，请耐心等候
+                        </span>
+                    </div>
+                    {% endif %}
+                    {% if has_fork_right %}
+                        <span style="margin-bottom: 5px"><span id="id_http_fork">HTTP</span>
+                            {% if is_repo_member %}
+                                | <span id="id_ssh_fork">SSH</span>
+                            {% endif %}
+                        </span>
+                        <span id="id_git_url" style="margin-left: 10px">
+                            <input class="input-xlarge focused" value="https://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>
+                        </span>
+                        <span id="id_read_write" class="muted">只读</span>
+                    {% endif %}
+    		    </div>
     		</div>
 		</div>
         {% endif %}
@@ -211,6 +218,14 @@ $(function(){
     });
     $('.c_repo_action').tooltip({
         selector: "a[rel=tooltip]"
+    });
+    $('#id_http_fork').mouseover(function(event) {
+        $('#id_git_url').html('<input class="input-xlarge focused" value="https://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>');
+        $('#id_read_write').html('只读');
+    });
+    $('#id_ssh_fork').mouseover(function(event) {
+        $('#id_git_url').html('<input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git"/>');
+        $('#id_read_write').html('读写');
     });
 
 });
