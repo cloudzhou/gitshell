@@ -20,7 +20,7 @@ def main():
 
 def send_commit_event(event):
     beanstalk = beanstalkc.Connection(host='localhost', port=11300)
-    #beanstalk.use('high_priority')
+    beanstalk.use('commit_event')
     beanstalk.put(event) 
 
 if __name__ == '__main__':

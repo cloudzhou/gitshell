@@ -15,7 +15,7 @@ current=`date +"%s"`
 LOG_FILENAME="$LOG_PATH/event.$current.log"
 case "$1" in
   start)
-    python "$SCRIPT" start 1 > $LOG_FILENAME 2 &> 1 &
+    python "$SCRIPT" start 1 > $LOG_FILENAME 2 >& 1 &
     ;;
   stop)
     python "$SCRIPT" stop
@@ -24,3 +24,4 @@ case "$1" in
 	log_action_msg "Usage: ${SCRIPT} {start|stop}"
 	exit 1
 esac
+

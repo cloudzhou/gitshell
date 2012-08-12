@@ -7,26 +7,33 @@ from subprocess import Popen
 from subprocess import PIPE
 from datetime import datetime
 from django.contrib.auth.models import User
-from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH
 from gitshell.gsuser.models import Userprofile, GsuserManager
 from gitshell.repo.models import CommitHistory, Repo, RepoManager
 from gitshell.feed.feed import FeedAction
+from gitshell.daemon.models import EventManager, EVENT_TUBE_NAME
+from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
 
-def main():
-    beanstalk = beanstalkc.Connection(host='localhost', port=11300)
-    beanstalk.use('commit_event')
+def start():
+    print '==================== START ===================='
+    beanstalk = beanstalkc.Connection(host=BEANSTALK_HOST, port=BEANSTALK_PORT)
+    beanstalk.use(EVENT_TUBE_NAME)
     while True:
         event_job = beanstalk.reserve()
         try:
-            do_event(event_job.body)
+            event = json.loads(event_job)
+            # exit signal
+            if event['type'] == -1:
+                event_job.delete()
+                print '==================== STOP ===================='
+                sys.exit(0)
+            do_event(event)
         except Exception, e:
             print 'do_event catch except, event: %s' % event_job.body
             print 'exception: %s' % e
         event_job.delete()
 
 # abspath is the repo hooks directory
-def do_event(event_job):
-    event = json.loads(event_job)
+def do_event(event):
     etype = event['type']
     diff_tree_blob_size_params = []
     if etype == 0:
@@ -141,5 +148,16 @@ def update_gsuser_repo_quote(gsuser, repo, diff_size):
     gsuser.save()
     repo.save()
 
+def stop():
+    stop_event = {'type': -1}
+    EventManager.sendevent(EVENT_TUBE_NAME, json.dumps(stop_event))
+    print 'send stop event message...'
+
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) < 2:
+        sys.exit(1)
+    action = sys.argv[1]
+    if action == 'start':
+        start()
+    elif action == 'stop':
+        stop()
