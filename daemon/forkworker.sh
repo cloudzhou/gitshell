@@ -9,10 +9,13 @@ export DJANGO_SETTINGS_MODULE=gitshell.settings
 
 . /lib/lsb/init-functions
 
-SCRIPT="$GITSHELL_DIR/gitshell/daemon/cloneworker.py"
+SCRIPT="$GITSHELL_DIR/gitshell/daemon/eventworker.py"
+LOG_PATH="/opt/run/var/log"
+current=`date +"%s"`
+LOG_FILENAME="$LOG_PATH/event.$current.log"
 case "$1" in
   start)
-    python "$SCRIPT" start
+    python "$SCRIPT" start 1 > $LOG_FILENAME 2 &> 1 &
     ;;
   stop)
     python "$SCRIPT" stop
