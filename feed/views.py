@@ -49,7 +49,10 @@ def issues_default(request):
 def issues(request, page):
     current = 'issues'
     page = int(page)
-    raw_issues = RepoManager.list_assigned_issues(request.user.id, 'modify_time', page)
+    page_size = 2
+    offset = page*page_size
+    row_count = page_size + 1
+    raw_issues = RepoManager.list_assigned_issues(request.user.id, 'modify_time', offset, row_count)
     username_map = {}
     reponame_map = {}
     for raw_issue in raw_issues:
@@ -68,7 +71,7 @@ def issues(request, page):
     hasPre = False ; hasNext = False
     if page > 0:
         hasPre = True 
-    if len(issues) > 2:
+    if len(issues) > page_size:
         hasNext = True
         issues.pop()
     response_dictionary = {'current': current, 'issues': issues, 'page': page, 'hasPre': hasPre, 'hasNext': hasNext}
