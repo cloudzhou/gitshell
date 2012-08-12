@@ -12,4 +12,5 @@ class EventManager():
     def sendevent(self, tube, event):
         beanstalk = beanstalkc.Connection(host=BEANSTALK_HOST, port=BEANSTALK_PORT)
         beanstalk.use(tube)
+        beanstalk.watch(EVENT_TUBE_NAME)
         beanstalk.put(event) 

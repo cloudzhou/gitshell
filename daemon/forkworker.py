@@ -1,18 +1,21 @@
 #!/usr/bin/python
-import json
+import sys, json
 import beanstalkc
 from subprocess import Popen
 from subprocess import PIPE
 from gitshell.daemon.models import EventManager, FORK_TUBE_NAME
+from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
 
 def start():
     print '==================== START ===================='
     beanstalk = beanstalkc.Connection(host=BEANSTALK_HOST, port=BEANSTALK_PORT)
     beanstalk.use(FORK_TUBE_NAME)
+    beanstalk.watch(FORK_TUBE_NAME)
     while True:
         event_job = beanstalk.reserve()
         try:
             event = json.loads(event_job)
+            print event
             # exit signal
             if event['type'] == -1:
                 event_job.delete()
@@ -63,6 +66,7 @@ def stop():
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
+        print 'usage: start|stop'
         sys.exit(1)
     action = sys.argv[1]
     if action == 'start':

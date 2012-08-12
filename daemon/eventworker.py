@@ -17,6 +17,7 @@ def start():
     print '==================== START ===================='
     beanstalk = beanstalkc.Connection(host=BEANSTALK_HOST, port=BEANSTALK_PORT)
     beanstalk.use(EVENT_TUBE_NAME)
+    beanstalk.watch(EVENT_TUBE_NAME)
     while True:
         event_job = beanstalk.reserve()
         try:
