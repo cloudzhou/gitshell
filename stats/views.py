@@ -49,18 +49,18 @@ def get_stats_dict(request, user):
     per_last_week_commit = [int(x.count) for x in raw_per_last_week_commit]
     per_last_month_commit = [int(x.count) for x in raw_per_last_month_commit]
     per_last_year_commit = [int(x.count) for x in raw_per_last_year_commit]
-    raw_per_user_week_commit = [x.user_id for x in raw_per_last_week_commit]
-    raw_per_user_month_commit = [x.user_id for x in raw_per_last_month_commit]
-    raw_per_user_year_commit = [x.user_id for x in raw_per_last_year_commit]
-    mergedlist = list(set(raw_per_user_week_commit + raw_per_user_month_commit + raw_per_user_year_commit))
-    user_dict = GsuserManager.map_users(mergedlist)
-    per_user_week_commit = [str(user_dict[x]['username']) if x in user_dict else 'unknow' for x in raw_per_user_week_commit]
-    per_user_month_commit = [str(user_dict[x]['username']) if x in user_dict else 'unknow' for x in raw_per_user_month_commit]
-    per_user_year_commit = [str(user_dict[x]['username']) if x in user_dict else 'unknow' for x in raw_per_user_year_commit]
+    raw_per_repo_week_commit = [x.repo_id for x in raw_per_last_week_commit]
+    raw_per_repo_month_commit = [x.repo_id for x in raw_per_last_month_commit]
+    raw_per_repo_year_commit = [x.repo_id for x in raw_per_last_year_commit]
+    mergedlist = list(set(raw_per_repo_week_commit + raw_per_repo_month_commit + raw_per_repo_year_commit))
+    repo_dict = RepoManager.merge_repo_map(mergedlist)
+    per_repo_week_commit = [str(repo_dict[x]['name']) for x in raw_per_repo_week_commit if (x in repo_dict and repo_dict[x]['auth_type'] != 2)]
+    per_repo_month_commit = [str(repo_dict[x]['name']) for x in raw_per_repo_month_commit if (x in repo_dict and repo_dict[x]['auth_type'] != 2)]
+    per_repo_year_commit = [str(repo_dict[x]['name']) for x in raw_per_repo_year_commit if (x in repo_dict and repo_dict[x]['auth_type'] != 2)]
 
     userprofile = GsuserManager.get_userprofile_by_id(user.id)
     quotes = {'used_quote': int(userprofile.used_quote), 'total_quote': int(userprofile.quote)}
 
-    stats_dict = {'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last7days_commit': last7days_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'round_week': round_week, 'round_month': round_month, 'round_year': round_year, 'per_last_week_commit': per_last_week_commit, 'per_last_month_commit': per_last_month_commit, 'per_last_year_commit': per_last_year_commit, 'per_user_week_commit': per_user_week_commit, 'per_user_month_commit': per_user_month_commit, 'per_user_year_commit': per_user_year_commit}
+    stats_dict = {'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last7days_commit': last7days_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'round_week': round_week, 'round_month': round_month, 'round_year': round_year, 'per_last_week_commit': per_last_week_commit, 'per_last_month_commit': per_last_month_commit, 'per_last_year_commit': per_last_year_commit, 'per_repo_week_commit': per_repo_week_commit, 'per_repo_month_commit': per_repo_month_commit, 'per_repo_year_commit': per_repo_year_commit}
     return stats_dict
 

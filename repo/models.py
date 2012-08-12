@@ -181,7 +181,8 @@ class RepoManager():
             repoMember.visibly = 1
             repoMember.save()
 
-    def is_repo_member(repo, user):
+    @classmethod
+    def is_repo_member(self, repo, user):
         if user.is_authenticated():
             if repo.user_id == user.id:
                 return True
@@ -390,6 +391,7 @@ class RepoManager():
             repo_vo['desc'] = repo.desc
             repo_vo['create_time'] = time.mktime(repo.create_time.timetuple())
             repo_vo['modify_time'] = time.mktime(repo.modify_time.timetuple())
+            repo_vo['auth_type'] = repo.auth_type
             repo_vo_dict[repo.id] = repo_vo
         return repo_vo_dict
 

@@ -32,7 +32,10 @@ def user_repo_paging(request, user_name, pagenum):
     userprofile = GsuserManager.get_userprofile_by_name(user_name)
     if user is None:
         raise Http404
-    repo_list = RepoManager.list_repo_by_userId(user.id, 0, 100)
+    raw_repo_list = RepoManager.list_repo_by_userId(user.id, 0, 100)
+    repo_list = raw_repo_list
+    if user.id != request.user.id:
+        repo_list = [x for x in raw_repo_list if x.auth_type != 2]
     repo_commit_map = {}
     feedAction = FeedAction()
     i = 0
@@ -47,7 +50,7 @@ def user_repo_paging(request, user_name, pagenum):
     # fix on error detect
     pubrepo = 0
     for repo in repo_list:
-        if repo.auth_type == 0:
+        if repo.auth_type == 0 or repo.auth_type == 1:
             pubrepo = pubrepo + 1
     prirepo = len(repo_list) - pubrepo
     if pubrepo != userprofile.pubrepo or prirepo != userprofile.prirepo:
@@ -99,7 +102,7 @@ def repo_ls_tree(request, user_name, repo_name, refs, path, current):
     abs_repopath = repo.get_abs_repopath(user_name)
     commit_hash = gitHandler.get_commit_hash(abs_repopath, refs)
     is_tree = True ; tree = {} ; blob = u''; lang = 'Plain'; brush = 'plain'
-    is_member = __is_repo_member(repo, request.user)
+    is_member = RepoManager.is_repo_member(repo, request.user)
     if is_member:
         if path == '.' or path.endswith('/'):
             tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
@@ -152,7 +155,7 @@ def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path)
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath(user_name)
     diff = u'+++没有源代码，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
-    is_member = __is_repo_member(repo, request.user)
+    is_member = RepoManager.is_repo_member(repo, request.user)
     if is_member:
         diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
     return HttpResponse(json.dumps({'diff': escape(diff)}), mimetype='application/json')
