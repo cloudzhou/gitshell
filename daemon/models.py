@@ -11,6 +11,11 @@ class EventManager():
     @classmethod
     def sendevent(self, tube, event):
         beanstalk = beanstalkc.Connection(host=BEANSTALK_HOST, port=BEANSTALK_PORT)
-        beanstalk.use(tube)
-        beanstalk.watch(EVENT_TUBE_NAME)
+        self.switch(beanstalk, tube)
         beanstalk.put(event) 
+
+    @classmethod
+    def switch(self, beanstalk, tube):
+        beanstalk.use(tube)
+        beanstalk.watch(tube)
+        beanstalk.ignore('default')

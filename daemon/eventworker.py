@@ -16,8 +16,7 @@ from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, BEANSTALK_HOS
 def start():
     print '==================== START ===================='
     beanstalk = beanstalkc.Connection(host=BEANSTALK_HOST, port=BEANSTALK_PORT)
-    beanstalk.use(EVENT_TUBE_NAME)
-    beanstalk.watch(EVENT_TUBE_NAME)
+    EventManager.switch(beanstalk, EVENT_TUBE_NAME)
     while True:
         event_job = beanstalk.reserve()
         try:
