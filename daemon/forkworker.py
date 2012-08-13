@@ -78,8 +78,7 @@ def chdir(path):
         return False
 
 def stop():
-    stop_event = {'type': -1}
-    EventManager.sendevent(FORK_TUBE_NAME, json.dumps(stop_event))
+    EventManager.send_stop_event(FORK_TUBE_NAME)
     print 'send stop event message...'
 
 if __name__ == '__main__':

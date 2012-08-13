@@ -149,8 +149,7 @@ def update_gsuser_repo_quote(gsuser, repo, diff_size):
     repo.save()
 
 def stop():
-    stop_event = {'type': -1}
-    EventManager.sendevent(EVENT_TUBE_NAME, json.dumps(stop_event))
+    EventManager.send_stop_event(EVENT_TUBE_NAME)
     print 'send stop event message...'
 
 if __name__ == '__main__':

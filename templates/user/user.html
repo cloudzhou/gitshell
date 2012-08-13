@@ -24,12 +24,12 @@
                 </tbody>
             </table>
         </div>
-        <div class="page-header small_page-header">
+        <div class="page-header small_page-header c_user_stats" style="display: none">
             <h2>统计<small><span><a href="/stats/{{gsuser.username}}/" class="more">more</a></small></span></h2>
         </div>
-        <div id="id_user_stats">
+        <div class="c_user_stats" style="display: none">
             <div id="figure-a" class="figure lg">
-                <div style="display: none" id="id_month_container" class="user_chart"></div>
+                <div id="id_month_container" class="user_chart"></div>
                 <div class="muted">统计最近一月 <strong>commit</strong> 次数 异步统计，仅供参考</div>
             </div>
         </div>
@@ -41,7 +41,7 @@
                 <thead>
                     <tr>
                         <th class="span1">名称</th>
-                        <th class="span5">简介</th>
+                        <th class="">简介</th>
                         <th class="">更新</th>
                     </tr>
                 </thead>
@@ -64,7 +64,7 @@
                 <thead>
                     <tr>
                         <th class="span1">名称</th>
-                        <th class="span5">简介</th>
+                        <th class="">简介</th>
                         <th class="">更新</th>
                     </tr>
                 </thead>
@@ -177,7 +177,7 @@ $(function(){
     }
     last30daysAsData.reverse();
 if(Object.keys(last30days_commit).length > 0) {
-    $('#id_month_container').show();
+    $('.c_user_stats').show();
     var month_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_month_container', type: 'line'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
