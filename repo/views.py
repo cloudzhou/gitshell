@@ -21,6 +21,7 @@ from gitshell.gsuser.decorators import repo_permission_check, repo_source_permis
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
+from gitshell.daemon.models import EventManager
 
 @login_required
 def user_repo(request, user_name):
@@ -539,8 +540,9 @@ def repo_fork(request, user_name, repo_name):
     fork_repo.save()
     userprofile.used_quote = userprofile.used_quote + repo.used_quote
     userprofile.save()
-    # send fork message, copy repo tree
-    # mark TODO
+    
+    # fork event, clone...
+    EventManager.send_fork_event(repo.id, fork_repo.id)
     response_dictionary.update({'result': 'success', 'message': 'fork done, start copy repo tree...'})
     return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
 
@@ -615,7 +617,7 @@ def fulfill_gitrepo(username, reponame, auth_type):
             os.makedirs(user_repo_path)
     pub_repo_path = ('%s/%s/%s.git' % (PUBLIC_REPO_PATH, username, reponame))
     pri_repo_path = ('%s/%s/%s.git' % (PRIVATE_REPO_PATH, username, reponame))
-    if auth_type == '0': 
+    if int(auth_type) == 0: 
         if not os.path.exists(pub_repo_path):
             if os.path.exists(pri_repo_path):
                 shutil.move(pri_repo_path, pub_repo_path)

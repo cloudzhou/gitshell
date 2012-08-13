@@ -15,9 +15,9 @@
 	    <ul class="breadcrumb" style="margin-bottom: 0px">
             <li style="margin-right: 5px">
             {% if repo.auth_type == 0 %}
-                <img src="/static/img/glyphicons_203_lock.png"/>
-            {% else %}
                 <img src="/static/img/glyphicons_204_unlock.png"/>
+            {% else %}
+                <img src="/static/img/glyphicons_203_lock.png"/>
             {% endif %}
             </li>
             <li><h4><a href="/{{ user_name }}/">{{ user_name }}</a> <span class="divider">/</span></h4></li>
@@ -185,6 +185,7 @@ $(function(){
             },
         })
     })
+{% if has_fork_right %}
     $('#i_fork').click(function() {
         if(disabled_fork) {
             return false;
@@ -211,6 +212,7 @@ $(function(){
             },
         })
     })
+{% endif %}
     $('#i_refs').mouseover(function(event) {
         if($('#i_refs .dropdown-menu li').size() == 0) {
             do_refs();

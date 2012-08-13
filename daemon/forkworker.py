@@ -1,10 +1,14 @@
 #!/usr/bin/python
+import os
+import shutil
 import sys, json
 import beanstalkc
 from subprocess import Popen
 from subprocess import PIPE
+from gitshell.repo.models import RepoManager
+from gitshell.gsuser.models import GsuserManager
 from gitshell.daemon.models import EventManager, FORK_TUBE_NAME
-from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
+from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
 
 def start():
     print '==================== START ===================='
@@ -31,20 +35,28 @@ def do_event(event):
     to_repo_id = event['to_repo_id']
     from_repo = RepoManager.get_repo_by_id(from_repo_id)
     to_repo = RepoManager.get_repo_by_id(to_repo_id)
-    if from_repo is None or to_repo is None:
-        return
-    from_repo_path = from_repo.get_abs_repopath()
-    to_repo_path = to_repo.get_abs_repopath()
+    copy_from_bare = False
+    if from_repo is None:
+        if to_repo is not None:
+            copy_from_bare = True
+        else:
+            return
+    from_repo_path = GIT_BARE_REPO_PATH
+    if not copy_from_bare:
+        from_user = GsuserManager.get_user_by_id(from_repo.user_id)
+        from_repo_path = from_repo.get_abs_repopath(from_user.username)
+    to_user = GsuserManager.get_user_by_id(to_repo.user_id)
+    to_repo_path = to_repo.get_abs_repopath(to_user.username)
     if not os.path.exists(from_repo_path):
         print 'from_repo_path: %s is not exists, clone failed' % from_repo_path
         return
-    if self.chdir(from_repo_path) is False:
+    if chdir(from_repo_path) is False:
         print 'chdir to from_repo_path: %s is False, clone failed' % from_repo_path
         return
     if os.path.exists(to_repo_path):
         print 'to_repo_path: %s already exists, clone failed' % to_repo_path
         return
-    args = ['/usr/bin/git gc']
+    args = ['/usr/bin/git', 'gc']
     popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
     result = popen.communicate()[0].strip()
     to_repo_dirname = os.path.dirname(to_repo_path)
@@ -56,6 +68,14 @@ def do_event(event):
 def update_repo_status(to_repo):
     to_repo.status = 0
     to_repo.save()
+
+def chdir(path):
+    try:
+        os.chdir(path)
+        return True
+    except Exception, e:
+        print e
+        return False
 
 def stop():
     stop_event = {'type': -1}

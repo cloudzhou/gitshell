@@ -92,7 +92,10 @@ def get(model, pkid):
     if obj is not None:
         return obj
     try:
-        obj = model.objects.get(visibly = 0, id = pkid)
+        if hasattr(model, 'visibly'):
+            obj = model.objects.get(visibly = 0, id = pkid)
+        else:
+            obj = model.objects.get(id = pkid)
         cache.add(id_key, obj)
         return obj
     except:
@@ -111,12 +114,12 @@ def get_many(model, pkids):
     if len(uncache_ids) > 0:
         objects = []
         try:
-            objects = model.objects.filter(id__in=uncache_ids)
+            if hasattr(model, 'visibly'):
+                objects = model.objects.filter(visibly=0).filter(id__in=uncache_ids)
+            else:
+                objects = model.objects.filter(id__in=uncache_ids)
         except:
             pass
-        if hasattr(model, 'visibly'):
-            visibly_objects = [obj for obj in objects if obj.visibly == 0]
-            objects = visibly_objects
         __add_many(table, objects)
         many_objects.extend(objects)
     objects_map = dict([(x.id, x) for x in many_objects])
