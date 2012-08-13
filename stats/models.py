@@ -1,3 +1,5 @@
+import time
+from datetime import datetime, timedelta
 from django.db import models
 from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many
@@ -85,4 +87,55 @@ class StatsManager():
         repo_stats = query(StatsRepo, None, 'allstatsrepo_l_cons', [1, datetype, fromDateTime, offset, row_count])
         return repo_stats
 
+    @classmethod
+    def stats(self, commits):
+        stats_map = {}
+        per_stats_map = {}
+        now = int(time.time())
+        for commit in commits:
+            (repo, commitor, author, timestamp) = (commit[0], commit[1], commit[2], commit[3])
+            (round_hour, round_day, round_week, round_month, round_year) = self.__get_round_time_list(timestamp)
+            for (round_type, round_time) in [('hour', round_hour), ('day', round_day), ('week', round_week), ('month', round_month), ('year', round_year)]:
+                timestamp = round_time
+                # TODO
+                #if now - int(timestamp) > yearinseconds:
+                #    continue
+                #if round_type == 'hour' and now - int(timestamp) > 60*60*24:
+                #    continue
+                usertimekey = 'user_%s_%s_%s' % (round_type, commitor, timestamp)
+                repotimekey = 'repo_%s_%s_%s' % (round_type, repo, timestamp)
+                if usertimekey not in stats_map:
+                    stats_map[usertimekey] = 0
+                if repotimekey not in stats_map:
+                    stats_map[repotimekey] = 0
+                stats_map[usertimekey] = stats_map[usertimekey] + 1
+                stats_map[repotimekey] = stats_map[repotimekey] + 1
+        
+                #if round_type == 'hour':
+                #    continue
+                per_usertimekey = 'userrepo_%s_%s_%s_%s' % (round_type, author, repo, timestamp)
+                per_repotimekey = 'repouser_%s_%s_%s_%s' % (round_type, repo, author, timestamp)
+                if per_usertimekey not in per_stats_map:
+                    per_stats_map[per_usertimekey] = 0
+                if per_repotimekey not in per_stats_map:
+                    per_stats_map[per_repotimekey] = 0
+                per_stats_map[per_usertimekey] = per_stats_map[per_usertimekey] + 1
+                per_stats_map[per_repotimekey] = per_stats_map[per_repotimekey] + 1
+
+    round_time_list_cache = {}
+    @classmethod
+    def __get_round_time_list(self, timestamp):
+        dt = datetime.fromtimestamp(timestamp)
+        round_hour = datetime(dt.year, dt.month, dt.day, dt.hour)
+        if round_hour in round_time_list_cache:
+            return round_time_list_cache[round_hour]
+        round_day = datetime(dt.year, dt.month, dt.day)
+        round_week = round_day + timedelta(days=-dt.weekday())
+        round_month = datetime(dt.year, dt.month, 1)
+        round_year = datetime(dt.year, 1, 1)
+        round_time_list = tuple(x.strftime('%s') for x in [round_hour, round_day, round_week, round_month, round_year])
+        if len(round_time_list_cache) > 1000:
+            round_time_list_cache = {}
+        round_time_list_cache[round_hour.strftime('%s')] = round_time_list
+        return round_time_list
 

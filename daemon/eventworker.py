@@ -43,11 +43,13 @@ def do_event(event):
         (username, reponame) = get_username_reponame(abspath)
         if reponame.endswith('.git'):
             reponame = reponame[0 : len(reponame)-4]
+        if username == '' or reponame == '':
+            return
         user = get_user(username)
         gsuser = get_gsuser(user)
         repo = get_repo(user, reponame)
         repopath = get_repopath(user, repo)
-        if user is None or gsuser is None or repo is None or not os.path.exists(repopath):
+        if user is None or gsuser is None or repo is None or repopath is None or not os.path.exists(repopath):
             return
         rev_ref_arr = event['revrefarr']
         for rev_ref in rev_ref_arr:    
@@ -118,13 +120,7 @@ def get_username_reponame(abspath):
     return ('', '')
 
 def get_user(username):
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        user = None
-    if user is not None and user.is_active:
-        return user
-    return None
+    return GsuserManager.get_user_by_name(username)
 
 def get_gsuser(user):
     if user is None:
@@ -137,10 +133,9 @@ def get_repo(user, reponame):
     return RepoManager.get_repo_by_userId_name(user.id, reponame)
 
 def get_repopath(user, repo):
-    if repo.auth_type == 0:
-        return ('%s/%s/%s.git') % (PUBLIC_REPO_PATH, user.username, repo.name)
-    else:
-        return ('%s/%s/%s.git') % (PRIVATE_REPO_PATH, user.username, repo.name)
+    if user is None or repo is None:
+        return None
+    return repo.get_abs_repopath(user.username)
 
 def update_gsuser_repo_quote(gsuser, repo, diff_size):
     gsuser.used_quote = gsuser.used_quote + diff_size
