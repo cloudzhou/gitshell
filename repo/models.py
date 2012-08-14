@@ -67,15 +67,15 @@ class CommitHistory(BaseModel):
     refname = models.CharField(max_length=32)
 
     @classmethod
-    def create(self, repo_id, repo_name, commit_hash, parent_hashes, tree_hash, committer, author, committer_date, subject, refname):
+    def create(self, repo_id, repo_name, commit_hash, parent_hashes, tree_hash, author, committer, committer_date, subject, refname):
         commitHistory = CommitHistory(
             repo_id = repo_id,
             repo_name = repo_name,
             commit_hash = commit_hash,
             parent_hashes = parent_hashes,
             tree_hash = tree_hash,
-            committer = committer,
             author = author,
+            committer = committer,
             committer_date = committer_date,
             subject = subject,
             refname = refname

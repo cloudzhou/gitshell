@@ -6,7 +6,7 @@ import beanstalkc
 def main():
     abspath = os.path.abspath(os.path.dirname(__file__))
     rev_ref_arr = []
-    max_line_count = 100
+    max_line_count = 50
     for line in sys.stdin.xreadlines():
         max_line_count = max_line_count - 1
         if max_line_count < 0:

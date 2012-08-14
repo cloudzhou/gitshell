@@ -61,7 +61,7 @@ def do_event(event):
             diff_tree_blob_size_params.extend(rev_ref)
             # TODO why master?
             if refname == 'refs/heads/master': 
-                bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev)
+                bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname)
         update_quote(user, gsuser, repo, repopath, diff_tree_blob_size_params)
         return
     if etype == 1:
@@ -82,7 +82,9 @@ def update_quote(user, gsuser, repo, repopath, parameters):
             diff_size = int(result) - repo.used_quote
     update_gsuser_repo_quote(gsuser, repo, diff_size)
 
-def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev):
+# TODO do something with refname
+# git log -100 --pretty='%h  %p  %t  %an  %cn  %ct  %s'
+def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
     args = ['/opt/run/bin/git-pretty-log.sh', repopath, oldrev, newrev]
     popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
     result = popen.communicate()[0].strip()
@@ -94,7 +96,8 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev):
                 committer_date = datetime.fromtimestamp(int(items[5])) 
                 # TODO
                 author_name = items[3][0:30]
-                commitHistory = CommitHistory.create(repo.id, repo.name, items[0], items[1][0:24], items[2], author_name, items[4][0:30], committer_date, items[6][0:512])
+                committer_name = items[4][0:30]
+                commitHistory = CommitHistory.create(repo.id, repo.name, items[0], items[1][0:24], items[2], author_name, committer_name, committer_date, items[6][0:512], refname[0:32])
                 commitHistorys.append(commitHistory)
     for commitHistory in commitHistorys:
         commitHistory.save()

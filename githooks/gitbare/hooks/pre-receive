@@ -1,18 +1,20 @@
 #!/usr/bin/python
-import re
-import os, sys
-import json
-import beanstalkc
+import re, sys
 
 def main():
     pre_check_failed_msg = ''
+    #max_line_count = 50
     for line in sys.stdin.xreadlines():
+        #max_line_count = max_line_count - 1
+        #if max_line_count < 0:
+            #pre_check_failed_msg = 'too many branches or tabs commit, pre-receive failed!'
+            #break
         if len(line) > 1024:
             pre_check_failed_msg = 'commit message line max 1024!'
             break
         line_array = line.strip().split(' ')
         if len(line_array) != 3:
-            pre_check_failed_msg = 'tree len(array) must be 3!'
+            pre_check_failed_msg = 'git branch or tag name must match ^[a-zA-Z0-9_\.\-]+$'
             break
         if not (re.match('^[a-zA-Z0-9_\.\-]+$', line_array[0]) and re.match('^\w+$', line_array[1]) and re.match('^[\w|/]+$', line_array[2])):
             pre_check_failed_msg = 'illegal branch name!'

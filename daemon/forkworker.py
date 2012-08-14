@@ -36,11 +36,10 @@ def do_event(event):
     from_repo = RepoManager.get_repo_by_id(from_repo_id)
     to_repo = RepoManager.get_repo_by_id(to_repo_id)
     copy_from_bare = False
+    if to_repo is None:
+        return
     if from_repo is None:
-        if to_repo is not None:
-            copy_from_bare = True
-        else:
-            return
+        copy_from_bare = True
     from_repo_path = GIT_BARE_REPO_PATH
     if not copy_from_bare:
         from_user = GsuserManager.get_user_by_id(from_repo.user_id)
