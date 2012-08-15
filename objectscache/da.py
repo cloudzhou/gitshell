@@ -26,8 +26,8 @@ rawsql = {
     # userpubkey #
     'userpubkey_l_userId':
         'select * from keyauth_userpubkey where visibly = 0 and user_id = %s limit 0, 10',
-    #'userpubkey_u_id':
-    #    'update keyauth_userpubkey set visibly = 1 where visibly = 0 and user_id = %s and id = %s',
+    'userpubkey_l_fingerprint':
+        'select * from keyauth_userpubkey where visibly = 0 and fingerprint = %s limit 0, 10',
     'userpubkey_c_fingerprint':
         'select 0 as id, count(1) as count from keyauth_userpubkey where visibly = 0 and fingerprint = %s limit 0, 10',
     'userpubkey_s_fingerprint':

@@ -41,25 +41,35 @@ def keyauth(request, fingerprint, command):
     reponame = short_repo_path[slash_idx+1 : last_repo_char_idx+1]
     if not (re.match('^\w+$', username) and re.match('^\w+$', reponame)):
         return not_git_command()
-    try:
-        user = User.objects.get(username = username)
-    except User.DoesNotExist:
+    
+    user = GsuserManager.get_user_by_name(username)
+    if user is None:
+        return not_git_command()
+    userprofile = GsuserManager.get_userprofile_by_id(user.id)
+    if userprofile is None:
+        return not_git_command()
+    if userprofile.used_quote > userprofile.quote:
+        return not_git_command()
+    repo = RepoManager.get_repo_by_userId_name(user.id, reponame)
+    if repo is None:
         return not_git_command()
 
-    repo = RepoManager.get_repo_by_userId_name(user.id, reponame)
-    if repo is not None:
-        pre_repo_path = PRIVATE_REPO_PATH
-        if repo.auth_type == 0:
-            pre_repo_path = PUBLIC_REPO_PATH
-        userprofile = GsuserManager.get_userprofile_by_id(user.id)
-        if userprofile.used_quote > userprofile.quote:
-            return not_git_command()
+    pre_repo_path = PRIVATE_REPO_PATH
+    if repo.auth_type == 0:
+        pre_repo_path = PUBLIC_REPO_PATH
 
+    # author of the repo
+    userPubkey = KeyauthManager.get_userpubkey_by_userId_fingerprint(user.id, fingerprint)
+    if userPubkey is not None:
         quote = userprofile.quote
-        userPubkey = KeyauthManager.get_userpubkey_by_userId_fingerprint(user.id, fingerprint)
-        if userPubkey is not None:
+        return response_full_git_command(quote, pre_command, pre_repo_path, username, reponame)
+
+    # member of the repo
+    userpubkeys = KeyauthManager.list_userpubkey_by_fingerprint(fingerprint)
+    for userpubkey in userpubkeys:
+        repoMember = RepoManager.get_repo_member(repo.id, userpubkey.user_id)
+        if repoMember is not None:
             return response_full_git_command(quote, pre_command, pre_repo_path, username, reponame)
-        # member of repo TODO
     return not_git_command()
 
 blocks_quote = {67108864 : 32768}
@@ -70,7 +80,7 @@ def response_full_git_command(quote, pre_command, pre_repo_path, username, repon
     if quote in blocks_quote:
         blocks = blocks_quote[quote]
         kbytes = kbytes_quote[quote]
-    return HttpResponse("ulimit -f %s && ulimit -m %s && ulimit -v %s && /usr/bin/git-shell -c \"%s '%s/%s/%s'\"" % (blocks, kbytes, kbytes, pre_command, pre_repo_path, username, reponame), content_type="text/plain")
+    return HttpResponse("ulimit -f %s && ulimit -m %s && ulimit -v %s && /usr/bin/git-shell -c \"%s '%s/%s/%s.git'\"" % (blocks, kbytes, kbytes, pre_command, pre_repo_path, username, reponame), content_type="text/plain")
 
 def not_git_command():
     return HttpResponse("echo 'fatal: git repoitory size limit exceeded or you have not rights or does not appear to be a git command'", content_type="text/plain")
