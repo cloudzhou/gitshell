@@ -389,6 +389,7 @@ def repo_network(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    error = u''
     repoMemberForm = RepoMemberForm()
     if request.method == 'POST' and request.user.is_authenticated():
         repoMemberForm = RepoMemberForm(request.POST)
@@ -396,7 +397,11 @@ def repo_network(request, user_name, repo_name):
             username = repoMemberForm.cleaned_data['username'].strip()
             action = repoMemberForm.cleaned_data['action']
             if action == 'add_member':
-                RepoManager.add_member(repo.id, username)
+                length = len(RepoManager.list_repomember(repo.id))
+                if length < 10:
+                    RepoManager.add_member(repo.id, username)
+                else:
+                    error = u'成员数目不得超过10位'
             if action == 'remove_member':
                 RepoManager.remove_member(repo.id, username)
     user_id = request.user.id

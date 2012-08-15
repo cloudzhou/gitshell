@@ -13,6 +13,7 @@ from gitshell.feed.feed import FeedAction
 from gitshell.daemon.models import EventManager, EVENT_TUBE_NAME
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
 
+MAX_COMMIT_COUNT = 100
 def start():
     print '==================== START ===================='
     beanstalk = beanstalkc.Connection(host=BEANSTALK_HOST, port=BEANSTALK_PORT)
@@ -52,6 +53,7 @@ def do_event(event):
         if user is None or gsuser is None or repo is None or repopath is None or not os.path.exists(repopath):
             return
         rev_ref_arr = event['revrefarr']
+        commit_count = 0
         for rev_ref in rev_ref_arr:    
             if len(rev_ref) < 3:
                 continue
@@ -59,9 +61,9 @@ def do_event(event):
             newrev = rev_ref[1]
             refname = rev_ref[2]
             diff_tree_blob_size_params.extend(rev_ref)
-            # TODO why master?
-            if refname == 'refs/heads/master': 
-                bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname)
+            commit_count = bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname) + commit_count
+            if commit_count > MAX_COMMIT_COUNT:
+                break
         update_quote(user, gsuser, repo, repopath, diff_tree_blob_size_params)
         return
     if etype == 1:
@@ -82,28 +84,34 @@ def update_quote(user, gsuser, repo, repopath, parameters):
             diff_size = int(result) - repo.used_quote
     update_gsuser_repo_quote(gsuser, repo, diff_size)
 
-# TODO do something with refname
 # git log -100 --pretty='%h  %p  %t  %an  %cn  %ct  %s'
 def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
     args = ['/opt/run/bin/git-pretty-log.sh', repopath, oldrev, newrev]
     popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
     result = popen.communicate()[0].strip()
-    commitHistorys = []
+    raw_commitHistorys = []
     if popen.returncode == 0:
         for line in result.split('\n'):
             items = line.split('  ', 6)
             if len(items) >= 6 and re.match('^\d+$', items[5]):
                 committer_date = datetime.fromtimestamp(int(items[5])) 
-                # TODO
                 author_name = items[3][0:30]
                 committer_name = items[4][0:30]
                 commitHistory = CommitHistory.create(repo.id, repo.name, items[0], items[1][0:24], items[2], author_name, committer_name, committer_date, items[6][0:512], refname[0:32])
-                commitHistorys.append(commitHistory)
-    for commitHistory in commitHistorys:
-        commitHistory.save()
+                raw_commitHistorys.append(commitHistory)
+    length = len(raw_commitHistorys)
+    commit_ids = [commitHistory.commit_id for x in raw_commitHistorys]
+    exists_commitHistorys = RepoManager.list_commits_by_commit_ids(repo.id, commit_ids)
+    exists_commit_ids_set = set([x.commit_id for x in exists_commitHistorys])
+    commitHistorys = []
+    for commitHistory in raw_commitHistorys:
+        if commitHistory.commit_id not in exists_commit_ids_set:
+            commitHistory.save()
+            commitHistorys.append(commitHistory)
+    # TODO commiter and author Map list_member
+    # feed action
     feedAction = FeedAction()
     feed_key_values = []
-    # TODO not user.id but author.id
     for commitHistory in commitHistorys:
         feed_key_values.append(-float(time.mktime(commitHistory.committer_date.timetuple())))
         feed_key_values.append(commitHistory.id)
@@ -113,6 +121,14 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
     else:
         feedAction.madd_pub_user_feed(user.id, feed_key_values)
     feedAction.madd_repo_feed(repo.id, feed_key_values)
+
+    # stats action
+    __stats(commitHistorys)
+    
+    return length
+
+def __stats(commitHistorys):
+    pass
 
 def get_username_reponame(abspath):
     rfirst_slash_idx = abspath.rfind('/')

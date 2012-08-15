@@ -3,12 +3,12 @@ import re, sys
 
 def main():
     pre_check_failed_msg = ''
-    #max_line_count = 50
+    max_line_count = 50
     for line in sys.stdin.xreadlines():
-        #max_line_count = max_line_count - 1
-        #if max_line_count < 0:
-            #pre_check_failed_msg = 'too many branches or tabs commit, pre-receive failed!'
-            #break
+        max_line_count = max_line_count - 1
+        if max_line_count < 0:
+            pre_check_failed_msg = 'too many branches or tabs commit, pre-receive failed!'
+            break
         if len(line) > 1024:
             pre_check_failed_msg = 'commit message line max 1024!'
             break
