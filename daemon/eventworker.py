@@ -66,10 +66,6 @@ def do_event(event):
                 break
         update_quote(user, gsuser, repo, repopath, diff_tree_blob_size_params)
         return
-    if etype == 1:
-        return
-    if etype == 2:
-        return
 
 def update_quote(user, gsuser, repo, repopath, parameters):
     args = ['/opt/run/bin/diff-tree-blob-size.sh', repopath]
@@ -108,27 +104,45 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
         if commitHistory.commit_id not in exists_commit_ids_set:
             commitHistory.save()
             commitHistorys.append(commitHistory)
-    # TODO commiter and author Map list_member
     # feed action
+    member_user_ids = [x.user_id for x in RepoManager.list_repomember(repo.id)]
+    member_username_dict = dict([(x.username, x.id) for x in GsuserManager.list_user_by_ids(member_user_ids)])
     feedAction = FeedAction()
-    feed_key_values = []
+    user_feed_key_values = {}
+    total_feed_key_values = []
     for commitHistory in commitHistorys:
-        feed_key_values.append(-float(time.mktime(commitHistory.committer_date.timetuple())))
-        feed_key_values.append(commitHistory.id)
+        if commitHistory.committer in member_username_dict:
+            committer_id = member_username_dict[commitHistory.committer]
+            if committer_id not in user_feed_key_values:
+                user_feed_key_values[committer_id] = []
+            feed_key_values = user_feed_key_values[committer_id]
+            feed_key_values.append(-float(time.mktime(commitHistory.committer_date.timetuple())))
+            feed_key_values.append(commitHistory.id)
+        total_feed_key_values.append(-float(time.mktime(commitHistory.committer_date.timetuple())))
+        total_feed_key_values.append(commitHistory.id)
+        
     # total private repo the feed is private
-    if repo.auth_type == 2:
-        feedAction.madd_pri_user_feed(user.id, feed_key_values)
-    else:
-        feedAction.madd_pub_user_feed(user.id, feed_key_values)
-    feedAction.madd_repo_feed(repo.id, feed_key_values)
+    for user_id, feed_key_values in user_feed_key_values.items():
+        if repo.auth_type == 2:
+            feedAction.madd_pri_user_feed(user_id, feed_key_values)
+        else:
+            feedAction.madd_pub_user_feed(user_id, feed_key_values)
+    feedAction.madd_repo_feed(repo.id, total_feed_key_values)
 
     # stats action
-    __stats(commitHistorys)
+    __stats(commitHistorys, repo.id, member_username_dict)
     
     return length
 
-def __stats(commitHistorys):
-    pass
+def __stats(commitHistorys, repo_id, member_username_dict):
+    stats_commits = []
+    for commitHistory in commitHistorys:
+        if commitHistory.committer in member_username_dict and commitHistory.author in member_username_dict:
+            committer_id = member_username_dict[commitHistory.committer]
+            author_id = member_username_dict[commitHistory.author]
+            timestamp = time.mktime(commitHistory.committer_date.timetuple())
+            stats_commits.append([repo_id, committer_id, author_id, timestamp])
+    StatsManager.stats(stats_commits)
 
 def get_username_reponame(abspath):
     rfirst_slash_idx = abspath.rfind('/')
@@ -174,3 +188,4 @@ if __name__ == '__main__':
         start()
     elif action == 'stop':
         stop()
+

@@ -87,6 +87,8 @@ class StatsManager():
         repo_stats = query(StatsRepo, None, 'allstatsrepo_l_cons', [1, datetype, fromDateTime, offset, row_count])
         return repo_stats
 
+    
+    round_type_map = {'hour': 0, 'day': 1, 'week': 2, 'month': 3, 'year':4}
     @classmethod
     def stats(self, commits):
         stats_map = {}
@@ -94,33 +96,58 @@ class StatsManager():
         now = int(time.time())
         for commit in commits:
             (repo, commitor, author, timestamp) = (commit[0], commit[1], commit[2], commit[3])
+            if repo is None or (commitor is None and author is None):
+                continue
             (round_hour, round_day, round_week, round_month, round_year) = self.__get_round_time_list(timestamp)
             for (round_type, round_time) in [('hour', round_hour), ('day', round_day), ('week', round_week), ('month', round_month), ('year', round_year)]:
                 timestamp = round_time
-                # TODO
-                #if now - int(timestamp) > yearinseconds:
-                #    continue
-                #if round_type == 'hour' and now - int(timestamp) > 60*60*24:
-                #    continue
-                usertimekey = 'user_%s_%s_%s' % (round_type, commitor, timestamp)
+                if round_type == 'hour' and now - int(timestamp) > 60*60*24:
+                    continue
+                if round_type == 'day' and now - int(timestamp) > 31*60*60*24:
+                    continue
+                if commitor is not None:
+                    usertimekey = 'user_%s_%s_%s' % (round_type, commitor, timestamp)
+                    if usertimekey not in stats_map:
+                        stats_map[usertimekey] = 0
+                    stats_map[usertimekey] = stats_map[usertimekey] + 1
                 repotimekey = 'repo_%s_%s_%s' % (round_type, repo, timestamp)
-                if usertimekey not in stats_map:
-                    stats_map[usertimekey] = 0
                 if repotimekey not in stats_map:
                     stats_map[repotimekey] = 0
-                stats_map[usertimekey] = stats_map[usertimekey] + 1
                 stats_map[repotimekey] = stats_map[repotimekey] + 1
         
-                #if round_type == 'hour':
-                #    continue
-                per_usertimekey = 'userrepo_%s_%s_%s_%s' % (round_type, author, repo, timestamp)
-                per_repotimekey = 'repouser_%s_%s_%s_%s' % (round_type, repo, author, timestamp)
-                if per_usertimekey not in per_stats_map:
-                    per_stats_map[per_usertimekey] = 0
-                if per_repotimekey not in per_stats_map:
-                    per_stats_map[per_repotimekey] = 0
-                per_stats_map[per_usertimekey] = per_stats_map[per_usertimekey] + 1
-                per_stats_map[per_repotimekey] = per_stats_map[per_repotimekey] + 1
+                if round_type == 'hour' or round_type == 'day':
+                    continue
+                if author is not None:
+                    per_usertimekey = 'userrepo_%s_%s_%s_%s' % (round_type, author, repo, timestamp)
+                    if per_usertimekey not in per_stats_map:
+                        per_stats_map[per_usertimekey] = 0
+                    per_stats_map[per_usertimekey] = per_stats_map[per_usertimekey] + 1
+                    per_repotimekey = 'repouser_%s_%s_%s_%s' % (round_type, repo, author, timestamp)
+                    if per_repotimekey not in per_stats_map:
+                        per_stats_map[per_repotimekey] = 0
+                    per_stats_map[per_repotimekey] = per_stats_map[per_repotimekey] + 1
+
+        for k, v in stats_map.items():
+            (stats_type, raw_round_type, stats_id, round_time) = k.split('_')
+            stats_count = v
+            round_type = round_type_map[raw_round_type]
+            if stats_type == 'user':
+                statsuser = StatsUser.create_stats_user(0, round_type, datetime.datetime.fromtimestamp(int(round_time)), int(stats_id), 0, stats_count)
+                statsuser.save()
+            elif stats_type == 'repo':
+                statsrepo = StatsRepo.create_stats_repo(0, round_type, datetime.datetime.fromtimestamp(int(round_time)), int(stats_id), 0, stats_count)
+                statsrepo.save()
+
+        for k, v in per_stats_map.items():
+            (stats_type, raw_round_type, id1, id2, round_time) = k.split('_')
+            stats_count = v
+            round_type = round_type_map[raw_round_type]
+            if stats_type == 'userrepo':
+                statsuser = StatsUser.create_stats_user(1, round_type, datetime.datetime.fromtimestamp(int(round_time)), int(id1), int(id2), stats_count)
+                statsuser.save()
+            elif stats_type == 'repouser':
+                statsrepo = StatsRepo.create_stats_repo(1, round_type, datetime.datetime.fromtimestamp(int(round_time)), int(id1), int(id2), stats_count)
+                statsrepo.save()
 
     round_time_list_cache = {}
     @classmethod

@@ -150,7 +150,7 @@ class RepoManager():
 
     @classmethod
     def list_commits_by_commit_ids(self, repo_id, commit_ids):
-        return len(CommitHistory.objects.filter(visibly=0).filter(repo_id=repo_id).filter(commit_id__in=commit_ids))
+        return list(CommitHistory.objects.filter(visibly=0).filter(repo_id=repo_id).filter(commit_id__in=commit_ids))
 
     @classmethod
     def list_repomember(self, repo_id):
