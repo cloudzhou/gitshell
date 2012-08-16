@@ -80,7 +80,7 @@ class CommitHistory(BaseModel):
             subject = subject,
             refname = refname
         )
-        commitHistory.commit_id = int(commit_hash[0:7], 16)
+        commitHistory.commit_id = int(commit_hash[0:6], 16)
         return commitHistory
 
 class WatchHistory(BaseModel):

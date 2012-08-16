@@ -1,4 +1,4 @@
-import time
+import time, hashlib
 from datetime import datetime, timedelta
 from django.db import models
 from gitshell.objectscache.models import BaseModel
@@ -13,6 +13,9 @@ from gitshell.objectscache.da import query, queryraw, execute, count, get, get_m
 # repo:
 # id repo_id user_id commit_count
 
+round_time_list_cache = {}
+round_type_map = {'hour': 0, 'day': 1, 'week': 2, 'month': 3, 'year':4}
+
 class StatsUser(models.Model):
     statstype = models.SmallIntegerField(default=0)
     datetype = models.SmallIntegerField(default=0)
@@ -20,10 +23,11 @@ class StatsUser(models.Model):
     user_id = models.IntegerField()
     repo_id = models.IntegerField()
     count = models.IntegerField(default=0)
+    hash_id = models.IntegerField()
 
     @classmethod
-    def create_stats_user(self, statstype, datetype, date, user_id, repo_id, count):
-        return StatsUser(statstype=statstype, datetype=datetype, date=date, user_id=user_id, repo_id=repo_id, count=count)
+    def create_stats_user(self, statstype, datetype, date, user_id, repo_id, count, hash_id):
+        return StatsUser(statstype=statstype, datetype=datetype, date=date, user_id=user_id, repo_id=repo_id, count=count, hash_id=hash_id)
 
 class StatsRepo(models.Model):
     statstype = models.SmallIntegerField(default=0)
@@ -32,10 +36,11 @@ class StatsRepo(models.Model):
     repo_id = models.IntegerField()
     user_id = models.IntegerField()
     count = models.IntegerField(default=0)
+    hash_id = models.IntegerField()
 
     @classmethod
-    def create_stats_repo(self, statstype, datetype, date, repo_id, user_id, count):
-        return StatsRepo(statstype=statstype, datetype=datetype, date=date, repo_id=repo_id, user_id=user_id, count=count)
+    def create_stats_repo(self, statstype, datetype, date, repo_id, user_id, count, hash_id):
+        return StatsRepo(statstype=statstype, datetype=datetype, date=date, repo_id=repo_id, user_id=user_id, count=count, hash_id=hash_id)
 
 
 class StatsManager():
@@ -52,7 +57,7 @@ class StatsManager():
         if datetypeStr not in self.datetypeDict:
             return []
         datetype = self.datetypeDict[datetypeStr]
-        user_stats = query(StatsUser, user_id, 'statsuser_l_cons', [0, datetype, fromDateTime, toDateTime, user_id])
+        user_stats = query(StatsUser, user_id, 'statsuser_l_cons', [user_id, 0, datetype, fromDateTime, toDateTime])
         return user_stats
 
     @classmethod
@@ -60,7 +65,7 @@ class StatsManager():
         if datetypeStr not in self.datetypeDict:
             return []
         datetype = self.datetypeDict[datetypeStr]
-        user_stats = query(StatsUser, user_id, 'per_statsuser_l_cons', [1, datetype, fromDateTime, user_id])
+        user_stats = query(StatsUser, user_id, 'per_statsuser_l_cons', [user_id, 1, datetype, fromDateTime])
         return user_stats
 
     @classmethod
@@ -68,7 +73,7 @@ class StatsManager():
         if datetypeStr not in self.datetypeDict:
             return []
         datetype = self.datetypeDict[datetypeStr]
-        repo_stats = query(StatsRepo, repo_id, 'statsrepo_l_cons', [0, datetype, fromDateTime, toDateTime, repo_id])
+        repo_stats = query(StatsRepo, repo_id, 'statsrepo_l_cons', [repo_id, 0, datetype, fromDateTime, toDateTime])
         return repo_stats
 
     @classmethod
@@ -76,7 +81,7 @@ class StatsManager():
         if datetypeStr not in self.datetypeDict:
             return []
         datetype = self.datetypeDict[datetypeStr]
-        repo_stats = query(StatsRepo, repo_id, 'per_statsrepo_l_cons', [1, datetype, fromDateTime, repo_id])
+        repo_stats = query(StatsRepo, repo_id, 'per_statsrepo_l_cons', [repo_id, 1, datetype, fromDateTime])
         return repo_stats
 
     @classmethod
@@ -88,7 +93,6 @@ class StatsManager():
         return repo_stats
 
     
-    round_type_map = {'hour': 0, 'day': 1, 'week': 2, 'month': 3, 'year':4}
     @classmethod
     def stats(self, commits):
         stats_map = {}
@@ -131,27 +135,79 @@ class StatsManager():
             (stats_type, raw_round_type, stats_id, round_time) = k.split('_')
             stats_count = v
             round_type = round_type_map[raw_round_type]
+            stats_date = datetime.fromtimestamp(int(round_time))
             if stats_type == 'user':
-                statsuser = StatsUser.create_stats_user(0, round_type, datetime.datetime.fromtimestamp(int(round_time)), int(stats_id), 0, stats_count)
-                statsuser.save()
+                user_id = int(stats_id)
+                hash_id = self.generate_stats_hash_id(0, round_type, stats_date, user_id, 0)
+                statsuser = StatsUser.create_stats_user(0, round_type, stats_date, user_id, 0, stats_count, hash_id)
+                exists_statsuser = self.__get_stats_user(user_id, hash_id)
+                if exists_statsuser is not None:
+                    exists_statsuser.count = exists_statsuser.count + stats_count
+                    exists_statsuser.save()
+                else:
+                    statsuser.save()
             elif stats_type == 'repo':
-                statsrepo = StatsRepo.create_stats_repo(0, round_type, datetime.datetime.fromtimestamp(int(round_time)), int(stats_id), 0, stats_count)
-                statsrepo.save()
+                repo_id = int(stats_id)
+                hash_id = self.generate_stats_hash_id(0, round_type, stats_date, repo_id, 0)
+                statsrepo = StatsRepo.create_stats_repo(0, round_type, stats_date, repo_id, 0, stats_count, hash_id)
+                exists_statsrepo = self.__get_stats_repo(repo_id, hash_id)
+                if exists_statsrepo is not None:
+                    exists_statsrepo.count = exists_statsrepo.count + stats_count
+                    exists_statsrepo.save()
+                else:
+                    statsrepo.save()
 
         for k, v in per_stats_map.items():
             (stats_type, raw_round_type, id1, id2, round_time) = k.split('_')
             stats_count = v
             round_type = round_type_map[raw_round_type]
+            stats_date = datetime.fromtimestamp(int(round_time))
             if stats_type == 'userrepo':
-                statsuser = StatsUser.create_stats_user(1, round_type, datetime.datetime.fromtimestamp(int(round_time)), int(id1), int(id2), stats_count)
-                statsuser.save()
+                user_id = int(id1)
+                repo_id = int(id2)
+                hash_id = self.generate_stats_hash_id(0, round_type, stats_date, user_id, repo_id)
+                statsuser = StatsUser.create_stats_user(1, round_type, stats_date, user_id, repo_id, stats_count, hash_id)
+                exists_statsuser = self.__get_stats_user(user_id, hash_id)
+                if exists_statsuser is not None:
+                    exists_statsuser.count = exists_statsuser.count + stats_count
+                    exists_statsuser.save()
+                else:
+                    statsuser.save()
             elif stats_type == 'repouser':
-                statsrepo = StatsRepo.create_stats_repo(1, round_type, datetime.datetime.fromtimestamp(int(round_time)), int(id1), int(id2), stats_count)
-                statsrepo.save()
+                repo_id = int(id1)
+                user_id = int(id2)
+                hash_id = self.generate_stats_hash_id(0, round_type, stats_date, user_id, repo_id)
+                statsrepo = StatsRepo.create_stats_repo(1, round_type, stats_date, repo_id, user_id, stats_count, hash_id)
+                exists_statsrepo = self.__get_stats_repo(repo_id, hash_id)
+                if exists_statsrepo is not None:
+                    exists_statsrepo.count = exists_statsrepo.count + stats_count
+                    exists_statsrepo.save()
+                else:
+                    statsrepo.save()
 
-    round_time_list_cache = {}
+    # eval hash id
+    @classmethod
+    def generate_stats_hash_id(self, statstype, datetype, date, user_id, repo_id):
+        hash_id = int(hashlib.md5('%s|%s|%s|%s|%s' % (statstype, datetype, date, user_id, repo_id)).hexdigest()[0:6], 16)
+        return hash_id
+
+    @classmethod
+    def __get_stats_user(self, user_id, hash_id):
+        user_stats = query(StatsUser, user_id, 'statsuser_s_hash_id', [user_id, hash_id])
+        if len(user_stats) > 0:
+            return user_stats[0]
+        return None
+
+    @classmethod
+    def __get_stats_repo(self, repo_id, hash_id):
+        repo_stats = query(StatsRepo, repo_id, 'statsrepo_s_hash_id', [repo_id, hash_id])
+        if len(repo_stats) > 0:
+            return repo_stats[0]
+        return None
+
     @classmethod
     def __get_round_time_list(self, timestamp):
+        global round_time_list_cache
         dt = datetime.fromtimestamp(timestamp)
         round_hour = datetime(dt.year, dt.month, dt.day, dt.hour)
         if round_hour in round_time_list_cache:

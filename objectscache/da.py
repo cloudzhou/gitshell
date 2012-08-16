@@ -73,14 +73,18 @@ rawsql = {
     'watchhistory_s_repo':
         'select * from repo_watchhistory where visibly = 0 and user_id = %s and watch_repo_id = %s limit 0, 1',
     # stats #
+    'statsrepo_s_hash_id':
+        'select * from stats_statsrepo where repo_id = %s and hash_id = %s limit 0, 1',
+    'statsuser_s_hash_id':
+        'select * from stats_statsuser where user_id = %s and hash_id = %s limit 0, 1',
     'statsrepo_l_cons':
-        'select * from stats_statsrepo where statstype = %s and datetype = %s and date between %s and %s and repo_id = %s',
+        'select * from stats_statsrepo where repo_id = %s and statstype = %s and datetype = %s and date between %s and %s',
     'statsuser_l_cons':
-        'select * from stats_statsuser where statstype = %s and datetype = %s and date between %s and %s and user_id = %s',
+        'select * from stats_statsuser where user_id = %s and statstype = %s and datetype = %s and date between %s and %s',
     'per_statsrepo_l_cons':
-        'select * from stats_statsrepo where statstype = %s and datetype = %s and date = %s and repo_id = %s order by count desc limit 0, 10',
+        'select * from stats_statsrepo where repo_id = %s and statstype = %s and datetype = %s and date = %s order by count desc limit 0, 10',
     'per_statsuser_l_cons':
-        'select * from stats_statsuser where statstype = %s and datetype = %s and date = %s and user_id = %s order by count desc limit 0, 10',
+        'select * from stats_statsuser where user_id = %s and statstype = %s and datetype = %s and date = %s order by count desc limit 0, 10',
     'allstatsrepo_l_cons':
         'select * from stats_statsrepo where statstype = %s and datetype = %s and date = %s order by count desc limit %s, %s',
 }
