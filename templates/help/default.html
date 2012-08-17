@@ -2,6 +2,7 @@
 {% block css %}
 <style>
 pre { border: 0px; }
+.command { padding: 5px; margin-left: 20px; margin-bottom: 5px; font-size: 16px }
 </style>
 {% endblock %}
 {% block container %}
@@ -87,8 +88,35 @@ A: 由于提供git托管的技术要求和资源消耗比普通网站高，为�
         <pre>ssh 公钥密钥对是一切安全的基础，就像第一道防盗门。gitshell出于安全的考虑，一概通过ssh协议交换数据，保护好ssh密钥是一个程序员应该有的安全意识，希望您通过1password之类的工具妥善保存，此外最好能定期的更新密钥。
 多人共用密钥是严格不支持的！
 如果您第一次使用，按照以下的方式配置ssh密码：
-1 xx
-2 xx
+ 快速入门:
+  如果您使用任何类unix系统，第一次配置 ssh 公钥密钥，请按照步骤，复制黑色背景字符，在终端执行命令，和编辑文件
+    1) 执行以下命令，生成 ssh 密钥, 保存在 ~/.ssh/gitshell.com_rsa
+        <textarea rows="1" cols="100" style="width: 500px; margin-left: 5px;" class="pull-left shell span4 command">
+ssh-keygen -t rsa  -N '' -f ~/.ssh/gitshell.com_rsa;
+        </textarea>
+    2) 编辑 ssh 客户端配置文件 ~/.ssh/config，使用您熟悉的编辑器，在后面添加
+        <textarea rows="4" cols="100" style="width: 500px; margin-left: 5px;" class="pull-left shell span4 command">
+Host gitshell.com
+ User {{ user.username }}
+ IdentityFile ~/.ssh/gitshell.com_rsa
+ PreferredAuthentications publickey
+</textarea>
+    3) 查看 ssh 公钥，使用 cat 命令，或者用编辑器打开
+        <textarea rows="1" cols="100" style="width: 500px; margin-left: 5px;" class="pull-left shell span4 command">
+cat ~/.ssh/gitshell.com_rsa.pub
+        </textarea>
+    4) 请复制 ssh 公钥的文本内容，点击<a target="_blank" href="/settings/sshpubkey/">ssh public key 管理</a>，输入标识保存公钥
+    5) ssh 公钥配置之后就可以长期使用了，请保护好 ~/.ssh/gitshell.com_rsa 密钥。点击<a target="_blank" href="/{{ user.username }}/repo/edit/0/">创建仓库</a>，详细仓库说明有助于推广
+    6) 你已经可以使用 gitshell 来托管代码了，以下是示范的操作，详细信息请<a href="/help/#learn">开始git的学习</a>
+        <textarea rows="7" cols="100" style="width: 500px; margin-left: 5px;" class="pull-left shell span4 command">
+&gt; git clone git@gitshell.com:your_name/repo_name
+&gt; cd repo_name;
+&gt; vim README.md
+&gt; git add README.md
+&gt; git commit -m "init README.md" .
+&gt; git push -u origin master
+        </textarea>
+    7) 感谢您走完整个配置流程，如果遇到任何问题，直接联系 support@gitshell.com，或者官方微博 <a target="_blank" href="http://weibo.com/gitshell">http://weibo.com/gitshell</a>
 </pre>
         <h3 id="repo">管理仓库</h3><p></p>
         <pre>仓库是开发的基础容器，一切活动都源于仓库。如果您想让别人知道您的仓库，最好是

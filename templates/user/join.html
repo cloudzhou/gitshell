@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block container %}
+<style>
+.command { padding: 5px; margin-left: 20px; margin-bottom: 5px; font-size: 16px }
+</style>
 {% ifequal step '3'  %}
 <div class="page-header">
         <h1>:-), {{ user.username }}，欢迎您</h1>
@@ -67,14 +70,46 @@
 {% endif %}
 {% ifequal step '3' %}
     <div class="span12">
-    <p class="lead">在gitshell为您服务之前，你有必要理解以下内容：</p>
-    <ul>
-        <li><a href="/help/#sshkey">设置ssh pub key</a></li>
-        <li><a href="/help/#repo">创建仓库</a></li>
-        <li><a href="/help/#group">协同开发</a></li>
-        <li><a href="/help/#faq">gitshell 能做什么？</a></li>
-        <li><a href="/help/#faq">gitshell 不能做什么？</a></li>
-    </ul>
+    <p class="lead">为了gitshell能更好的为您服务，你有必要看一下：</p>
+    <p>快速入门：</p>
+    <p style="margin-left: 10px">如果您使用任何类unix系统，第一次配置 ssh 公钥密钥，请按照步骤，复制黑色背景字符，在终端执行命令，和编辑文件</p>
+    <p style="margin-left: 20px">1) 执行以下命令，生成 ssh 密钥, 保存在 ~/.ssh/gitshell.com_rsa</p>
+        <textarea rows="1" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
+ssh-keygen -t rsa  -N '' -f ~/.ssh/gitshell.com_rsa;
+        </textarea>
+    <p style="margin-left: 20px">2) 编辑 ssh 客户端配置文件 ~/.ssh/config，使用您熟悉的编辑器，在后面添加</p>
+        <textarea rows="4" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
+Host gitshell.com
+ User {{ user.username }}
+ IdentityFile ~/.ssh/gitshell.com_rsa
+ PreferredAuthentications publickey
+</textarea>
+    <p style="margin-left: 20px">3) 查看 ssh 公钥，使用 cat 命令，或者用编辑器打开</p>
+        <textarea rows="1" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
+cat ~/.ssh/gitshell.com_rsa.pub
+        </textarea>
+    <p style="margin-left: 20px">4) 请复制 ssh 公钥的文本内容，点击<a target="_blank" href="/settings/sshpubkey/">ssh public key 管理</a>，输入标识保存公钥</p>
+    <p style="margin-left: 20px">5) ssh 公钥配置之后就可以长期使用了，请保护好 ~/.ssh/gitshell.com_rsa 密钥。点击<a target="_blank" href="/{{ user.username }}/repo/edit/0/">创建仓库</a>，详细仓库说明有助于推广</p>
+    <p style="margin-left: 20px">6) 你已经可以使用 gitshell 来托管代码了，以下是示范的操作，详细信息请<a href="/help/#learn">开始git的学习</a></p>
+        <textarea rows="7" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
+&gt; git clone git@gitshell.com:your_name/repo_name
+&gt; cd repo_name;
+&gt; vim README.md
+&gt; git add README.md
+&gt; git commit -m "init README.md" .
+&gt; git push -u origin master
+        </textarea>
+    <p style="margin-left: 20px">7) 感谢您走完整个配置流程，如果遇到任何问题，直接联系 support@gitshell.com，或者官方微博 <a target="_blank" href="http://weibo.com/gitshell">http://weibo.com/gitshell</a></p>
+    </div>
+    <div class="span12">
+        <p>更多帮助：</p>
+        <ul>
+            <li><a href="/help/#sshkey">设置ssh pub key</a></li>
+            <li><a href="/help/#repo">创建仓库</a></li>
+            <li><a href="/help/#group">协同开发</a></li>
+            <li><a href="/help/#faq">gitshell 能做什么？</a></li>
+            <li><a href="/help/#faq">gitshell 不能做什么？</a></li>
+        </ul>
     </div>
 {% endifequal %}
 {% ifequal step '4' %}
