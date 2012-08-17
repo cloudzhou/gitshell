@@ -461,8 +461,8 @@ def repo_stats(request, user_name, repo_name):
     last30days_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_last30days_commit])
     last7days_commit = {}
     for x in last7days:
-        if x in raw_last30days_commit:
-            last7days_commit[x] = raw_last30days_commit[x].count
+        if x in last30days_commit:
+            last7days_commit[x] = last30days_commit[x]
     raw_last12months_commit = StatsManager.list_repo_stats(repo.id, 'month', datetime.fromtimestamp(last12months[-1]), datetime.fromtimestamp(last12months[0]))
     last12months_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_last12months_commit])
 
