@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block css %}
+<style>
+pre { border: 0px; }
+</style>
+{% endblock %}
+{% block container %}
+<div class="page-header">
+        <h1>:-(, 我去！真有人访问到了这个页面？</h1>
+</div>
+<div class="row">
+        <pre>很不幸让你看到这里，这个页面说明您在 X 时间段之内访问次数超出了限制的 N 次
+以下几种可能导致了这样的结果：
+  1) 今天您的访问次数实在太多了，建议休息一下吧
+  2) 您不断的在刷新页面，比如您的猫一直在按 F5 键
+  3) 脚本，爬虫的行为，哦，请不要这么做！
+也有可能是我们的错，如果这个页面频繁出现，请联系 support@gitshell.com
+要解决这个问题，您可以发送以下万恶的验证码：
+        </pre>
+    <form class="well form-inline" action="/help/reset_access_limit/" method="post">
+        {% csrf_token %}
+        {{ resetAccessLimitForm.captcha }}
+        <button class="btn" type="submit">我真的不是机器人啊</button>
+    </form>
+</div>
+{% endblock %}

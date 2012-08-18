@@ -1,7 +1,9 @@
 from django.contrib import auth
+from django.core.cache import cache
 from django.utils.functional import lazy
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.functional import SimpleLazyObject
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.gsuser.models import GsuserManager
 from django.dispatch import receiver
 from django.db.models.signals import post_save
@@ -17,8 +19,28 @@ def get_userprofile(request):
 
 
 class UserprofileMiddleware(object):
-    def process_request(self, request):
+   def process_request(self, request):
         request.userprofile = SimpleLazyObject(lambda: get_userprofile(request))
+
+ACL_KEY = 'ACL'
+ACCESS_WITH_IN_TIME = 30*60
+MAX_ACCESS_TIME = 1000
+OUT_OF_AccessLimit_URL = '/help/access_out_of_limit/'
+class UserAccessLimitMiddleware(object):
+    def process_request(self, request):
+        path = request.path
+        if path.startswith('/help/') or path.startswith('/captcha/'):
+            return
+        if request.user.is_authenticated():
+            user_id = request.user.id
+            key = '%s:%s' % (ACL_KEY, user_id)
+            value = cache.get(key)
+            if value is None:
+                cache.add(key, 1, ACCESS_WITH_IN_TIME)
+                return
+            if value > MAX_ACCESS_TIME:
+                return HttpResponseRedirect(OUT_OF_AccessLimit_URL)
+            cache.incr(key)
 
 def userprofile(request):
     if hasattr(request, 'userprofile'):

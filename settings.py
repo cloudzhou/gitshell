@@ -70,6 +70,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'gitshell.gsuser.middleware.UserprofileMiddleware',
+    'gitshell.gsuser.middleware.UserAccessLimitMiddleware'
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
