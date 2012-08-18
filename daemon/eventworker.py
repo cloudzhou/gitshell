@@ -13,6 +13,8 @@ from gitshell.feed.feed import FeedAction
 from gitshell.stats.models import StatsManager
 from gitshell.daemon.models import EventManager, EVENT_TUBE_NAME
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
+from django.db.models.signals import post_save
+from gitshell.objectscache.da import da_post_save
 
 MAX_COMMIT_COUNT = 100
 def start():
@@ -182,7 +184,11 @@ def stop():
     EventManager.send_stop_event(EVENT_TUBE_NAME)
     print 'send stop event message...'
 
+def __cache_version_update(sender, **kwargs):
+    da_post_save(kwargs['instance'])
+
 if __name__ == '__main__':
+    post_save.connect(__cache_version_update)
     if len(sys.argv) < 2:
         sys.exit(1)
     action = sys.argv[1]

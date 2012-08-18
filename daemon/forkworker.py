@@ -9,6 +9,8 @@ from gitshell.repo.models import RepoManager
 from gitshell.gsuser.models import GsuserManager
 from gitshell.daemon.models import EventManager, FORK_TUBE_NAME
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
+from django.db.models.signals import post_save
+from gitshell.objectscache.da import da_post_save
 
 def start():
     print '==================== START ===================='
@@ -80,7 +82,11 @@ def stop():
     EventManager.send_stop_event(FORK_TUBE_NAME)
     print 'send stop event message...'
 
+def __cache_version_update(sender, **kwargs):
+    da_post_save(kwargs['instance'])
+
 if __name__ == '__main__':
+    post_save.connect(__cache_version_update)
     if len(sys.argv) < 2:
         print 'usage: start|stop'
         sys.exit(1)
