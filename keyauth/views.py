@@ -1,4 +1,4 @@
-import re
+import os, re
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.models import User
 from gitshell.repo.models import RepoManager
@@ -39,6 +39,8 @@ def keyauth(request, fingerprint, command):
 
     username = short_repo_path[first_repo_char_idx : slash_idx] 
     reponame = short_repo_path[slash_idx+1 : last_repo_char_idx+1]
+    if reponame.endswith('.git'):
+        reponame = reponame[0 : len(reponame)-4]
     if not (re.match('^\w+$', username) and re.match('^\w+$', reponame)):
         return not_git_command()
     
@@ -68,18 +70,22 @@ def keyauth(request, fingerprint, command):
             return response_full_git_command(quote, pre_command, user, repo)
     return not_git_command()
 
-blocks_quote = {67108864 : 32768}
-kbytes_quote = {67108864 : 16384}
+blocks_quote = {67108864 : 327680}
+kbytes_quote = {67108864 : 163840}
 def response_full_git_command(quote, pre_command, user, repo):
-    blocks = 32768
-    kbytes = 16384
+    blocks = 327680
+    kbytes = 163840
     if quote in blocks_quote:
         blocks = blocks_quote[quote]
         kbytes = kbytes_quote[quote]
+    abs_repopath = repo.get_abs_repopath(user.username)
+    if not os.path.exists(abs_repopath):
+        return not_git_command()
     return HttpResponse("ulimit -f %s && ulimit -m %s && ulimit -v %s && /usr/bin/git-shell -c \"%s '%s'\"" % (blocks, kbytes, kbytes, pre_command, repo.get_abs_repopath(user.username)), content_type="text/plain")
 
 def not_git_command():
-    return HttpResponse("echo 'fatal: git repoitory size limit exceeded or you have not rights or does not appear to be a git command'", content_type="text/plain")
+    return HttpResponse("'git repoitory size limit exceeded or you have not rights or does not appear to be a git command'", content_type="text/plain")
+    #return HttpResponse("/bin/echo \"fatal: git repoitory size limit exceeded or you have not rights or does not appear to be a git command\"", content_type="text/plain")
 
 # echo -e "       _ _       _          _ _ \n      (_) |     | |        | | |\n  __ _ _| |_ ___| |__   ___| | |\n / _\` | | __/ __| '_ \ / _ \ | |\n| (_| | | |_\__ \ | | |  __/ | |\n \__, |_|\__|___/_| |_|\___|_|_|\n  __/ |                         \n |___/                          \nusage\n    help: get the help message\n    ls yourname: ls yournam's repo\n    mkdir yourname/reponame: create private repo for user yourname\n"
 
