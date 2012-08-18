@@ -21,6 +21,8 @@ def main():
 def send_commit_event(event):
     beanstalk = beanstalkc.Connection(host='localhost', port=11300)
     beanstalk.use('commit_event')
+    beanstalk.watch('commit_event')
+    beanstalk.ignore('default')
     beanstalk.put(event) 
 
 if __name__ == '__main__':

@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from gitshell.gsuser.models import Userprofile, GsuserManager
 from gitshell.repo.models import CommitHistory, Repo, RepoManager
 from gitshell.feed.feed import FeedAction
+from gitshell.stats.models import StatsManager
 from gitshell.daemon.models import EventManager, EVENT_TUBE_NAME
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
 
@@ -96,7 +97,7 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
                 commitHistory = CommitHistory.create(repo.id, repo.name, items[0], items[1][0:24], items[2], author_name, committer_name, committer_date, items[6][0:512], refname[0:32])
                 raw_commitHistorys.append(commitHistory)
     length = len(raw_commitHistorys)
-    commit_ids = [commitHistory.commit_id for x in raw_commitHistorys]
+    commit_ids = [x.commit_id for x in raw_commitHistorys]
     exists_commitHistorys = RepoManager.list_commits_by_commit_ids(repo.id, commit_ids)
     exists_commit_ids_set = set([x.commit_id for x in exists_commitHistorys])
     commitHistorys = []
@@ -106,6 +107,7 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
             commitHistorys.append(commitHistory)
     # feed action
     member_user_ids = [x.user_id for x in RepoManager.list_repomember(repo.id)]
+    member_user_ids.append(repo.user_id)
     member_username_dict = dict([(x.username, x.id) for x in GsuserManager.list_user_by_ids(member_user_ids)])
     feedAction = FeedAction()
     user_feed_key_values = {}
