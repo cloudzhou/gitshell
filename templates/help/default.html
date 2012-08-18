@@ -116,7 +116,20 @@ cat ~/.ssh/gitshell.com_rsa.pub
 &gt; git commit -m "init README.md" .
 &gt; git push -u origin master
         </textarea>
-    7) 感谢您走完整个配置流程，如果遇到任何问题，直接联系 support@gitshell.com，或者官方微博 <a target="_blank" href="http://weibo.com/gitshell">http://weibo.com/gitshell</a>
+    7) 配置 user.name, user.mail ，两者对后台统计，信息push有重要的作用，选择您注册的用户名和email按照下面配置
+{% if user.is_authenticated %}
+        <textarea rows="2" cols="100" style="width: 500px; margin-left: 5px;" class="pull-left shell span4 command">
+&gt; git config --global user.name "{{ user.username }}"
+&gt; git config --global user.email "{{ user.email }}"
+        </textarea>
+{% else %}
+        <textarea rows="2" cols="100" style="width: 500px; margin-left: 5px;" class="pull-left shell span4 command">
+&gt; git config --global user.name "your_name"
+&gt; git config --global user.email "your_email"
+        </textarea>
+{% endif %}
+    如果不想 global，在每个仓库里面执行 git config ，去掉 --global 参数
+    8) 感谢您走完整个配置流程，如果遇到任何问题，直接联系 support@gitshell.com，或者官方微博 <a target="_blank" href="http://weibo.com/gitshell">http://weibo.com/gitshell</a>
 </pre>
         <h3 id="repo">管理仓库</h3><p></p>
         <pre>仓库是开发的基础容器，一切活动都源于仓库。如果您想让别人知道您的仓库，最好是
