@@ -75,7 +75,7 @@ $(function(){
                 html = []
                 for(x in ordered_date) {
                     feed_date = ordered_date[x];
-                    html.push('<div class="page-header" style="margin: 0px; padding-bottom: 10px"><h4 class="muted"> ' + feed_date + ' </h4></div><div class="feedtime" style="padding: 10px;"><h3><img style="margin-right: 10px" src="http://www.gravatar.com/avatar/{{ userprofile.imgurl }}?s=32"/><a href="/{{ user.username }}/">{{ user.username }}</a>...</h3>');
+                    html.push('<div class="page-header" style="margin: 0px; padding-bottom: 10px"><h4 class="muted"> ' + feed_date + ' </h4></div><div class="feedtime" style="padding: 10px;"><h3><img style="margin-right: 10px" src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32"/><a href="/{{ user.username }}/">{{ user.username }}</a>...</h3>');
                     for(y in ordered_date_reponame[ordered_date[x]]) {
                         feed_reponame = ordered_date_reponame[ordered_date[x]][y];
                         html.push('<div style="margin-left: 50px;"><p>commit 到 <a href="">' + feed_reponame + '</a></p><ul>');

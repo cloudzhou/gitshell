@@ -31,7 +31,7 @@ pre { border: 0px; background-color: transparent; }
             {%for issue_comment in issue_comments%}
 			    <tr class="c_td_comment">
                     <td>
-                        <img style="float:left;display:block" src="http://www.gravatar.com/avatar/{{ issue_comment.user_img }}?s=32"/>
+                        <img style="float:left;display:block" src="https://gravatar.com/avatar/{{ issue_comment.user_img }}?s=32"/>
                         <div style="margin-left:40px">
                             <div class="pull-right">
                                 <a style="display: none" class="c_rm_comment" value="{{raw_issue_comment.id}}" href="javascript:void(0)"> x </a>
@@ -69,7 +69,7 @@ pre { border: 0px; background-color: transparent; }
     </div>
 {% endblock %}
 {% block subjs %}
-<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
 <script>
 $(function(){
     $('#i_issue_subject').live('mouseover mouseout', function(event) {

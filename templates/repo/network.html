@@ -18,7 +18,7 @@
 	<table id="i_repomembers" class="table table-striped">
     {%for member_vo in members_vo%}
         <tr class="c_tr"><td>
-        <a href="/{{member_vo.username}}/"><img src="http://www.gravatar.com/avatar/{{ member_vo.imgurl }}?s=40"/></a>
+        <a href="/{{member_vo.username}}/"><img src="https://gravatar.com/avatar/{{ member_vo.imgurl }}?s=40"/></a>
         <a style="margin-left: 5px" href="/{{member_vo.username}}/">{{member_vo.username}}</a>
         {%if member_vo.nickname%}
             <span>({{member_vo.nickname}})</span>
