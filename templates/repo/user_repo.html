@@ -20,12 +20,12 @@
 <div class="row" style="margin: 10px;">
     <div class="span7">
         <div class="c_repo" style="padding: 10px;">
-            <h3>☺ <a href="/{{ user_name }}/">{{ user_name }}</a> / 
+            <h3>☺ 
             <a href="/{{ user_name }}/{{ repo.name }}/">{{ repo.name }}</a>
             <span style="float: right;">
-            <a href="" style="margin-right: 20px" rel="tooltip" data-original-title="commit 次数">♯ {{ repo.commit }}</a>
-            <a href="" style="margin-right: 20px" rel="tooltip" data-original-title="watch 次数">♥ {{ repo.watch }}</a>
-            <a href="" style="margin-right: 20px" rel="tooltip" data-original-title="fork 次数">♂ {{ repo.fork }}</a></span></h3>
+            <a href="/{{ user_name }}/{{ repo.name }}/commits/" style="margin-right: 20px" rel="tooltip" data-original-title="commit 次数">♯ {{ repo.commit }}</a>
+            <a href="/{{ user_name }}/{{ repo.name }}/clone_watch/" style="margin-right: 20px" rel="tooltip" data-original-title="watch 次数">♥ {{ repo.watch }}</a>
+            <a href="/{{ user_name }}/{{ repo.name }}/clone_watch/" style="margin-right: 20px" rel="tooltip" data-original-title="fork 次数">♂ {{ repo.fork }}</a></span></h3>
             <div style="margin-left: 20px;">
                 <h6>创建于{{ repo.create_time|date:"y/m/d" }}，最近更新{{ repo.modify_time|date:"y/m/d H:i" }}</h6> 
                 <p>{{ repo.desc }}</p>
@@ -78,7 +78,7 @@ $(function(){
                     for (y in orgi_repo_commit_map[x]) {
                         if(repo_commit_map.hasOwnProperty(orgi_repo_commit_map[x][y])) {
                             feed = repo_commit_map[orgi_repo_commit_map[x][y]];
-                            html.push('<li><code><a href="">' + feed.commit_hash + '</a></code> ' + feed.subject + ' <span class="muted pull-right">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></li>');
+                            html.push('<li><code><a href="/{{ user_name }}/' + feed.repo_name + '/">' + feed.commit_hash + '</a></code> ' + feed.subject + ' <span class="muted pull-right">' + feed.author + ' ' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></li>');
                         }
                     }
                     $('#i_'+x).append(html.join(''));

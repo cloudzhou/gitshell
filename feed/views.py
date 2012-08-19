@@ -26,6 +26,14 @@ def home(request):
 @login_required
 def feed(request):
     current = 'feed'
+    feedAction = FeedAction()
+    raw_watch_users = feedAction.get_watch_users(request.user.id, 0, 100)
+    watch_user_ids = [int(x[0]) for x in raw_watch_users]
+    watch_users = GsuserManager.list_user_by_ids(watch_user_ids)
+    raw_watch_repos = feedAction.get_watch_repos(request.user.id, 0, 100)
+    watch_repos_ids = [int(x[0]) for x in raw_watch_repos]
+    watch_repos = RepoManager.list_repo_by_ids(watch_repos_ids)
+    print watch_users, watch_repos
     response_dictionary = {'current': current}
     return render_to_response('user/feed.html',
                           response_dictionary,
@@ -49,7 +57,7 @@ def issues_default(request):
 def issues(request, page):
     current = 'issues'
     page = int(page)
-    page_size = 2
+    page_size = 50
     offset = page*page_size
     row_count = page_size + 1
     raw_issues = RepoManager.list_assigned_issues(request.user.id, 'modify_time', offset, row_count)
@@ -128,7 +136,7 @@ def feedbyids(request):
     ids_str = request.POST.get('ids_str', '')
     feeds = []
     if re.match('^\w+$', ids_str):
-        feeds = get_feeds(ids_str)
+        feeds = get_feeds(request, ids_str)
     gravatarmap = get_gravatarmap(feeds)
     response_dictionary = {'feeds': feeds, 'gravatarmap': gravatarmap}
     return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
@@ -146,14 +154,24 @@ def get_gravatarmap(feeds):
     return gravatarmap
     
 
-def get_feeds(ids_str):
+def get_feeds(request, ids_str):
     feeds = []
     ids = []
+    max_count = 0
     for idstr in ids_str.split('_'):
         if re.match('^\d+$', idstr):
             ids.append(int(idstr))
+        max_count = max_count + 1
+        if max_count >= 99:
+            break
     commits = RepoManager.get_commits_by_ids(ids)
     for commit in commits:
+        repo_id = commit.repo_id
+        repo = RepoManager.get_repo_by_id(repo_id)
+        if repo is None:
+            continue
+        if repo.auth_type == 2 and repo.user_id != request.user.id and not RepoManager.is_repo_member(repo.id, request.user.id):
+            continue
         feed = {}
         feed['id'] = commit.id
         feed['repo_name'] = commit.repo_name

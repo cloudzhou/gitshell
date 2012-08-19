@@ -50,10 +50,10 @@ def user_repo_paging(request, user_name, pagenum):
             break
     # fix on error detect
     pubrepo = 0
-    for repo in repo_list:
+    for repo in raw_repo_list:
         if repo.auth_type == 0 or repo.auth_type == 1:
             pubrepo = pubrepo + 1
-    prirepo = len(repo_list) - pubrepo
+    prirepo = len(raw_repo_list) - pubrepo
     if pubrepo != userprofile.pubrepo or prirepo != userprofile.prirepo:
         userprofile.pubrepo = pubrepo
         userprofile.prirepo = prirepo
@@ -189,7 +189,7 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
     tracker = int(tracker); status = int(status); priority = int(priority); page = int(page)
     current_attrs = { 'assigned': str(assigned), 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': str(orderby), 'page': page }
     raw_issues = []
-    page_size = 2
+    page_size = 50
     offset = page*page_size
     row_count = page_size + 1
     if assigned_id == 0 and tracker == 0 and status == 0 and priority == 0:
@@ -254,7 +254,7 @@ def issues_show(request, user_name, repo_name, issues_id, page):
         username_map[user.id] = user.username
     issue = conver_issues([raw_issue], username_map, {repo.id: repo.name})[0]
     
-    page_size = 2
+    page_size = 50
     total_count = issue['comment_count']
     total_page = issue['comment_count'] / page_size
     if issue['comment_count'] != 0 and issue['comment_count'] % page_size == 0:
