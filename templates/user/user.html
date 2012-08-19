@@ -243,6 +243,7 @@ $(function(){
     }
     last30daysAsData.reverse();
 if(Object.keys(last30days_commit).length > 0) {
+    $('.c_user_stats').show();
     var month_chart = new Highcharts.Chart({
         chart: { renderTo: 'id_month_container', type: 'line'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
@@ -250,7 +251,6 @@ if(Object.keys(last30days_commit).length > 0) {
         xAxis: { categories: last30daysAsCat },
         series: [{ name: '1 月提交', data: last30daysAsData }]
     });
-    $('.c_user_stats').show();
 }
 });
 </script>
