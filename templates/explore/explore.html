@@ -93,7 +93,7 @@ $(function(){
                 html = []
                 for(x in feeds) {
                     feed = feeds[x];
-                    html.push('<div style="margin: 10px"><img src="https://gravatar.com/avatar/' + gravatarmap[feed.author] + '?s=25"/> <a href="/' + feed.author + '/">' + feed.author + '</a> ' + feed.subject + ' <a class="muted" href="/'+ feed.user_name + '/' + feed.repo_name +'/">' + feed.repo_name + '</a> <span class="muted">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></div>');
+                    html.push('<div style="margin-bottom: 10px"><img src="https://gravatar.com/avatar/' + gravatarmap[feed.author] + '?s=25"/> <a href="/' + feed.author + '/">' + feed.author + '</a> ' + feed.subject + ' <a class="muted" href="/'+ feed.user_name + '/' + feed.repo_name +'/">' + feed.repo_name + '</a> <span class="muted">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></div>');
                 }
                 $('#feeds_container').append(html.join(''));
                 if(feeds.length == 0) {
