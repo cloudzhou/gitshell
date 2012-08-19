@@ -125,13 +125,18 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
         total_feed_key_values.append(-float(time.mktime(commitHistory.committer_date.timetuple())))
         total_feed_key_values.append(commitHistory.id)
         
-    # total private repo the feed is private
+    latest_feeds  = []
     for user_id, feed_key_values in user_feed_key_values.items():
         if repo.auth_type == 2:
             feedAction.madd_pri_user_feed(user_id, feed_key_values)
         else:
             feedAction.madd_pub_user_feed(user_id, feed_key_values)
-    feedAction.madd_repo_feed(repo.id, total_feed_key_values)
+            if len(latest_feeds) < 4:
+                latest_feeds.extend(feed_key_values)
+    if len(latest_feeds) > 0:
+        feedAction.madd_latest_feed(latest_feeds[0:4])
+    if len(total_feed_key_values) > 0:
+        feedAction.madd_repo_feed(repo.id, total_feed_key_values)
 
     # stats action
     __stats(commitHistorys, repo.id, member_username_dict)

@@ -6,6 +6,7 @@ from gitshell import settings
 
 """ feed, sorted sets, random identify hashes keys r, u, wu, bwu, wr, c """
 FEED_TYPE = {
+    'LATEST' : 'lt',
     'REPO' : 'r',
     'PRI_USER' : 'pru',
     'PUB_USER' : 'puu',
@@ -15,6 +16,21 @@ FEED_TYPE = {
     'COMM' : 'c',
     'IDENTIFY_CHECK' : 'ic',
 }
+LAST_POSITION = 'lp'
+
+class PositionKey:
+    # user
+    FEED = 'ufd'
+    GIT = 'ugit'
+    ISSUES = 'uis'
+    EXPLORE = 'uex'
+    # repo
+    TREE = 'tr'
+    COMMITS = 'ci'
+    RISSUES = 'ris'
+    NETWORK = 'net'
+    CLONE_WATCH = 'clwa'
+    STATS = 'st'
 
 """ all method about feed and redis """
 class FeedAction():
@@ -27,6 +43,11 @@ class FeedAction():
         )
 
     """ all modify method """
+    def madd_latest_feed(self, sortedset_list):
+        key = '%s:%s' % (FEED_TYPE['LATEST'], 0)
+        self.redis.zadd(key, *tuple(sortedset_list))
+        self.redis.zremrangebyrank(key, 100, 200)
+
     def madd_repo_feed(self, repo_id, sortedset_list):
         key = '%s:%s' % (FEED_TYPE['REPO'], repo_id)
         self.redis.zadd(key, *tuple(sortedset_list))
@@ -88,6 +109,10 @@ class FeedAction():
         self.redis.zrem(key, feed_id)
 
     """ all get method """
+    def get_latest_feeds(self, start, num_items):
+        key = '%s:%s' % (FEED_TYPE['LATEST'], 0)
+        return self.redis.zrange(key, start, num_items, withscores=True)
+
     def get_repo_feeds(self, repo_id, start, num_items):
         key = '%s:%s' % (FEED_TYPE['REPO'], repo_id)
         return self.redis.zrange(key, start, num_items, withscores=True)
@@ -125,6 +150,23 @@ class FeedAction():
     def get_comm_feeds(self, user_id, start, num_items):
         key = '%s:%s' % (FEED_TYPE['COMM'], user_id)
         return self.redis.zrange(key, start, num_items, withscores=True)
+
+    """ get and set user last position """
+    def get_user_position(self, user_id):
+        key = '%s:%s' % ('u', user_id)
+        return self.redis.hget(LAST_POSITION, key)
+
+    def get_repo_position(self, user_id):
+        key = '%s:%s' % ('r', user_id)
+        return self.redis.hget(LAST_POSITION, key)
+
+    def set_user_position(self, user_id, positionKey):
+        key = '%s:%s' % ('u', user_id)
+        self.redis.hset(LAST_POSITION, key, positionKey)
+
+    def set_repo_position(self, user_id, positionKey):
+        key = '%s:%s' % ('r', user_id)
+        self.redis.hset(LAST_POSITION, key, positionKey)
 
 if __name__ == '__main__':
     feedAction = FeedAction()

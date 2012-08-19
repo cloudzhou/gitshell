@@ -6,27 +6,31 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from gitshell.feed.feed import FeedAction
+from gitshell.feed.feed import FeedAction, PositionKey
 from gitshell.repo.models import RepoManager, IssuesComment
 from gitshell.repo.cons import conver_issues
 from gitshell.gsuser.models import GsuserManager
 
 @login_required
 def home(request):
-    goto = 'feed'
-    if goto == 'feed':
+    feedAction = FeedAction()
+    goto = feedAction.get_user_position(request.user.id)
+    if goto == None:
+        goto = PositionKey.FEED
+    if goto == PositionKey.FEED:
         return feed(request)
-    elif goto == 'git':
+    elif goto == PositionKey.GIT:
         return git(request)
-    elif goto == 'issues':
-        return issues(request)
-    elif goto == 'explore':
+    elif goto == PositionKey.ISSUES:
+        return issues(request, 0)
+    elif goto == PositionKey.EXPLORE:
         return explore(request)
 
 @login_required
 def feed(request):
     current = 'feed'
     feedAction = FeedAction()
+    feedAction.set_user_position(request.user.id, PositionKey.FEED)
     raw_watch_users = feedAction.get_watch_users(request.user.id, 0, 100)
     watch_user_ids = [int(x[0]) for x in raw_watch_users]
     watch_users = GsuserManager.list_user_by_ids(watch_user_ids)
@@ -42,6 +46,7 @@ def feed(request):
 def git(request):
     current = 'git'
     feedAction = FeedAction()
+    feedAction.set_user_position(request.user.id, PositionKey.GIT)
     pri_user_feeds = feedAction.get_pri_user_feeds(request.user.id, 0, 100)
     pub_user_feeds = feedAction.get_pub_user_feeds(request.user.id, 0, 100)
     feeds_as_json = git_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
@@ -56,6 +61,8 @@ def issues_default(request):
 @login_required
 def issues(request, page):
     current = 'issues'
+    feedAction = FeedAction()
+    feedAction.set_user_position(request.user.id, PositionKey.ISSUES)
     page = int(page)
     page_size = 50
     offset = page*page_size
@@ -120,6 +127,8 @@ def doissues(request):
 @login_required
 def explore(request):
     current = 'explore'
+    feedAction = FeedAction()
+    feedAction.set_user_position(request.user.id, PositionKey.EXPLORE)
     response_dictionary = {'current': current}
     return render_to_response('user/explore.html',
                           response_dictionary,
