@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load gstools %}
 {% block css %}
 <style type="text/css">
 .shell {padding: 18px; }
@@ -66,93 +67,31 @@
     </div>
 </div>
 <div class="page-header">
-    <h2>133 位开发者加入我们，托管 111 个仓库</h2>
-</div>
-<div class="row">
-    {% for i in ii %}
-    <div class="span4">
-        <img src="https://gravatar.com/avatar/8e580cce03d7a7229981c1acad1313bd?s=40" class="bs-icon">
-        <h3><a href="">cloudzhou</a> / <a href="">gitshell</a></h3>
-        <p>Despite being only 10kb (gzipped), Bootstrap is one of the most complete front-end toolkits out there with dozens of fully functional components ready to be put to use.</p>
-    </div>
-    {% endfor %}
-</div>
-<div class="row">
-    {% for i in ii %}
-    <div class="span4">
-        <img src="https://gravatar.com/avatar/8e580cce03d7a7229981c1acad1313bd?s=40" class="bs-icon">
-        <h3><a href="">cloudzhou</a></h3>
-        <p>Despite being only 10kb (gzipped), Bootstrap is one of the most complete front-end toolkits out there with dozens of fully functional components ready to be put to use.</p>
-    </div>
-    {% endfor %}
-</div>
-<div class="page-header">
     <h2>最新 commit 信息</h2>
 </div>
 <div class="row">
-    <div class="span6">
-        {% for i in ii %}
-        <div class="c_repo" style="padding: 10px;">
-            <h3>☺ <a href="/{{ user.username }}/">{{ user.username }}</a> / 
-            <a href="/{{ user.username }}/gitshell/">gitshell</a>
+    <div class="span5">
+    {% load humanize %}
+    <div class="row" style="margin: 0px;">
+    {% for repo in repos %}
+        <div class="span5" style="margin: 0px">
+            <h3>{{forloop.counter}}. <img style="margin: 10px;" src="https://gravatar.com/avatar/{{userimgurl_dict|keyvalue:repo.user_id}}?s=20"><a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
+            <a href="/{{username_dict|keyvalue:repo.user_id}}/{{repo.name}}/">{{repo.name}}</a>
             <span style="float: right;">
-            <a href="" style="margin-right: 20px" rel="tooltip" data-original-title="commit 次数">♯ 11</a>
-            <a href="" style="margin-right: 20px" rel="tooltip" data-original-title="关注 数量">♥ 22</a>
-            <a href="" style="margin-right: 20px" rel="tooltip" data-original-title="fork 次数">♂ 33</a></span></h3>
-            <div style="margin-left: 20px;">
-                <h6>创建于xxx，最近更新xxx</h6> 
-                <p>gitshell 就是您目前使用的这个网站，使用django，redis，nginx，memcached，uwsgi</p>
-                <h6>commit 历史</h6> 
-                <ul>
-                    <li><a href="" style="margin-right: 10px">cloudzhou</a> user.html and repo forms ... :-) <code style="margin-left: 20px"><a href="">adfe54e9334e</a></code> </li>
-                    <li><a href="" style="margin-right: 10px">cloudzhou</a> user.html and repo forms ... :-) <code style="margin-left: 20px"><a href="">adfe54e9334e</a></code> </li>
-                    <li><a href="" style="margin-right: 10px">cloudzhou</a> user.html and repo forms ... :-) <code style="margin-left: 20px"><a href="">adfe54e9334e</a></code> </li>
-                </ul>
+            <a data-original-title="提交次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♯ {{repo.commit}}</a>
+            <a data-original-title="关注数量" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♥ {{repo.watch}}</a>
+            <a data-original-title="衍生次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♂ {{repo.fork}}</a></span></h3>
+            <div style="margin-left: 30px;">
+                <h6 style="margin-bottom: 3px">
+                创建于 {{repo.modify_time|date:'y/m/d'}}，最近更新 {{repo.create_time|date:'y/m/d'}}</h6> 
+                <p>{{repo.desc}}</p>
             </div>
         </div>
-        {% endfor %}
+    {% endfor %}
     </div>
-    <div class="span6">
-        <div id="id_user_resume">
-            <h4 style="margin-bottom: 8px; font-weight: normal; color: #999999;">统计:</h4>
-            <blockquote>
-                <div class="muted">最近三十天 commit 汇总</div><br/>
-                <div id="id_commit_placeholder" style="height: 200px"></div>
-                <div class="muted">托管编程语言比例</div>
-                <div class="muted" style="float: right">JAVA 63%</div><br/>
-                <div class="progress" style="margin-bottom: 3px">
-                    <div style="width: 60%;" class="bar"></div>
-                </div>
-                <div class="muted" style="float: right">C 30%</div><br/>
-                <div class="progress" style="margin-bottom: 3px">
-                    <div style="width: 30%;" class="bar"></div>
-                </div>
-                <div class="muted" style="float: right">PYTHON 10%</div><br/>
-                <div class="progress" style="margin-bottom: 3px">
-                    <div style="width: 10%;" class="bar"></div>
-                </div>
-            </blockquote>
-        </div>
     </div>
 </div>
 {% endblock %}
 {% block js %}
-<script src="/static/js/flot/jquery.flot.min.js"></script>
-<script>
-$(function(){
-    var d1 = [[0, 3], [4, 8], [8, 5], [9, 13], [30, 0]];
-    $.plot($("#id_commit_placeholder"), [
-        {
-            data: d1,
-            bars: { show: true, fill: true }
-        },
-    ]);
-    $('.c_repo').hover(function() {
-        $(this).css('background-color', '#D9EDF7');
-    }, function(){
-        $(this).css('background-color', '#FFFFFF');
-    });
-});
-</script>
 {% endblock %}
 
