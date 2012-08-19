@@ -10,6 +10,8 @@ from gitshell.repo.models import RepoManager
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
 from gitshell.gsuser.models import GsuserManager
+from gitshell.feed.feed import FeedAction
+from gitshell.feed.views import latest_feeds_as_json
 
 
 def explore(request):
@@ -19,7 +21,12 @@ def explore(request):
     users_dict = GsuserManager.map_users(user_ids)
     username_dict = dict([(users_dict[x]['id'], users_dict[x]['username']) for x in users_dict])
     userimgurl_dict = dict([(users_dict[x]['id'], users_dict[x]['imgurl']) for x in users_dict])
-    response_dictionary = {'repos': repos, 'users_dict': users_dict, 'username_dict': username_dict, 'userimgurl_dict': userimgurl_dict}
+
+    feedAction = FeedAction()
+    latest_feeds = feedAction.get_latest_feeds(0, 100)
+    feeds_as_json = latest_feeds_as_json(request, latest_feeds)
+
+    response_dictionary = {'repos': repos, 'users_dict': users_dict, 'username_dict': username_dict, 'userimgurl_dict': userimgurl_dict, 'feeds_as_json': feeds_as_json}
     return render_to_response('explore/explore.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

@@ -1,5 +1,8 @@
 {% extends "user/home_base.html" %}
 {% block css %}
+<style>
+.feedtime {padding: 8px}
+</style>
 {% endblock %}
 {% block subcontainer %}
 <div class="row" style="">
@@ -69,7 +72,7 @@ $(function(){
                     html.push('<div class="page-header" style="margin: 0px; padding-bottom: 10px"><h4 class="muted"> ' + feed_date + ' </h4></div><div style="margin-left: 10px;">');
                     for(y in display_feeds_map[feed_date]) {
                         feed = display_feeds_map[feed_date][y];
-                        html.push('<div style="margin: 10px"><img src="https://gravatar.com/avatar/' + gravatarmap[feed.author] + '?s=25"/> <a href="/' + feed.author + '/">' + feed.author + '</a> ' + feed.subject + ' <a class="muted" href="/'+ feed.user_name + '/' + feed.repo_name +'/">' + feed.repo_name + '</a> <span class="muted pull-right">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></div>');
+                        html.push('<div class="feedtime" style="margin: 5px"><img src="https://gravatar.com/avatar/' + gravatarmap[feed.author] + '?s=25"/> <a href="/' + feed.author + '/">' + feed.author + '</a> ' + feed.subject + ' <a class="muted" href="/'+ feed.user_name + '/' + feed.repo_name +'/">' + feed.repo_name + '</a> <span class="muted pull-right">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></div>');
                     }
                     html.push('</div>')
                 }

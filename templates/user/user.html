@@ -12,7 +12,6 @@
                   <tr>
                     <th class="span1">事件</th>
                     <th class="span5">详细</th>
-                    <th class="">时间</th>
                   </tr>
                 </thead>
                 <tbody id="id_lastest_active">
@@ -37,15 +36,15 @@
                     <tr>
                         <th class="span1">名称</th>
                         <th class="">简介</th>
-                        <th class="">更新</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for repo in repos %}
                     <tr>
                         <td><a href="/{{gsuser.username}}/{{repo.name}}/">{{repo.name}}</a></td>
-                        <td>{{repo.desc}}</td>
-                        <td><span style="display:none" class="c_unixtime">{{repo.modify_time|date:"U"}}</span></td>
+                        <td>{{repo.desc}}
+                        <span class="muted">(<span style="display:none" class="c_unixtime">{{repo.modify_time|date:"U"}}</span>)</span>
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -60,15 +59,15 @@
                     <tr>
                         <th class="span1">名称</th>
                         <th class="">简介</th>
-                        <th class="">更新</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for watch_repo in watch_repos %}
                     <tr>
                         <td><a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a></td>
-                        <td>{{watch_repo.desc}}</td>
-                        <td><span style="display:none" class="c_unixtime">{{watch_repo.modify_time}}</span></td>
+                        <td>{{watch_repo.desc}}
+                        <span class="muted">(<span style="display:none" class="c_unixtime">{{watch_repo.modify_time}}</span>)</span>
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -151,32 +150,6 @@
 /*global jQuery, window */
 $(function(){
     moment.lang('zh-cn');
-    var last30days = {{last30days}};
-    var last30daysAsCat = [];
-    for(x in last30days) {
-        last30daysAsCat.push(new Date(last30days[x]*1000).getDate());
-    }
-    last30daysAsCat.reverse()
-    var last30days_commit = {{last30days_commit}};
-    var last30daysAsData = [];
-    for(x in last30days) {
-        if(last30days[x] in last30days_commit) {
-            last30daysAsData.push(last30days_commit[last30days[x]]);
-            continue;
-        }
-        last30daysAsData.push(0);
-    }
-    last30daysAsData.reverse();
-if(Object.keys(last30days_commit).length > 0) {
-    $('.c_user_stats').show();
-    var month_chart = new Highcharts.Chart({
-        chart: { renderTo: 'id_month_container', type: 'line'},title: {text: ''},
-        yAxis: { title: { text: '提交次数' } },
-        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
-        xAxis: { categories: last30daysAsCat },
-        series: [{ name: '1 月提交', data: last30daysAsData }]
-    });
-}
 {% if userprofile.resume %}
     var resume_md_converter = function() {
         var converter = new Markdown.getSanitizingConverter();
@@ -239,7 +212,7 @@ if(Object.keys(last30days_commit).length > 0) {
                 for(x in feeds) {
                     feed = feeds[x]
                     feed_date_str = moment(new Date(feed.committer_date*1000)).format('MM/DD');
-                    html.push('<tr><td><a href="">' + feed.repo_name + '</a></td><td>' + feed.subject + '</td><td>' + feed_date_str + '</td></tr>')
+                    html.push('<tr><td><a href="/' + feed.user_name + '/' + feed.repo_name + '/">' + feed.repo_name + '</a></td><td>' + feed.subject + ' <span class="muted">(' + feed_date_str + ')</span></td></tr>')
                 }
                 $('#id_lastest_active').html(html.join(''));
                 if(feeds.length == 0) {
@@ -253,6 +226,32 @@ if(Object.keys(last30days_commit).length > 0) {
         $(this).html(moment(new Date($(this).html()*1000)).fromNow());
         $(this).show();
     });
+    var last30days = {{last30days}};
+    var last30daysAsCat = [];
+    for(x in last30days) {
+        last30daysAsCat.push(new Date(last30days[x]*1000).getDate());
+    }
+    last30daysAsCat.reverse()
+    var last30days_commit = {{last30days_commit}};
+    var last30daysAsData = [];
+    for(x in last30days) {
+        if(last30days[x] in last30days_commit) {
+            last30daysAsData.push(last30days_commit[last30days[x]]);
+            continue;
+        }
+        last30daysAsData.push(0);
+    }
+    last30daysAsData.reverse();
+if(Object.keys(last30days_commit).length > 0) {
+    var month_chart = new Highcharts.Chart({
+        chart: { renderTo: 'id_month_container', type: 'line'},title: {text: ''},
+        yAxis: { title: { text: '提交次数' } },
+        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
+        xAxis: { categories: last30daysAsCat },
+        series: [{ name: '1 月提交', data: last30daysAsData }]
+    });
+    $('.c_user_stats').show();
+}
 });
 </script>
 {% endblock %}

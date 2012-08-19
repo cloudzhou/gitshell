@@ -128,7 +128,9 @@ def explore(request):
     current = 'explore'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.EXPLORE)
-    response_dictionary = {'current': current}
+    latest_feeds = feedAction.get_latest_feeds(0, 100)
+    feeds_as_json = latest_feeds_as_json(request, latest_feeds)
+    response_dictionary = {'current': current, 'feeds_as_json': feeds_as_json}
     return render_to_response('user/explore.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -221,6 +223,11 @@ def git_feeds_as_json(request, pri_user_feeds, pub_user_feeds):
     feeds_json_val['pub_user_feeds_%s' % request.user.id] = feeds_as_json(pub_user_feeds)
     return str(feeds_json_val)
 
+def latest_feeds_as_json(request, latest_feeds):
+    feeds_json_val = {}
+    feeds_json_val['latest_feeds'] = feeds_as_json(latest_feeds)
+    return str(feeds_json_val)
+    
 def feeds_as_json(feeds):
     json_arr = []
     for feed in feeds:
