@@ -33,12 +33,11 @@ def feed(request):
     feedAction.set_user_position(request.user.id, PositionKey.FEED)
     raw_watch_users = feedAction.get_watch_users(request.user.id, 0, 100)
     watch_user_ids = [int(x[0]) for x in raw_watch_users]
-    watch_users = GsuserManager.list_user_by_ids(watch_user_ids)
     raw_watch_repos = feedAction.get_watch_repos(request.user.id, 0, 100)
-    watch_repos_ids = [int(x[0]) for x in raw_watch_repos]
-    watch_repos = RepoManager.list_repo_by_ids(watch_repos_ids)
-    print watch_users, watch_repos
-    response_dictionary = {'current': current}
+    watch_repo_ids = [int(x[0]) for x in raw_watch_repos]
+
+    feeds_as_json = multi_git_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids)
+    response_dictionary = {'current': current, 'feeds_as_json' : feeds_as_json}
     return render_to_response('user/feed.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -158,8 +157,10 @@ def get_gravatarmap(feeds):
             userprofile = GsuserManager.get_userprofile_by_name(username)
             if userprofile is not None:
                 gravatarmap[username] = userprofile.imgurl
+                gravatarmap[username+'_tweet'] = userprofile.tweet
                 continue
-            gravatarmap[username] = 'None'
+            gravatarmap[username] = '0'
+            gravatarmap[username+'_tweet'] = ''
     return gravatarmap
     
 
@@ -174,15 +175,26 @@ def get_feeds(request, ids_str):
         if max_count >= 99:
             break
     commits = RepoManager.get_commits_by_ids(ids)
+    repo_ids = [x.repo_id for x in commits]
+    repos = RepoManager.list_repo_by_ids(repo_ids)
+    repos_dict = dict([(x.id, x) for x in repos])
+    user_ids = [x.user_id for x in repos]
+    users = GsuserManager.list_user_by_ids(user_ids)
+    users_dict = dict([(x.id, x) for x in users])
+    
     for commit in commits:
         repo_id = commit.repo_id
-        repo = RepoManager.get_repo_by_id(repo_id)
-        if repo is None:
+        if repo_id not in repos_dict:
             continue
+        repo = repos_dict[repo_id]
         if repo.auth_type == 2 and repo.user_id != request.user.id and not RepoManager.is_repo_member(repo.id, request.user.id):
             continue
         feed = {}
         feed['id'] = commit.id
+        if repo.user_id in users_dict:
+            feed['user_name'] = users_dict[repo.user_id].username
+        else:
+            feed['user_name'] = ''
         feed['repo_name'] = commit.repo_name
         feed['commit_hash'] = commit.commit_hash
         feed['author'] = commit.author
@@ -190,6 +202,18 @@ def get_feeds(request, ids_str):
         feed['subject'] = commit.subject
         feeds.append(feed)
     return feeds
+
+def multi_git_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids):
+    feeds_json_val = {}
+    for user_id in watch_user_ids:
+        pub_user_feeds = feedAction.get_pub_user_feeds(user_id, 0, 50)
+        if pub_user_feeds is not None and len(pub_user_feeds) > 0:
+            feeds_json_val['uf_%s' % user_id] = feeds_as_json(pub_user_feeds)
+    for repo_id in watch_repo_ids:
+        repo_feeds = feedAction.get_repo_feeds(repo_id, 0, 50)
+        if repo_feeds is not None and len(repo_feeds) > 0:
+            feeds_json_val['rf_%s' % repo_id] = feeds_as_json(repo_feeds)
+    return str(feeds_json_val)
 
 def git_feeds_as_json(request, pri_user_feeds, pub_user_feeds):
     feeds_json_val = {}

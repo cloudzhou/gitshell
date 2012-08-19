@@ -57,38 +57,25 @@ $(function(){
                 for(x in feeds) {
                     feed = feeds[x];
                     feed_date_str = moment(new Date(feed.committer_date*1000)).format('MM/DD');
-                    feed_repo_name = feed.repo_name;
                     if(!display_feeds_map[feed_date_str]) {
                         ordered_date.push(feed_date_str);
-                        display_feeds_map[feed_date_str] = {};
+                        display_feeds_map[feed_date_str] = [];
                     }
-                    if(!display_feeds_map[feed_date_str][feed_repo_name]) {
-                        if(!ordered_date_reponame[feed_date_str]) {
-                            ordered_date_reponame[feed_date_str] = [];
-                        }
-                        ordered_date_reponame[feed_date_str].push(feed_repo_name);
-                        display_feeds_map[feed_date_str][feed_repo_name] = [];
-                    }
-                    display_feeds_map[feed_date_str][feed_repo_name].push(feed);
+                    display_feeds_map[feed_date_str].push(feed);
                 }
                 html = []
                 for(x in ordered_date) {
                     feed_date = ordered_date[x];
-                    html.push('<div class="page-header" style="margin: 0px; padding-bottom: 10px"><h4 class="muted"> ' + feed_date + ' </h4></div><div class="feedtime" style="padding: 10px;"><h3><img style="margin-right: 10px" src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32"/><a href="/{{ user.username }}/">{{ user.username }}</a>...</h3>');
-                    for(y in ordered_date_reponame[ordered_date[x]]) {
-                        feed_reponame = ordered_date_reponame[ordered_date[x]][y];
-                        html.push('<div style="margin-left: 50px;"><p>commit 到 <a href="">' + feed_reponame + '</a></p><ul>');
-                        for(z in display_feeds_map[feed_date][feed_reponame]) {
-                            feed = display_feeds_map[feed_date][feed_reponame][z];
-                            html.push('<li style="margin: 1px"><code><a href="">' + feed.commit_hash + '</a></code> ' + feed.subject + ' <span class="muted pull-right">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></li>');
-                        }
-                        html.push('</ul></div>');
+                    html.push('<div class="page-header" style="margin: 0px; padding-bottom: 10px"><h4 class="muted"> ' + feed_date + ' </h4></div><div style="margin-left: 10px;">');
+                    for(y in display_feeds_map[feed_date]) {
+                        feed = display_feeds_map[feed_date][y];
+                        html.push('<div style="margin: 10px"><img src="https://gravatar.com/avatar/' + gravatarmap[feed.author] + '?s=25"/> <a href="/' + feed.author + '/">' + feed.author + '</a> ' + feed.subject + ' <a class="muted" href="/'+ feed.user_name + '/' + feed.repo_name +'/">' + feed.repo_name + '</a> <span class="muted pull-right">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></div>');
                     }
                     html.push('</div>')
                 }
                 $('#feeds_container').append(html.join(''));
                 if(ordered_date.length == 0) {
-                    $('#feeds_container').append('还没有提交信息');
+                    $('#feeds_container').append('还没有 feed 信息，请多关注活跃开发者或者仓库');
                 }
                 $('#feeds_loading').remove()
             }
