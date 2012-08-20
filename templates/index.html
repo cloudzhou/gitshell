@@ -75,7 +75,7 @@
     <div class="row" style="margin: 0px;">
     {% for repo in repos %}
         <div class="span5" style="margin: 0px">
-            <h3>{{forloop.counter}}. <img style="margin: 10px;" src="https://gravatar.com/avatar/{{userimgurl_dict|keyvalue:repo.user_id}}?s=20"><a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
+            <h3>{{forloop.counter}}. <img class="avatar" style="margin: 10px;" src="https://gravatar.com/avatar/{{userimgurl_dict|keyvalue:repo.user_id}}?s=20"><a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
             <a href="/{{username_dict|keyvalue:repo.user_id}}/{{repo.name}}/">{{repo.name}}</a>
             <span style="float: right;">
             <a data-original-title="提交次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♯ {{repo.commit}}</a>

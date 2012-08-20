@@ -16,7 +16,7 @@
         </div>
         {%for repo in repos%}
         <div class="c_repo">
-            <h3>{{forloop.counter}}. <img style="margin: 10px;" src="https://gravatar.com/avatar/{{userimgurl_dict|keyvalue:repo.user_id}}?s=20"><a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
+            <h3>{{forloop.counter}}. <img class="avatar" style="margin: 10px;" src="https://gravatar.com/avatar/{{userimgurl_dict|keyvalue:repo.user_id}}?s=25"><a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
             <a href="/{{username_dict|keyvalue:repo.user_id}}/{{repo.name}}/">{{repo.name}}</a>
             <span style="float: right;">
             <a data-original-title="提交次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♯ {{repo.commit}}</a>
@@ -37,7 +37,7 @@
             </div>
         </div>
         <div id='feeds_container' class="span7" style="margin: 0px">
-        <img id='feeds_loading' style="margin-left: 50px" src='/static/img/loading.gif'>
+            <img id='feeds_loading' style="margin-left: 50px" src='/static/img/loading.gif'>
         </div>
     </div>
 </div>
@@ -93,7 +93,10 @@ $(function(){
                 html = []
                 for(x in feeds) {
                     feed = feeds[x];
-                    html.push('<div style="margin-bottom: 10px"><img src="https://gravatar.com/avatar/' + gravatarmap[feed.author] + '?s=25"/> <a href="/' + feed.author + '/">' + feed.author + '</a> ' + feed.subject + ' <a class="muted" href="/'+ feed.user_name + '/' + feed.repo_name +'/">' + feed.repo_name + '</a> <span class="muted">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></div>');
+                    html.push('<div style="margin: 0px" class="event_feed span5">');
+                    html.push('<img class="avatar_left" src="https://gravatar.com/avatar/' + gravatarmap[feed.author] + '?s=35"><strong><a href="/' + feed.author + '/">' + feed.author + '</a></strong>')
+                    html.push(' commit at <strong><a href="/'+ feed.user_name + '/' + feed.repo_name +'/">' + feed.repo_name + '</a></strong><div>' + feed.subject + ' <span class="muted">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></div>')
+                    html.push('</div>');
                 }
                 $('#feeds_container').append(html.join(''));
                 if(feeds.length == 0) {

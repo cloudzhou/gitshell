@@ -141,7 +141,6 @@ def notif(request):
     return render_to_response('user/home.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
-@login_required
 def feedbyids(request):
     ids_str = request.POST.get('ids_str', '')
     feeds = []
@@ -189,8 +188,9 @@ def get_feeds(request, ids_str):
         if repo_id not in repos_dict:
             continue
         repo = repos_dict[repo_id]
-        if repo.auth_type == 2 and repo.user_id != request.user.id and not RepoManager.is_repo_member(repo.id, request.user.id):
-            continue
+        if repo.auth_type == 2:
+            if not request.user.is_authenticated() or repo.user_id != request.user.id and not RepoManager.is_repo_member(repo.id, request.user.id):
+                continue
         feed = {}
         feed['id'] = commit.id
         if repo.user_id in users_dict:

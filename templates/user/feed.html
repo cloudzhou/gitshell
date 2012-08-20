@@ -69,12 +69,14 @@ $(function(){
                 html = []
                 for(x in ordered_date) {
                     feed_date = ordered_date[x];
-                    html.push('<div class="page-header" style="margin: 0px; padding-bottom: 10px"><h4 class="muted"> ' + feed_date + ' </h4></div><div style="margin-left: 10px;">');
+                    html.push('<div class="page-header" style="margin: 0px; padding-bottom: 10px"><h4 class="muted"> ' + feed_date + ' </h4></div>');
                     for(y in display_feeds_map[feed_date]) {
                         feed = display_feeds_map[feed_date][y];
-                        html.push('<div class="feedtime" style="margin: 5px"><img src="https://gravatar.com/avatar/' + gravatarmap[feed.author] + '?s=25"/> <a href="/' + feed.author + '/">' + feed.author + '</a> ' + feed.subject + ' <a class="muted" href="/'+ feed.user_name + '/' + feed.repo_name +'/">' + feed.repo_name + '</a> <span class="muted pull-right">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></div>');
+                        html.push('<div style="margin: 0px" class="event_feed span7"><div style="margin-left: 15px">');
+                        html.push('<img class="avatar_left" src="https://gravatar.com/avatar/' + gravatarmap[feed.author] + '?s=35"><strong><a href="/' + feed.author + '/">' + feed.author + '</a></strong>')
+                        html.push(' commit at <strong><a href="/'+ feed.user_name + '/' + feed.repo_name +'/">' + feed.repo_name + '</a></strong><div>' + feed.subject + ' <span class="muted">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></div>')
+                        html.push('</div></div>');
                     }
-                    html.push('</div>')
                 }
                 $('#feeds_container').append(html.join(''));
                 if(ordered_date.length == 0) {
