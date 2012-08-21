@@ -70,7 +70,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'gitshell.gsuser.middleware.UserprofileMiddleware',
-    'gitshell.gsuser.middleware.UserAccessLimitMiddleware'
+    'gitshell.gsuser.middleware.UserAccessLimitMiddleware',
+    'gitshell.gsuser.middleware.ExceptionLoggingMiddleware',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -122,7 +123,7 @@ LOGGING = {
             'class': 'django.utils.log.AdminEmailHandler',
         },
         'file': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': '/opt/run/var/log/gitshell.8001.log',
         },
@@ -130,7 +131,7 @@ LOGGING = {
     'loggers': {
         'gitshell': {
             'handlers': ['file'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True,
         },
         'django.request': {

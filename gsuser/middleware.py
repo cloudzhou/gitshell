@@ -1,3 +1,4 @@
+import logging, traceback
 from django.contrib import auth
 from django.core.cache import cache
 from django.utils.functional import lazy
@@ -41,6 +42,12 @@ class UserAccessLimitMiddleware(object):
             if value > MAX_ACCESS_TIME:
                 return HttpResponseRedirect(OUT_OF_AccessLimit_URL)
             cache.incr(key)
+
+class ExceptionLoggingMiddleware(object):
+    def process_exception(self, request, exception):
+        logger = logging.getLogger('gitshell')
+        logger.error(traceback.format_exc())
+        return None
 
 def userprofile(request):
     if hasattr(request, 'userprofile'):
