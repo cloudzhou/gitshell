@@ -90,13 +90,19 @@ rawsql = {
 }
 
 def get(model, pkid):
+    return __get(model, pkid, True)
+
+def get_raw(model, pkid):
+    return __get(model, pkid, False)
+
+def __get(model, pkid, only_visibly):
     table = model._meta.db_table
     id_key = __get_idkey(table, pkid)
     obj = cache.get(id_key)
     if obj is not None:
         return obj
     try:
-        if hasattr(model, 'visibly'):
+        if only_visibly and hasattr(model, 'visibly'):
             obj = model.objects.get(visibly = 0, id = pkid)
         else:
             obj = model.objects.get(id = pkid)
@@ -106,6 +112,12 @@ def get(model, pkid):
         return None
 
 def get_many(model, pkids):
+    return __get_many(model, pkids, True)
+
+def get_raw_many(model, pkids):
+    return __get_many(model, pkids, False)
+
+def __get_many(model, pkids, only_visibly):
     table = model._meta.db_table
     if len(pkids) == 0:
         return []
@@ -118,7 +130,7 @@ def get_many(model, pkids):
     if len(uncache_ids) > 0:
         objects = []
         try:
-            if hasattr(model, 'visibly'):
+            if only_visibly and hasattr(model, 'visibly'):
                 objects = model.objects.filter(visibly=0).filter(id__in=uncache_ids)
             else:
                 objects = model.objects.filter(id__in=uncache_ids)

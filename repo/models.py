@@ -4,6 +4,7 @@ from django.db import models
 from django.core.cache import cache
 from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many, get_version, get_sqlkey
+from gitshell.objectscache.da import get_raw, get_raw_many
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
@@ -123,8 +124,16 @@ class RepoManager():
         return get_many(Repo, ids)
 
     @classmethod
+    def list_rawrepo_by_ids(self, ids):
+        return get_raw_many(Repo, ids)
+
+    @classmethod
     def get_repo_by_id(self, repo_id):
         return get(Repo, repo_id)
+
+    @classmethod
+    def get_rawrepo_by_id(self, repo_id):
+        return get_raw(Repo, repo_id)
 
     @classmethod
     def get_repo_by_name(self, user_name, repo_name):
@@ -388,8 +397,17 @@ class RepoManager():
 
     @classmethod
     def merge_repo_map(self, repo_ids):
-        repo_vo_dict = {}
         repos = self.list_repo_by_ids(repo_ids)
+        return self.__inner_merge_repo_map(repos)
+
+    @classmethod
+    def merge_repo_map_ignore_visibly(self, repo_ids):
+        repos = self.list_rawrepo_by_ids(repo_ids)
+        return self.__inner_merge_repo_map(repos)
+
+    @classmethod
+    def __inner_merge_repo_map(self, repos):
+        repo_vo_dict = {}
         user_ids = [x.user_id for x in repos]
         users = GsuserManager.list_user_by_ids(user_ids)
         users_map = dict([(x.id, x) for x in users])
@@ -404,6 +422,7 @@ class RepoManager():
             repo_vo['modify_time'] = time.mktime(repo.modify_time.timetuple())
             repo_vo['auth_type'] = repo.auth_type
             repo_vo['status'] = repo.status
+            repo_vo['visibly'] = repo.visibly
             repo_vo_dict[repo.id] = repo_vo
         return repo_vo_dict
 

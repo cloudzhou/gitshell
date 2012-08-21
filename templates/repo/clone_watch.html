@@ -42,15 +42,16 @@
         <table class="table table-striped">
         {%for watch_user in watch_users%}
             <tr class="c_tr"><td>
-                <a href="/{{watch_user.username}}/"><img class="avatar" src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=32"/></a>
-                <a style="margin-left: 5px" href="/{{watch_user.username}}/">{{watch_user.username}}</a>
+                <a href="/{{watch_user.username}}/"><img class="avatar_left" src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=32"/></a>
+                <a href="/{{watch_user.username}}/">{{watch_user.username}}</a>
                 {%if watch_user.nickname%}
                     <span>({{watch_user.nickname}})</span>
                 {%endif%}
                 <span style="font-size: 12px" class="muted">
-                    {{watch_user.tweet}}
                     加入：<span class="c_unixtime">{{watch_user.date_joined}}</span>
                     最近登录：<span class="c_unixtime">{{watch_user.last_login}}</span>
+                    <br/>
+                    {{watch_user.tweet}}
                 </span>
             </td></tr>
         {%endfor%}

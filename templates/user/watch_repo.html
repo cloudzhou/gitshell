@@ -13,9 +13,20 @@
                 </thead>
                 <tbody>
                 {% for watch_repo in watch_repos %}
-                    <tr>
+                    <tr class="cl_watch_repo_tr" data-repo-id="{{watch_repo.id}}">
                         <td><a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a></td>
-                        <td>{{watch_repo.desc}}</td>
+                        <td>
+                            {{watch_repo.desc}}
+                        <span class="pull-right">
+                            <span style="display: none" id="id_repo_{{watch_repo.id}}" data-repo-id="{{watch_repo.id}}" class="label-unwatch label label-warning">取消关注 x</span> 
+                            {% if watch_repo.visibly != 0 %}
+                            <span class="label label-important">已经删除</span> 
+                            {% endif %}
+                            {% if watch_repo.auth_type == 2 %}
+                            <span class="label label-inverse">私有仓库</span>
+                            {% endif %}
+                        </span>
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -26,6 +37,32 @@
 <script>
 /*global jQuery, window */
 $(function(){
+    $('.cl_watch_repo_tr').live('mouseover mouseout', function(event) {
+        if (event.type == 'mouseover') {
+            var repo_id = $(this).attr('data-repo-id');
+            $('#id_repo_'+repo_id).show();
+        } else {
+            var repo_id = $(this).attr('data-repo-id');
+            $('#id_repo_'+repo_id).hide();
+        }
+    });
+    $('.label-unwatch').click(function(){
+        var repo_id = $(this).attr('data-repo-id');
+        var action_url = '/ajax/repo/' + repo_id + '/unwatch/';
+        $.ajax({
+            url: action_url,
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 10000,
+            error: function(){
+                window.location = window.location
+            },
+            success: function(json){
+                window.location = window.location
+            },
+        })
+    });
 });
 </script>
 {% endblock %}

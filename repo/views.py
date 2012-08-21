@@ -566,6 +566,19 @@ def repo_watch(request, user_name, repo_name):
 
 @login_required
 @require_http_methods(["POST"])
+def repo_unwatch_by_id(request, repo_id):
+    response_dictionary = {'result': 'success'}
+    repo = RepoManager.get_rawrepo_by_id(repo_id)
+    if repo is None:
+        message = u'仓库不存在'
+        return json_httpResponse({'result': 'failed', 'message': message})
+    if not RepoManager.unwatch_repo(request.userprofile, repo):
+        message = u'取消关注失败，可能仓库未被关注'
+        return json_httpResponse({'result': 'failed', 'message': message})
+    return json_httpResponse(response_dictionary)
+
+@login_required
+@require_http_methods(["POST"])
 def repo_unwatch(request, user_name, repo_name):
     response_dictionary = {'result': 'success'}
     repo = RepoManager.get_repo_by_name(user_name, repo_name)

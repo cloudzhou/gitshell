@@ -132,7 +132,7 @@ def watch_repo(request, user_name):
     feedAction = FeedAction()
     raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 100)
     watch_repo_ids = [int(x[0]) for x in raw_watch_repos]
-    watch_repos_map = RepoManager.merge_repo_map(watch_repo_ids)
+    watch_repos_map = RepoManager.merge_repo_map_ignore_visibly(watch_repo_ids)
     watch_repos = [watch_repos_map[x] for x in watch_repo_ids if x in watch_repos_map]
 
     response_dictionary = {'mainnav': 'user', 'watch_repos': watch_repos}
