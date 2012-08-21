@@ -22,6 +22,7 @@ from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.daemon.models import EventManager
+from gitshell.viewtools.views import json_httpResponse
 
 @login_required
 def user_repo(request, user_name):
@@ -103,8 +104,7 @@ def repo_ls_tree(request, user_name, repo_name, refs, path, current):
     abs_repopath = repo.get_abs_repopath(user_name)
     commit_hash = gitHandler.get_commit_hash(abs_repopath, refs)
     is_tree = True ; tree = {} ; blob = u''; lang = 'Plain'; brush = 'plain'
-    is_member = RepoManager.is_repo_member(repo, request.user)
-    if is_member:
+    if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
         if path == '.' or path.endswith('/'):
             tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
         else:
@@ -156,10 +156,9 @@ def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path)
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath(user_name)
     diff = u'+++没有源代码，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
-    is_member = RepoManager.is_repo_member(repo, request.user)
-    if is_member:
+    if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
         diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
-    return HttpResponse(json.dumps({'diff': escape(diff)}), mimetype='application/json')
+    return json_httpResponse({'diff': diff})
 
 @repo_permission_check
 def issues(request, user_name, repo_name):
@@ -335,7 +334,7 @@ def issues_delete(request, user_name, repo_name, issue_id):
     if issues is not None:
         issues.visibly = 1
         issues.save()
-    return HttpResponse(json.dumps({'result': 'ok'}), mimetype='application/json')
+    return json_httpResponse({'result': 'ok'})
 
 @repo_permission_check
 @require_http_methods(["POST"])
@@ -364,7 +363,7 @@ def issues_update(request, user_name, repo_name, issue_id, attr):
     return json_ok()
 
 def json_ok():
-    return HttpResponse(json.dumps({'result': 'ok'}), mimetype='application/json')
+    return json_httpResponse({'result': 'ok'})
 
 #TODO
 @repo_permission_check
@@ -381,7 +380,7 @@ def issues_comment_delete(request, user_name, repo_name, comment_id):
             issues_comment.save()
             issues.comment_count = issues.comment_count - 1
             issues.save()
-    return HttpResponse(json.dumps({'result': 'ok'}), mimetype='application/json')
+    return json_ok()
 
 @repo_permission_check
 def repo_network(request, user_name, repo_name):
@@ -507,14 +506,14 @@ def change_to_vo(raw_fork_repos_tree):
 def repo_refs(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
-        return HttpResponse(json.dumps({'user_name': user_name, 'repo_name': repo_name, 'branches': [], 'tags': []}), mimetype='application/json')
+        return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'branches': [], 'tags': []})
     repopath = repo.get_abs_repopath(user_name)
 
     gitHandler = GitHandler()
     branches_refs = gitHandler.repo_ls_branches(repopath)
     tags_refs = gitHandler.repo_ls_tags(repopath)
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'branches': branches_refs, 'tags': tags_refs}
-    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
+    return json_httpResponse(response_dictionary)
 
 @repo_permission_check
 @login_required
@@ -526,7 +525,7 @@ def repo_fork(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         message = u'仓库不存在'
-        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
+        return json_httpResponse({'result': 'failed', 'message': message})
     userprofile = request.userprofile
     if (userprofile.pubrepo + userprofile.prirepo) >= 100:
         message = u'您的仓库总数量已经超过限制'
@@ -539,7 +538,7 @@ def repo_fork(request, user_name, repo_name):
         message = u'您已经有一个名字相同的仓库: %s' % (repo.name)
         has_error = True
     if has_error:
-        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
+        return json_httpResponse({'result': 'failed', 'message': message})
     fork_repo = Repo.create(request.user.id, repo.id, repo.name, repo.desc, repo.lang, repo.auth_type, repo.used_quote)
     fork_repo.status = 1
     fork_repo.save()
@@ -549,7 +548,7 @@ def repo_fork(request, user_name, repo_name):
     # fork event, clone...
     EventManager.send_fork_event(repo.id, fork_repo.id)
     response_dictionary.update({'result': 'success', 'message': 'fork done, start copy repo tree...'})
-    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
+    return json_httpResponse(response_dictionary)
 
 @repo_permission_check
 @login_required
@@ -559,11 +558,11 @@ def repo_watch(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         message = u'仓库不存在'
-        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
+        return json_httpResponse({'result': 'failed', 'message': message})
     if not RepoManager.watch_repo(request.userprofile, repo):
         message = u'关注失败，关注数量超过限制或者仓库不允许关注'
-        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
-    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
+        return json_httpResponse({'result': 'failed', 'message': message})
+    return json_httpResponse(response_dictionary)
 
 @login_required
 @require_http_methods(["POST"])
@@ -572,18 +571,18 @@ def repo_unwatch(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         message = u'仓库不存在'
-        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
+        return json_httpResponse({'result': 'failed', 'message': message})
     if not RepoManager.unwatch_repo(request.userprofile, repo):
         message = u'取消关注失败，可能仓库未被关注'
-        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
-    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
+        return json_httpResponse({'result': 'failed', 'message': message})
+    return json_httpResponse(response_dictionary)
 
 @repo_permission_check
 @login_required
 @require_http_methods(["POST"])
 def repo_delete(request, user_name, repo_name):
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
-    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
+    return json_httpResponse(response_dictionary)
 
 # TODO
 @login_required

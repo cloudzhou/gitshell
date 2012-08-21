@@ -6,6 +6,7 @@ import json
 import hashlib
 import shutil
 from subprocess import check_output
+from gitshell.viewtools.views import json_httpResponse
 """
 git ls-tree `cat .git/refs/heads/master` -- githooks/
 git log -1 --pretty='%ct %s' -- githooks/

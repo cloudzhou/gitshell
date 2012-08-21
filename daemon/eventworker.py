@@ -67,6 +67,7 @@ def do_event(event):
             commit_count = bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname) + commit_count
             if commit_count > MAX_COMMIT_COUNT:
                 break
+        repo.commit = repo.commit + commit_count
         update_quote(user, gsuser, repo, repopath, diff_tree_blob_size_params)
         return
 

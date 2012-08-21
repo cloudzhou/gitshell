@@ -21,6 +21,7 @@ from gitshell.stats.models import StatsManager
 from gitshell.feed.feed import FeedAction
 from gitshell.stats import timeutils
 from gitshell.feed.views import git_feeds_as_json
+from gitshell.viewtools.views import json_httpResponse
 
 def user(request, user_name):
     gsuser = GsuserManager.get_user_by_name(user_name)
@@ -165,11 +166,11 @@ def network_watch(request, user_name):
     gsuserprofile = GsuserManager.get_userprofile_by_name(user_name)
     if gsuserprofile is None:
         message = u'用户不存在'
-        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
+        return json_httpResponse({'result': 'failed', 'message': message})
     if not RepoManager.watch_user(request.userprofile, gsuserprofile):
         message = u'关注失败，关注数量超过限制或者用户不允许关注'
-        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
-    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
+        return json_httpResponse({'result': 'failed', 'message': message})
+    return json_httpResponse(response_dictionary)
 
 @login_required
 @require_http_methods(["POST"])
@@ -178,12 +179,11 @@ def network_unwatch(request, user_name):
     gsuserprofile = GsuserManager.get_userprofile_by_name(user_name)
     if gsuserprofile is None:
         message = u'用户不存在'
-        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
+        return json_httpResponse({'result': 'failed', 'message': message})
     if not RepoManager.unwatch_user(request.userprofile, gsuserprofile):
         message = u'取消关注失败，可能用户未被关注'
-        return HttpResponse(json.dumps({'result': 'failed', 'message': message}), mimetype='application/json')
-    return HttpResponse(json.dumps(response_dictionary), mimetype='application/json')
-
+        return json_httpResponse({'result': 'failed', 'message': message})
+    return json_httpResponse(response_dictionary)
 
 def login(request):
     loginForm = LoginForm()

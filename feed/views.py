@@ -10,6 +10,7 @@ from gitshell.feed.feed import FeedAction, PositionKey
 from gitshell.repo.models import RepoManager, IssuesComment
 from gitshell.repo.cons import conver_issues
 from gitshell.gsuser.models import GsuserManager
+from gitshell.viewtools.views import json_httpResponse
 
 @login_required
 def home(request):
@@ -100,11 +101,11 @@ def doissues(request):
     issues_id = request.POST.get('issues_id', '')
     if action == '' or repo_id == '' or issues_id == '':
         response_dictionary = {'result': 'failed'}
-        return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
+        return json_httpResponse(response_dictionary)
     issues = RepoManager.get_issues(int(repo_id), int(issues_id))
     if issues is None or issues.user_id != request.user.id:
         response_dictionary = {'result': 'failed'}
-        return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
+        return json_httpResponse(response_dictionary)
     if action == 'fixed':
         issues.status = 4
     elif action == 'close':
@@ -120,9 +121,8 @@ def doissues(request):
         issues.comment_count = issues.comment_count + 1
     issues.save()
     response_dictionary = {'result': 'sucess'}
-    return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
+    return json_httpResponse(response_dictionary)
         
-
 @login_required
 def explore(request):
     current = 'explore'
@@ -148,7 +148,7 @@ def feedbyids(request):
         feeds = get_feeds(request, ids_str)
     gravatarmap = get_gravatarmap(feeds)
     response_dictionary = {'feeds': feeds, 'gravatarmap': gravatarmap}
-    return HttpResponse(json.dumps(response_dictionary), mimetype="application/json")
+    return json_httpResponse(response_dictionary)
 
 def get_gravatarmap(feeds):
     gravatarmap = {}
