@@ -12,6 +12,7 @@ urlpatterns = patterns('gitshell',
     url(r'^explore/?$', 'explore.views.explore'),
 
     # ajax
+    url(r'^ajax/user/(\w+)/recommend/delete/(\d+)/?$', 'gsuser.views.recommend_delete'),
     url(r'^ajax/feed/ids/?$', 'feed.views.feedbyids'),
     url(r'^ajax/repo/(\w+)/(\w+)/refs/?$', 'repo.views.repo_refs'),
     url(r'^ajax/repo/(\w+)/(\w+)/fork/?$', 'repo.views.repo_fork'),

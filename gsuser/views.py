@@ -170,6 +170,18 @@ def recommend(request, user_name):
     return render_to_response('user/recommend.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+@login_required
+@require_http_methods(["POST"])
+def recommend_delete(request, user_name, recommend_id):
+    gsuser = GsuserManager.get_user_by_name(user_name)
+    if gsuser is None:
+        raise Http404
+    response_dictionary = {'result': 'success'}
+    recommend = GsuserManager.get_recommend_by_id(recommend_id)
+    if recommend.user_id == request.user.id:
+        recommend.visibly = 1
+        recommend.save()
+    return json_httpResponse(response_dictionary)
 
 @login_required
 @require_http_methods(["POST"])

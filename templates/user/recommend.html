@@ -13,9 +13,14 @@
                 </thead>
                 <tbody>
                     {% for recommend in recommends %}
-                    <tr>
+                    <tr class="c_td_recommend">
                         <td><img class="avatar" src="https://gravatar.com/avatar/{{ recommend.imgurl }}?s=40"/> <a href="/{{recommend.username}}/">{{recommend.username}}</a></td>
-                        <td style="vertical-align: middle">{{recommend.content}}</td>
+                        <td style="vertical-align: middle">{{recommend.content}}
+                        <div class="pull-right">
+                            <a style="display: none" class="c_rm_recommend" value="{{ recommend.id }}" href="javascript:void(0)"> x </a>
+                            <button style="display: none" value="{{ recommend.id }}" class="c_rm_rf_recommend btn btn-mini btn-danger">确定删除该评论？</button>
+                        </div>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -26,6 +31,41 @@
 <script>
 /*global jQuery, window */
 $(function(){
+    $('.c_td_recommend').live('mouseover mouseout', function(event) {
+        if (event.type == 'mouseover') {
+            if('{{gsuser.username}}' == '{{user.username}}') {
+                $(this).find('.c_rm_recommend').show();
+            }
+        } else {
+            $(this).find('.c_rm_recommend').hide();
+        }
+    });
+    $('.c_rm_recommend').click(function(){
+        $(this).next().show();
+        $(this).next().focus();
+    });
+    $('.c_rm_rf_recommend').blur(function(){
+        setTimeout(
+            function(event) {
+                $(this).hide();
+            }
+        , 300);
+    });
+    $('.c_rm_rf_recommend').click(function(){
+        var recommend_id = $(this).attr('value');
+        $.ajax({
+            url: '/ajax/user/{{gsuser.username}}/recommend/delete/' + recommend_id + '/',
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 10000,
+            error: function(){
+            },
+            success: function(json){
+                window.location = window.location;
+            },
+        });
+    });
 });
 </script>
 {% endblock %}

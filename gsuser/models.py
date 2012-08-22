@@ -102,3 +102,7 @@ class GsuserManager():
         recommends = query(Recommend, user_id, rawsql_id, [user_id, offset, row_count]) 
         return recommends
 
+    @classmethod
+    def get_recommend_by_id(self, rid):
+        return get(Recommend, rid)
+
