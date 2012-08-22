@@ -144,7 +144,6 @@ def repo_commits(request, user_name, repo_name, refs, path):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-#TODO xss
 @repo_permission_check
 @require_http_methods(["POST"])
 def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path):
@@ -292,22 +291,25 @@ def issues_show(request, user_name, repo_name, issues_id, page):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@login_required
 @repo_permission_check
 def issues_create(request, user_name, repo_name, issues_id):
     refs = 'master'; path = '.'; current = 'issues'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    has_issues_modify = False
     repoIssuesForm = RepoIssuesForm()
     issues = Issues()
     if issues_id != 0:
         issues = RepoManager.get_issues(repo.id, issues_id)
-        if issues is None:
+        has_issues_modify = __has_issues_modify_right(request, issues, repo)
+        if not has_issues_modify: 
             issues = Issues()
         repoIssuesForm = RepoIssuesForm(instance = issues)
     repoIssuesForm.fill_assigned(repo)
     error = ''
-    if request.method == 'POST' and request.user.is_authenticated():
+    if request.method == 'POST':
         issues.user_id = request.user.id
         issues.repo_id = repo.id
         repoIssuesForm = RepoIssuesForm(request.POST, instance = issues)
@@ -317,37 +319,42 @@ def issues_create(request, user_name, repo_name, issues_id):
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
         else:
             error = u'issues 内容不能为空'
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error, 'issues_id': issues_id}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error, 'issues_id': issues_id, 'has_issues_modify': has_issues_modify}
     response_dictionary.update(ISSUES_ATTRS)
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/issues_create.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-#TODO
+@login_required
 @repo_permission_check
+@require_http_methods(["POST"])
 def issues_delete(request, user_name, repo_name, issue_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
     issues = RepoManager.get_issues(repo.id, issue_id)
     if issues is not None:
-        issues.visibly = 1
-        issues.save()
+        if __has_issues_modify_right(request, issues, repo):
+            issues.visibly = 1
+            issues.save()
     return json_httpResponse({'result': 'ok'})
 
+@login_required
 @repo_permission_check
 @require_http_methods(["POST"])
 def issues_update(request, user_name, repo_name, issue_id, attr):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    if not request.user.id == repo.user_id:
+        return json_failed()
     issues = RepoManager.get_issues(repo.id, issue_id)
     (key, value) = attr.split('___', 1)
     if key == 'assigned':
-        userprofile = GsuserManager.get_user_by_name(value)
-        if userprofile is not None:
-            repoMember = RepoManager.get_repo_member(repo.id, userprofile.id)
+        user = GsuserManager.get_user_by_name(value)
+        if user is not None:
+            repoMember = RepoManager.get_repo_member(repo.id, user.id)
             if repoMember is not None:
                 issues.assigned = repoMember.user_id
                 issues.save()
@@ -362,10 +369,7 @@ def issues_update(request, user_name, repo_name, issue_id, attr):
     issues.save()
     return json_ok()
 
-def json_ok():
-    return json_httpResponse({'result': 'ok'})
-
-#TODO
+@login_required
 @repo_permission_check
 @require_http_methods(["POST"])
 def issues_comment_delete(request, user_name, repo_name, comment_id):
@@ -375,7 +379,7 @@ def issues_comment_delete(request, user_name, repo_name, comment_id):
     issues_comment = RepoManager.get_issues_comment(comment_id)
     if issues_comment is not None:
         issues = RepoManager.get_issues(repo.id, issues_comment.issues_id)
-        if issues is not None:
+        if issues is not None and __has_issues_comments_modify_right(request, issues_comment, repo):
             issues_comment.visibly = 1
             issues_comment.save()
             issues.comment_count = issues.comment_count - 1
@@ -652,4 +656,16 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_repo_member = RepoManager.is_repo_member(repo, request.user)
     has_fork_right = (repo.auth_type == 0 or is_repo_member)
     return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'has_fork_right': has_fork_right}
+
+def __has_issues_modify_right(request, issues, repo):
+    return issues is not None and (request.user.id == issues.user_id or request.user.id == repo.user_id)
+
+def __has_issues_comments_modify_right(request, issues_comment, repo):
+    return issues is not None and (request.user.id == issues_comment.user_id or request.user.id == repo.user_id)
+
+def json_ok():
+    return json_httpResponse({'result': 'ok'})
+
+def json_failed():
+    return json_httpResponse({'result': 'failed'})
 

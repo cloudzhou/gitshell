@@ -25,7 +25,7 @@ class UserprofileMiddleware(object):
 
 ACL_KEY = 'ACL'
 ACCESS_WITH_IN_TIME = 30*60
-MAX_ACCESS_TIME = 1000
+MAX_ACCESS_TIME = 500
 OUT_OF_AccessLimit_URL = '/help/access_out_of_limit/'
 class UserAccessLimitMiddleware(object):
     def process_request(self, request):

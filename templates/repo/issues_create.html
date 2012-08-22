@@ -27,7 +27,9 @@
             </div>
             {% endif %}
             <button id="i_submit" style="margin-right: 0px;" class="btn btn-primary" type="submit">确定</button>
+            {% if has_issues_modify %}
             <button id="i_delete" style="margin-left: 20px;" class="btn btn-primary btn-danger">删除</button>
+            {% endif %}
             <div class="hidden">{{ repoIssuesForm.content }}</div>
             <div class="hidden">{{ repoIssuesForm.subject }}</div>
         </form>
