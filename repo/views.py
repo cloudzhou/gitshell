@@ -278,13 +278,14 @@ def issues_show(request, user_name, repo_name, issues_id, page):
 
     member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
     member_ids.insert(0, repo.user_id)
-    if raw_issue.user_id != repo.user_id and user_id in member_ids:
+    if raw_issue.user_id != repo.user_id and request.user.id in member_ids:
         member_ids.remove(user_id)
         member_ids.insert(0, user_id)
     members = GsuserManager.list_user_by_ids(member_ids)
     assigneds = [o.username for o in members]
 
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0, total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority}
+    has_issues_modify_right = __has_issues_modify_right(request, raw_issue, repo)
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0, total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority, 'has_issues_modify_right': has_issues_modify_right}
     response_dictionary.update(ISSUES_ATTRS)
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/issues_show.html',

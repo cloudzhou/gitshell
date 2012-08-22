@@ -36,7 +36,11 @@
                 {% for issue in issues %}
 			    <tr>
 				    <td class="c_issue">
-                    <a href="" style="margin-right: 0px" rel="tooltip" data-original-title="拖动到上面做属性更改"><img class="c_drag_setting" value="{{issue.id}}" src="/static/img/glyphicons_019_cogwheel.png"/></a>
+                    {% if user.id == repo.user_id %}
+                    <a href="javascript: void(0)" style="margin-right: 0px" rel="tooltip" data-original-title="拖动到上面做属性更改"><img class="c_drag_setting" value="{{issue.id}}" src="/static/img/glyphicons_019_cogwheel.png"/></a>
+                    {% else %}
+                    <a href="javascript: void(0)" style="margin-right: 0px" rel="tooltip"><img value="{{issue.id}}" src="/static/img/glyphicons_019_cogwheel.png"/></a>
+                    {% endif %}
                     <a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/">#{{issue.id}} {{issue.subject}}</a> [<a href="/{{issue.user_id}}/">{{issue.user_id}}</a>]</td>
 				    <td>{{issue.tracker}}</td>
 				    <td>{{issue.status}}</td>

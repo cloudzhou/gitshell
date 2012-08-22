@@ -29,12 +29,12 @@ pre { border: 0px; background-color: transparent; }
         {%if issue_comments%}
 	    <table id="i_issue_comments" class="table table-striped">
             {%for issue_comment in issue_comments%}
-			    <tr class="c_td_comment">
+			    <tr data-user-name="{{issue_comment.user_id}}" class="c_td_comment">
                     <td>
                         <img class="avatar" style="float:left;display:block" src="https://gravatar.com/avatar/{{ issue_comment.user_img }}?s=32"/>
                         <div style="margin-left:40px">
                             <div class="pull-right">
-                                <a style="display: none" class="c_rm_comment" value="{{raw_issue_comment.id}}" href="javascript:void(0)"> x </a>
+                                <a style="display: none" class="c_rm_comment" value="{{issue_comment.id}}" href="javascript:void(0)"> x </a>
                                 <button style="display: none" value="{{issue_comment.id}}" class="c_rm_rf_comment btn btn-mini btn-danger">确定删除该评论？</button>
                             </div>
                             <a href="/{{issue_comment.user_id}}/">{{issue_comment.user_id}}</a> - <span class="c_unixtime muted">{{issue_comment.create_time}}</span> - <a class="c_ref_comment muted" href="javascript:void(0)" value="{{issue_comment.user_id}}">回复</a></a>
@@ -72,6 +72,7 @@ pre { border: 0px; background-color: transparent; }
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
 <script>
 $(function(){
+    {% if has_issues_modify_right %}
     $('#i_issue_subject').live('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             $('#i_issue_edit').show();
@@ -79,9 +80,13 @@ $(function(){
             $('#i_issue_edit').hide();
         }
     });
+    {% endif %}
     $('.c_td_comment').live('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
-            $(this).find('.c_rm_comment').show();
+            var issues_user_name = $(this).attr('data-user-name');
+            if('{{user.username}}' == '{{user_name}}' || issues_user_name == '{{user.username}}') {
+                $(this).find('.c_rm_comment').show();
+            }
         } else {
             $(this).find('.c_rm_comment').hide();
         }
