@@ -1,25 +1,23 @@
 {% extends "user/user_base.html" %}
 {% block left_sub_container %}
         <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
-            <h2>关注</h2>
+            <h2>评论</h2>
         </div>
         <div>
             <table class="table">
                 <thead>
                     <tr>
                         <th class="span2">用户</th>
-                        <th class="span5">简介</th>
+                        <th class="span5">评论</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for recommend in recommends %}
                     <tr>
-                        <td><img class="avatar" src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
+                        <td><img class="avatar" src="https://gravatar.com/avatar/{{ recommend.imgurl }}?s=40"/> <a href="/{{recommend.username}}/">{{recommend.username}}</a></td>
+                        <td style="vertical-align: middle">{{recommend.content}}</td>
                     </tr>
-                    <tr>
-                        <td><img class="avatar" src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                        <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

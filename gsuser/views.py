@@ -14,7 +14,7 @@ from django.contrib.auth import authenticate as auth_authenticate, login as auth
 from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
 from gitshell.gsuser.Forms import LoginForm, JoinForm0, JoinForm1, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
-from gitshell.gsuser.models import Userprofile, GsuserManager
+from gitshell.gsuser.models import Recommend, Userprofile, GsuserManager
 from gitshell.gsuser.middleware import MAIN_NAVS
 from gitshell.repo.models import RepoManager
 from gitshell.stats.models import StatsManager
@@ -30,7 +30,8 @@ def user(request, user_name):
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     recommendsForm = RecommendsForm()
     repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 10)
-    recommends = GsuserManager.list_recommend_by_id(gsuser.id, 0, 20)
+    raw_recommends = GsuserManager.list_recommend_by_userid(gsuser.id, 0, 20)
+    recommends = __conver_to_recommends_vo(raw_recommends)
 
     feedAction = FeedAction()
     raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
@@ -55,7 +56,7 @@ def user(request, user_name):
     pub_user_feeds = feedAction.get_pub_user_feeds(request.user.id, 0, 10)
     feeds_as_json = git_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
 
-    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'repos': repos, 'watch_repos': watch_repos, 'watch_users': watch_users, 'bewatch_users': bewatch_users, 'last30days': last30days, 'last30days_commit': last30days_commit, 'feeds_as_json': feeds_as_json}
+    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'repos': repos, 'watch_repos': watch_repos, 'watch_users': watch_users, 'bewatch_users': bewatch_users, 'last30days': last30days, 'last30days_commit': last30days_commit, 'feeds_as_json': feeds_as_json, 'recommends': recommends}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/user.html',
                           response_dictionary,
@@ -150,10 +151,21 @@ def recommend(request, user_name):
     gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
+    if request.method == 'POST':
+        recommendsForm = RecommendsForm(request.POST)
+        if recommendsForm.is_valid() and request.user.is_authenticated():
+            content = recommendsForm.cleaned_data['content'].strip()
+            if content != '':
+                recommend = Recommend()
+                recommend.user_id = gsuser.id
+                recommend.content = content
+                recommend.from_user_id = request.user.id
+                recommend.save()
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
-    recommends = GsuserManager.list_recommend_by_id(gsuser.id, 0, 50)
+    raw_recommends = GsuserManager.list_recommend_by_userid(gsuser.id, 0, 50)
+    recommends = __conver_to_recommends_vo(raw_recommends)
 
-    response_dictionary = {'mainnav': 'user'}
+    response_dictionary = {'mainnav': 'user', 'recommends': recommends}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/recommend.html',
                           response_dictionary,
@@ -339,4 +351,11 @@ def get_last30days_commit(gsuser):
     raw_last30days_commit = StatsManager.list_user_stats(gsuser.id, 'day', datetime.fromtimestamp(last30days[-1]), datetime.fromtimestamp(last30days[0]))
     last30days_commit = dict([(time.mktime(x.date.timetuple()), int(x.count)) for x in raw_last30days_commit])
     return last30days_commit
+
+def __conver_to_recommends_vo(raw_recommends):
+    user_ids = [x.from_user_id for x in raw_recommends]
+    users_map = GsuserManager.map_users(user_ids)
+    recommends_vo = [x.to_recommend_vo(users_map) for x in raw_recommends]
+    return recommends_vo
+
 # TODO note: add email unique support ! UNIQUE KEY `email` (`email`) #

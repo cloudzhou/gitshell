@@ -29,6 +29,16 @@ class Recommend(BaseModel):
     content = models.CharField(max_length=128, null=False)
     from_user_id = models.IntegerField(null=False, default=0)
 
+    def to_recommend_vo(self, users_map):
+        recommend_vo = {}
+        recommend_vo['id'] = self.id
+        recommend_vo['content'] = self.content
+        if self.from_user_id in users_map:
+            recommend_vo['username'] = users_map[self.from_user_id]['username']
+            recommend_vo['imgurl'] = users_map[self.from_user_id]['imgurl']
+            recommend_vo['tweet'] = users_map[self.from_user_id]['tweet']
+        return recommend_vo
+
 class GsuserManager():
 
     @classmethod
@@ -87,7 +97,8 @@ class GsuserManager():
         return users_map
 
     @classmethod
-    def list_recommend_by_id(self, user_id, offset, row_count):
+    def list_recommend_by_userid(self, user_id, offset, row_count):
         rawsql_id = 'recommend_l_userId'
         recommends = query(Recommend, user_id, rawsql_id, [user_id, offset, row_count]) 
         return recommends
+

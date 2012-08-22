@@ -43,7 +43,7 @@
                     <tr>
                         <td><a href="/{{gsuser.username}}/{{repo.name}}/">{{repo.name}}</a></td>
                         <td>{{repo.desc}}
-                        <span class="muted">(<span style="display:none" class="c_unixtime">{{repo.modify_time|date:"U"}}</span>)</span>
+                        <span style="display:none" class="pull-right muted c_unixtime">{{repo.modify_time|date:"U"}}</span>
                         </td>
                     </tr>
                 {% endfor %}
@@ -66,7 +66,7 @@
                     <tr>
                         <td><a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a></td>
                         <td>{{watch_repo.desc}}
-                        <span class="muted">(<span style="display:none" class="c_unixtime">{{watch_repo.modify_time}}</span>)</span>
+                        <span style="display:none" class="pull-right muted c_unixtime">{{watch_repo.modify_time}}</span>
                         </td>
                     </tr>
                 {% endfor %}
@@ -127,15 +127,15 @@
         {% endif %}
         <div id="id_user_recommends">
             <h4 style="margin-bottom: 8px; font-weight: normal; color: #999999;">评论:
-                <small><a href="/{{gsuser.username}}/watch/recommend/" class="more">more</a></small></h4>
+                <small><a href="/{{gsuser.username}}/recommend/" class="more">more</a></small></h4>
             <blockquote style="border-left-width: 0px;">
-                {% for i in kk %}
-                <span>作为gitshell开发者，知识全面，为人谦和</span>
-                <small style="margin-left: 10px; margin-bottom:6px"><a href="">cloudzhou</a> git开发者</small>
+                {% for recommend in recommends %}
+                    <span>{{recommend.content}}</span>
+                    <small style="margin-left: 10px; margin-bottom:6px"><a href="/{{recommend.username}}/">{{recommend.username}}</a> {{recommend.tweet}}</small>
                 {% endfor %}
-                <form class="form-inline" action="/{{user.username}}/recommends/" method="post">
+                <form class="form-inline" action="/{{user.username}}/recommend/" method="post">
                     {% csrf_token %}
-                    {{ recommendsForm.recommend }}
+                    {{ recommendsForm.content }}
                     <button id="id_recommend_submit" class="btn hide" type="submit">确定</button>
                 </form>
             </blockquote>
@@ -159,13 +159,17 @@ $(function(){
     };
     resume_md_converter();
 {% endif %}
-    $('#id_recommend').attr('placeholder', '言简意赅评论一下他，希望你确实了解他');
-    $('#id_recommend').addClass('input-xlarge');
-    $('#id_recommend').click(function() {
+    $('#id_content').attr('placeholder', '言简意赅评论一下他，希望你确实了解他');
+    $('#id_content').addClass('input-xlarge');
+    $('#id_content').click(function() {
         $('#id_recommend_submit').show();
     });
-    $('#id_recommend').blur(function() {
-        $('#id_recommend_submit').hide();
+    $('#id_content').blur(function() {
+        setTimeout(
+            function(event) {
+                $('#id_recommend_submit').hide();
+            }
+        , 200)
     });
     var orgi_feeds = {{ feeds_as_json|safe }}
     var sorted_feeds = []
@@ -211,8 +215,8 @@ $(function(){
                 html = []
                 for(x in feeds) {
                     feed = feeds[x]
-                    feed_date_str = moment(new Date(feed.committer_date*1000)).format('MM/DD');
-                    html.push('<tr><td><a href="/' + feed.user_name + '/' + feed.repo_name + '/">' + feed.repo_name + '</a></td><td>' + feed.subject + ' <span class="muted">(' + feed_date_str + ')</span></td></tr>')
+                    feed_date_str = moment(new Date(feed.committer_date*1000)).fromNow();
+                    html.push('<tr><td><a href="/' + feed.user_name + '/' + feed.repo_name + '/">' + feed.repo_name + '</a></td><td>' + feed.subject + ' <span class="pull-right muted">' + feed_date_str + '</span></td></tr>')
                 }
                 $('#id_lastest_active').html(html.join(''));
                 if(feeds.length == 0) {
