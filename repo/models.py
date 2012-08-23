@@ -272,7 +272,6 @@ class RepoManager():
                 order_repos.append(repo_map[repo_id])
         return order_repos
 
-    #TODO about pk
     @classmethod
     def list_watch_user(self, repo_id):
         watchHistory = query(WatchHistory, repo_id, 'watchhistory_l_repoId', [repo_id])

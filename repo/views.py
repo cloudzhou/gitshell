@@ -602,10 +602,11 @@ def repo_delete(request, user_name, repo_name):
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
     return json_httpResponse(response_dictionary)
 
-# TODO
 @login_required
-def edit(request, rid):
+def edit(request, user_name, rid):
     error = u''
+    if user_name != request.user.username:
+        raise Http404
     repo = RepoManager.get_repo_by_id(int(rid))
     if repo is None:
         repo = Repo()
@@ -618,8 +619,8 @@ def edit(request, rid):
         if repoForm.is_valid():
             name = repoForm.cleaned_data['name']
             if re.match("^\w+$", name):
-                desc_repo = RepoManager.get_repo_by_userId_name(request.user.id, name)
-                if desc_repo is None or (repo.id is not None and desc_repo.id == repo.id):
+                dest_repo = RepoManager.get_repo_by_userId_name(request.user.id, name)
+                if dest_repo is None or (repo.id is not None and dest_repo.id == repo.id):
                     fulfill_gitrepo(request.user.username, name, repoForm.cleaned_data['auth_type'])
                     repoForm.save()
                     return HttpResponseRedirect('/' + request.user.username + '/repo/')
@@ -628,6 +629,16 @@ def edit(request, rid):
     return render_to_response('repo/edit.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+def remove(request, user_name, rid):
+    error = u''
+    if user_name != request.user.username:
+        raise Http404
+    repo = RepoManager.get_repo_by_id(int(rid))
+    if repo is None:
+        repo = Repo()
+    elif repo.user_id != request.user.id:
+        raise Http404
 
 def get_commits_by_ids(ids):
     return RepoManager.get_commits_by_ids(ids)

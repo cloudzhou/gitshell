@@ -43,11 +43,15 @@
             </li>
         </ul>
         {% if current == 'index' %}
-        <div class="breadcrumb" style="border-top: 0px; padding: 8px;">
+        <div id="id_repo_desc" class="breadcrumb" style="border-top: 0px; padding: 8px;">
     	    <div class="row">
     			<div class="span9">
     			    <p>{{repo.desc}} — <a href="#README.md">更多介绍</a></p>
     			</div>
+                <span id="id_manage_repo" style="display:none; margin-right: 11px" class="pull-right">
+                    <a href="/{{user_name}}/repo/edit/{{repo.id}}/"><span class="label label-info">编辑</span></a>
+                    <a href="/{{user_name}}/repo/remove/{{repo.id}}/"><span class="label label-info">删除</span></a>
+                </span>
     		</div>
     		<div class="row">
     			<div class="span10">
@@ -228,6 +232,13 @@ $(function(){
     $('#id_ssh_fork').mouseover(function(event) {
         $('#id_git_url').html('<input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git"/>');
         $('#id_read_write').html('读写');
+    });
+    $('#id_repo_desc').live('mouseover mouseout', function(event) {
+        if (event.type == 'mouseover') {
+            $('#id_manage_repo').show();
+        } else {
+            $('#id_manage_repo').hide();
+        }
     });
 
 });
