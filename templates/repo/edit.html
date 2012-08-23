@@ -74,11 +74,11 @@ $(function(){
         $('#id_desc').addClass('input-xlarge');
         $('#id_lang').addClass('input-xlarge');
         {% if rid == '0' %}
-            $('#id_name').attr('placeholder', '[A-Za-z0-9_]');
+            $('#id_name').attr('placeholder', '必填，[A-Za-z0-9_]');
         {% else %}
             $('#id_name').attr('readonly', 'readonly');
         {% endif %}
-        $('#id_desc').attr('placeholder', '提供什么功能，解决什么问题');
+        $('#id_desc').attr('placeholder', '必填，提供什么功能，解决什么问题');
     },
     change_other_lang = function() {
         if($('#id_lang option:selected').val() == 'other') {
