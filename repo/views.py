@@ -20,7 +20,7 @@ from gitshell.gsuser.models import GsuserManager
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
-from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
+from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH
 from gitshell.daemon.models import EventManager
 from gitshell.viewtools.views import json_httpResponse
 
@@ -632,6 +632,19 @@ def delete(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    gsuser = GsuserManager.get_userprofile_by_id(request.user.id)
+    if request.method == 'POST':
+        repo.visibly = 1
+        gsuser.used_quote = gsuser.used_quote - repo.used_quote
+        if gsuser.used_quote < 0:
+            gsuser.used_quote = 0
+        gsuser.save()
+        repo.save()
+        delete_path = '%s/%s' % (DELETE_REPO_PATH, repo.id)
+        shutil.move(repo.get_abs_repopath(request.user.username), delete_path)
+        feedAction = FeedAction()
+        feedAction.delete_repo_feed(repo.id)
+        return HttpResponseRedirect('/%s/repo/' % request.user.username)
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'error': error}
     return render_to_response('repo/delete.html',
                           response_dictionary,

@@ -168,6 +168,12 @@ class FeedAction():
         key = '%s:%s' % ('r', user_id)
         self.redis.hset(LAST_POSITION, key, positionKey)
 
+    """ remove repo feed """
+    def delete_repo_feed(self, repo_id):
+        key = '%s:%s' % (FEED_TYPE['REPO'], repo_id)
+        self.redis.zremrangebyrank(key, 0, 200)
+        return self.redis.delete(key)
+
 if __name__ == '__main__':
     feedAction = FeedAction()
     print feedAction.get_pri_user_feeds(1, 0, -1)

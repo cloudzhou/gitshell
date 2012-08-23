@@ -145,6 +145,7 @@ LOGGING = {
 PRIVATE_REPO_PATH = '/opt/repo/private'
 PUBLIC_REPO_PATH = '/opt/repo/public'
 GIT_BARE_REPO_PATH = '/opt/repo/gitbare'
+DELETE_REPO_PATH = '/opt/repo/delete'
 REDIS_HOST = '127.0.0.1'
 REDIS_PORT = 6379
 REDIS_SOCKET_TIMEOUT = 3

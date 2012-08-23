@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block css %}
+<style>
+pre { border: 0px; }
+</style>
+{% endblock %}
+{% block container %}
+<div class="page-header">
+        <h1>:-(, 删除仓库</h1>
+</div>
+<div class="row">
+    <div class="alert alert-error">
+        你正在删除仓库 <strong>{{repo_name}}</strong>, 这是<strong>不可恢复</strong>的操作
+    </div>
+    <p>删除仓库之前最好想到以下问题:</p>
+    <p>对应数据是否备份</p>
+    <p>是否要通知相关的合作者</p>
+    <p>相关的仓库成员组织，Issues，文档都将不见</p>
+    <form method="POST">
+        {% csrf_token %} 
+        <button class="btn btn-danger" type="submit">我确定要删除这个仓库</button>
+    </form>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+$(function(){
+    if(window.location.hash) {
+        $(window).scrollTop($(window).scrollTop() - 50);
+    }
+    $(document.body).delegate("a","click",function(){
+        var hrefStr = $(this).attr("href");
+        var reg = /.*#[a-z_A-Z]+$/;
+        var isHash= reg.test(hrefStr);
+        if(isHash){
+            var hashStr =$(this).attr('href'); 
+            var hashIds = hashStr.match(/#[a-z_A-Z]+$/);
+            var pos = $(hashIds[0]).offset();
+            $(window).scrollTop(pos.top - 50);
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}
