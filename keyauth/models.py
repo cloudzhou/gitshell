@@ -21,7 +21,7 @@ class KeyauthManager():
         return userPubkeys
 
     @classmethod
-    def get_userpubkey_by_id(user_id, pid):
+    def get_userpubkey_by_id(self, user_id, pid):
         userPubkeys = query(UserPubkey, user_id, 'userpubkey_s_id', [user_id, pid])
         if len(userPubkeys) > 0:
             return userPubkeys[0]

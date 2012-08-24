@@ -274,7 +274,7 @@ class RepoManager():
 
     @classmethod
     def list_watch_user(self, repo_id):
-        watchHistory = query(WatchHistory, repo_id, 'watchhistory_l_repoId', [repo_id])
+        watchHistory = query(WatchHistory, None, 'watchhistory_l_repoId', [repo_id])
         user_ids = [o.user_id for o in watchHistory]
         user_map = GsuserManager.map_users(user_ids)
         watch_user = []
