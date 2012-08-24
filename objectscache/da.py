@@ -16,7 +16,7 @@ table_ptkey_field = {
     'repo_forkhistory': 'repo_id',
     'repo_issues': 'repo_id',
     'repo_issuescomment': 'issues_id',
-    'repo_repo': 'id',
+    'repo_repo': 'user_id',
     'repo_repomember': 'repo_id',
     'repo_watchhistory': 'user_id',
     'stats_statsrepo': 'repo_id',
