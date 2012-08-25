@@ -1,7 +1,7 @@
 # Django settings for gitshell project.
 
-DEBUG = True
-TEMPLATE_DEBUG = True
+DEBUG = False #True
+TEMPLATE_DEBUG = False #True
 
 ADMINS = (
     ('cloudzhou', 'cloudzhou@163.com'),
@@ -13,8 +13,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'gitshelldb',
-        'USER': 'gitshell',
-        'PASSWORD': '424953',
+        'USER': 'git',
+        'PASSWORD': '424953git',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
@@ -34,9 +34,9 @@ DEFAULT_CHARSET = 'UTF-8'
 SITE_ID = 1
 USE_I18N = False
 USE_L10N = True
-MEDIA_ROOT = '/opt/gitshellstatic/static/media/'
+MEDIA_ROOT = '/opt/app/static/static/media/'
 MEDIA_URL = 'http://www.gitshell.com/static/media'
-STATIC_ROOT = '/opt/gitshellstatic/static/'
+STATIC_ROOT = '/opt/app/static/static/'
 STATIC_URL = '/static/'
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 SESSION_COOKIE_AGE = 43200
@@ -89,7 +89,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 ROOT_URLCONF = 'gitshell.urls'
 
 TEMPLATE_DIRS = (
-    '/opt/8001/gitshell/templates',
+    '/opt/app/8001/gitshell/templates',
 )
 
 INSTALLED_APPS = (
