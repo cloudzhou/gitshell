@@ -63,15 +63,31 @@
                     </div>
                     {% endif %}
                     {% if has_fork_right %}
-                        <span style="margin-bottom: 5px"><span id="id_http_fork">HTTP</span>
+                        <span style="margin-bottom: 5px">
+                            {% if repo.auth_type == 0 %}
+                                <span id="id_http_fork">HTTP</span>
+                            {% endif %}
                             {% if is_repo_member %}
-                                | <span id="id_ssh_fork">SSH</span>
+                                <span id="id_ssh_fork">
+                                {% if repo.auth_type == 0 %} | {% endif %}
+                                SSH
+                                </span>
                             {% endif %}
                         </span>
                         <span id="id_git_url" style="margin-left: 10px">
-                            <input class="input-xlarge focused" value="https://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>
+                            {% if is_repo_member %}
+                                <input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git"/>
+                            {% elif repo.auth_type == 0 %}
+                                <input class="input-xlarge focused" value="https://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>
+                            {% endif %}
                         </span>
-                        <span id="id_read_write" class="muted">只读</span>
+                        <span id="id_read_write" class="muted">
+                            {% if is_repo_member %}
+                                读写
+                            {% elif repo.auth_type == 0 %}
+                                只读
+                            {% endif %}
+                        </span>
                     {% endif %}
     		    </div>
     		</div>
