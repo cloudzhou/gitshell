@@ -279,8 +279,8 @@ def issues_show(request, user_name, repo_name, issues_id, page):
     member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
     member_ids.insert(0, repo.user_id)
     if raw_issue.user_id != repo.user_id and request.user.id in member_ids:
-        member_ids.remove(user_id)
-        member_ids.insert(0, user_id)
+        member_ids.remove(request.user.id)
+        member_ids.insert(0, request.user.id)
     members = GsuserManager.list_user_by_ids(member_ids)
     assigneds = [o.username for o in members]
 
