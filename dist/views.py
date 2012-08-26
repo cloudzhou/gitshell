@@ -58,4 +58,4 @@ class RepoPartition:
     def __str__(self):
         return ' '.join([str(self.from_index), str(self.to_index), self.host])
 
-do_refresh()
+#do_refresh()
