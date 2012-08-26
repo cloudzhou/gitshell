@@ -52,8 +52,8 @@ def user(request, user_name):
     last30days_commit = get_last30days_commit(gsuser)
 
     feedAction = FeedAction()
-    pri_user_feeds = feedAction.get_pri_user_feeds(request.user.id, 0, 10)
-    pub_user_feeds = feedAction.get_pub_user_feeds(request.user.id, 0, 10)
+    pri_user_feeds = feedAction.get_pri_user_feeds(gsuser.id, 0, 10)
+    pub_user_feeds = feedAction.get_pub_user_feeds(gsuser.id, 0, 10)
     feeds_as_json = git_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
 
     response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'repos': repos, 'watch_repos': watch_repos, 'watch_users': watch_users, 'bewatch_users': bewatch_users, 'last30days': last30days, 'last30days_commit': last30days_commit, 'feeds_as_json': feeds_as_json, 'recommends': recommends}
