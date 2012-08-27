@@ -13,7 +13,7 @@ def index(request):
     username_dict = dict([(users_dict[x]['id'], users_dict[x]['username']) for x in users_dict])
     userimgurl_dict = dict([(users_dict[x]['id'], users_dict[x]['imgurl']) for x in users_dict])
     response_dictionary = {'repos': repos, 'users_dict': users_dict, 'username_dict': username_dict, 'userimgurl_dict': userimgurl_dict}
-    print repos, users_dict, username_dict
+    #print repos, users_dict, username_dict
     return render_to_response('index.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
