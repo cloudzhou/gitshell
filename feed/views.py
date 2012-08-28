@@ -189,7 +189,7 @@ def get_feeds(request, ids_str):
             continue
         repo = repos_dict[repo_id]
         if repo.auth_type == 2:
-            if not request.user.is_authenticated() or repo.user_id != request.user.id and not RepoManager.is_repo_member(repo.id, request.user.id):
+            if not request.user.is_authenticated() or repo.user_id != request.user.id and not RepoManager.is_repo_member(repo, request.user):
                 continue
         feed = {}
         feed['id'] = commit.id
