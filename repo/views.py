@@ -676,8 +676,9 @@ def fulfill_gitrepo(username, reponame, auth_type):
 def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)
     is_repo_member = RepoManager.is_repo_member(repo, request.user)
+    is_owner = (repo.user_id == request.user.id)
     has_fork_right = (repo.auth_type == 0 or is_repo_member)
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'has_fork_right': has_fork_right}
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'has_fork_right': has_fork_right}
 
 def __has_issues_modify_right(request, issues, repo):
     return issues is not None and (request.user.id == issues.user_id or request.user.id == repo.user_id)
