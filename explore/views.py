@@ -16,7 +16,8 @@ from gitshell.feed.views import latest_feeds_as_json
 
 def explore(request):
     repo_ids = get_hot_repo_ids()
-    repos = RepoManager.list_repo_by_ids(repo_ids)
+    raw_repos = RepoManager.list_repo_by_ids(repo_ids)
+    repos = [x for x in raw_repos if x.auth_type != 2]
     user_ids = [x.user_id for x in repos]
     users_dict = GsuserManager.map_users(user_ids)
     username_dict = dict([(users_dict[x]['id'], users_dict[x]['username']) for x in users_dict])
