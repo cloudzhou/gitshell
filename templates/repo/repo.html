@@ -249,6 +249,7 @@ $(function(){
         $('#id_git_url').html('<input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git"/>');
         $('#id_read_write').html('读写');
     });
+{%if user_name == request.user.username %}
     $('#id_repo_desc').live('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             $('#id_manage_repo').show();
@@ -256,6 +257,7 @@ $(function(){
             $('#id_manage_repo').hide();
         }
     });
+{% endif %}
 
 });
 </script>
