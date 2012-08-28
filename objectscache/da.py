@@ -44,6 +44,8 @@ rawsql = {
         'select * from repo_repo where visibly = 0 and user_id = %s and name = %s limit 0, 1',
     'repo_l_userId':
         'select * from repo_repo where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
+    'repo_l_unprivate_userId':
+        'select * from repo_repo where visibly = 0 and user_id = %s and auth_type != 2 order by modify_time desc limit %s, %s',
     'repo_c_userId':
         'select 0 as id, count(1) as count from repo_repo where visibly = 0 and user_id = %s',
     # repo_member #

@@ -29,7 +29,7 @@ def user(request, user_name):
         raise Http404
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     recommendsForm = RecommendsForm()
-    repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 10)
+    repos = RepoManager.list_unprivate_repo_by_userId(gsuser.id, 0, 10)
     raw_recommends = GsuserManager.list_recommend_by_userid(gsuser.id, 0, 20)
     recommends = __conver_to_recommends_vo(raw_recommends)
 

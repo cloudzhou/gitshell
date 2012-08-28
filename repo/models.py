@@ -120,6 +120,11 @@ class RepoManager():
         return repoes
 
     @classmethod
+    def list_unprivate_repo_by_userId(self, user_id, offset, row_count):
+        repoes = query(Repo, user_id, 'repo_l_unprivate_userId', [user_id, offset, row_count])
+        return repoes
+
+    @classmethod
     def list_repo_by_ids(self, ids):
         return get_many(Repo, ids)
 
