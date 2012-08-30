@@ -279,8 +279,8 @@ def issues_show(request, user_name, repo_name, issues_id, page):
     member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
     member_ids.insert(0, repo.user_id)
     if raw_issue.user_id != repo.user_id and request.user.id in member_ids:
-        member_ids.remove(user_id)
-        member_ids.insert(0, user_id)
+        member_ids.remove(request.user.id)
+        member_ids.insert(0, request.user.id)
     members = GsuserManager.list_user_by_ids(member_ids)
     assigneds = [o.username for o in members]
 
@@ -676,8 +676,9 @@ def fulfill_gitrepo(username, reponame, auth_type):
 def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)
     is_repo_member = RepoManager.is_repo_member(repo, request.user)
+    is_owner = (repo.user_id == request.user.id)
     has_fork_right = (repo.auth_type == 0 or is_repo_member)
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'has_fork_right': has_fork_right}
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'has_fork_right': has_fork_right}
 
 def __has_issues_modify_right(request, issues, repo):
     return issues is not None and (request.user.id == issues.user_id or request.user.id == repo.user_id)

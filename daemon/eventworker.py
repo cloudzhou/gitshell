@@ -116,8 +116,11 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
     user_feed_key_values = {}
     total_feed_key_values = []
     for commitHistory in commitHistorys:
-        if commitHistory.committer in member_username_dict:
-            committer_id = member_username_dict[commitHistory.committer]
+        if len(member_username_dict) == 1 or commitHistory.committer in member_username_dict:
+            if len(member_username_dict) == 1:
+                committer_id = repo.user_id
+            else:
+                committer_id = member_username_dict[commitHistory.committer]
             if committer_id not in user_feed_key_values:
                 user_feed_key_values[committer_id] = []
             feed_key_values = user_feed_key_values[committer_id]
@@ -140,18 +143,22 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
         feedAction.madd_repo_feed(repo.id, total_feed_key_values)
 
     # stats action
-    __stats(commitHistorys, repo.id, member_username_dict)
+    __stats(commitHistorys, repo, member_username_dict)
     
     return length
 
-def __stats(commitHistorys, repo_id, member_username_dict):
+def __stats(commitHistorys, repo, member_username_dict):
     stats_commits = []
     for commitHistory in commitHistorys:
-        if commitHistory.committer in member_username_dict and commitHistory.author in member_username_dict:
-            committer_id = member_username_dict[commitHistory.committer]
-            author_id = member_username_dict[commitHistory.author]
+        if len(member_username_dict) == 1 or (commitHistory.committer in member_username_dict and commitHistory.author in member_username_dict):
+            if len(member_username_dict) == 1:
+                committer_id = repo.user_id
+                author_id = repo.user_id
+            else:
+                committer_id = member_username_dict[commitHistory.committer]
+                author_id = member_username_dict[commitHistory.author]
             timestamp = time.mktime(commitHistory.committer_date.timetuple())
-            stats_commits.append([repo_id, committer_id, author_id, timestamp])
+            stats_commits.append([repo.id, committer_id, author_id, timestamp])
     StatsManager.stats(stats_commits)
 
 def get_username_reponame(abspath):

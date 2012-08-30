@@ -78,7 +78,7 @@
                             {% if is_repo_member %}
                                 <input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git"/>
                             {% elif repo.auth_type == 0 %}
-                                <input class="input-xlarge focused" value="https://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>
+                                <input class="input-xlarge focused" value="http://repo.gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>
                             {% endif %}
                         </span>
                         <span id="id_read_write" class="muted">
@@ -249,6 +249,7 @@ $(function(){
         $('#id_git_url').html('<input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git"/>');
         $('#id_read_write').html('读写');
     });
+{% if is_owner %}
     $('#id_repo_desc').live('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             $('#id_manage_repo').show();
@@ -256,6 +257,7 @@ $(function(){
             $('#id_manage_repo').hide();
         }
     });
+{% endif %}
 
 });
 </script>
