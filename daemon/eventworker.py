@@ -57,7 +57,7 @@ def do_event(event):
             return
         rev_ref_arr = event['revrefarr']
         commit_count = 0
-        for rev_ref in rev_ref_arr:    
+        for rev_ref in rev_ref_arr:
             if len(rev_ref) < 3:
                 continue
             oldrev = rev_ref[0]
@@ -92,7 +92,7 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
     raw_commitHistorys = []
     if popen.returncode == 0:
         for line in result.split('\n'):
-            items = line.split('  ', 6)
+            items = line.split('______', 6)
             if len(items) >= 6 and re.match('^\d+$', items[5]):
                 committer_date = datetime.fromtimestamp(int(items[5])) 
                 author_name = items[3][0:30]

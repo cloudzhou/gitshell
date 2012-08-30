@@ -63,7 +63,7 @@ class GitHandler():
 
     def repo_load_log_file(self, commit_hash, path):
         commits = []
-        command = '/usr/bin/git log -10 --pretty="%%h %%t %%an %%cn %%ct|%%s" %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
+        command = '/usr/bin/git log -10 --pretty="%%h______%%t______%%an______%%cn______%%ct|%%s" %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
         try:
             raw_result = check_output(command, shell=True)
             for line in raw_result.split('\n'):
@@ -71,7 +71,7 @@ class GitHandler():
                 if len(ars) != 2:
                     continue
                 attr, commit_message = ars
-                attrs = attr.split(' ', 5)
+                attrs = attr.split('______', 5)
                 if len(attrs) != 5:
                     continue
                 (commit_hash, tree_hash, author, committer, committer_date) = (attrs)
