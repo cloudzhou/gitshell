@@ -16,7 +16,7 @@ def main():
         if len(line_array) != 3:
             pre_check_failed_msg = 'git branch or tag name must match ^[a-zA-Z0-9_\.\-]+$'
             break
-        if not (re.match('^[a-zA-Z0-9_\.\-]+$', line_array[0]) and re.match('^\w+$', line_array[1]) and re.match('^[\w|/]+$', line_array[2])):
+        if not (re.match('^\w+$', line_array[0]) and re.match('^\w+$', line_array[1]) and re.match('^[\w\.\-/]+$', line_array[2])):
             pre_check_failed_msg = 'illegal branch name!'
             break
     if pre_check_failed_msg != '':
