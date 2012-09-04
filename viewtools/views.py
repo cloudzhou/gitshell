@@ -9,6 +9,7 @@ def json_httpResponse(o):
 def json_escape_dumps(o):
     json.encoder.encode_basestring = encoder
     #json.encoder.encode_basestring_ascii = functools.partial(encoder, _encoder=json.encoder.encode_basestring_ascii)
+    json.encoder.encode_basestring_ascii = encoder
     return json.dumps(o)
 
 def encoder(o, _encoder=json.encoder.encode_basestring):
