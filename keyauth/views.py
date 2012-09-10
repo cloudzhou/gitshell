@@ -71,10 +71,10 @@ def keyauth(request, fingerprint, command):
     return not_git_command()
 
 blocks_quote = {67108864 : 327680}
-kbytes_quote = {67108864 : 163840}
+kbytes_quote = {67108864 : 1048576}
 def response_full_git_command(quote, pre_command, user, repo):
     blocks = 327680
-    kbytes = 163840
+    kbytes = 1048576
     if quote in blocks_quote:
         blocks = blocks_quote[quote]
         kbytes = kbytes_quote[quote]
