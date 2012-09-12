@@ -117,11 +117,11 @@
         </div>
 {% endblock %}
 {% block right_sub_container %}
-        {% if userprofile.resume %}
+        {% if gsuserprofile.resume %}
         <div id="id_user_resume">
             <h4 style="margin-bottom: 8px; font-weight: normal; color: #999999;">简历:</h4>
             <blockquote>
-                <div id="id_user_resume_content" style="display:none">{{ userprofile.resume }}</div>
+                <div id="id_user_resume_content" style="display:none">{{ gsuserprofile.resume }}</div>
             </blockquote>
         </div>
         {% endif %}
@@ -150,7 +150,7 @@
 /*global jQuery, window */
 $(function(){
     moment.lang('zh-cn');
-{% if userprofile.resume %}
+{% if gsuserprofile.resume %}
     var resume_md_converter = function() {
         var converter = new Markdown.getSanitizingConverter();
         var html = converter.makeHtml($('#id_user_resume_content').html());
