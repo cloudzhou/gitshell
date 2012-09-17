@@ -179,7 +179,7 @@ class RepoManager():
         return None
 
     @classmethod
-    def add_member(self, repo_id, username):
+    def add_member(self, repo_id, user_name):
         user = GsuserManager.get_user_by_name(user_name)
         if user is None:
             return None
@@ -191,7 +191,7 @@ class RepoManager():
             repoMember.save()
 
     @classmethod
-    def remove_member(self, repo_id, username):
+    def remove_member(self, repo_id, user_name):
         user = GsuserManager.get_user_by_name(user_name)
         if user is None:
             return None
