@@ -8,7 +8,7 @@ create index statsuser_hid_idx on stats_statsuser (user_id, hash_id);
 create index statsuser_uid_types_date_idx on stats_statsuser (user_id, statstype, datetype, date);
 
 create index recommend_uid_idx on gsuser_recommend (visibly, user_id);
-create unique index auth_user_email_idx on auth_user (email(8));
+create unique index auth_user_email_idx on auth_user (email);
 
 create index repo_uid_name_idx on repo_repo (visibly, user_id, name);
 create index commithistory_rid_cid_idx on repo_commithistory (visibly, repo_id, commit_id);
