@@ -56,10 +56,10 @@ def keyauth(request, fingerprint, command):
     if repo is None:
         return not_git_command()
 
+    quote = userprofile.quote
     # author of the repo
     userPubkey = KeyauthManager.get_userpubkey_by_userId_fingerprint(user.id, fingerprint)
     if userPubkey is not None:
-        quote = userprofile.quote
         return response_full_git_command(quote, pre_command, user, repo)
 
     # member of the repo
