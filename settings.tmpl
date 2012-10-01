@@ -1,7 +1,7 @@
 # Django settings for gitshell project.
 
-DEBUG = False #True
-TEMPLATE_DEBUG = False #True
+DEBUG = ${debug}
+TEMPLATE_DEBUG = ${template_debug}
 
 ADMINS = (
     ('cloudzhou', 'cloudzhou@163.com'),
@@ -13,9 +13,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'gitshelldb',
-        'USER': 'git',
-        'PASSWORD': '424953git',
-        'HOST': '127.0.0.1',
+        'USER': 'gitshell',
+        'PASSWORD': '${password}',
+        'HOST': '${host}',
         'PORT': '3306',
     }
 }
@@ -89,7 +89,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 ROOT_URLCONF = 'gitshell.urls'
 
 TEMPLATE_DIRS = (
-    '/opt/app/8001/gitshell/templates',
+    '${template_dirs}',
 )
 
 INSTALLED_APPS = (
@@ -125,7 +125,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': '/opt/run/var/log/gitshell.8001.log',
+            'filename': '${logging_file_path}',
         },
     },
     'loggers': {

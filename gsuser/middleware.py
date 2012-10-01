@@ -11,6 +11,7 @@ from django.db.models.signals import post_save
 from gitshell.objectscache.da import da_post_save
 
 MAIN_NAVS = ['index', 'stats', 'skills', 'home', 'login', 'logout', 'join', 'resetpassword', 'help', 'settings', 'private', 'captcha', 'ajax', 'explore', 'error']
+KEEP_REPO_NAME = ['active', 'watch', 'recommend', 'repo']
 
 def get_userprofile(request):
     if not hasattr(request, '_cached_userprofile'):

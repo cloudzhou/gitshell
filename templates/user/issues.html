@@ -109,12 +109,11 @@ $(function(){
             function(event) {
                 $('#id_tr_'+id).hide();
             }
-        , 200)
+        , 350)
     });
     $('.c_button').click(function(event) {
         var id = $(this).parents('tr').attr('data');
         $('#id_tr_'+id).hide();
-        $('#id_action').val('reject');
         var comment = $('#id_comment_'+id).val();
         var repo_id = $('#id_repo_id_'+id).val();
         var action = $('#id_action').val();

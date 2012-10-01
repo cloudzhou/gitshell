@@ -83,6 +83,8 @@ $(function(){
     change_other_lang = function() {
         if($('#id_lang option:selected').val() == 'other') {
             $('#id_other_lang_group').show();
+        } else {
+            $('#id_other_lang_group').hide();
         }
     };
     $('#id_lang').click(change_other_lang);

@@ -23,6 +23,7 @@ from gitshell.stats.models import StatsManager
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH
 from gitshell.daemon.models import EventManager
 from gitshell.viewtools.views import json_httpResponse
+from gitshell.gsuser.middleware import KEEP_REPO_NAME
 
 @login_required
 def user_repo(request, user_name):
@@ -116,7 +117,8 @@ def repo_ls_tree(request, user_name, repo_name, refs, path, current):
                     lang = lang_suffix[suffix]
                     brush = brush_aliases[lang]
             blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'blob': blob, 'is_tree': is_tree, 'lang': lang, 'brush': brush}
+    is_markdown = path.endswith('.markdown') or path.endswith('.md') or path.endswith('.mkd')
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'blob': blob, 'is_tree': is_tree, 'lang': lang, 'brush': brush, 'is_markdown': is_markdown}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/tree.html',
                           response_dictionary,
@@ -154,7 +156,7 @@ def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path)
         path = '.'
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath(user_name)
-    diff = u'+++没有源代码，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
+    diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
         diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
     return json_httpResponse({'diff': diff})
@@ -611,13 +613,13 @@ def edit(request, user_name, rid):
         repoForm = RepoForm(request.POST, instance = repo)
         if repoForm.is_valid():
             name = repoForm.cleaned_data['name']
-            if re.match("^\w+$", name):
+            if re.match("^\w+$", name) and name not in KEEP_REPO_NAME:
                 dest_repo = RepoManager.get_repo_by_userId_name(request.user.id, name)
                 if dest_repo is None or (repo.id is not None and dest_repo.id == repo.id):
                     fulfill_gitrepo(request.user.username, name, repoForm.cleaned_data['auth_type'])
                     repoForm.save()
                     return HttpResponseRedirect('/' + request.user.username + '/repo/')
-        error = u'输入正确的仓库名称[A-Za-z0-9_]，选择好语言和可见度，仓库名字不能重复'
+        error = u'输入正确的仓库名称[A-Za-z0-9_]，选择好语言和可见度，仓库名字不能重复，active、watch、recommend、repo是保留的名称。'
     response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'rid': rid, 'error': error}
     return render_to_response('repo/edit.html',
                           response_dictionary,
@@ -641,7 +643,9 @@ def delete(request, user_name, repo_name):
         gsuser.save()
         repo.save()
         delete_path = '%s/%s' % (DELETE_REPO_PATH, repo.id)
-        shutil.move(repo.get_abs_repopath(request.user.username), delete_path)
+        abs_repopath = repo.get_abs_repopath(request.user.username)
+        if os.path.exists(abs_repopath):
+            shutil.move(abs_repopath, delete_path)
         feedAction = FeedAction()
         feedAction.delete_repo_feed(repo.id)
         return HttpResponseRedirect('/%s/repo/' % request.user.username)
@@ -658,6 +662,7 @@ def fulfill_gitrepo(username, reponame, auth_type):
         user_repo_path = '%s/%s' % (base_repo_path, username)
         if not os.path.exists(user_repo_path):
             os.makedirs(user_repo_path)
+            os.chmod(user_repo_path, 0755)
     pub_repo_path = ('%s/%s/%s.git' % (PUBLIC_REPO_PATH, username, reponame))
     pri_repo_path = ('%s/%s/%s.git' % (PRIVATE_REPO_PATH, username, reponame))
     if int(auth_type) == 0: 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/python
 # -*- coding: utf-8 -*-
 import os, re
 import time
@@ -14,6 +14,7 @@ git show HEAD:README.md
 git diff 2497dbb67cb29c0448a3c658ed50255cb4de6419 a2f5ec702e58eb5053fc199c590eac29a2627ad7 --
 path: . means is root of the repo path
 """
+BINARY_FILE_TYPE = set(['doc', 'docx', 'msg', 'odt', 'pages', 'rtf', 'wpd', 'wps', 'azw', 'dat', 'efx', 'epub', 'gbr', 'ged', 'ibooks', 'key', 'keychain', 'pps', 'ppt', 'pptx', 'sdf', 'tar', 'vcf', 'aif', 'iff', 'm3u', 'm4a', 'mid', 'mp3', 'mpa', 'ra', 'wav', 'wma', '3g2', '3gp', 'asf', 'asx', 'avi', 'flv', 'mov', 'mp4', 'mpg', 'rm', 'srt', 'swf', 'vob', 'wmv', '3dm', '3ds', 'max', 'obj', 'bmp', 'dds', 'dng', 'gif', 'jpeg', 'jpg', 'png', 'webp', 'tiff', 'psd', 'pspimage', 'tga', 'thm', 'tif', 'yuv', 'ai', 'eps', 'ps', 'indd', 'pct', 'pdf', 'xlr', 'xls', 'xlsx', 'accdb', 'db', 'dbf', 'mdb', 'pdb', 'apk', 'app', 'com', 'exe', 'gadget', 'jar', 'pif', 'wsf', 'dem', 'gam', 'nes', 'rom', 'sav', 'dwg', 'dxf', 'gpx', 'cfm', 'crx', 'plugin', 'fnt', 'fon', 'otf', 'ttf', 'cab', 'cpl', 'cur', 'dll', 'dmp', 'drv', 'icns', 'ico', 'lnk', 'sys', 'prf', 'hqx', 'mim', 'uue', '7z', 'cbr', 'deb', 'gz', 'pkg', 'rar', 'rpm', 'sit', 'sitx', 'tar.gz', 'zip', 'zipx', 'bin', 'cue', 'dmg', 'iso', 'mdf', 'toast', 'vcd', 'class', 'fla', 'tmp', 'crdownload', 'ics', 'msi', 'part', 'torrent'])
 class GitHandler():
 
     def __init__(self):
@@ -36,6 +37,9 @@ class GitHandler():
     def repo_cat_file(self, repo_path, commit_hash, path):
         if not self.path_check_chdir(repo_path, commit_hash, path):
             return None
+        file_type = path.split('.')[-1]
+        if file_type in BINARY_FILE_TYPE:
+            return "二进制文件"
         stage_file = self.get_stage_file(repo_path, commit_hash, path)
         result = self.read_load_stage_file(stage_file)
         if result is not None:
@@ -180,8 +184,9 @@ class GitHandler():
             shutil.move(stage_file_tmp, stage_file)
         except Exception, e:
             print e
-            pass
         finally:
+            if os.path.exists(stage_file_tmp):
+                os.remove(stage_file_tmp)
             stage_file_w.close()
 
     def path_check_chdir(self, repo_path, commit_hash, path):

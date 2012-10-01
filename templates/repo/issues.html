@@ -56,6 +56,13 @@
                     </span></td>
 			    </tr>
                 {% endfor %}
+                {% if not issues %}
+			    <tr>
+				    <td colspan="7">
+                        没有Issues，或者没有查看Issues权限，半公开和私有项目需要申请成为成员才能查看Issues
+				    <td>
+			    <tr>
+                {% endif %}
 			</tbody>
 	</table>
     <ul class="pager pull-right">

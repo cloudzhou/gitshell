@@ -25,7 +25,7 @@
             {% if not tree %}
 			  <tr>
 				<td colspan="3">
-                    没有源代码，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码
+                    没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码
 				<td>
 			  <tr>
             {% endif %}
@@ -58,9 +58,14 @@
 </style>
 <div id="i_source_code">
     {% if not blob %}
-        没有源代码，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码
+        没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码
+    {% else %}
+        {% if is_markdown %}
+            <pre id="id_markdown_content" style="margin-top: 12px">{{ blob }}</pre>
+        {% else %}
+            <pre class="brush: {{ brush }}; ">{{ blob }}</pre>
+        {% endif %}
     {% endif %}
-    <pre class="brush: {{ brush }}; ">{{ blob }}</pre>
 </div>
     {% endif %}
 	</div>		  
@@ -70,6 +75,11 @@
 <script src='/static/js/app/syntaxhighlighter/shCore.js' type='text/javascript'></script>
 <script src='/static/js/app/syntaxhighlighter/shAutoloader.js' type='text/javascript'></script>
 <script src='/static/js/app/syntaxhighlighter/shBrush{{ lang }}.js' type='text/javascript'></script>
+{% endif %}
+{% if is_markdown %}
+<script src="/static/js/Markdown.Converter.js"></script>
+<script src="/static/js/Markdown.Editor.js"></script>
+<script src="/static/js/Markdown.Sanitizer.js"></script>
 {% endif %}
 <script>
 $(function(){
@@ -108,8 +118,14 @@ $(function(){
         $('#i_repo_path').html(path_href_html);
     };
     set_path_href();
-{% if not is_tree %}
+{% if not is_tree and not is_markdown %}
     SyntaxHighlighter.all();
+{% endif %}
+{% if is_markdown %}
+    var converter = new Markdown.getSanitizingConverter();
+    var html = converter.makeHtml($('#id_markdown_content').html());
+    $('#id_markdown_content').html(html);
+    $('#id_markdown_content').show();
 {% endif %}
 });
 </script>

@@ -38,6 +38,13 @@
 				</td>
 			  </tr>
             {% endfor %}
+            {% if not commits %}
+			    <tr>
+				    <td colspan="3">
+                        没有提交信息，或者没有查看提交信息权限，半公开和私有项目需要申请成为成员才能查看提交信息
+				    <td>
+			    <tr>
+            {% endif %}
 			</tbody>
 	</table>
 <style>
