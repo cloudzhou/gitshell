@@ -86,7 +86,7 @@ class CommitHistory(BaseModel):
             refname = refname
         )
         commitHistory.commit_id = int(commit_hash[0:6], 16)
-        commitHistory.committer_email = committer_email,
+        commitHistory.committer_email = committer_email
         commitHistory.author_email = author_email 
         return commitHistory
 

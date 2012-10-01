@@ -111,16 +111,15 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
     # feed action
     member_user_ids = [x.user_id for x in RepoManager.list_repomember(repo.id)]
     member_user_ids.append(repo.user_id)
-    member_username_dict = dict([(x.username, x.id) for x in GsuserManager.list_user_by_ids(member_user_ids)])
+    member_user = GsuserManager.list_user_by_ids(member_user_ids)
+    member_username_dict = dict([(x.username, x.id) for x in member_user])
+    member_email_dict = dict([(x.email, x.id) for x in member_user])
     feedAction = FeedAction()
     user_feed_key_values = {}
     total_feed_key_values = []
     for commitHistory in commitHistorys:
-        if len(member_username_dict) == 1 or commitHistory.committer in member_username_dict:
-            if len(member_username_dict) == 1:
-                committer_id = repo.user_id
-            else:
-                committer_id = member_username_dict[commitHistory.committer]
+        committer_id = get_committer_id(repo, commitHistory, member_username_dict, member_email_dict)
+        if committer_id is not None:
             if committer_id not in user_feed_key_values:
                 user_feed_key_values[committer_id] = []
             feed_key_values = user_feed_key_values[committer_id]
@@ -143,20 +142,34 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
         feedAction.madd_repo_feed(repo.id, total_feed_key_values)
 
     # stats action
-    __stats(commitHistorys, repo, member_username_dict)
+    __stats(commitHistorys, repo, member_username_dict, member_email_dict)
     
     return length
 
-def __stats(commitHistorys, repo, member_username_dict):
+def get_committer_id(repo, commitHistory, member_username_dict, member_email_dict):
+    if len(member_username_dict) == 1:
+        return repo.user_id
+    elif commitHistory.committer in member_username_dict:
+        return member_username_dict[commitHistory.committer]
+    elif commitHistory.committer_email in member_email_dict:
+        return member_email_dict[commitHistory.committer_email]
+    return None
+
+def get_author_id(repo, commitHistory, member_username_dict, member_email_dict):
+    if len(member_username_dict) == 1:
+        return repo.user_id
+    elif commitHistory.author in member_username_dict:
+        return member_username_dict[commitHistory.author]
+    elif commitHistory.author_email in member_email_dict:
+        return member_email_dict[commitHistory.author_email]
+    return None
+
+def __stats(commitHistorys, repo, member_username_dict, member_email_dict):
     stats_commits = []
     for commitHistory in commitHistorys:
-        if len(member_username_dict) == 1 or (commitHistory.committer in member_username_dict and commitHistory.author in member_username_dict):
-            if len(member_username_dict) == 1:
-                committer_id = repo.user_id
-                author_id = repo.user_id
-            else:
-                committer_id = member_username_dict[commitHistory.committer]
-                author_id = member_username_dict[commitHistory.author]
+        committer_id = get_committer_id(repo, commitHistory, member_username_dict, member_email_dict)
+        author_id = get_author_id(repo, commitHistory, member_username_dict, member_email_dict)
+        if committer_id is not None and author_id is not None:
             timestamp = time.mktime(commitHistory.committer_date.timetuple())
             stats_commits.append([repo.id, committer_id, author_id, timestamp])
     StatsManager.stats(stats_commits)
