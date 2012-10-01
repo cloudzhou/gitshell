@@ -67,8 +67,12 @@ class CommitHistory(BaseModel):
     subject = models.CharField(max_length=512)
     refname = models.CharField(max_length=32)
 
+    # field without database
+    committer_email = ''
+    author_email = ''
+
     @classmethod
-    def create(self, repo_id, repo_name, commit_hash, parent_hashes, tree_hash, author, committer, committer_date, subject, refname):
+    def create(self, repo_id, repo_name, commit_hash, parent_hashes, tree_hash, author, committer, committer_date, subject, refname, committer_email, author_email):
         commitHistory = CommitHistory(
             repo_id = repo_id,
             repo_name = repo_name,
@@ -82,6 +86,8 @@ class CommitHistory(BaseModel):
             refname = refname
         )
         commitHistory.commit_id = int(commit_hash[0:6], 16)
+        commitHistory.committer_email = committer_email,
+        commitHistory.author_email = author_email 
         return commitHistory
 
 class WatchHistory(BaseModel):

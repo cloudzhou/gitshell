@@ -84,7 +84,7 @@ def update_quote(user, gsuser, repo, repopath, parameters):
             diff_size = int(result) - repo.used_quote
     update_gsuser_repo_quote(gsuser, repo, diff_size)
 
-# git log -100 --pretty='%h  %p  %t  %an  %cn  %ct  %s'
+# git log -100 --pretty='%h  %p  %t  %an  %cn  %ct  %ce  %ae  %s'
 def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
     args = ['/opt/run/bin/git-pretty-log.sh', repopath, oldrev, newrev]
     popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
@@ -92,12 +92,12 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
     raw_commitHistorys = []
     if popen.returncode == 0:
         for line in result.split('\n'):
-            items = line.split('______', 6)
-            if len(items) >= 6 and re.match('^\d+$', items[5]):
+            items = line.split('______', 8)
+            if len(items) >= 9 and re.match('^\d+$', items[5]):
                 committer_date = datetime.fromtimestamp(int(items[5])) 
                 author_name = items[3][0:30]
                 committer_name = items[4][0:30]
-                commitHistory = CommitHistory.create(repo.id, repo.name, items[0], items[1][0:24], items[2], author_name, committer_name, committer_date, items[6][0:512], refname[0:32])
+                commitHistory = CommitHistory.create(repo.id, repo.name, items[0], items[1][0:24], items[2], author_name, committer_name, committer_date, items[8][0:512], refname[0:32], items[6], items[7])
                 raw_commitHistorys.append(commitHistory)
     length = len(raw_commitHistorys)
     commit_ids = [x.commit_id for x in raw_commitHistorys]
