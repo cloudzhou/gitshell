@@ -250,21 +250,22 @@ class GitHandler():
         packed_refs_path = '%s/packed-refs' % (repo_path)
         blank_p = re.compile(r'\s+')
         full_refs = 'refs/heads/%s' % refs
-        refs_f = None
-        try:
-            refs_f = open(packed_refs_path, 'r')
-            for line in refs_f:
-                if line.startswith('#'):
-                    continue
-                array = blank_p.split(line)
-                if len(array) >= 2:
-                    commit_hash = array[0].strip()
-                    refs_from_f = array[1].strip()
-                    if refs_from_f == full_refs:
-                        return commit_hash
-        finally:
-            if refs_f != None:
-                refs_f.close()
+        if os.path.exists(packed_refs_path):
+            refs_f = None
+            try:
+                refs_f = open(packed_refs_path, 'r')
+                for line in refs_f:
+                    if line.startswith('#'):
+                        continue
+                    array = blank_p.split(line)
+                    if len(array) >= 2:
+                        commit_hash = array[0].strip()
+                        refs_from_f = array[1].strip()
+                        if refs_from_f == full_refs:
+                            return commit_hash
+            finally:
+                if refs_f != None:
+                    refs_f.close()
         return self.empty_commit_hash
     
     def is_allowed_path(self, path):
