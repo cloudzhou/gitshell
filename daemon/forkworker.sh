@@ -21,6 +21,6 @@ case "$1" in
     python "$SCRIPT" stop
     ;;
   *)
-	log_action_msg "Usage: ${SCRIPT} {start|stop}"
-	exit 1
+    log_action_msg "Usage: ${SCRIPT} {start|stop}"
+    exit 1
 esac

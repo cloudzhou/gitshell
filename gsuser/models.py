@@ -18,7 +18,7 @@ class Userprofile(BaseModel):
     watchrepo = models.IntegerField(null=False, default=0)
     watch = models.IntegerField(null=False, default=0)
     be_watched = models.IntegerField(null=False, default=0)
-    quote = models.BigIntegerField(null=False, default=67108864)
+    quote = models.BigIntegerField(null=False, default=268435456)
     used_quote = models.BigIntegerField(null=False, default=0)
 
     def get_total_repo(self):

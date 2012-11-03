@@ -27,7 +27,6 @@ class GitHandler():
             return None
         stage_file = self.get_stage_file(repo_path, commit_hash, path)
         result = self.read_load_stage_file(stage_file)
-#        result = None
         if result is not None:
             return result
         result = self.ls_tree_check_output(commit_hash, path)
@@ -236,17 +235,37 @@ class GitHandler():
         refs_path = '%s/refs/heads/%s' % (repo_path, refs)
         if not os.path.exists(refs_path):
             refs_path = '%s/refs/tags/%s' % (repo_path, refs)
-        if not self.is_allowed_path(refs_path) or not os.path.exists(refs_path):
+        if not self.is_allowed_path(refs_path):
             return self.empty_commit_hash
-        f = None
-        try:
-            f = open(refs_path, 'r')
-            commit_hash = f.read(40)
-            if re.match('^\w+$', commit_hash):
-                return commit_hash
-        finally:
-            if f != None:
-                f.close()
+        if os.path.exists(refs_path):
+            f = None
+            try:
+                f = open(refs_path, 'r')
+                commit_hash = f.read(40)
+                if re.match('^\w+$', commit_hash):
+                    return commit_hash
+            finally:
+                if f != None:
+                    f.close()
+        packed_refs_path = '%s/packed-refs' % (repo_path)
+        blank_p = re.compile(r'\s+')
+        full_refs = 'refs/heads/%s' % refs
+        if os.path.exists(packed_refs_path):
+            refs_f = None
+            try:
+                refs_f = open(packed_refs_path, 'r')
+                for line in refs_f:
+                    if line.startswith('#'):
+                        continue
+                    array = blank_p.split(line)
+                    if len(array) >= 2:
+                        commit_hash = array[0].strip()
+                        refs_from_f = array[1].strip()
+                        if refs_from_f == full_refs:
+                            return commit_hash
+            finally:
+                if refs_f != None:
+                    refs_f.close()
         return self.empty_commit_hash
     
     def is_allowed_path(self, path):

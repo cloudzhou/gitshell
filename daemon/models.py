@@ -12,7 +12,7 @@ class EventManager():
     def sendevent(self, tube, event):
         beanstalk = beanstalkc.Connection(host=BEANSTALK_HOST, port=BEANSTALK_PORT)
         self.switch(beanstalk, tube)
-        beanstalk.put(event) 
+        beanstalk.put(str(event))
 
     @classmethod
     def switch(self, beanstalk, tube):
