@@ -12,15 +12,20 @@
 {% block subcontainer %}
 <div class="row" style="">
     <div id='todo_container' class="span8">
+        <div id="id_sceneAdd_div" class="input-append form-inline" style="display: none">
+            <input id="id_sceneAdd" type="text" placeholder="添加新的场景，支持Enter按键" class="span3">
+            <button id="id_sceneAdd_button" class="btn btn-primary" type="submit">添加新的情景</button>
+            <button id="id_sceneCancel_button" class="btn btn-primary" type="submit">取消</button>
+        </div>
         <div id="id_todoAdd_div" class="input-append form-inline">
-            <input type="text" id="id_todoAdd" class="span6">
+            <input id="id_todoAdd" type="text" placeholder="添加新的todo，支持Enter按键" class="span6">
             <button id="id_todoAdd_button" class="btn btn-primary" type="submit">添加</button>
             <div class="btn-group pull-left" style="margin-right: 2px">
                 <button data-toggle="dropdown" class="btn dropdown-toggle">@ <span class="caret"></span></button>
                 <ul class="dropdown-menu">
-                    <li><a href="#">所有场景</a></li>
+                    <li><a href="javascript: void(0)">所有场景</a></li>
                     <li class="divider"></li>
-                    <li><a href="#"><i class="icon-plus"></i> 添加新的场景</a></li>
+                    <li id="id_addScene"><a href="javascript: void(0)"><i class="icon-plus"></i> 添加新的场景</a></li>
                 </ul>
             </div>
         </div>
@@ -79,13 +84,34 @@ $(function(){
         add_todo(todo)
     });
     $('#id_todoAdd').keydown(function (e) {
-        if (e.ctrlKey && (e.keyCode == 10 || e.keyCode == 13)) {
+        if (e.keyCode == 10 || e.keyCode == 13) {
             var todo = $(this).val()
             add_todo(todo)
         }
     });
     function add_todo(todo) {
         alert(todo);
+    }
+    $('#id_addScene').click(function(event) {
+        $('#id_sceneAdd_div').show();
+        $('#id_todoAdd_div').hide();
+    });
+    $('#id_sceneCancel_button').click(function(event) {
+        $('#id_sceneAdd_div').hide();
+        $('#id_todoAdd_div').show();
+    });
+    $('#id_sceneAdd_button').click(function(event) {
+        var scene = $('#id_sceneAdd').val()
+        add_scene(scene)
+    });
+    $('#id_sceneAdd').keydown(function (e) {
+        if (e.keyCode == 10 || e.keyCode == 13) {
+            var scene = $(this).val()
+            add_scene(scene)
+        }
+    });
+    function add_scene(scene) {
+        alert(scene);
     }
     $('.cl_todo').tooltip({
       selector: "a[rel=tooltip]"
