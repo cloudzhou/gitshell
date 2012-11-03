@@ -22,6 +22,8 @@ def home(request):
         return feed(request)
     elif goto == PositionKey.GIT:
         return git(request)
+    elif goto == PositionKey.TODO:
+        return todo(request)
     elif goto == PositionKey.ISSUES:
         return issues(request, 0)
     elif goto == PositionKey.EXPLORE:
@@ -52,6 +54,15 @@ def git(request):
     feeds_as_json = git_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
     response_dictionary = {'current': current, 'feeds_as_json': feeds_as_json}
     return render_to_response('user/git.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+@login_required
+def todo(request):
+    current = 'todo'
+    feedAction = FeedAction()
+    feedAction.set_user_position(request.user.id, PositionKey.TODO)
+    response_dictionary = {'current': current}
+    return render_to_response('user/todo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 @login_required

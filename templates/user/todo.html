@@ -1,0 +1,136 @@
+{% extends "user/home_base.html" %}
+{% block css %}
+<style>
+#id_todoAdd_div { padding-bottom: 3px; }
+.line { border-bottom: 1px solid #EEEEEE; margin: 3px; }
+.cl_todo { padding-top: 3px; padding-bottom: 4px; }
+.cl_todo_text { font-size: 16px; padding: 1px; }
+.cl_todo_done_text { font-size: 12px; color: #717171; }
+.cl_todo_attr_hovered { border: dashed 2px #cccccc ; padding: 2px}
+</style>
+{% endblock %}
+{% block subcontainer %}
+<div class="row" style="">
+    <div id='todo_container' class="span8">
+        <div id="id_todoAdd_div" class="input-append form-inline">
+            <input type="text" id="id_todoAdd" class="span6">
+            <button id="id_todoAdd_button" class="btn btn-primary" type="submit">添加</button>
+            <div class="btn-group pull-left" style="margin-right: 2px">
+                <button data-toggle="dropdown" class="btn dropdown-toggle">@ <span class="caret"></span></button>
+                <ul class="dropdown-menu">
+                    <li><a href="#">所有场景</a></li>
+                    <li class="divider"></li>
+                    <li><a href="#"><i class="icon-plus"></i> 添加新的场景</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="id_todoList" class="span7">
+            <div class="cl_todo" data="1">
+                <a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序"><i class="icon-th-list"></i></a>
+                <input class="cl_check" type="checkbox" value="">
+                <span class="cl_todo_text">测试一下todo1</span>
+                <span id="id_control_1" style="margin-left: 20px; display: none">
+                    <a class="go_top muted" href="javascript: void(0)">↑置顶</a>
+                    <a class="go_down muted" href="javascript: void(0)">↓置底</a>
+                    <a class="delete_todo muted" href="javascript: void(0)">x删除</a>
+                </span>
+            </div>
+            <div class="cl_todo">
+                <i class="icon-th-list"></i>
+                <input type="checkbox" value="">
+                <span class="cl_todo_text">测试一下todo1</span>
+                <span style="margin-left: 20px"><span class="muted">↑置顶</span><span class="muted">↓置底</span></span>
+            </div>
+            <div class="cl_todo">
+                <i class="icon-th-list"></i>
+                <input type="checkbox" value="">
+                <span class="cl_todo_text">测试一下todo1</span>
+                <span style="margin-left: 20px"><span class="muted">↑置顶</span><span class="muted">↓置底</span></span>
+            </div>
+            <div class="line"></div>
+            <div class="cl_todo">
+                <input class="cl_check" type="checkbox" value="" checked>
+                <span class="cl_todo_done_text">测试一下todo1</span>
+            </div>
+            <div class="cl_todo">
+                <input class="cl_check" type="checkbox" value="" checked>
+                <span class="cl_todo_done_text">测试一下todo1</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
+<script>
+/*global jQuery, window */
+$(function(){
+    moment.lang('zh-cn');
+    $('.cl_todo').live('mouseover mouseout', function(event) {
+        var todo_id = $(this).attr('data')
+        if (event.type == 'mouseover') {
+            $('#id_control_'+todo_id).show();
+        } else {
+            $('#id_control_'+todo_id).hide();
+        }
+    });
+    $('#id_todoAdd_button').click(function(event) {
+        var todo = $('#id_todoAdd').val()
+        add_todo(todo)
+    });
+    $('#id_todoAdd').keydown(function (e) {
+        if (e.ctrlKey && (e.keyCode == 10 || e.keyCode == 13)) {
+            var todo = $(this).val()
+            add_todo(todo)
+        }
+    });
+    function add_todo(todo) {
+        alert(todo);
+    }
+    $('.cl_todo').tooltip({
+      selector: "a[rel=tooltip]"
+    })
+    $('.cl_todo').draggable({
+        cursor: 'move',
+        revert: true
+    });
+    $('.cl_todo').droppable({
+        accept: '.cl_todo',
+        hoverClass: 'cl_todo_attr_hovered',
+        drop: handleIssueDrop
+    });
+    function handleIssueDrop(event, ui){
+        var from_todo_id = ui.draggable.attr('data');
+        var to_todo_id = $(this).attr('data');
+        $.ajax({
+            url: '/ajax/repo/cloudzhou/gitshell/issues/update/' + issue_id + '/' + issue_attr + '/',
+            type: 'POST',
+            data: {csrfmiddlewaretoken: 'U63ZjQc1UvbhxZSLJGOc3VJqK0xHIz75'},
+            dataType: 'json',
+            timeout: 10000,
+            error: function(){
+            },
+            success: function(json){
+                location_cons()
+            },
+        });
+    }
+    $('.cl_check').click(function (e) {
+        var todo_id = $(this).parents('.cl_todo').attr('data');
+        alert(todo_id);
+    });
+    $('.go_top').click(function (e) {
+        var todo_id = $(this).parents('.cl_todo').attr('data');
+        alert(todo_id);
+    });
+    $('.go_down').click(function (e) {
+        var todo_id = $(this).parents('.cl_todo').attr('data');
+        alert(todo_id);
+    });
+    $('.delete_todo').click(function (e) {
+        var todo_id = $(this).parents('.cl_todo').attr('data');
+        alert(todo_id);
+    });
+});
+</script>
+{% endblock %}
