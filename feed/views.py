@@ -61,7 +61,7 @@ def todo(request):
     current = 'todo'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.TODO)
-    response_dictionary = {'current': current}
+    response_dictionary = {'current': current, 'ii': range(0,10), 'jj': range(11, 20)}
     return render_to_response('user/todo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

@@ -4,9 +4,12 @@
 #id_todoAdd_div { padding-bottom: 3px; }
 .line { border-bottom: 1px solid #EEEEEE; margin: 3px; }
 .cl_todo { padding-top: 3px; padding-bottom: 4px; }
+.cl_todone { padding-top: 3px; padding-bottom: 4px; }
 .cl_todo_text { font-size: 16px; padding: 1px; }
-.cl_todo_done_text { font-size: 12px; color: #717171; }
-.cl_todo_attr_hovered { border: dashed 2px #cccccc ; padding: 2px}
+.cl_todone_text { font-size: 12px; color: #717171; }
+.cl_todo_done_hovered { border: dashed 2px #cccccc ; padding: 2px}
+.cl_todo_move_hovered { border-top: solid 2px #666666 ; padding: 2px}
+.cl_control { padding: 2px; font-weight: bold }
 </style>
 {% endblock %}
 {% block subcontainer %}
@@ -30,36 +33,28 @@
             </div>
         </div>
         <div id="id_todoList" class="span7">
-            <div class="cl_todo" data="1">
-                <a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序"><i class="icon-th-list"></i></a>
-                <input class="cl_check" type="checkbox" value="">
-                <span class="cl_todo_text">测试一下todo1</span>
-                <span id="id_control_1" style="margin-left: 20px; display: none">
-                    <a class="go_top muted" href="javascript: void(0)">↑置顶</a>
-                    <a class="go_down muted" href="javascript: void(0)">↓置底</a>
-                    <a class="delete_todo muted" href="javascript: void(0)">x删除</a>
+            {%for i in ii %}
+            <div id="id_todo_{{i}}" class="cl_todo" data="{{i}}">
+                <a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序"><i class="icon-th-list"></i></a> 
+                <input class="cl_todo_check" type="checkbox" value="">
+                <span class="cl_todo_text">测试一下todo{{i}}</span>
+                <span class="cl_todo_control" style="margin-left: 10px; display: none">
+                    <a class="go_top cl_control muted" title="置顶" href="javascript: void(0)">↑</a>
+                    <a class="go_down cl_control muted" title="置底" href="javascript: void(0)">↓</a>
+                    <a class="delete_todo cl_control muted" title="删除" href="javascript: void(0)">x</a>
                 </span>
             </div>
-            <div class="cl_todo">
-                <i class="icon-th-list"></i>
-                <input type="checkbox" value="">
-                <span class="cl_todo_text">测试一下todo1</span>
-                <span style="margin-left: 20px"><span class="muted">↑置顶</span><span class="muted">↓置底</span></span>
-            </div>
-            <div class="cl_todo">
-                <i class="icon-th-list"></i>
-                <input type="checkbox" value="">
-                <span class="cl_todo_text">测试一下todo1</span>
-                <span style="margin-left: 20px"><span class="muted">↑置顶</span><span class="muted">↓置底</span></span>
-            </div>
+            {%endfor%}
+        </div>
+        <div id="id_todoneList" class="span7">
             <div class="line"></div>
-            <div class="cl_todo">
-                <input class="cl_check" type="checkbox" value="" checked>
-                <span class="cl_todo_done_text">测试一下todo1</span>
-            </div>
-            <div class="cl_todo">
-                <input class="cl_check" type="checkbox" value="" checked>
-                <span class="cl_todo_done_text">测试一下todo1</span>
+            <div id="id_todone_div">
+            {%for j in jj %}
+                <div id="id_todone_{{j}}" class="cl_todone" data="{{j}}">
+                    <input class="cl_todone_check" type="checkbox" value="" checked>
+                    <span class="cl_todone_text"> 测试一下todo{{j}}</span>
+                </div>
+            {%endfor%}
             </div>
         </div>
     </div>
@@ -67,16 +62,16 @@
 {% endblock %}
 {% block js %}
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
+<script src="/static/js/jquery-ui-1.8.21.min.js"></script>
 <script>
 /*global jQuery, window */
 $(function(){
     moment.lang('zh-cn');
     $('.cl_todo').live('mouseover mouseout', function(event) {
-        var todo_id = $(this).attr('data')
         if (event.type == 'mouseover') {
-            $('#id_control_'+todo_id).show();
+            $(this).children('.cl_todo_control').show();
         } else {
-            $('#id_control_'+todo_id).hide();
+            $(this).children('.cl_todo_control').hide();
         }
     });
     $('#id_todoAdd_button').click(function(event) {
@@ -122,16 +117,21 @@ $(function(){
     });
     $('.cl_todo').droppable({
         accept: '.cl_todo',
-        hoverClass: 'cl_todo_attr_hovered',
-        drop: handleIssueDrop
+        hoverClass: 'cl_todo_move_hovered',
+        drop: handleTodoMoveDrop
     });
-    function handleIssueDrop(event, ui){
+    $('#id_todone_div').droppable({
+        accept: '.cl_todo',
+        hoverClass: 'cl_todo_done_hovered',
+        drop: handleTodoDoneDrop
+    });
+    function handleTodoMoveDrop(event, ui){
         var from_todo_id = ui.draggable.attr('data');
         var to_todo_id = $(this).attr('data');
         $.ajax({
             url: '/ajax/repo/cloudzhou/gitshell/issues/update/' + issue_id + '/' + issue_attr + '/',
             type: 'POST',
-            data: {csrfmiddlewaretoken: 'U63ZjQc1UvbhxZSLJGOc3VJqK0xHIz75'},
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
             timeout: 10000,
             error: function(){
@@ -141,21 +141,65 @@ $(function(){
             },
         });
     }
-    $('.cl_check').click(function (e) {
+    function handleTodoDoneDrop(event, ui){
+        var from_todo_id = ui.draggable.attr('data');
+        $.ajax({
+            url: '/ajax/repo/cloudzhou/gitshell/issues/update/' + issue_id + '/' + issue_attr + '/',
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 10000,
+            error: function(){
+            },
+            success: function(json){
+                location_cons()
+            },
+        });
+    }
+    $('.cl_todo_check').click(function (e) {
         var todo_id = $(this).parents('.cl_todo').attr('data');
-        alert(todo_id);
+        var todo_text = $('#id_todo_'+todo_id).children('.cl_todo_text').text();
+        $('#id_todo_'+todo_id).remove()
+        var todone = '<div id="id_todone_' + todo_id + '" class="cl_todone" data="' + todo_id + '">' +
+                     '<input class="cl_todone_check" type="checkbox" value="' + todo_id + '" checked>' +
+                     '<span class="cl_todone_text"> ' + todo_text + '</span></div>'
+        $('#id_todone_div').prepend(todone)
+        //alert(todo_id);
+    });
+    $('.cl_todone_check').click(function (e) {
+        var todone_id = $(this).parents('.cl_todone').attr('data');
+        var todone_text = $('#id_todone_'+todone_id).children('.cl_todone_text').text();
+        $('#id_todone_'+todone_id).remove()
+        var todo = '<div id="id_todo_' + todone_id + '" class="cl_todo" data="' + todone_id + '">' +
+                    '<a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序"><i class="icon-th-list"></i></a> ' +
+                    '<input class="cl_todo_check" type="checkbox" value="">' +
+                    '<span class="cl_todo_text">' + todone_text + '</span>' +
+                    '<span class="cl_todo_control" style="margin-left: 10px; display: none">' +
+                    '<a class="go_top cl_control muted" title="置顶" href="javascript: void(0)">↑</a>' +
+                    '<a class="go_down cl_control muted" title="置底" href="javascript: void(0)">↓</a>' +
+                    '<a class="delete_todo cl_control muted" title="删除" href="javascript: void(0)">x</a>' +
+                    '</span></div>';
+        $('#id_todoList').prepend(todo)
+        alert(todone_id);
     });
     $('.go_top').click(function (e) {
         var todo_id = $(this).parents('.cl_todo').attr('data');
-        alert(todo_id);
+        var todo_top = $('#id_todo_'+todo_id);
+        todo_top.remove();
+        $('#id_todoList').prepend(todo_top);
+        //alert(todo_id);
     });
     $('.go_down').click(function (e) {
         var todo_id = $(this).parents('.cl_todo').attr('data');
-        alert(todo_id);
+        var todo_down = $('#id_todo_'+todo_id);
+        todo_down.remove();
+        $('#id_todoList').append(todo_down);
+        //alert(todo_id);
     });
     $('.delete_todo').click(function (e) {
         var todo_id = $(this).parents('.cl_todo').attr('data');
-        alert(todo_id);
+        $('#id_todo_'+todo_id).remove()
+        //alert(todo_id);
     });
 });
 </script>

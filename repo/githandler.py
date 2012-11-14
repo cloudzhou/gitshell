@@ -6,6 +6,7 @@ import json
 import hashlib
 import shutil
 from subprocess import check_output
+from chardet.universaldetector import UniversalDetector
 from gitshell.viewtools.views import json_httpResponse
 """
 git ls-tree `cat .git/refs/heads/master` -- githooks/
@@ -46,6 +47,13 @@ class GitHandler():
         command = '/usr/bin/git show %s:%s | /usr/bin/head -c 524288' % (commit_hash, path)
         try:
             result = check_output(command, shell=True)
+            ud = UniversalDetector()
+            ud.feed(result)
+            ud.close()
+            if ud.result['encoding']:
+                encoding = ud.result['encoding']
+                if encoding != 'utf-8' or encoding != 'utf8':
+                    result = result.decode(encoding).encode('utf-8')
             self.dumps_write_stage_file(result, stage_file)
             return result
         except Exception, e:
