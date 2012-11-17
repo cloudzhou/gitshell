@@ -66,6 +66,38 @@ def todo(request):
                           response_dictionary,
                           context_instance=RequestContext(request))
 @login_required
+def todo_scene(request, scene_id):
+    pass
+
+@login_required
+def add_scene(request, scene_id):
+    pass
+
+@login_required
+def remove_scene(request, scene_id):
+    pass
+
+@login_required
+def add_todo(request, scene_id):
+    pass
+
+@login_required
+def remove_todo(request, scene_id):
+    pass
+
+@login_required
+def doing_todo(request, scene_id):
+    pass
+
+@login_required
+def done_todo(request, scene_id):
+    pass
+
+@login_required
+def update_meta(request, scene_id):
+    pass
+
+@login_required
 def issues_default(request):
     return issues(request, 0)
 

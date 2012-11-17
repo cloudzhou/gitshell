@@ -75,17 +75,41 @@ $(function(){
         }
     });
     $('#id_todoAdd_button').click(function(event) {
-        var todo = $('#id_todoAdd').val()
-        add_todo(todo)
+        var todo_text = $('#id_todoAdd').val()
+        add_todo(todo_text)
     });
     $('#id_todoAdd').keydown(function (e) {
         if (e.keyCode == 10 || e.keyCode == 13) {
-            var todo = $(this).val()
-            add_todo(todo)
+            var todo_text = $(this).val()
+            add_todo(todo_text)
         }
     });
-    function add_todo(todo) {
-        alert(todo);
+    function init_todo(todo_id, todo_text) {
+        var todo = '<div id="id_todo_' + todo_id + '" class="cl_todo" data="' + todo_id + '"> ' +
+                    '<a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序"><i class="icon-th-list"></i></a> ' +
+                    '<input class="cl_todo_check" type="checkbox" value=""> ' +
+                    '<span class="cl_todo_text">' + todo_text + '</span> ' +
+                    '<span class="cl_todo_control" style="margin-left: 10px; display: none">' +
+                    '<a class="go_top cl_control muted" title="置顶" href="javascript: void(0)">↑</a>' +
+                    '<a class="go_down cl_control muted" title="置底" href="javascript: void(0)">↓</a>' +
+                    '<a class="delete_todo cl_control muted" title="删除" href="javascript: void(0)">x</a>' +
+                    '</span></div>';
+        return todo;
+    }
+    function init_todone(todo_id, todo_text) {
+        var todone = '<div id="id_todone_' + todo_id + '" class="cl_todone" data="' + todo_id + '">' +
+                     '<input class="cl_todone_check" type="checkbox" value="' + todo_id + '" checked>' +
+                     '<span class="cl_todone_text"> ' + todo_text + '</span></div>';
+        return todone;
+    }
+    function add_todo(todo_text) {
+        var todo_id = 1;
+        var todo = init_todo(todo_id, todo_text);
+        $('#id_todoList').prepend(todo);
+        drag_drop_init('#id_todo_'+todo_id);
+        $('#id_todoAdd').val('');
+        $('a').tooltip();
+        //alert(todo);
     }
     $('#id_addScene').click(function(event) {
         $('#id_sceneAdd_div').show();
@@ -109,18 +133,24 @@ $(function(){
         alert(scene);
     }
     $('.cl_todo').tooltip({
-      selector: "a[rel=tooltip]"
+        selector: "a[rel=tooltip]"
     })
-    $('.cl_todo').draggable({
-        cursor: 'move',
-        revert: true
-    });
-    $('.cl_todo').droppable({
-        accept: '.cl_todo',
-        hoverClass: 'cl_todo_move_hovered',
-        drop: handleTodoMoveDrop
-    });
+    function drag_drop_init(selector) {
+        $(selector).draggable({
+            live: true,
+            cursor: 'move',
+            revert: true
+        });
+        $(selector).droppable({
+            live: true,
+            accept: '.cl_todo',
+            hoverClass: 'cl_todo_move_hovered',
+            drop: handleTodoMoveDrop
+        });
+    }
+    drag_drop_init('.cl_todo');
     $('#id_todone_div').droppable({
+        live: true,
         accept: '.cl_todo',
         hoverClass: 'cl_todo_done_hovered',
         drop: handleTodoDoneDrop
@@ -128,75 +158,67 @@ $(function(){
     function handleTodoMoveDrop(event, ui){
         var from_todo_id = ui.draggable.attr('data');
         var to_todo_id = $(this).attr('data');
-        $.ajax({
-            url: '/ajax/repo/cloudzhou/gitshell/issues/update/' + issue_id + '/' + issue_attr + '/',
-            type: 'POST',
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-            },
-            success: function(json){
-                location_cons()
-            },
+        var from_todo = $('#id_todo_'+from_todo_id);
+        from_todo.remove();
+        var i = 0;
+        var index = 0;
+        $('#id_todoList .cl_todo').each(function(){
+            if($(this).attr('data') == to_todo_id) {
+                index = i;
+            }
+            i++;
         });
+        var to_todo = $('#id_todo_'+to_todo_id);
+        from_todo.insertBefore(to_todo);
+        drag_drop_init('#id_todo_'+from_todo_id)
+        $('a').tooltip();
+        //alert(index);
     }
     function handleTodoDoneDrop(event, ui){
         var from_todo_id = ui.draggable.attr('data');
-        $.ajax({
-            url: '/ajax/repo/cloudzhou/gitshell/issues/update/' + issue_id + '/' + issue_attr + '/',
-            type: 'POST',
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-            },
-            success: function(json){
-                location_cons()
-            },
-        });
+        var from_todo = $('#id_todo_'+from_todo_id);
+        var todo_text = from_todo.children('.cl_todo_text').text();
+        var todone = init_todone(from_todo_id, todo_text);
+        $('#id_todone_div').prepend(todone);
+        from_todo.remove();
     }
-    $('.cl_todo_check').click(function (e) {
+    $('.cl_todo_check').live('click', function (e) {
         var todo_id = $(this).parents('.cl_todo').attr('data');
         var todo_text = $('#id_todo_'+todo_id).children('.cl_todo_text').text();
-        $('#id_todo_'+todo_id).remove()
-        var todone = '<div id="id_todone_' + todo_id + '" class="cl_todone" data="' + todo_id + '">' +
-                     '<input class="cl_todone_check" type="checkbox" value="' + todo_id + '" checked>' +
-                     '<span class="cl_todone_text"> ' + todo_text + '</span></div>'
-        $('#id_todone_div').prepend(todone)
+        $('#id_todo_'+todo_id).remove();
+        var todone = init_todone(todo_id, todo_text);
+        $('#id_todone_div').prepend(todone);
         //alert(todo_id);
     });
-    $('.cl_todone_check').click(function (e) {
+    $('.cl_todone_check').live('click', function (e) {
         var todone_id = $(this).parents('.cl_todone').attr('data');
         var todone_text = $('#id_todone_'+todone_id).children('.cl_todone_text').text();
-        $('#id_todone_'+todone_id).remove()
-        var todo = '<div id="id_todo_' + todone_id + '" class="cl_todo" data="' + todone_id + '">' +
-                    '<a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序"><i class="icon-th-list"></i></a> ' +
-                    '<input class="cl_todo_check" type="checkbox" value="">' +
-                    '<span class="cl_todo_text">' + todone_text + '</span>' +
-                    '<span class="cl_todo_control" style="margin-left: 10px; display: none">' +
-                    '<a class="go_top cl_control muted" title="置顶" href="javascript: void(0)">↑</a>' +
-                    '<a class="go_down cl_control muted" title="置底" href="javascript: void(0)">↓</a>' +
-                    '<a class="delete_todo cl_control muted" title="删除" href="javascript: void(0)">x</a>' +
-                    '</span></div>';
-        $('#id_todoList').prepend(todo)
-        alert(todone_id);
+        $('#id_todone_'+todone_id).remove();
+        var todo = init_todo(todone_id, todone_text);
+        $('#id_todoList').prepend(todo);
+        drag_drop_init('#id_todo_'+todone_id);
+        $('a').tooltip();
+        //alert(todone_id);
     });
-    $('.go_top').click(function (e) {
+    $('.go_top').live('click', function (e) {
         var todo_id = $(this).parents('.cl_todo').attr('data');
         var todo_top = $('#id_todo_'+todo_id);
         todo_top.remove();
         $('#id_todoList').prepend(todo_top);
+        drag_drop_init('#id_todo_'+todo_id);
+        $('a').tooltip();
         //alert(todo_id);
     });
-    $('.go_down').click(function (e) {
+    $('.go_down').live('click', function (e) {
         var todo_id = $(this).parents('.cl_todo').attr('data');
         var todo_down = $('#id_todo_'+todo_id);
         todo_down.remove();
         $('#id_todoList').append(todo_down);
+        drag_drop_init('#id_todo_'+todo_id);
+        $('a').tooltip();
         //alert(todo_id);
     });
-    $('.delete_todo').click(function (e) {
+    $('.delete_todo').live('click', function (e) {
         var todo_id = $(this).parents('.cl_todo').attr('data');
         $('#id_todo_'+todo_id).remove()
         //alert(todo_id);

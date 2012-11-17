@@ -15,23 +15,33 @@ class Scene(models.Model):
     visibly = models.SmallIntegerField(default=0, null=False)
     user_id = models.IntegerField(null=False, default=0) 
     name = models.CharField(max_length=32, default='')
-    order = models.CharField(max_length=2048, default='')
+    meta = models.CharField(max_length=2048, default='')
 
 class ToDoListManager():
     
     @classmethod
-    def list_done_todo_by_userId_sceneId(self, user_id, scene_id, offset, row_count):
-        todos = query(ToDoList, user_id, 'todolist_l_userId_sceneId_done', [user_id, scene_id, offset, row_count])
+    def list_doing_todo_by_userId_sceneId(self, user_id, scene_id, offset, row_count):
+        doing = 0
+        offset = 0
+        row_count = 200
+        todos = query(ToDoList, user_id, 'todolist_l_userId_sceneId', [user_id, scene_id, 0, offset, row_count])
         return todos
     
     @classmethod
-    def list_doing_todo_by_userId_sceneId(self, user_id, scene_id, offset, row_count):
-        todos = query(ToDoList, user_id, 'todolist_l_userId_sceneId_doing', [user_id, scene_id, offset, row_count])
+    def list_done_todo_by_userId_sceneId(self, user_id, scene_id, offset, row_count):
+        done = 1
+        offset = 0
+        row_count = 200
+        todos = query(ToDoList, user_id, 'todolist_l_userId_sceneId', [user_id, scene_id, 1, offset, row_count])
         return todos
     
+    @classmethod
+    def add_todo(self, user_id, scene_id, todo_text):
+        pass
+
     @classmethod
     def get_todo_by_id(self, user_id, todo_id):
-        todos = query(ToDoList, user_id, 'todolist_l_userId_todoId', [user_id, todo_id])
+        todos = query(ToDoList, user_id, 'todolist_s_userId_id', [user_id, todo_id])
         if len(todos) > 0:
             return todos[0]
         return None
@@ -64,15 +74,33 @@ class ToDoListManager():
 
     @classmethod
     def get_scene_by_id(self, user_id, scene_id):
-        scenes = query(Scene, user_id, 'todolist_l_userId_sceneId', [user_id, scene_id])
+        scenes = query(Scene, user_id, 'scene_l_userId_id', [user_id, scene_id])
         if len(scenes) > 0:
             return scenes[0]
         return None
 
     @classmethod
+    def get_scene_by_name(self, user_id, name):
+        scenes = query(Scene, user_id, 'scene_l_userId_name', [user_id, name])
+        if len(scenes) > 0:
+            return scenes[0]
+        return None
+
+    @classmethod
+    def add_scene(self, user_id, name):
+        scene = Scene()
+        scene = self.get_scene_by_name(user_id, name)
+        if scene != None:
+            return
+        scene.user_id = user_id
+        scene.name = name
+        scene.save()
+
+    @classmethod
     def remove_scene(self, user_id, scene_id):
         scene = self.get_scene_by_id(user_id, scene_id)
         if scene != None:
+            scene.visibly = 1
             scene.save()
 
 

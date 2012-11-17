@@ -21,6 +21,8 @@ table_ptkey_field = {
     'repo_watchhistory': 'user_id',
     'stats_statsrepo': 'repo_id',
     'stats_statsuser': 'user_id',
+    'todolist_scene': 'user_id',
+    'todolist_todolist': 'user_id',
 }
 rawsql = {
     # userpubkey #
@@ -91,6 +93,17 @@ rawsql = {
         'select * from stats_statsuser where user_id = %s and statstype = %s and datetype = %s and date = %s order by count desc limit 0, 10',
     'allstatsrepo_l_cons':
         'select * from stats_statsrepo where statstype = %s and datetype = %s and date = %s order by count desc limit %s, %s',
+    # todolist #
+    'todolist_l_userId_sceneId':
+        'select * from todolist_todolist where visibly = 0 and user_id = %s and scene_id = %s and is_done = %s limit %s, %s',
+    'todolist_s_userId_id':
+        'select * from todolist_todolist where visibly = 0 and user_id = %s and id = %s',
+    'scene_l_userId':
+        'select * from todolist_scene where visibly = 0 and user_id = %s order by modify_time limit 0, 100',
+    'scene_l_userId_id':
+        'select * from todolist_scene where visibly = 0 and user_id = %s and id = %s',
+    'scene_l_userId_name':
+        'select * from todolist_scene where visibly = 0 andeuser_id = %s and name = %s',
 }
 
 def get(model, pkid):
