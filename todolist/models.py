@@ -1,5 +1,11 @@
 from django.db import models
 
+from django.db import models
+from django.core.cache import cache
+from gitshell.objectscache.models import BaseModel
+from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many, get_version, get_sqlkey
+from gitshell.objectscache.da import get_raw, get_raw_many
+
 class ToDoList(models.Model):
     create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
     modify_time = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
@@ -9,6 +15,15 @@ class ToDoList(models.Model):
     content = models.CharField(max_length=1024, default='')
     is_done = models.SmallIntegerField(default=0, null=False)
 
+    @classmethod
+    def create(self, user_id, scene_id, content, is_done):
+        todolist = ToDoList()
+        todolist.user_id = user_id
+        todolist.scene_id = scene_id
+        todolist.content = content
+        todolist.is_done = is_done
+        return todolist
+
 class Scene(models.Model):
     create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
     modify_time = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
@@ -16,6 +31,14 @@ class Scene(models.Model):
     user_id = models.IntegerField(null=False, default=0) 
     name = models.CharField(max_length=32, default='')
     meta = models.CharField(max_length=2048, default='')
+
+    @classmethod
+    def create(self, user_id, id, name):
+        scene = Scene()
+        scene.user_id = user_id
+        scene.id = id
+        scene.name = name
+        return scene
 
 class ToDoListManager():
     
@@ -88,13 +111,14 @@ class ToDoListManager():
 
     @classmethod
     def add_scene(self, user_id, name):
-        scene = Scene()
         scene = self.get_scene_by_name(user_id, name)
         if scene != None:
-            return
+            return scene.id
+        scene = Scene()
         scene.user_id = user_id
         scene.name = name
         scene.save()
+        return scene.id
 
     @classmethod
     def remove_scene(self, user_id, scene_id):

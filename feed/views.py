@@ -5,11 +5,13 @@ from sets import Set
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.feed.feed import FeedAction, PositionKey
 from gitshell.repo.models import RepoManager, IssuesComment
 from gitshell.repo.cons import conver_issues
 from gitshell.gsuser.models import GsuserManager
+from gitshell.todolist.models import Scene, ToDoList, ToDoListManager
 from gitshell.viewtools.views import json_httpResponse
 
 @login_required
@@ -65,36 +67,73 @@ def todo(request):
     return render_to_response('user/todo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
 @login_required
-def todo_scene(request, scene_id):
+def todo_scene(request, env_scene_id):
+    current = 'todo'
+    scene = get_scene(request.user.id, env_scene_id)
+    scene_list = ToDoListManager.list_scene_by_userId(request.user.id, 0, 100)
+    todoing_list = ToDoListManager.list_doing_todo_by_userId_sceneId(request.user.id, scene.id, 0, 100)
+    todone_list = ToDoListManager.list_done_todo_by_userId_sceneId(request.user.id, scene.id, 0, 100)
+    response_dictionary = {'current': current, 'scene_list': scene_list, 'scene': scene, 'todoing_list': todoing_list, 'todone_list': todone_list}
+    return render_to_response('user/todo.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
+@require_http_methods(["POST"])
+def add_scene(request, env_scene_id):
+    scene_id = 0
+    name = request.POST.get('name', '').strip()
+    if name != '':
+        scene_id = ToDoListManager.add_scene(request.user.id, name)
+    response_dictionary = {'scene_id': scene_id, 'name': name}
+    return json_httpResponse(response_dictionary)
+
+@login_required
+@require_http_methods(["POST"])
+def remove_scene(request, env_scene_id):
+    current = 'todo'
+    scene = get_scene(request.user.id, env_scene_id)
     pass
 
 @login_required
-def add_scene(request, scene_id):
+@require_http_methods(["POST"])
+def add_todo(request, env_scene_id):
+    current = 'todo'
+    scene = get_scene(request.user.id, env_scene_id)
+    todo_text = request.POST.get('todo_text', '')
+    todo = ToDoList.create(request.user.id, scene.id, todo_text, 0)
+    todo.save()
+    response_dictionary = {'todo_id': todo.id}
+    return json_httpResponse(response_dictionary)
+
+@login_required
+@require_http_methods(["POST"])
+def remove_todo(request, env_scene_id):
+    current = 'todo'
+    scene = get_scene(request.user.id, env_scene_id)
     pass
 
 @login_required
-def remove_scene(request, scene_id):
+@require_http_methods(["POST"])
+def doing_todo(request, env_scene_id):
+    current = 'todo'
+    scene = get_scene(request.user.id, env_scene_id)
     pass
 
 @login_required
-def add_todo(request, scene_id):
+@require_http_methods(["POST"])
+def done_todo(request, env_scene_id):
+    current = 'todo'
+    scene = get_scene(request.user.id, env_scene_id)
     pass
 
 @login_required
-def remove_todo(request, scene_id):
-    pass
-
-@login_required
-def doing_todo(request, scene_id):
-    pass
-
-@login_required
-def done_todo(request, scene_id):
-    pass
-
-@login_required
-def update_meta(request, scene_id):
+@require_http_methods(["POST"])
+def update_meta(request, env_scene_id):
+    current = 'todo'
+    scene = get_scene(request.user.id, env_scene_id)
     pass
 
 @login_required
@@ -277,3 +316,11 @@ def feeds_as_json(feeds):
         json_arr.append(list(feed))
     return json_arr
     
+def get_scene(user_id, env_scene_id):
+    scene = None
+    if env_scene_id != 0:
+        scene = ToDoListManager.get_scene_by_id(user_id, env_scene_id)
+    if scene == None:
+        scene = Scene.create(user_id, 0, 'default')
+    return scene
+

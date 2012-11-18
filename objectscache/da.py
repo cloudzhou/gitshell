@@ -99,11 +99,11 @@ rawsql = {
     'todolist_s_userId_id':
         'select * from todolist_todolist where visibly = 0 and user_id = %s and id = %s',
     'scene_l_userId':
-        'select * from todolist_scene where visibly = 0 and user_id = %s order by modify_time limit 0, 100',
+        'select * from todolist_scene where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
     'scene_l_userId_id':
         'select * from todolist_scene where visibly = 0 and user_id = %s and id = %s',
     'scene_l_userId_name':
-        'select * from todolist_scene where visibly = 0 andeuser_id = %s and name = %s',
+        'select * from todolist_scene where visibly = 0 and user_id = %s and name = %s',
 }
 
 def get(model, pkid):
