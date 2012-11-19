@@ -63,14 +63,14 @@ def todo(request):
     current = 'todo'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.TODO)
-    response_dictionary = {'current': current, 'ii': range(0,10), 'jj': range(11, 20)}
-    return render_to_response('user/todo.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
+    scene = Scene.create(request.user.id, 0, 'default')
+    return todo_scene(request, scene.id)
 
 @login_required
 def todo_scene(request, env_scene_id):
     current = 'todo'
+    feedAction = FeedAction()
+    feedAction.set_user_position(request.user.id, PositionKey.TODO)
     scene = get_scene(request.user.id, env_scene_id)
     scene_list = ToDoListManager.list_scene_by_userId(request.user.id, 0, 100)
     todoing_list = ToDoListManager.list_doing_todo_by_userId_sceneId(request.user.id, scene.id, 0, 100)
@@ -89,52 +89,59 @@ def add_scene(request, env_scene_id):
         scene_id = ToDoListManager.add_scene(request.user.id, name)
     response_dictionary = {'scene_id': scene_id, 'name': name}
     return json_httpResponse(response_dictionary)
+    # FIXME unicode
 
 @login_required
 @require_http_methods(["POST"])
 def remove_scene(request, env_scene_id):
-    current = 'todo'
-    scene = get_scene(request.user.id, env_scene_id)
-    pass
+    scene_id = ToDoListManager.remove_scene(request.user.id, env_scene_id)
+    response_dictionary = {'scene_id': scene_id}
+    return json_httpResponse(response_dictionary)
 
 @login_required
 @require_http_methods(["POST"])
 def add_todo(request, env_scene_id):
-    current = 'todo'
     scene = get_scene(request.user.id, env_scene_id)
-    todo_text = request.POST.get('todo_text', '')
-    todo = ToDoList.create(request.user.id, scene.id, todo_text, 0)
-    todo.save()
-    response_dictionary = {'todo_id': todo.id}
+    todo_text = request.POST.get('todo_text', '').strip()
+    todo_id = 0
+    if todo_text != '':
+        todo_id = ToDoListManager.add_todo(request.user.id, scene.id, todo_text)
+    response_dictionary = {'todo_id': todo_id}
     return json_httpResponse(response_dictionary)
 
 @login_required
 @require_http_methods(["POST"])
 def remove_todo(request, env_scene_id):
-    current = 'todo'
-    scene = get_scene(request.user.id, env_scene_id)
-    pass
+    todo_id = int(request.POST.get('todo_id', ''))
+    result_todo_id = ToDoListManager.remove_todo(request.user.id, todo_id)
+    response_dictionary = {'todo_id': result_todo_id}
+    return json_httpResponse(response_dictionary)
 
 @login_required
 @require_http_methods(["POST"])
 def doing_todo(request, env_scene_id):
-    current = 'todo'
-    scene = get_scene(request.user.id, env_scene_id)
-    pass
+    todo_id = int(request.POST.get('todo_id', ''))
+    result_todo_id = ToDoListManager.doing_todo(request.user.id, todo_id)
+    response_dictionary = {'todo_id': result_todo_id}
+    return json_httpResponse(response_dictionary)
 
 @login_required
 @require_http_methods(["POST"])
 def done_todo(request, env_scene_id):
-    current = 'todo'
-    scene = get_scene(request.user.id, env_scene_id)
-    pass
+    todo_id = int(request.POST.get('todo_id', ''))
+    result_todo_id = ToDoListManager.done_todo(request.user.id, todo_id)
+    response_dictionary = {'todo_id': result_todo_id}
+    return json_httpResponse(response_dictionary)
 
 @login_required
 @require_http_methods(["POST"])
-def update_meta(request, env_scene_id):
-    current = 'todo'
+def update_scene_meta(request, env_scene_id):
     scene = get_scene(request.user.id, env_scene_id)
-    pass
+    todo_str_ids = request.POST.get('todo_ids', '')
+    todo_ids = [int(x) for x in todo_str_ids.split(',')]
+    result = ToDoListManager.update_scene_meta(request.user.id, scene.id, todo_ids)
+    response_dictionary = {'result': result}
+    return json_httpResponse(response_dictionary)
 
 @login_required
 def issues_default(request):

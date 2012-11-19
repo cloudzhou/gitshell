@@ -95,7 +95,7 @@ rawsql = {
         'select * from stats_statsrepo where statstype = %s and datetype = %s and date = %s order by count desc limit %s, %s',
     # todolist #
     'todolist_l_userId_sceneId':
-        'select * from todolist_todolist where visibly = 0 and user_id = %s and scene_id = %s and is_done = %s limit %s, %s',
+        'select * from todolist_todolist where visibly = 0 and user_id = %s and scene_id = %s and is_done = %s order by modify_time desc limit %s, %s',
     'todolist_s_userId_id':
         'select * from todolist_todolist where visibly = 0 and user_id = %s and id = %s',
     'scene_l_userId':

@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
+from sets import Set
 from django.db import models
-
 from django.db import models
 from django.core.cache import cache
 from gitshell.objectscache.models import BaseModel
@@ -45,22 +46,25 @@ class ToDoListManager():
     @classmethod
     def list_doing_todo_by_userId_sceneId(self, user_id, scene_id, offset, row_count):
         doing = 0
-        offset = 0
-        row_count = 200
-        todos = query(ToDoList, user_id, 'todolist_l_userId_sceneId', [user_id, scene_id, 0, offset, row_count])
+        todo_ids = self.get_todo_order_ids(user_id, scene_id)
+        todos = []
+        for todo_id in todo_ids:
+            todo = self.get_todo_by_id(user_id, todo_id)
+            if todo is not None:
+                todos.append(todo)
         return todos
     
     @classmethod
     def list_done_todo_by_userId_sceneId(self, user_id, scene_id, offset, row_count):
         done = 1
-        offset = 0
-        row_count = 200
         todos = query(ToDoList, user_id, 'todolist_l_userId_sceneId', [user_id, scene_id, 1, offset, row_count])
         return todos
     
     @classmethod
     def add_todo(self, user_id, scene_id, todo_text):
-        pass
+        todo = ToDoList.create(user_id, scene_id, todo_text, 0)
+        todo.save()
+        return todo.id
 
     @classmethod
     def get_todo_by_id(self, user_id, todo_id):
@@ -75,6 +79,8 @@ class ToDoListManager():
         if todo != None:
             todo.is_done = 1
             todo.save()
+            return todo.id
+        return 0
 
     @classmethod
     def doing_todo(self, user_id, todo_id):
@@ -82,6 +88,8 @@ class ToDoListManager():
         if todo != None:
             todo.is_done = 0
             todo.save()
+            return todo.id
+        return 0
 
     @classmethod
     def remove_todo(self, user_id, todo_id):
@@ -89,6 +97,8 @@ class ToDoListManager():
         if todo != None:
             todo.visibly = 1
             todo.save()
+            return todo.id
+        return 0
 
     @classmethod
     def list_scene_by_userId(self, user_id, offset, row_count):
@@ -126,5 +136,54 @@ class ToDoListManager():
         if scene != None:
             scene.visibly = 1
             scene.save()
+            return scene.id
+        return 0
+
+    @classmethod
+    def get_todo_order_ids(self, user_id, scene_id):
+        scene = self.get_scene_by_id(user_id, scene_id)
+        if scene != None:
+            meta = scene.meta
+            if meta is None or meta == '':
+                return self.get_default_todo_order_ids(user_id, scene_id)
+            default_todo_order_ids = self.get_default_todo_order_ids(user_id, scene_id)
+            meta_todo_order_ids = [int(x) for x in meta.split(',')]
+            if len(default_todo_order_ids) == len(meta_todo_order_ids) and len(Set(default_todo_order_ids).difference(Set(meta_todo_order_ids))) == 0:
+                return meta_todo_order_ids
+            self.update_scene_meta(user_id, scene_id, meta_todo_order_ids)
+            scene = self.get_scene_by_id(user_id, scene_id)
+            meta_todo_order_ids = [int(x) for x in scene.meta.split(',')]
+            return meta_todo_order_ids
+        return []
+
+    @classmethod
+    def update_scene_meta(self, user_id, scene_id, new_todo_order_ids):
+        scene = self.get_scene_by_id(user_id, scene_id)
+        if scene is None:
+            return 1
+        old_todo_order_ids = self.get_default_todo_order_ids(user_id, scene_id)
+        old_todo_order_ids_set = Set(old_todo_order_ids)
+        if len(old_todo_order_ids) == len(new_todo_order_ids) and len(old_todo_order_ids_set.difference(Set(new_todo_order_ids))) == 0:
+            scene.meta = ','.join([str(x) for x in new_todo_order_ids])
+            scene.save()
+            return 0
+        merge_todo_order_ids = []
+        for todo_id in new_todo_order_ids:
+            if todo_id in old_todo_order_ids_set:
+                merge_todo_order_ids.append(todo_id)
+        unmerge_todo_order_ids = []
+        for todo_id in old_todo_order_ids:
+            if todo_id not in merge_todo_order_ids:
+                unmerge_todo_order_ids.append(todo_id)
+        final_todo_order_ids = unmerge_todo_order_ids + merge_todo_order_ids
+        scene.meta = ','.join([str(x) for x in final_todo_order_ids])
+        scene.save()
+        return 1
+
+    @classmethod
+    def get_default_todo_order_ids(self, user_id, scene_id):
+        todos = query(ToDoList, user_id, 'todolist_l_userId_sceneId', [user_id, scene_id, 0, 0, 100])
+        return [x.id for x in todos]
+
 
 
