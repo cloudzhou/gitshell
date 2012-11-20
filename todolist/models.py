@@ -7,10 +7,7 @@ from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many, get_version, get_sqlkey
 from gitshell.objectscache.da import get_raw, get_raw_many
 
-class ToDoList(models.Model):
-    create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
-    modify_time = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
-    visibly = models.SmallIntegerField(default=0, null=False)
+class ToDoList(BaseModel):
     user_id = models.IntegerField(null=False, default=0) 
     scene_id = models.IntegerField(null=False, default=0)
     content = models.CharField(max_length=1024, default='')
@@ -25,10 +22,7 @@ class ToDoList(models.Model):
         todolist.is_done = is_done
         return todolist
 
-class Scene(models.Model):
-    create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
-    modify_time = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
-    visibly = models.SmallIntegerField(default=0, null=False)
+class Scene(BaseModel):
     user_id = models.IntegerField(null=False, default=0) 
     name = models.CharField(max_length=32, default='')
     meta = models.CharField(max_length=2048, default='')
@@ -102,6 +96,11 @@ class ToDoListManager():
     @classmethod
     def list_scene_by_userId(self, user_id, offset, row_count):
         scenes = query(Scene, user_id, 'scene_l_userId', [user_id, offset, row_count])
+        for scene in scenes:
+            if scene.name == '':
+                scenes.remove(scene)
+                scenes.insert(0, scene)
+                break
         return scenes
 
     @classmethod
@@ -132,9 +131,7 @@ class ToDoListManager():
         scene = self.get_scene_by_name(user_id, name)
         if scene != None:
             return scene.id
-        scene = Scene()
-        scene.user_id = user_id
-        scene.name = name
+        scene = Scene.create(user_id, name)
         scene.save()
         return scene.id
 

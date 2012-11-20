@@ -114,7 +114,7 @@ def add_todo(request, env_scene_id):
 @login_required
 @require_http_methods(["POST"])
 def remove_todo(request, env_scene_id):
-    todo_id = int(request.POST.get('todo_id', ''))
+    todo_id = int(request.POST.get('todo_id', '0'))
     result_todo_id = ToDoListManager.remove_todo(request.user.id, todo_id)
     response_dictionary = {'todo_id': result_todo_id}
     return json_httpResponse(response_dictionary)
@@ -122,7 +122,7 @@ def remove_todo(request, env_scene_id):
 @login_required
 @require_http_methods(["POST"])
 def doing_todo(request, env_scene_id):
-    todo_id = int(request.POST.get('todo_id', ''))
+    todo_id = int(request.POST.get('todo_id', '0'))
     result_todo_id = ToDoListManager.doing_todo(request.user.id, todo_id)
     response_dictionary = {'todo_id': result_todo_id}
     return json_httpResponse(response_dictionary)
@@ -130,7 +130,7 @@ def doing_todo(request, env_scene_id):
 @login_required
 @require_http_methods(["POST"])
 def done_todo(request, env_scene_id):
-    todo_id = int(request.POST.get('todo_id', ''))
+    todo_id = int(request.POST.get('todo_id', '0'))
     result_todo_id = ToDoListManager.done_todo(request.user.id, todo_id)
     response_dictionary = {'todo_id': result_todo_id}
     return json_httpResponse(response_dictionary)

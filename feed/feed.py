@@ -36,7 +36,7 @@ class PositionKey:
 
 class AttrKey:
     # key-value
-    SCENE_ID = 'kvsid'
+    SCENE_ID = 'scene_id'
 
 """ all method about feed and redis """
 class FeedAction():
