@@ -7,7 +7,7 @@ from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from gitshell.feed.feed import FeedAction, PositionKey
+from gitshell.feed.feed import FeedAction, PositionKey, AttrKey
 from gitshell.repo.models import RepoManager, IssuesComment
 from gitshell.repo.cons import conver_issues
 from gitshell.gsuser.models import GsuserManager
@@ -63,13 +63,17 @@ def todo(request):
     current = 'todo'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.TODO)
-    return todo_scene(request, 0)
+    scene_id = feedAction.get_user_attr(request.user.id, AttrKey.SCENE_ID)
+    if scene_id is None:
+        scene_id = 0
+    return todo_scene(request, scene_id)
 
 @login_required
 def todo_scene(request, env_scene_id):
     current = 'todo'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.TODO)
+    feedAction.set_user_attr(request.user.id, AttrKey.SCENE_ID, env_scene_id)
     scene = get_scene(request.user.id, env_scene_id)
     scene_list = ToDoListManager.list_scene_by_userId(request.user.id, 0, 100)
     todoing_list = ToDoListManager.list_doing_todo_by_userId_sceneId(request.user.id, scene.id, 0, 100)
@@ -324,5 +328,7 @@ def feeds_as_json(feeds):
 def get_scene(user_id, env_scene_id):
     env_scene_id = int(env_scene_id)
     scene = ToDoListManager.get_scene_by_id(user_id, env_scene_id)
+    if scene is None:
+        scene = ToDoListManager.get_scene_by_id(user_id, 0)
     return scene
 

@@ -31,7 +31,6 @@
                 {%if scene.id != 0%} @{{scene.name}} {%else%} @ {%endif%}
                 <span class="caret"></span></button>
                 <ul class="dropdown-menu">
-                    <li><a href="/home/todo/0/">默认场景</a></li>
                     {%for scene in scene_list%}
                     <li><a href="/home/todo/{{scene.id}}/">@{{scene.name}}</a></li>
                     {%endfor%}
