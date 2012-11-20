@@ -34,10 +34,9 @@ class Scene(models.Model):
     meta = models.CharField(max_length=2048, default='')
 
     @classmethod
-    def create(self, user_id, id, name):
+    def create(self, user_id, name):
         scene = Scene()
         scene.user_id = user_id
-        scene.id = id
         scene.name = name
         return scene
 
@@ -110,6 +109,13 @@ class ToDoListManager():
         scenes = query(Scene, user_id, 'scene_l_userId_id', [user_id, scene_id])
         if len(scenes) > 0:
             return scenes[0]
+        if scene_id == 0:
+            scene = self.get_scene_by_name(user_id, '')
+            if scene is not None:
+                return scene
+            scene = Scene.create(user_id, '')
+            scene.save()
+            return scene
         return None
 
     @classmethod
@@ -121,6 +127,8 @@ class ToDoListManager():
 
     @classmethod
     def add_scene(self, user_id, name):
+        if name.strip() == '':
+            return 0
         scene = self.get_scene_by_name(user_id, name)
         if scene != None:
             return scene.id

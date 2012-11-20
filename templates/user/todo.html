@@ -23,7 +23,7 @@
         <div id="id_todoAdd_div" class="input-append form-inline">
             <input id="id_todoAdd" type="text" placeholder="添加新的todo，支持Enter按键" class="span6">
             <button id="id_todoAdd_button" class="btn btn-primary" type="submit">添加</button>
-            {%if not todoing_list and scene.id != 0%}
+            {%if not todoing_list and scene.name != ''%}
             <button id="id_sceneRemove_button" class="btn btn-danger" type="submit">删除场景</button>
             {%endif%}
             <div class="btn-group pull-left" style="margin-right: 2px">

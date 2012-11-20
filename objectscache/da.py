@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-  
+import base64
 from django.core.cache import cache
 from django.db import connection, transaction
 from gitshell.objectscache.models import Count
@@ -240,7 +241,7 @@ def __get_verkey(table, pt_id):
     return 'ver_%s|%s' % (table, pt_id)
 
 def __get_sqlkey(version, rawsql_id, parameters):
-    filter_parameters = [str(x).replace(' ', '') for x in parameters]
+    filter_parameters = [base64.b64encode(x.encode('utf-8')) if isinstance(x, unicode) else base64.b64encode(str(x)) for x in parameters]
     p_len = len(filter_parameters) 
     return ('lis_%s|%s' + '|%s'*p_len) % tuple([version, rawsql_id] + filter_parameters)
 

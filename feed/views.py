@@ -63,8 +63,7 @@ def todo(request):
     current = 'todo'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.TODO)
-    scene = Scene.create(request.user.id, 0, 'default')
-    return todo_scene(request, scene.id)
+    return todo_scene(request, 0)
 
 @login_required
 def todo_scene(request, env_scene_id):
@@ -89,7 +88,6 @@ def add_scene(request, env_scene_id):
         scene_id = ToDoListManager.add_scene(request.user.id, name)
     response_dictionary = {'scene_id': scene_id, 'name': name}
     return json_httpResponse(response_dictionary)
-    # FIXME unicode
 
 @login_required
 @require_http_methods(["POST"])
@@ -324,10 +322,7 @@ def feeds_as_json(feeds):
     return json_arr
     
 def get_scene(user_id, env_scene_id):
-    scene = None
-    if env_scene_id != 0:
-        scene = ToDoListManager.get_scene_by_id(user_id, env_scene_id)
-    if scene == None:
-        scene = Scene.create(user_id, 0, 'default')
+    env_scene_id = int(env_scene_id)
+    scene = ToDoListManager.get_scene_by_id(user_id, env_scene_id)
     return scene
 
