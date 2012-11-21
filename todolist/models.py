@@ -105,9 +105,6 @@ class ToDoListManager():
 
     @classmethod
     def get_scene_by_id(self, user_id, scene_id):
-        scenes = query(Scene, user_id, 'scene_l_userId_id', [user_id, scene_id])
-        if len(scenes) > 0:
-            return scenes[0]
         if scene_id == 0:
             scene = self.get_scene_by_name(user_id, '')
             if scene is not None:
@@ -115,6 +112,9 @@ class ToDoListManager():
             scene = Scene.create(user_id, '')
             scene.save()
             return scene
+        scenes = query(Scene, user_id, 'scene_l_userId_id', [user_id, scene_id])
+        if len(scenes) > 0:
+            return scenes[0]
         return None
 
     @classmethod
