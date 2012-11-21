@@ -20,3 +20,5 @@ create index issues_assigned_status_mtime_idx on repo_issues (visibly, assigned,
 create index issuescomment_iid_ctime_idx on repo_issuescomment (visibly, issues_id, create_time asc);
 create index forkhistory_rid_mtime_idx on repo_forkhistory (visibly, repo_id, modify_time desc);
 create index watchhistory_rid_mtime_idx on repo_watchhistory (visibly, watch_repo_id, modify_time desc);
+create index scene_uid_idx on todolist_scene (visibly, user_id)
+create index todolist_uid_idx on todolist_todolist (visibly, user_id)

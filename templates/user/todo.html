@@ -1,0 +1,281 @@
+{% extends "user/home_base.html" %}
+{% block css %}
+<style>
+#id_todoAdd_div { padding-bottom: 3px; }
+.line { border-bottom: 1px solid #EEEEEE; margin: 3px; }
+.cl_todo { padding-top: 3px; padding-bottom: 4px; }
+.cl_todone { padding-top: 3px; padding-bottom: 4px; }
+.cl_todo_text { font-size: 16px; padding: 1px; }
+.cl_todone_text { font-size: 12px; color: #717171; }
+.cl_todo_done_hovered { border: dashed 2px #cccccc ; padding: 2px}
+.cl_todo_move_hovered { border-top: solid 2px #666666 ; padding: 2px}
+.cl_control { padding: 2px; font-weight: bold }
+</style>
+{% endblock %}
+{% block subcontainer %}
+<div class="row" style="">
+    <div id='todo_container' class="span10">
+        <div id="id_sceneAdd_div" class="input-append form-inline" style="display: none">
+            <input id="id_sceneAdd" type="text" placeholder="添加新的场景，支持Enter按键" class="span3">
+            <button id="id_sceneAdd_button" class="btn btn-primary" type="submit">添加新的情景</button>
+            <button id="id_sceneCancel_button" class="btn btn-primary" type="submit">取消</button>
+        </div>
+        <div id="id_todoAdd_div" class="input-append form-inline">
+            <input id="id_todoAdd" type="text" placeholder="添加新的todo，支持Enter按键" class="span6">
+            <button id="id_todoAdd_button" class="btn btn-primary" type="submit">添加</button>
+            {%if not todoing_list and scene.name != ''%}
+            <button id="id_sceneRemove_button" class="btn btn-danger" type="submit">删除场景</button>
+            {%endif%}
+            <div class="btn-group pull-left" style="margin-right: 2px">
+                <button data-toggle="dropdown" class="btn dropdown-toggle">
+                @{{scene.name}}
+                <span class="caret"></span></button>
+                <ul class="dropdown-menu">
+                    {%for scene in scene_list%}
+                    <li><a href="/home/todo/{{scene.id}}/">@{{scene.name}}</a></li>
+                    {%endfor%}
+                    <li class="divider"></li>
+                    <li id="id_addScene"><a href="javascript: void(0)"><i class="icon-plus"></i> 添加新的场景</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="id_todoList" class="span7">
+            {%for todoing in todoing_list%}
+            <div id="id_todo_{{todoing.id}}" class="cl_todo" data="{{todoing.id}}">
+                <a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序"><i class="icon-th-list"></i></a> 
+                <input class="cl_todo_check" type="checkbox" value="">
+                <span class="cl_todo_text">{{todoing.content}}</span>
+                <span class="cl_todo_control" style="margin-left: 10px; display: none">
+                    <a class="go_top cl_control muted" title="置顶" href="javascript: void(0)">↑</a>
+                    <a class="go_down cl_control muted" title="置底" href="javascript: void(0)">↓</a>
+                    <a class="remove_todo cl_control muted" title="删除" href="javascript: void(0)">x</a>
+                </span>
+            </div>
+            {%endfor%}
+        </div>
+        <div id="id_todoneList" class="span7">
+            <div class="line"></div>
+            <div id="id_todone_div">
+            {%for todone in todone_list %}
+                <div id="id_todone_{{todone.id}}" class="cl_todone" data="{{todone.id}}">
+                    <input class="cl_todone_check" type="checkbox" value="" checked>
+                    <span class="cl_todone_text"> {{todone.content}}</span>
+                </div>
+            {%endfor%}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
+<script>
+/*global jQuery, window */
+$(function(){
+    moment.lang('zh-cn');
+    $('.cl_todo').live('mouseover mouseout', function(event) {
+        if (event.type == 'mouseover') {
+            $(this).children('.cl_todo_control').show();
+        } else {
+            $(this).children('.cl_todo_control').hide();
+        }
+    });
+    $('#id_todoAdd_button').click(function(event) {
+        var todo_text = $('#id_todoAdd').val()
+        add_todo(todo_text)
+    });
+    $('#id_todoAdd').keydown(function (e) {
+        if (e.keyCode == 10 || e.keyCode == 13) {
+            var todo_text = $(this).val()
+            add_todo(todo_text)
+        }
+    });
+    function init_todo(todo_id, todo_text) {
+        var todo = '<div id="id_todo_' + todo_id + '" class="cl_todo" data="' + todo_id + '"> ' +
+                    '<a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序"><i class="icon-th-list"></i></a> ' +
+                    '<input class="cl_todo_check" type="checkbox" value=""> ' +
+                    '<span class="cl_todo_text">' + todo_text + '</span> ' +
+                    '<span class="cl_todo_control" style="margin-left: 10px; display: none">' +
+                    '<a class="go_top cl_control muted" title="置顶" href="javascript: void(0)">↑</a>' +
+                    '<a class="go_down cl_control muted" title="置底" href="javascript: void(0)">↓</a>' +
+                    '<a class="remove_todo cl_control muted" title="删除" href="javascript: void(0)">x</a>' +
+                    '</span></div>';
+        return todo;
+    }
+    function init_todone(todo_id, todo_text) {
+        var todone = '<div id="id_todone_' + todo_id + '" class="cl_todone" data="' + todo_id + '">' +
+                     '<input class="cl_todone_check" type="checkbox" value="' + todo_id + '" checked>' +
+                     '<span class="cl_todone_text"> ' + todo_text + '</span></div>';
+        return todone;
+    }
+    function add_todo(todo_text) {
+        if(todo_text == '') {
+            return
+        }
+        $.post('/home/todo/'+{{scene.id}}+'/add_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_text': todo_text}, function(json){
+            var todo_id = json.todo_id;
+            var todo = init_todo(todo_id, todo_text);
+            $('#id_todoList').prepend(todo);
+            drag_drop_init('#id_todo_'+todo_id);
+            $('#id_todoAdd').val('');
+            $('a').tooltip();
+        });
+    }
+    $('#id_addScene').click(function(event) {
+        $('#id_sceneAdd_div').show();
+        $('#id_todoAdd_div').hide();
+    });
+    $('#id_sceneCancel_button').click(function(event) {
+        $('#id_sceneAdd_div').hide();
+        $('#id_todoAdd_div').show();
+    });
+    $('#id_sceneAdd_button').click(function(event) {
+        var scene = $('#id_sceneAdd').val()
+        add_scene(scene)
+    });
+    $('#id_sceneAdd').keydown(function (e) {
+        if (e.keyCode == 10 || e.keyCode == 13) {
+            var scene = $(this).val()
+            add_scene(scene)
+        }
+    });
+    function add_scene(scene) {
+        $.post('/home/todo/0/add/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'name': scene}, function(json){
+            var scene_id = json.scene_id;
+            window.location = '/home/todo/'+ scene_id +'/';
+        });
+    }
+    $('.cl_todo').tooltip({
+        selector: "a[rel=tooltip]"
+    })
+    function drag_drop_init(selector) {
+        $(selector).draggable({
+            live: true,
+            cursor: 'move',
+            revert: true
+        });
+        $(selector).droppable({
+            live: true,
+            accept: '.cl_todo',
+            hoverClass: 'cl_todo_move_hovered',
+            drop: handleTodoMoveDrop
+        });
+    }
+    drag_drop_init('.cl_todo');
+    $('#id_todone_div').droppable({
+        live: true,
+        accept: '.cl_todo',
+        hoverClass: 'cl_todo_done_hovered',
+        drop: handleTodoDoneDrop
+    });
+    function handleTodoMoveDrop(event, ui){
+        var from_todo_id = ui.draggable.attr('data');
+        var to_todo_id = $(this).attr('data');
+        var from_todo = $('#id_todo_'+from_todo_id);
+        from_todo.remove();
+        var i = 0;
+        var index = 0;
+        $('#id_todoList .cl_todo').each(function(){
+            if($(this).attr('data') == to_todo_id) {
+                index = i;
+            }
+            i++;
+        });
+        var to_todo = $('#id_todo_'+to_todo_id);
+        from_todo.insertBefore(to_todo);
+        drag_drop_init('#id_todo_'+from_todo_id)
+        $('a').tooltip();
+        update_scene_meta()
+    }
+    function done_todo(todo_id){
+        var todo_text = $('#id_todo_'+todo_id).children('.cl_todo_text').text();
+        $.post('/home/todo/'+ {{scene.id}} +'/done_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todo_id}, function(json){
+            var result_todo_id = json.todo_id;
+            if(result_todo_id != 0) {
+                $('#id_todo_'+todo_id).remove();
+                var todone = init_todone(todo_id, todo_text);
+                $('#id_todone_div').prepend(todone);
+            }
+        });
+    }
+    function handleTodoDoneDrop(event, ui){
+        var todo_id = ui.draggable.attr('data');
+        done_todo(todo_id);
+    }
+    $('.cl_todo_check').live('click', function (e) {
+        var todo_id = $(this).parents('.cl_todo').attr('data');
+        done_todo(todo_id);
+    });
+    $('.cl_todone_check').live('click', function (e) {
+        var todone_id = $(this).parents('.cl_todone').attr('data');
+        var todone_text = $('#id_todone_'+todone_id).children('.cl_todone_text').text();
+        $.post('/home/todo/'+ {{scene.id}} +'/doing_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todone_id}, function(json){
+            var result_todo_id = json.todo_id;
+            if(result_todo_id != 0) {
+                $('#id_todone_'+todone_id).remove();
+                var todo = init_todo(todone_id, todone_text);
+                $('#id_todoList').prepend(todo);
+                drag_drop_init('#id_todo_'+todone_id);
+                $('a').tooltip();
+            }
+        });
+    });
+    $('.go_top').live('click', function (e) {
+        var todo_id = $(this).parents('.cl_todo').attr('data');
+        var todo_top = $('#id_todo_'+todo_id);
+        todo_top.remove();
+        $('#id_todoList').prepend(todo_top);
+        drag_drop_init('#id_todo_'+todo_id);
+        $('a').tooltip();
+        update_scene_meta()
+    });
+    $('.go_down').live('click', function (e) {
+        var todo_id = $(this).parents('.cl_todo').attr('data');
+        var todo_down = $('#id_todo_'+todo_id);
+        todo_down.remove();
+        $('#id_todoList').append(todo_down);
+        drag_drop_init('#id_todo_'+todo_id);
+        $('a').tooltip();
+        update_scene_meta()
+    });
+    $('.remove_todo').live('click', function (e) {
+        var todo_id = $(this).parents('.cl_todo').attr('data');
+        $.post('/home/todo/'+ {{scene.id}} +'/remove_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todo_id}, function(json){
+            var result_todo_id = json.todo_id;
+            if(result_todo_id != 0) {
+                $('#id_todo_'+todo_id).remove()
+            }
+        });
+    });
+    $('#id_sceneRemove_button').live('click', function (e) {
+        if($(this).text() == '删除场景') {
+            $(this).text('确定删除？');
+            return;
+        }
+        if($(this).text() == '确定删除？') {
+            $.post('/home/todo/'+ {{scene.id}} +'/remove/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'scene_id': '{{scene.id}}'}, function(json){
+                var result_scene_id = json.scene_id;
+                if(result_scene_id != 0) {
+                    window.location = '/home/todo/';
+                }
+            });
+        }
+    });
+    function update_scene_meta() {
+        var todo_order_ids = []
+        $('.cl_todo').each(function() {
+            var todo_id = $(this).attr('data');
+            todo_order_ids.push(todo_id);
+        });
+        if(todo_order_ids.length > 0) {
+            $.post('/home/todo/'+ {{scene.id}} +'/update_scene_meta/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_ids': todo_order_ids.join(',')}, function(json){
+                var result = json.result;
+                if(result != 0) {
+                    window.location = '/home/todo/{{scene.id}}/';
+                }
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

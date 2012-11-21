@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-  
+import base64
 from django.core.cache import cache
 from django.db import connection, transaction
 from gitshell.objectscache.models import Count
@@ -21,6 +22,8 @@ table_ptkey_field = {
     'repo_watchhistory': 'user_id',
     'stats_statsrepo': 'repo_id',
     'stats_statsuser': 'user_id',
+    'todolist_scene': 'user_id',
+    'todolist_todolist': 'user_id',
 }
 rawsql = {
     # userpubkey #
@@ -91,6 +94,17 @@ rawsql = {
         'select * from stats_statsuser where user_id = %s and statstype = %s and datetype = %s and date = %s order by count desc limit 0, 10',
     'allstatsrepo_l_cons':
         'select * from stats_statsrepo where statstype = %s and datetype = %s and date = %s order by count desc limit %s, %s',
+    # todolist #
+    'todolist_l_userId_sceneId':
+        'select * from todolist_todolist where visibly = 0 and user_id = %s and scene_id = %s and is_done = %s order by modify_time desc limit %s, %s',
+    'todolist_s_userId_id':
+        'select * from todolist_todolist where visibly = 0 and user_id = %s and id = %s',
+    'scene_l_userId':
+        'select * from todolist_scene where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
+    'scene_l_userId_id':
+        'select * from todolist_scene where visibly = 0 and user_id = %s and id = %s',
+    'scene_l_userId_name':
+        'select * from todolist_scene where visibly = 0 and user_id = %s and name = %s',
 }
 
 def get(model, pkid):
@@ -227,7 +241,7 @@ def __get_verkey(table, pt_id):
     return 'ver_%s|%s' % (table, pt_id)
 
 def __get_sqlkey(version, rawsql_id, parameters):
-    filter_parameters = [str(x).replace(' ', '') for x in parameters]
+    filter_parameters = [base64.b64encode(x.encode('utf-8')) if isinstance(x, unicode) else base64.b64encode(str(x)) for x in parameters]
     p_len = len(filter_parameters) 
     return ('lis_%s|%s' + '|%s'*p_len) % tuple([version, rawsql_id] + filter_parameters)
 

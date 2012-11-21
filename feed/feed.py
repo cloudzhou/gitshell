@@ -17,11 +17,13 @@ FEED_TYPE = {
     'IDENTIFY_CHECK' : 'ic',
 }
 LAST_POSITION = 'lp'
+USER_ATTR = 'ua'
 
 class PositionKey:
     # user
     FEED = 'ufd'
     GIT = 'ugit'
+    TODO = 'utodo'
     ISSUES = 'uis'
     EXPLORE = 'uex'
     # repo
@@ -31,6 +33,10 @@ class PositionKey:
     NETWORK = 'net'
     CLONE_WATCH = 'clwa'
     STATS = 'st'
+
+class AttrKey:
+    # key-value
+    SCENE_ID = 'scene_id'
 
 """ all method about feed and redis """
 class FeedAction():
@@ -167,6 +173,15 @@ class FeedAction():
     def set_repo_position(self, user_id, positionKey):
         key = '%s:%s' % ('r', user_id)
         self.redis.hset(LAST_POSITION, key, positionKey)
+
+    """ get and set user attr """
+    def get_user_attr(self, user_id, attrKey):
+        key = '%s:%s:%s' % ('u', user_id, attrKey)
+        return self.redis.hget(USER_ATTR, key)
+
+    def set_user_attr(self, user_id, attrKey, value):
+        key = '%s:%s:%s' % ('u', user_id, attrKey)
+        self.redis.hset(USER_ATTR, key, value)
 
     """ remove repo feed """
     def delete_repo_feed(self, repo_id):
