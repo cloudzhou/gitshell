@@ -7,13 +7,14 @@ from subprocess import Popen
 from subprocess import PIPE
 from datetime import datetime
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
 from gitshell.gsuser.models import Userprofile, GsuserManager
 from gitshell.repo.models import CommitHistory, Repo, RepoManager
+from gitshell.feed.models import Feed, AtMessage, FeedManager, FEED_EVENT
 from gitshell.feed.feed import FeedAction
 from gitshell.stats.models import StatsManager
 from gitshell.daemon.models import EventManager, EVENT_TUBE_NAME
 from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
-from django.db.models.signals import post_save
 from gitshell.objectscache.da import da_post_save
 
 MAX_COMMIT_COUNT = 100
@@ -86,65 +87,34 @@ def update_quote(user, gsuser, repo, repopath, parameters):
 
 # git log -100 --pretty='%h  %p  %t  %an  %cn  %ct  %ce  %ae  %s'
 def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
-    args = ['/opt/run/bin/git-pretty-log.sh', repopath, oldrev, newrev]
-    popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
-    result = popen.communicate()[0].strip()
-    raw_commitHistorys = []
-    if popen.returncode == 0:
-        for line in result.split('\n'):
-            items = line.split('______', 8)
-            if len(items) >= 9 and re.match('^\d+$', items[5]):
-                committer_date = datetime.fromtimestamp(int(items[5])) 
-                author_name = items[3][0:30]
-                committer_name = items[4][0:30]
-                commitHistory = CommitHistory.create(repo.id, repo.name, items[0], items[1][0:24], items[2], author_name, committer_name, committer_date, items[8][0:512], refname[0:32], items[6], items[7])
-                raw_commitHistorys.append(commitHistory)
-    length = len(raw_commitHistorys)
-    commit_ids = [x.commit_id for x in raw_commitHistorys]
-    exists_commitHistorys = RepoManager.list_commits_by_commit_ids(repo.id, commit_ids)
-    exists_commit_ids_set = set([x.commit_id for x in exists_commitHistorys])
-    commitHistorys = []
-    for commitHistory in raw_commitHistorys:
-        if commitHistory.commit_id not in exists_commit_ids_set:
-            commitHistory.save()
-            commitHistorys.append(commitHistory)
+
+    # list raw commitHistorys
+    raw_commitHistorys = __list_raw_commitHistorys(repo, repopath, oldrev, newrev, refname)
+
+    # list uniq commitHistorys
+    commitHistorys = __list_commitHistorys(repo, raw_commitHistorys)
+
     # feed action
     member_user_ids = [x.user_id for x in RepoManager.list_repomember(repo.id)]
     member_user_ids.append(repo.user_id)
     member_user = GsuserManager.list_user_by_ids(member_user_ids)
     member_username_dict = dict([(x.username, x.id) for x in member_user])
     member_email_dict = dict([(x.email, x.id) for x in member_user])
-    feedAction = FeedAction()
-    user_feed_key_values = {}
-    total_feed_key_values = []
-    for commitHistory in commitHistorys:
-        committer_id = get_committer_id(repo, commitHistory, member_username_dict, member_email_dict)
-        if committer_id is not None:
-            if committer_id not in user_feed_key_values:
-                user_feed_key_values[committer_id] = []
-            feed_key_values = user_feed_key_values[committer_id]
-            feed_key_values.append(-float(time.mktime(commitHistory.committer_date.timetuple())))
-            feed_key_values.append(commitHistory.id)
-        total_feed_key_values.append(-float(time.mktime(commitHistory.committer_date.timetuple())))
-        total_feed_key_values.append(commitHistory.id)
+
+    # generate feed data
+    (user_feed_key_values, total_feed_key_values) = __get_feed_data(repo, commitHistorys, member_username_dict, member_email_dict)
         
-    latest_feeds  = []
-    for user_id, feed_key_values in user_feed_key_values.items():
-        if repo.auth_type == 2:
-            feedAction.madd_pri_user_feed(user_id, feed_key_values)
-        else:
-            feedAction.madd_pub_user_feed(user_id, feed_key_values)
-            if len(latest_feeds) < 4:
-                latest_feeds.extend(feed_key_values)
-    if len(latest_feeds) > 0:
-        feedAction.madd_latest_feed(latest_feeds[0:4])
-    if len(total_feed_key_values) > 0:
-        feedAction.madd_repo_feed(repo.id, total_feed_key_values)
+    # add feed
+    feedAction = FeedAction()
+    __add_user_and_repo_feed(feedAction, repo, user_feed_key_values, total_feed_key_values)
+
+    # at somebody action
+    __atsomebody(commitHistorys, repo)
 
     # stats action
     __stats(commitHistorys, repo, member_username_dict, member_email_dict)
     
-    return length
+    return len(raw_commitHistorys)
 
 def get_committer_id(repo, commitHistory, member_username_dict, member_email_dict):
     if len(member_username_dict) == 1:
@@ -164,6 +134,69 @@ def get_author_id(repo, commitHistory, member_username_dict, member_email_dict):
         return member_email_dict[commitHistory.author_email]
     return None
 
+def __get_feed_data(repo, commitHistorys, member_username_dict, member_email_dict):
+    user_feed_key_values = {}
+    total_feed_key_values = []
+    for commitHistory in commitHistorys:
+        committer_id = get_committer_id(repo, commitHistory, member_username_dict, member_email_dict)
+        feed = Feed.create(committer_id, repo.id, FEED_EVENT.PUSH.CID, FEED_EVENT.PUSH.COMMIT_MESSAGE, commitHistory.id)
+        feed.save()
+        if committer_id is not None:
+            if committer_id not in user_feed_key_values:
+                user_feed_key_values[committer_id] = []
+            feed_key_values = user_feed_key_values[committer_id]
+            feed_key_values.append(-float(time.mktime(commitHistory.committer_date.timetuple())))
+            feed_key_values.append(feed.id)
+        total_feed_key_values.append(-float(time.mktime(commitHistory.committer_date.timetuple())))
+        total_feed_key_values.append(feed.id)
+    return (user_feed_key_values, total_feed_key_values)
+
+def __add_user_and_repo_feed(feedAction, repo, user_feed_key_values, total_feed_key_values):
+    latest_feeds  = []
+    if repo.auth_type == 2:
+        for user_id, feed_key_values in user_feed_key_values.items():
+            feedAction.madd_pri_user_feed(user_id, feed_key_values)
+    else:
+        for user_id, feed_key_values in user_feed_key_values.items():
+            feedAction.madd_pub_user_feed(user_id, feed_key_values)
+            if len(latest_feeds) < 4:
+                latest_feeds.extend(feed_key_values)
+    if len(latest_feeds) > 0:
+        feedAction.madd_latest_feed(latest_feeds[0:4])
+    if len(total_feed_key_values) > 0:
+        feedAction.madd_repo_feed(repo.id, total_feed_key_values)
+
+def __list_raw_commitHistorys(repo, repopath, oldrev, newrev, refname):
+    args = ['/opt/run/bin/git-pretty-log.sh', repopath, oldrev, newrev]
+    popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
+    result = popen.communicate()[0].strip()
+    raw_commitHistorys = []
+    if popen.returncode == 0:
+        for line in result.split('\n'):
+            items = line.split('______', 8)
+            if len(items) >= 9 and re.match('^\d+$', items[5]):
+                committer_date = datetime.fromtimestamp(int(items[5])) 
+                author_name = items[3][0:30]
+                committer_name = items[4][0:30]
+                commitHistory = CommitHistory.create(repo.id, repo.name, items[0], items[1][0:24], items[2], author_name, committer_name, committer_date, items[8][0:512], refname[0:32], items[6], items[7])
+                raw_commitHistorys.append(commitHistory)
+    return raw_commitHistorys
+
+def __list_commitHistorys(repo, raw_commitHistorys)
+    commitHistorys = []
+    commit_ids = [x.commit_id for x in raw_commitHistorys]
+    exists_commitHistorys = RepoManager.list_commits_by_commit_ids(repo.id, commit_ids)
+    exists_commit_ids_set = set([x.commit_id for x in exists_commitHistorys])
+    commitHistorys = []
+    for commitHistory in raw_commitHistorys:
+        if commitHistory.commit_id not in exists_commit_ids_set:
+            commitHistory.save()
+            commitHistorys.append(commitHistory)
+    return commitHistorys
+
+def __atsomebody(commitHistorys, repo):
+    pass
+    
 def __stats(commitHistorys, repo, member_username_dict, member_email_dict):
     stats_commits = []
     for commitHistory in commitHistorys:
