@@ -54,46 +54,42 @@ class FeedManager():
         atMessages = query(AtMessage, user_id, 'atMessage_l_userId', [user_id, offset, row_count])
         return atMessages
 
-FEED_EVENT = {
-    PUSH = {
-        CID = 0,
-        COMMIT_MESSAGE = 0,
-        COMMENT_ON_COMMIT = 1,
-    },
-    MERGE = {
-        CID = 1,
-        CREATE_PULL_REQUEST = 100,
-        MERGED_PULL_REQUEST = 101,
-        COMMENT_ON_PULL_REQUEST = 102,
-        REJECTED_PULL_REQUEST = 103,
-        DELETE_PULL_REQUEST = 104,
-    },
-    TODO = {
-        CID = 2,
-        CREATE = 200,
-        DOING = 201,
-        DONE = 202,
-        CHANGE_PROCESS = 203,
-        COMMENT_ON_TODO = 204,
-        ASSIGN_TO = 205,
-    },
-    ISSUES = {
-        CID = 3,
-        CREATE = 300,
-        STATUS_CHANGE = 301,
-        COMMENT_ON_ISSUE = 302,
-    },
-    ACTIVE = {
-        CID = 4,
-        STARTED_FOLLOWING = 400,
-        STARTED_STAR = 401,
-        STARTED_FORKED = 402,
-        JOIN_MEMBER = 403,
-        CREATE_PROJECT = 404,
-        CREATE_REPO = 405,
-        CREATE_BRANCH = 406,
-        DELETE_BRANCH = 407,
-    },
+class FEED_EVENT:
+
+    PUSH_CID = 0,
+    PUSH_COMMIT_MESSAGE = 0,
+    PUSH_COMMENT_ON_COMMIT = 1,
+
+    MERGE_CID = 1,
+    MERGE_CREATE_PULL_REQUEST = 100,
+    MERGE_MERGED_PULL_REQUEST = 101,
+    MERGE_COMMENT_ON_PULL_REQUEST = 102,
+    MERGE_REJECTED_PULL_REQUEST = 103,
+    MERGE_DELETE_PULL_REQUEST = 104,
+
+    TODO_CID = 2,
+    TODO_CREATE = 200,
+    TODO_DOING = 201,
+    TODO_DONE = 202,
+    TODO_CHANGE_PROCESS = 203,
+    TODO_COMMENT_ON_TODO = 204,
+    TODO_ASSIGN_TO = 205,
+
+    ISSUES_CID = 3,
+    ISSUES_CREATE = 300,
+    ISSUES_STATUS_CHANGE = 301,
+    ISSUES_COMMENT_ON_ISSUE = 302,
+
+    ACTIVE_CID = 4,
+    ACTIVE_STARTED_FOLLOWING = 400,
+    ACTIVE_STARTED_STAR = 401,
+    ACTIVE_STARTED_FORKED = 402,
+    ACTIVE_JOIN_MEMBER = 403,
+    ACTIVE_CREATE_PROJECT = 404,
+    ACTIVE_CREATE_REPO = 405,
+    ACTIVE_CREATE_BRANCH = 406,
+    ACTIVE_DELETE_BRANCH = 407,
+
 }
 #================ Feed Event ================
 """

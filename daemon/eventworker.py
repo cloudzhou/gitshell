@@ -139,7 +139,7 @@ def __get_feed_data(repo, commitHistorys, member_username_dict, member_email_dic
     total_feed_key_values = []
     for commitHistory in commitHistorys:
         committer_id = get_committer_id(repo, commitHistory, member_username_dict, member_email_dict)
-        feed = Feed.create(committer_id, repo.id, FEED_EVENT.PUSH.CID, FEED_EVENT.PUSH.COMMIT_MESSAGE, commitHistory.id)
+        feed = Feed.create(committer_id, repo.id, FEED_EVENT.PUSH_CID, FEED_EVENT.PUSH_COMMIT_MESSAGE, commitHistory.id)
         feed.save()
         if committer_id is not None:
             if committer_id not in user_feed_key_values:
