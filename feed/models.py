@@ -90,7 +90,6 @@ class FEED_EVENT:
     ACTIVE_CREATE_BRANCH = 406,
     ACTIVE_DELETE_BRANCH = 407,
 
-}
 #================ Feed Event ================
 """
 0 push events
