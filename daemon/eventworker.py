@@ -182,7 +182,7 @@ def __list_raw_commitHistorys(repo, repopath, oldrev, newrev, refname):
                 raw_commitHistorys.append(commitHistory)
     return raw_commitHistorys
 
-def __list_commitHistorys(repo, raw_commitHistorys)
+def __list_commitHistorys(repo, raw_commitHistorys):
     commitHistorys = []
     commit_ids = [x.commit_id for x in raw_commitHistorys]
     exists_commitHistorys = RepoManager.list_commits_by_commit_ids(repo.id, commit_ids)

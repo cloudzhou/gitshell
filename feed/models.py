@@ -13,13 +13,13 @@ class Feed(models.Model):
     repo_id = models.IntegerField(default=0)
     feed_cate = models.SmallIntegerField(default=0)
     feed_type = models.SmallIntegerField(default=0)
-    relative_id = models.IntegerField(default=0)
+    relative_id = models.IntegerField(default=0, null=True)
     first_refid = models.IntegerField(default=0)
-    first_refname = models.CharField(max_length=64)
+    first_refname = models.CharField(max_length=64, null=True)
     second_refid = models.IntegerField(default=0)
-    second_refname = models.CharField(max_length=64)
+    second_refname = models.CharField(max_length=64, null=True)
     third_refid = models.IntegerField(default=0)
-    third_refname = models.CharField(max_length=64)
+    third_refname = models.CharField(max_length=64, null=True)
 
     # field without database
     relative_obj = {}
@@ -56,39 +56,39 @@ class FeedManager():
 
 class FEED_EVENT:
 
-    PUSH_CID = 0,
-    PUSH_COMMIT_MESSAGE = 0,
-    PUSH_COMMENT_ON_COMMIT = 1,
+    PUSH_CID = 0
+    PUSH_COMMIT_MESSAGE = 0
+    PUSH_COMMENT_ON_COMMIT = 1
 
-    MERGE_CID = 1,
-    MERGE_CREATE_PULL_REQUEST = 100,
-    MERGE_MERGED_PULL_REQUEST = 101,
-    MERGE_COMMENT_ON_PULL_REQUEST = 102,
-    MERGE_REJECTED_PULL_REQUEST = 103,
-    MERGE_DELETE_PULL_REQUEST = 104,
+    MERGE_CID = 1
+    MERGE_CREATE_PULL_REQUEST = 100
+    MERGE_MERGED_PULL_REQUEST = 101
+    MERGE_COMMENT_ON_PULL_REQUEST = 102
+    MERGE_REJECTED_PULL_REQUEST = 103
+    MERGE_DELETE_PULL_REQUEST = 104
 
-    TODO_CID = 2,
-    TODO_CREATE = 200,
-    TODO_DOING = 201,
-    TODO_DONE = 202,
-    TODO_CHANGE_PROCESS = 203,
-    TODO_COMMENT_ON_TODO = 204,
-    TODO_ASSIGN_TO = 205,
+    TODO_CID = 2
+    TODO_CREATE = 200
+    TODO_DOING = 201
+    TODO_DONE = 202
+    TODO_CHANGE_PROCESS = 203
+    TODO_COMMENT_ON_TODO = 204
+    TODO_ASSIGN_TO = 205
 
-    ISSUES_CID = 3,
-    ISSUES_CREATE = 300,
-    ISSUES_STATUS_CHANGE = 301,
-    ISSUES_COMMENT_ON_ISSUE = 302,
+    ISSUES_CID = 3
+    ISSUES_CREATE = 300
+    ISSUES_STATUS_CHANGE = 301
+    ISSUES_COMMENT_ON_ISSUE = 302
 
-    ACTIVE_CID = 4,
-    ACTIVE_STARTED_FOLLOWING = 400,
-    ACTIVE_STARTED_STAR = 401,
-    ACTIVE_STARTED_FORKED = 402,
-    ACTIVE_JOIN_MEMBER = 403,
-    ACTIVE_CREATE_PROJECT = 404,
-    ACTIVE_CREATE_REPO = 405,
-    ACTIVE_CREATE_BRANCH = 406,
-    ACTIVE_DELETE_BRANCH = 407,
+    ACTIVE_CID = 4
+    ACTIVE_STARTED_FOLLOWING = 400
+    ACTIVE_STARTED_STAR = 401
+    ACTIVE_STARTED_FORKED = 402
+    ACTIVE_JOIN_MEMBER = 403
+    ACTIVE_CREATE_PROJECT = 404
+    ACTIVE_CREATE_REPO = 405
+    ACTIVE_CREATE_BRANCH = 406
+    ACTIVE_DELETE_BRANCH = 407
 
 #================ Feed Event ================
 """
