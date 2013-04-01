@@ -3,16 +3,18 @@
 import re, json, time
 from sets import Set
 from django.template import RequestContext
+from django.forms.models import model_to_dict
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.feed.feed import FeedAction, PositionKey, AttrKey
+from gitshell.feed.models import Feed, FeedManager
 from gitshell.repo.models import RepoManager, IssuesComment
 from gitshell.repo.cons import conver_issues
 from gitshell.gsuser.models import GsuserManager
 from gitshell.todolist.models import Scene, ToDoList, ToDoListManager
-from gitshell.viewtools.views import json_httpResponse
+from gitshell.viewtools.views import json_httpResponse, obj2dict
 
 @login_required
 def home(request):
@@ -232,41 +234,44 @@ def notif(request):
     return render_to_response('user/home.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
-def feedbyids(request):
+def feed_by_ids(request):
     ids_str = request.POST.get('ids_str', '')
     feeds = []
     if re.match('^\w+$', ids_str):
-        feeds = get_feeds(request, ids_str)
-    gravatarmap = get_gravatarmap(feeds)
-    response_dictionary = {'feeds': feeds, 'gravatarmap': gravatarmap}
+        feeds = _list_feeds(request, ids_str)
+    usernames = []
+    _fillwith_commit_message(feeds, usernames)
+    gravatar_dict = _get_gravatar_dict(usernames)
+    response_dictionary = {'feeds': obj2dict(feeds), 'gravatar_dict': gravatar_dict}
     return json_httpResponse(response_dictionary)
 
-def get_gravatarmap(feeds):
-    gravatarmap = {}
-    for feed in feeds:
-        username = feed['author']
-        if username not in gravatarmap:
+def _get_gravatar_dict(username_list):
+    gravatar_dict = {}
+    for username in username_list:
+        if username not in gravatar_dict:
             userprofile = GsuserManager.get_userprofile_by_name(username)
             if userprofile is not None:
-                gravatarmap[username] = userprofile.imgurl
-                gravatarmap[username+'_tweet'] = userprofile.tweet
+                gravatar_dict[username] = userprofile.imgurl
+                gravatar_dict[username+'_tweet'] = userprofile.tweet
                 continue
-            gravatarmap[username] = '0'
-            gravatarmap[username+'_tweet'] = ''
-    return gravatarmap
+            gravatar_dict[username] = '0'
+            gravatar_dict[username+'_tweet'] = ''
+    return gravatar_dict
     
 
-def get_feeds(request, ids_str):
-    feeds = []
-    ids = []
-    max_count = 0
-    for idstr in ids_str.split('_'):
-        if re.match('^\d+$', idstr):
-            ids.append(int(idstr))
-        max_count = max_count + 1
-        if max_count >= 99:
-            break
-    commits = RepoManager.get_commits_by_ids(ids)
+def _list_feeds(request, ids_str):
+    ids = _get_feed_ids(ids_str)
+    feeds = FeedManager.list_feed_by_ids(ids)
+    return feeds
+
+def _fillwith_commit_message(feeds, usernames):
+    commit_ids = []
+    for feed in feeds:
+        if feed.is_commit_message():
+            commit_ids.append(feed.relative_id)
+    if len(commit_ids) == 0:
+        return
+    commits = RepoManager.get_commits_by_ids(commit_ids)
     repo_ids = [x.repo_id for x in commits]
     repos = RepoManager.list_repo_by_ids(repo_ids)
     repos_dict = dict([(x.id, x) for x in repos])
@@ -274,6 +279,7 @@ def get_feeds(request, ids_str):
     users = GsuserManager.list_user_by_ids(user_ids)
     users_dict = dict([(x.id, x) for x in users])
     
+    commit_view_dict = {}
     for commit in commits:
         repo_id = commit.repo_id
         if repo_id not in repos_dict:
@@ -282,19 +288,35 @@ def get_feeds(request, ids_str):
         if repo.auth_type == 2:
             if not request.user.is_authenticated() or repo.user_id != request.user.id and not RepoManager.is_repo_member(repo, request.user):
                 continue
-        feed = {}
-        feed['id'] = commit.id
+        commit_view = {}
+        commit_view['id'] = commit.id
         if repo.user_id in users_dict:
-            feed['user_name'] = users_dict[repo.user_id].username
+            commit_view['user_name'] = users_dict[repo.user_id].username
         else:
-            feed['user_name'] = ''
-        feed['repo_name'] = commit.repo_name
-        feed['commit_hash'] = commit.commit_hash
-        feed['author'] = commit.author
-        feed['committer_date'] = time.mktime(commit.committer_date.timetuple())
-        feed['subject'] = commit.subject
-        feeds.append(feed)
-    return feeds
+            commit_view['user_name'] = ''
+        commit_view['repo_name'] = commit.repo_name
+        commit_view['commit_hash'] = commit.commit_hash
+        commit_view['author'] = commit.author
+        if commit.author not in usernames:
+            usernames.append(commit.author)
+        commit_view['committer_date'] = time.mktime(commit.committer_date.timetuple())
+        commit_view['subject'] = commit.subject
+        commit_view_dict[commit.id] = commit_view
+    # fillwith feed
+    for feed in feeds:
+        if feed.is_commit_message():
+            feed.relative_obj = commit_view_dict[feed.relative_id]
+
+def _get_feed_ids(ids_str):
+    ids = []
+    max_count = 0
+    for idstr in ids_str.split('_'):
+        if re.match('^\d+$', idstr):
+            ids.append(int(idstr))
+        max_count = max_count + 1
+        if max_count >= 99:
+            break
+    return ids
 
 def multi_git_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids):
     feeds_json_val = {}

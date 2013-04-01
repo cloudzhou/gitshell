@@ -35,6 +35,9 @@ class Feed(models.Model):
         )
         return feed
 
+    def is_commit_message(self):
+        return self.feed_type == FEED_EVENT.PUSH_COMMIT_MESSAGE
+
 class AtMessage(models.Model):
     create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
     modify_time = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
@@ -53,6 +56,11 @@ class FeedManager():
     def list_atmessage_by_userId(self, user_id, offset, row_count):
         atMessages = query(AtMessage, user_id, 'atMessage_l_userId', [user_id, offset, row_count])
         return atMessages
+
+    @classmethod
+    def list_feed_by_ids(self, ids):
+        feeds = get_many(Feed, ids)
+        return feeds
 
 class FEED_EVENT:
 
