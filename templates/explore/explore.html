@@ -86,17 +86,21 @@ $(function(){
                 ordered_date_reponame = {}
                 display_feeds_map = {}
                 feeds = json.feeds
-                gravatarmap = json.gravatarmap
+                gravatar_dict = json.gravatar_dict
                 feeds.sort(function(a,b) {
                     return b.committer_date - a.committer_date;
                 })
                 html = []
                 for(x in feeds) {
                     feed = feeds[x];
-                    html.push('<div style="margin: 0px" class="event_feed span5">');
-                    html.push('<img class="avatar_left" src="https://gravatar.com/avatar/' + gravatarmap[feed.author] + '?s=35"><strong><a href="/' + feed.author + '/">' + feed.author + '</a></strong>')
-                    html.push(' commit at <strong><a href="/'+ feed.user_name + '/' + feed.repo_name +'/">' + feed.repo_name + '</a></strong><div>' + feed.subject + ' <span class="muted">' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></div>')
-                    html.push('</div>');
+                    if(feed.feed_type == 0) {
+                        commit = feed.relative_obj
+                        html.push('<div style="margin: 0px" class="event_feed span5">');
+                        html.push('<img class="avatar_left" src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=35"><strong><a href="/' + commit.author + '/">' + commit.author + '</a></strong>')
+                        html.push(' commit at <strong><a href="/'+ commit.user_name + '/' + commit.repo_name +'/">' + commit.repo_name + '</a></strong><div>' + commit.subject + ' <span class="muted">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></div>')
+                        html.push('</div>');
+                    } else if(feed.feed_type == 1) {
+                    }
                 }
                 $('#feeds_container').append(html.join(''));
                 if(feeds.length == 0) {

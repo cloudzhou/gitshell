@@ -13,7 +13,7 @@ from gitshell.feed.models import Feed, FeedManager
 from gitshell.repo.models import RepoManager, IssuesComment
 from gitshell.repo.cons import conver_issues
 from gitshell.gsuser.models import GsuserManager
-from gitshell.todolist.models import Scene, ToDoList, ToDoListManager
+from gitshell.todolist.views import todo
 from gitshell.viewtools.views import json_httpResponse, obj2dict
 
 @login_required
@@ -24,14 +24,17 @@ def home(request):
         goto = PositionKey.FEED
     if goto == PositionKey.FEED:
         return feed(request)
-    elif goto == PositionKey.GIT:
-        return git(request)
+    elif goto == PositionKey.TIMELINE:
+        return timeline(request)
     elif goto == PositionKey.TODO:
         return todo(request)
     elif goto == PositionKey.ISSUES:
         return issues(request, 0)
     elif goto == PositionKey.EXPLORE:
         return explore(request)
+    elif goto == PositionKey.NOTIF:
+        return notif(request)
+    return feed(request)
 
 @login_required
 def feed(request):
@@ -43,109 +46,23 @@ def feed(request):
     raw_watch_repos = feedAction.get_watch_repos(request.user.id, 0, 100)
     watch_repo_ids = [int(x[0]) for x in raw_watch_repos]
 
-    feeds_as_json = multi_git_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids)
+    feeds_as_json = multi_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids)
     response_dictionary = {'current': current, 'feeds_as_json' : feeds_as_json}
     return render_to_response('user/feed.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 @login_required
-def git(request):
-    current = 'git'
+def timeline(request):
+    current = 'timeline'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.GIT)
     pri_user_feeds = feedAction.get_pri_user_feeds(request.user.id, 0, 100)
     pub_user_feeds = feedAction.get_pub_user_feeds(request.user.id, 0, 100)
-    feeds_as_json = git_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
+    feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
     response_dictionary = {'current': current, 'feeds_as_json': feeds_as_json}
-    return render_to_response('user/git.html',
+    return render_to_response('user/timeline.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
-@login_required
-def todo(request):
-    current = 'todo'
-    feedAction = FeedAction()
-    feedAction.set_user_position(request.user.id, PositionKey.TODO)
-    scene_id = feedAction.get_user_attr(request.user.id, AttrKey.SCENE_ID)
-    if scene_id is None:
-        scene_id = 0
-    return todo_scene(request, scene_id)
-
-@login_required
-def todo_scene(request, env_scene_id):
-    current = 'todo'
-    feedAction = FeedAction()
-    feedAction.set_user_position(request.user.id, PositionKey.TODO)
-    feedAction.set_user_attr(request.user.id, AttrKey.SCENE_ID, env_scene_id)
-    scene = get_scene(request.user.id, env_scene_id)
-    scene_list = ToDoListManager.list_scene_by_userId(request.user.id, 0, 100)
-    todoing_list = ToDoListManager.list_doing_todo_by_userId_sceneId(request.user.id, scene.id, 0, 100)
-    todone_list = ToDoListManager.list_done_todo_by_userId_sceneId(request.user.id, scene.id, 0, 100)
-    response_dictionary = {'current': current, 'scene_list': scene_list, 'scene': scene, 'todoing_list': todoing_list, 'todone_list': todone_list}
-    return render_to_response('user/todo.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-@login_required
-@require_http_methods(["POST"])
-def add_scene(request, env_scene_id):
-    scene_id = 0
-    name = request.POST.get('name', '').strip()
-    if name != '':
-        scene_id = ToDoListManager.add_scene(request.user.id, name)
-    response_dictionary = {'scene_id': scene_id, 'name': name}
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def remove_scene(request, env_scene_id):
-    scene_id = ToDoListManager.remove_scene(request.user.id, env_scene_id)
-    response_dictionary = {'scene_id': scene_id}
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def add_todo(request, env_scene_id):
-    scene = get_scene(request.user.id, env_scene_id)
-    todo_text = request.POST.get('todo_text', '').strip()
-    todo_id = 0
-    if todo_text != '':
-        todo_id = ToDoListManager.add_todo(request.user.id, scene.id, todo_text)
-    response_dictionary = {'todo_id': todo_id}
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def remove_todo(request, env_scene_id):
-    todo_id = int(request.POST.get('todo_id', '0'))
-    result_todo_id = ToDoListManager.remove_todo(request.user.id, todo_id)
-    response_dictionary = {'todo_id': result_todo_id}
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def doing_todo(request, env_scene_id):
-    todo_id = int(request.POST.get('todo_id', '0'))
-    result_todo_id = ToDoListManager.doing_todo(request.user.id, todo_id)
-    response_dictionary = {'todo_id': result_todo_id}
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def done_todo(request, env_scene_id):
-    todo_id = int(request.POST.get('todo_id', '0'))
-    result_todo_id = ToDoListManager.done_todo(request.user.id, todo_id)
-    response_dictionary = {'todo_id': result_todo_id}
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def update_scene_meta(request, env_scene_id):
-    scene = get_scene(request.user.id, env_scene_id)
-    todo_str_ids = request.POST.get('todo_ids', '')
-    todo_ids = [int(x) for x in todo_str_ids.split(',')]
-    result = ToDoListManager.update_scene_meta(request.user.id, scene.id, todo_ids)
-    response_dictionary = {'result': result}
-    return json_httpResponse(response_dictionary)
 
 @login_required
 def issues_default(request):
@@ -230,8 +147,10 @@ def explore(request):
 @login_required
 def notif(request):
     current = 'notif'
+    feedAction = FeedAction()
+    feedAction.set_user_position(request.user.id, PositionKey.NOTIF)
     response_dictionary = {'current': current}
-    return render_to_response('user/home.html',
+    return render_to_response('user/notif.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 def feed_by_ids(request):
@@ -318,7 +237,7 @@ def _get_feed_ids(ids_str):
             break
     return ids
 
-def multi_git_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids):
+def multi_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids):
     feeds_json_val = {}
     for user_id in watch_user_ids:
         pub_user_feeds = feedAction.get_pub_user_feeds(user_id, 0, 50)
@@ -330,7 +249,7 @@ def multi_git_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids)
             feeds_json_val['rf_%s' % repo_id] = feeds_as_json(repo_feeds)
     return str(feeds_json_val)
 
-def git_feeds_as_json(request, pri_user_feeds, pub_user_feeds):
+def get_feeds_as_json(request, pri_user_feeds, pub_user_feeds):
     feeds_json_val = {}
     feeds_json_val['pri_user_feeds_%s' % request.user.id] = feeds_as_json(pri_user_feeds)
     feeds_json_val['pub_user_feeds_%s' % request.user.id] = feeds_as_json(pub_user_feeds)
@@ -347,10 +266,3 @@ def feeds_as_json(feeds):
         json_arr.append(list(feed))
     return json_arr
     
-def get_scene(user_id, env_scene_id):
-    env_scene_id = int(env_scene_id)
-    scene = ToDoListManager.get_scene_by_id(user_id, env_scene_id)
-    if scene is None:
-        scene = ToDoListManager.get_scene_by_id(user_id, 0)
-    return scene
-

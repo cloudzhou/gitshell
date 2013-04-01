@@ -1,0 +1,27 @@
+{% extends "user/home_base.html" %}
+{% block css %}
+<style>
+.feedtime {padding: 8px}
+</style>
+{% endblock %}
+{% block subcontainer %}
+<div class="row" style="">
+    <div id='feeds_container' class="span7">
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+/*global jQuery, window */
+$(function(){
+    moment.lang('zh-cn');
+    $('.feedtime').live('mouseover mouseout', function(event) {
+        if (event.type == 'mouseover') {
+            $(this).css('background-color', '#D9EDF7');
+        } else {
+            $(this).css('background-color', '#FFFFFF');
+        }
+    });
+});
+</script>
+{% endblock %}
