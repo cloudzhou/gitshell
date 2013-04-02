@@ -58,15 +58,19 @@ $(function(){
                 ordered_date_reponame = {}
                 display_feeds_map = {}
                 feeds = json.feeds
-                gravatarmap = json.gravatarmap
+                gravatar_dict = json.gravatar_dict
                 feeds.sort(function(a,b) {
                     return b.committer_date - a.committer_date;
                 })
                 html = []
                 for(x in feeds) {
                     feed = feeds[x]
-                    feed_date_str = moment(new Date(feed.committer_date*1000)).format('MM/DD');
-                    html.push('<tr><td><a href="">' + feed.repo_name + '</a></td><td>' + feed.subject + '</td><td>' + feed_date_str + '</td></tr>')
+                    if(feed.feed_type == 0) {
+                        commit = feed.relative_obj;
+                        feed_date_str = moment(new Date(commit.committer_date*1000)).format('MM/DD');
+                        html.push('<tr><td><a href="">' + commit.repo_name + '</a></td><td>' + commit.subject + '</td><td>' + feed_date_str + '</td></tr>')
+                    } else if(feed.feed_type == 1) {
+                    }
                 }
                 $('#id_lastest_active').html(html.join(''));
                 if(feeds.length == 0) {
