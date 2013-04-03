@@ -24,6 +24,7 @@ table_ptkey_field = {
     'stats_statsuser': 'user_id',
     'todolist_scene': 'user_id',
     'todolist_todolist': 'user_id',
+    'feed_notifmessage': 'from_user_id',
 }
 rawsql = {
     # userpubkey #
@@ -105,6 +106,9 @@ rawsql = {
         'select * from todolist_scene where visibly = 0 and user_id = %s and id = %s',
     'scene_l_userId_name':
         'select * from todolist_scene where visibly = 0 and user_id = %s and name = %s',
+    # feed #
+    'notifMessage_l_userId':
+        'select * from feed_notifmessage where visibly = 0 and from_user_id = %s order by modify_time desc limit %s, %s',
 }
 
 def get(model, pkid):

@@ -29,7 +29,7 @@
             <div style="margin-left: 20px;">
                 <h6>创建于{{ repo.create_time|date:"y/m/d" }}，最近更新{{ repo.modify_time|date:"y/m/d H:i" }}</h6> 
                 <p>{{ repo.desc }}</p>
-                <h6 id="i_{{repo.name}}_commit_history" style="display: none">commit 历史</h6> 
+                <h6 id="i_{{repo.name}}_feed_history" style="display: none">最近</h6> 
                 <ul id="i_{{repo.name}}">
                 </ul>
             </div>
@@ -45,11 +45,11 @@
 /*global jQuery, window */
 $(function(){
     moment.lang('zh-cn');
-    orgi_repo_commit_map = {{repo_commit_map|safe}};
+    orgi_repo_feed_map = {{repo_feed_map|safe}};
     var do_repo_feeds = function() {
         all_ids = [];
-        for (x in orgi_repo_commit_map) {
-            all_ids = all_ids.concat(orgi_repo_commit_map[x]);
+        for (x in orgi_repo_feed_map) {
+            all_ids = all_ids.concat(orgi_repo_feed_map[x]);
         }
         all_ids_str = all_ids.join('_');
         $.ajax({
@@ -62,19 +62,23 @@ $(function(){
                 //alert('');
             },
             success: function(json){
-                repo_commit_map = {} 
+                repo_feed_map = {} 
                 for (x in json.feeds) {
-                    repo_commit_map[json.feeds[x]['id']] = json.feeds[x] 
+                    repo_feed_map[json.feeds[x]['id']] = json.feeds[x] 
                 }
-                for (x in orgi_repo_commit_map) {
+                for (x in orgi_repo_feed_map) {
                     html = []
-                    if (orgi_repo_commit_map[x].length > 0) {
-                        $('#i_' + x  + '_commit_history').show();
+                    if (orgi_repo_feed_map[x].length > 0) {
+                        $('#i_' + x  + '_feed_history').show();
                     }
-                    for (y in orgi_repo_commit_map[x]) {
-                        if(repo_commit_map.hasOwnProperty(orgi_repo_commit_map[x][y])) {
-                            feed = repo_commit_map[orgi_repo_commit_map[x][y]];
-                            html.push('<li><code><a href="/{{ user_name }}/' + feed.repo_name + '/">' + feed.commit_hash + '</a></code> ' + feed.subject + ' <span class="muted pull-right">' + feed.author + ' ' + moment(new Date(feed.committer_date*1000)).fromNow() + '</span></li>');
+                    for (y in orgi_repo_feed_map[x]) {
+                        if(repo_feed_map.hasOwnProperty(orgi_repo_feed_map[x][y])) {
+                            feed = repo_feed_map[orgi_repo_feed_map[x][y]];
+                            if(feed.feed_type == 0) {
+                                commit = feed.relative_obj;
+                                html.push('<li><code><a href="/{{ user_name }}/' + commit.repo_name + '/">' + commit.commit_hash + '</a></code> ' + commit.subject + ' <span class="muted pull-right">' + commit.author + ' ' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></li>');
+                            } else if(feed.feed_type == 1) {
+                            }
                         }
                     }
                     $('#i_'+x).append(html.join(''));

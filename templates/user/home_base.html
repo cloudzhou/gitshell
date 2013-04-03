@@ -7,7 +7,7 @@
             <li {% if current == 'todo' %} class="active" {% endif %}><a href="/home/todo/">ToDoList</a></li>
             <li {% if current == 'issues' %} class="active" {% endif %}><a href="/home/issues/">Issues</a></li>
             <!--li {% if current == 'explore' %} class="active" {% endif %}><a href="/home/explore/">查看最新</a></li-->
-            <li {% if current == 'notif' %} class="active" {% endif %}><a href="/home/notif/">通知 (1)</a></li>
+            <li {% if current == 'notif' %} class="active" {% endif %}><a href="/home/notif/">通知 {% if gsuserfile.unread_message > 0 %}({{ gsuserfile.unread_message }}){% endif %}</a></li>
         </ul>
 </div>
 {% block subcontainer %}{% endblock %}

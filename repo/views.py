@@ -39,14 +39,14 @@ def user_repo_paging(request, user_name, pagenum):
     repo_list = raw_repo_list
     if user.id != request.user.id:
         repo_list = [x for x in raw_repo_list if x.auth_type != 2]
-    repo_commit_map = {}
+    repo_feed_map = {}
     feedAction = FeedAction()
     i = 0
     for repo in repo_list:
-        repo_commit_map[str(repo.name)] = []
+        repo_feed_map[str(repo.name)] = []
         feeds = feedAction.get_repo_feeds(repo.id, 0, 4)
         for feed in feeds:
-            repo_commit_map[str(repo.name)].append(feed[0])
+            repo_feed_map[str(repo.name)].append(feed[0])
         i = i + 1
         if i > 10:
             break
@@ -61,7 +61,7 @@ def user_repo_paging(request, user_name, pagenum):
         userprofile.prirepo = prirepo
         userprofile.save()
 
-    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_list': repo_list, 'repo_commit_map': repo_commit_map}
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_list': repo_list, 'repo_feed_map': repo_feed_map}
     return render_to_response('repo/user_repo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

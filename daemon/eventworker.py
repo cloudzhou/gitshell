@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from gitshell.gsuser.models import Userprofile, GsuserManager
 from gitshell.repo.models import CommitHistory, Repo, RepoManager
-from gitshell.feed.models import Feed, AtMessage, FeedManager, FEED_EVENT
+from gitshell.feed.models import Feed, NotifMessage, FeedManager, FEED_EVENT
 from gitshell.feed.feed import FeedAction
 from gitshell.stats.models import StatsManager
 from gitshell.daemon.models import EventManager, EVENT_TUBE_NAME
@@ -109,7 +109,7 @@ def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
     __add_user_and_repo_feed(feedAction, repo, user_feed_key_values, total_feed_key_values)
 
     # at somebody action
-    __atsomebody(commitHistorys, repo)
+    __notif(commitHistorys, repo, member_username_dict, member_email_dict)
 
     # stats action
     __stats(commitHistorys, repo, member_username_dict, member_email_dict)
@@ -194,8 +194,11 @@ def __list_commitHistorys(repo, raw_commitHistorys):
             commitHistorys.append(commitHistory)
     return commitHistorys
 
-def __atsomebody(commitHistorys, repo):
-    pass
+def __notif(commitHistorys, repo, member_username_dict, member_email_dict):
+    for commitHistory in commitHistorys:
+        from_user_id = get_author_id(repo, commitHistory, member_username_dict, member_email_dict)
+        if from_user_id is not None:
+            FeedManager.notif_commit_at(from_user_id, commitHistory.id, commitHistory.subject)
     
 def __stats(commitHistorys, repo, member_username_dict, member_email_dict):
     stats_commits = []
@@ -234,6 +237,7 @@ def get_repopath(user, repo):
     return repo.get_abs_repopath(user.username)
 
 def update_gsuser_repo_quote(gsuser, repo, diff_size):
+    gsuser = GsuserManager.get_userprofile_by_id(gsuser.id)
     gsuser.used_quote = gsuser.used_quote + diff_size
     repo.used_quote = repo.used_quote + diff_size
     gsuser.save()
