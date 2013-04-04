@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from gitshell.gsuser.models import Userprofile, GsuserManager
 from gitshell.repo.models import CommitHistory, Repo, RepoManager
-from gitshell.feed.models import Feed, NotifMessage, FeedManager, FEED_EVENT
+from gitshell.feed.models import Feed, NotifMessage, FeedManager
 from gitshell.feed.feed import FeedAction
 from gitshell.stats.models import StatsManager
 from gitshell.daemon.models import EventManager, EVENT_TUBE_NAME
@@ -139,7 +139,7 @@ def __get_feed_data(repo, commitHistorys, member_username_dict, member_email_dic
     total_feed_key_values = []
     for commitHistory in commitHistorys:
         committer_id = get_committer_id(repo, commitHistory, member_username_dict, member_email_dict)
-        feed = Feed.create(committer_id, repo.id, FEED_EVENT.PUSH_CID, FEED_EVENT.PUSH_COMMIT_MESSAGE, commitHistory.id)
+        feed = Feed.create_push_commit(committer_id, repo.id, commitHistory.id)
         feed.save()
         if committer_id is not None:
             if committer_id not in user_feed_key_values:

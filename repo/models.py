@@ -90,6 +90,12 @@ class CommitHistory(BaseModel):
         commitHistory.author_email = author_email 
         return commitHistory
 
+    def get_short_refname(self):
+        if '/' in self.refname:
+            return self.refname[self.refname.rfind('/')+1:]
+        return ''
+        
+
 class WatchHistory(BaseModel):
     user_id = models.IntegerField(default=0)
     watch_repo_id = models.IntegerField(default=0)
@@ -163,6 +169,10 @@ class RepoManager():
     @classmethod
     def count_repo_by_userId(self, user_id):
         pass
+
+    @classmethod
+    def get_commit_by_id(self, id):
+        return get(CommitHistory, id)
 
     @classmethod
     def get_commits_by_ids(self, ids):

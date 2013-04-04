@@ -7,6 +7,28 @@
 {% block subcontainer %}
 <div class="row" style="">
     <div id='feeds_container' class="span7">
+        {% if notifMessages %}
+            <table class="table">
+                <thead>
+                    <th width="80px">来源</th>
+                    <th>内容</th>
+                </thead>
+                <tbody>
+                {% for notifMessage in notifMessages %}
+                    <tr><td><a href="/{{notifMessage.relative_name}}/">@{{notifMessage.relative_name}}</a></td>
+                        {% if notifMessage.notif_type == 0 %}
+                        <td>{{notifMessage.relative_obj.subject}}
+                            <span class="muted">{{notifMessage.relative_obj.repo_name}}:{{notifMessage.relative_obj.get_short_refname}}</span>
+                            <span class="muted c_unixtime">{{notifMessage.relative_obj.modify_time|date:"U"}}</span></td>
+                        {% elif notifMessage.notif_type == 1 %}
+                        {% endif %}
+                    <tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            没有更多消息
+        {% endif %}
     </div>
 </div>
 {% endblock %}
@@ -21,6 +43,10 @@ $(function(){
         } else {
             $(this).css('background-color', '#FFFFFF');
         }
+    });
+    $('.c_unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+        $(this).show();
     });
 });
 </script>

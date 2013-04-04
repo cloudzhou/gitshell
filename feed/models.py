@@ -37,13 +37,18 @@ class Feed(models.Model):
         )
         return feed
 
+    @classmethod
+    def create_push_commit(self, user_id, repo_id, relative_id):
+        return self.create(user_id, repo_id, FEED_CATE.PUSH, FEED_TYPE.PUSH_COMMIT_MESSAGE, relative_id)
+
     def is_commit_message(self):
-        return self.feed_type == FEED_EVENT.PUSH_COMMIT_MESSAGE
+        return self.feed_type == FEED_TYPE.PUSH_COMMIT_MESSAGE
 
 class NotifMessage(models.Model):
     create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
     modify_time = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
     visibly = models.SmallIntegerField(default=0, null=False)
+    notif_cate = models.SmallIntegerField(default=0)
     notif_type = models.SmallIntegerField(default=0)
     from_user_id = models.IntegerField(default=0)
     to_user_id = models.IntegerField(default=0)
@@ -55,17 +60,22 @@ class NotifMessage(models.Model):
     relative_id = models.IntegerField(default=0)
 
     # field without database
+    relative_name = ""
     relative_obj = {}
 
     @classmethod
-    def create_at(self, from_user_id, to_user_id, relative_id):
+    def create_at_commit(self, from_user_id, to_user_id, relative_id):
         notifMessage = NotifMessage(
-            notif_type = NOTIF_TYPE.AT_ME,
+            notif_cate = NOTIF_CATE.AT,
+            notif_type = NOTIF_TYPE.AT_COMMIT,
             from_user_id = from_user_id,
             to_user_id = to_user_id,
             relative_id = relative_id,
         )
         return notifMessage
+
+    def is_at_commit(self):
+        return self.notif_type == NOTIF_TYPE.AT_COMMIT
 
 class FeedManager():
 
@@ -88,18 +98,15 @@ class FeedManager():
             at_user = GsuserManager.get_user_by_name(at_name)
             if at_user is not None:
                 to_user_id = at_user.id
-                notifMessage = NotifMessage.create_at(from_user_id, to_user_id, commitHistory_id)
+                notifMessage = NotifMessage.create_at_commit(from_user_id, to_user_id, commitHistory_id)
                 notifMessage.save()
                 if to_user_id not in user_unread_message_dict:
                     user_unread_message_dict[to_user_id] = 0
                 user_unread_message_dict[to_user_id] = user_unread_message_dict[to_user_id] + 1
 
-        print user_unread_message_dict
         for to_user_id, unread_message in user_unread_message_dict.items():
             at_userprofile = GsuserManager.get_userprofile_by_id(to_user_id)
-            print at_userprofile.unread_message
             at_userprofile.unread_message = at_userprofile.unread_message + unread_message
-            print at_userprofile.unread_message
             at_userprofile.save()
 
 class FeedUtils():
@@ -136,26 +143,35 @@ class FeedUtils():
         return at_name_list
 
 
+class NOTIF_CATE:
+
+    AT = 0
+    MESSAGE = 1
+
 class NOTIF_TYPE:
 
-    AT_ME = 0
-    COMMENT_ME = 1
-    MESSAGE = 2
+    AT_COMMIT = 0
+    AT_COMMENT_ISSUE = 1
     
-class FEED_EVENT:
+class FEED_CATE:
 
-    PUSH_CID = 0
+    PUSH = 0
+    MERGE = 1
+    TODO = 2
+    ISSUES = 3
+    ACTIVE = 4
+
+class FEED_TYPE:
+
     PUSH_COMMIT_MESSAGE = 0
     PUSH_COMMENT_ON_COMMIT = 1
 
-    MERGE_CID = 1
     MERGE_CREATE_PULL_REQUEST = 100
     MERGE_MERGED_PULL_REQUEST = 101
     MERGE_COMMENT_ON_PULL_REQUEST = 102
     MERGE_REJECTED_PULL_REQUEST = 103
     MERGE_DELETE_PULL_REQUEST = 104
 
-    TODO_CID = 2
     TODO_CREATE = 200
     TODO_DOING = 201
     TODO_DONE = 202
@@ -163,12 +179,10 @@ class FEED_EVENT:
     TODO_COMMENT_ON_TODO = 204
     TODO_ASSIGN_TO = 205
 
-    ISSUES_CID = 3
     ISSUES_CREATE = 300
     ISSUES_STATUS_CHANGE = 301
     ISSUES_COMMENT_ON_ISSUE = 302
 
-    ACTIVE_CID = 4
     ACTIVE_STARTED_FOLLOWING = 400
     ACTIVE_STARTED_STAR = 401
     ACTIVE_STARTED_FORKED = 402

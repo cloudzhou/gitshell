@@ -149,7 +149,17 @@ def notif(request):
     current = 'notif'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.NOTIF)
-    response_dictionary = {'current': current}
+    notifMessages = FeedManager.list_notifmessage_by_userId(request.user.id, 0, 100)
+    for notifMessage in notifMessages:
+        relative_user = GsuserManager.get_user_by_id(notifMessage.from_user_id)
+        if relative_user is not None:
+            notifMessage.relative_name = relative_user.username
+        if notifMessage.is_at_commit():
+            commitHistory = RepoManager.get_commit_by_id(notifMessage.relative_id)
+            notifMessage.relative_obj = commitHistory
+    request.userprofile.unread_message = 0
+    request.userprofile.save()
+    response_dictionary = {'current': current, 'notifMessages': notifMessages}
     return render_to_response('user/notif.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
