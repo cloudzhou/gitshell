@@ -38,6 +38,12 @@ class Repo(BaseModel):
         )
         return repo
 
+    def get_repo_username(self):
+        user = GsuserManager.get_user_by_id(self.user_id)
+        if user is not None:
+            return user.username
+        return ''
+
     def get_abs_repopath(self, user_name):
         parent_path = ""
         if self.auth_type == 0:
@@ -94,7 +100,10 @@ class CommitHistory(BaseModel):
         if '/' in self.refname:
             return self.refname[self.refname.rfind('/')+1:]
         return ''
-        
+
+    def get_repo_username(self):
+        repo = RepoManager.get_repo_by_id(self.repo_id)
+        return repo.get_repo_username()
 
 class WatchHistory(BaseModel):
     user_id = models.IntegerField(default=0)
@@ -118,11 +127,19 @@ class Issues(BaseModel):
     content = models.CharField(max_length=1024, default='')
     comment_count = models.IntegerField(default=0)
 
+    # field without database
+    username = ''
+    reponame = ''
+
 class IssuesComment(BaseModel):
     issues_id = models.IntegerField()
     user_id = models.IntegerField()
     vote = models.IntegerField(default=0)
     content = models.CharField(max_length=512, default='') 
+
+    # field without database
+    username = ''
+    reponame = ''
 
 class RepoManager():
 
@@ -261,6 +278,10 @@ class RepoManager():
             rawsql_id = 'repoissues_l_assigned_create'
         repoissues = query(Issues, None, rawsql_id, [assigned, offset, row_count]) 
         return repoissues
+
+    @classmethod
+    def get_issues_by_id(self, issues_id):
+        return get(Issues, issues_id)
 
     @classmethod
     def get_issues(self, repo_id, issues_id):

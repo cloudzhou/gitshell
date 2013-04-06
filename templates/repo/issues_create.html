@@ -75,6 +75,9 @@ $(function(){
             line_arr.shift();
             var content = line_arr.join('\n');
             $('#id_subject').val(subject);
+            if(content == '' || content == "\n") {
+                content = '无';
+            }
             $('#id_content').val(content);
             if($('#id_category').val() == '') {
                 $('#id_category').val('无');

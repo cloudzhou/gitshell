@@ -16,11 +16,18 @@
                 <tbody>
                 {% for notifMessage in notifMessages %}
                     <tr><td><a href="/{{notifMessage.relative_name}}/">@{{notifMessage.relative_name}}</a></td>
-                        {% if notifMessage.notif_type == 0 %}
-                        <td>{{notifMessage.relative_obj.subject}}
-                            <span class="muted">{{notifMessage.relative_obj.repo_name}}:{{notifMessage.relative_obj.get_short_refname}}</span>
-                            <span class="muted c_unixtime">{{notifMessage.relative_obj.modify_time|date:"U"}}</span></td>
-                        {% elif notifMessage.notif_type == 1 %}
+                        {% if notifMessage.relative_obj %}
+                            <td>
+                            {% if notifMessage.notif_type == 0 %}
+                            <span class="muted">commit: </span>{{notifMessage.relative_obj.subject}}
+                            <span class="muted"><a href="/{{notifMessage.relative_obj.get_repo_username}}/">{{notifMessage.relative_obj.get_repo_username}}</a>/<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/">{{notifMessage.relative_obj.repo_name}}</a>:<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commits/{{notifMessage.relative_obj.get_short_refname}}/">{{notifMessage.relative_obj.get_short_refname}}</a></span>
+                            {% elif notifMessage.notif_type == 1 %}
+                            <span class="muted">issues: </span>{{notifMessage.relative_obj.subject}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
+                            {% elif notifMessage.notif_type == 2 %}
+                            <span class="muted">comment on issues: </span>{{notifMessage.relative_obj.content}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.issues_id}}/">#{{notifMessage.relative_obj.issues_id}}</a>
+                            {% endif %}
+                            <span class="muted c_unixtime">{{notifMessage.relative_obj.modify_time|date:"U"}}</span>
+                            </td>
                         {% endif %}
                     <tr>
                 {% endfor %}

@@ -64,18 +64,34 @@ class NotifMessage(models.Model):
     relative_obj = {}
 
     @classmethod
-    def create_at_commit(self, from_user_id, to_user_id, relative_id):
+    def create(self, notif_cate, notif_type, from_user_id, to_user_id, relative_id):
         notifMessage = NotifMessage(
-            notif_cate = NOTIF_CATE.AT,
-            notif_type = NOTIF_TYPE.AT_COMMIT,
+            notif_cate = notif_cate,
+            notif_type = notif_type,
             from_user_id = from_user_id,
             to_user_id = to_user_id,
             relative_id = relative_id,
         )
         return notifMessage
 
+    @classmethod
+    def create_at_commit(self, from_user_id, to_user_id, relative_id):
+        return self.create(NOTIF_CATE.AT, NOTIF_TYPE.AT_COMMIT, from_user_id, to_user_id, relative_id)
+
+    @classmethod
+    def create_at_issue(self, from_user_id, to_user_id, relative_id):
+        return self.create(NOTIF_CATE.AT, NOTIF_TYPE.AT_ISSUE, from_user_id, to_user_id, relative_id)
+
+    @classmethod
+    def create_at_issue_comment(self, from_user_id, to_user_id, relative_id):
+        return self.create(NOTIF_CATE.AT, NOTIF_TYPE.AT_ISSUE_COMMENT, from_user_id, to_user_id, relative_id)
+
     def is_at_commit(self):
         return self.notif_type == NOTIF_TYPE.AT_COMMIT
+    def is_at_issue(self):
+        return self.notif_type == NOTIF_TYPE.AT_ISSUE
+    def is_at_issue_comment(self):
+        return self.notif_type == NOTIF_TYPE.AT_ISSUE_COMMENT
 
 class FeedManager():
 
@@ -90,15 +106,23 @@ class FeedManager():
         return feeds
 
     @classmethod
-    def notif_commit_at(self, from_user_id, commitHistory_id, commit_message):
-        at_name_list = FeedUtils.list_atname(commit_message)
+    def notif_at(self, feed_type, from_user_id, relative_id, message):
+        at_name_list = FeedUtils.list_atname(message)
         user_unread_message_dict = {}
 
         for at_name in at_name_list:
             at_user = GsuserManager.get_user_by_name(at_name)
             if at_user is not None:
                 to_user_id = at_user.id
-                notifMessage = NotifMessage.create_at_commit(from_user_id, to_user_id, commitHistory_id)
+                notifMessage = None
+                if feed_type == NOTIF_TYPE.AT_COMMIT:
+                    notifMessage = NotifMessage.create_at_commit(from_user_id, to_user_id, relative_id)
+                elif feed_type == NOTIF_TYPE.AT_ISSUE:
+                    notifMessage = NotifMessage.create_at_issue(from_user_id, to_user_id, relative_id)
+                elif feed_type == NOTIF_TYPE.AT_ISSUE_COMMENT:
+                    notifMessage = NotifMessage.create_at_issue_comment(from_user_id, to_user_id, relative_id)
+                if notifMessage is None:
+                    continue
                 notifMessage.save()
                 if to_user_id not in user_unread_message_dict:
                     user_unread_message_dict[to_user_id] = 0
@@ -108,6 +132,18 @@ class FeedManager():
             at_userprofile = GsuserManager.get_userprofile_by_id(to_user_id)
             at_userprofile.unread_message = at_userprofile.unread_message + unread_message
             at_userprofile.save()
+
+    @classmethod
+    def notif_commit_at(self, from_user_id, commitHistory_id, commit_message):
+        self.notif_at(NOTIF_TYPE.AT_COMMIT, from_user_id, commitHistory_id, commit_message)
+
+    @classmethod
+    def notif_issue_at(self, from_user_id, issue_id, issue_message):
+        self.notif_at(NOTIF_TYPE.AT_ISSUE, from_user_id, issue_id, issue_message)
+
+    @classmethod
+    def notif_issue_comment_at(self, from_user_id, issue_comment_id, issue_comment_message):
+        self.notif_at(NOTIF_TYPE.AT_ISSUE_COMMENT, from_user_id, issue_comment_id, issue_comment_message)
 
 class FeedUtils():
 
@@ -151,7 +187,8 @@ class NOTIF_CATE:
 class NOTIF_TYPE:
 
     AT_COMMIT = 0
-    AT_COMMENT_ISSUE = 1
+    AT_ISSUE = 1
+    AT_ISSUE_COMMENT = 2
     
 class FEED_CATE:
 

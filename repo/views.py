@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import render_to_response
 from django.utils.html import escape
 from gitshell.feed.feed import FeedAction
+from gitshell.feed.models import FeedManager
 from gitshell.repo.Forms import RepoForm, RepoIssuesForm, IssuesComment, RepoIssuesCommentForm, RepoMemberForm
 from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, Issues
@@ -243,7 +244,8 @@ def issues_show(request, user_name, repo_name, issues_id, page):
         issuesComment.user_id = request.user.id
         repoIssuesCommentForm = RepoIssuesCommentForm(request.POST, instance = issuesComment)
         if repoIssuesCommentForm.is_valid():
-            repoIssuesCommentForm.save()
+            cid = repoIssuesCommentForm.save().id
+            FeedManager.notif_issue_comment_at(request.user.id, cid, repoIssuesCommentForm.cleaned_data['content'])
             raw_issue.comment_count = raw_issue.comment_count + 1
             raw_issue.save()
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, issues_id))
@@ -319,6 +321,7 @@ def issues_create(request, user_name, repo_name, issues_id):
         repoIssuesForm.fill_assigned(repo)
         if repoIssuesForm.is_valid():
             nid = repoIssuesForm.save().id
+            FeedManager.notif_issue_at(request.user.id, nid, repoIssuesForm.cleaned_data['subject'] + ' ' + repoIssuesForm.cleaned_data['content'])
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
         else:
             error = u'issues 内容不能为空'
