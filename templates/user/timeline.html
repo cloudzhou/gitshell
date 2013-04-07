@@ -50,6 +50,7 @@ $(function(){
                 display_feeds_map = {}
                 feeds = json.feeds
                 gravatarmap = json.gravatarmap
+                gravatar_userId_dict = json.gravatar_userId_dict
                 feeds.sort(function(a,b) {
                     return b.committer_date - a.committer_date;
                 })
@@ -87,6 +88,22 @@ $(function(){
                             }
                             html.push('</ul></div>');
                         } else {
+                            feed = display_feeds_map[feed_date][feed_reponame][0];
+                            if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
+                                issue = feed.relative_obj;
+                                action = 'create issue';
+                                detail = '';
+                                if(feed.feed_type == 300) {
+                                    action = 'create issue';
+                                } else if(feed.feed_type == 301) {
+                                    action = 'update issue';
+                                } else if(feed.feed_type == 302) {
+                                    action = 'change issue';
+                                    detail = feed.first_refname;
+                                }
+                                html.push('<div style="margin-left: 50px;"><li style="margin: 1px">' + action + ' #' + issue.id + ' on <strong><a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></strong> ' + detail + '<div><a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a> <span class="muted">' + moment(new Date(issue.create_time*1000)).fromNow() + '</span></div>')
+                                html.push('</li></div>');
+                            }
                         }
                     }
                     html.push('</div>')

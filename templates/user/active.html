@@ -69,7 +69,20 @@ $(function(){
                         commit = feed.relative_obj;
                         feed_date_str = moment(new Date(commit.committer_date*1000)).format('MM/DD');
                         html.push('<tr><td><a href="">' + commit.repo_name + '</a></td><td>' + commit.subject + '</td><td>' + feed_date_str + '</td></tr>')
-                    } else if(feed.feed_type == 1) {
+                    } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
+                        issue = feed.relative_obj;
+                        action = 'create issue';
+                        detail = '';
+                        if(feed.feed_type == 300) {
+                            action = 'create issue';
+                        } else if(feed.feed_type == 301) {
+                            action = 'update issue';
+                        } else if(feed.feed_type == 302) {
+                            action = 'change issue';
+                            detail = feed.first_refname;
+                        }
+                        feed_date_str = moment(new Date(issue.create_time*1000)).format('MM/DD');
+                        html.push('<tr><td><a href="/' + issue.username + '/' + issue.reponame + '/">' + issue.reponame + '</a></td><td>' + action + ' #' + issue.id + ' on <strong><a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></strong> ' + detail + '<div><a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a></div></td><td>'+ feed_date_str +'</td>')
                     }
                 }
                 $('#id_lastest_active').html(html.join(''));

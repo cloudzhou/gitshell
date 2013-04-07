@@ -54,6 +54,7 @@ $(function(){
                 display_feeds_map = {}
                 feeds = json.feeds
                 gravatar_dict = json.gravatar_dict
+                gravatar_userId_dict = json.gravatar_userId_dict
                 feeds.sort(function(a,b) {
                     return b.committer_date - a.committer_date;
                 })
@@ -79,7 +80,22 @@ $(function(){
                             html.push('<img class="avatar_left" src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=35"><strong><a href="/' + commit.author + '/">' + commit.author + '</a></strong>')
                             html.push(' commit at <strong><a href="/'+ commit.user_name + '/' + commit.repo_name +'/">' + commit.repo_name + '</a></strong><div>' + commit.subject + ' <span class="muted">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></div>')
                             html.push('</div></div>');
-                        } else if(feed.feed_type == 1) {
+                        } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
+                            issue = feed.relative_obj;
+                            action = 'create issue';
+                            detail = '';
+                            if(feed.feed_type == 300) {
+                                action = 'create issue';
+                            } else if(feed.feed_type == 301) {
+                                action = 'update issue';
+                            } else if(feed.feed_type == 302) {
+                                action = 'change issue';
+                                detail = feed.first_refname;
+                            }
+                            html.push('<div style="margin: 0px" class="event_feed span7"><div style="margin-left: 15px">');
+                            html.push('<img class="avatar_left" src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=35"><strong><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a></strong> ')
+                            html.push(action + ' #' + issue.id + ' on <strong><a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></strong> ' + detail + '<div><a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a> <span class="muted">' + moment(new Date(issue.create_time*1000)).fromNow() + '</span></div>')
+                            html.push('</div></div>');
                         }
                     }
                     padding_top = 15;

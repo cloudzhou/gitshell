@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-  
-import re
+import re, time
 from django.db import models
 from django.core.cache import cache
 from gitshell.objectscache.models import BaseModel
-from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many, get_version, get_sqlkey
+from gitshell.objectscache.da import query, query_first, queryraw, execute, count, get, get_many, get_version, get_sqlkey
 from gitshell.objectscache.da import get_raw, get_raw_many
 from gitshell.gsuser.models import GsuserManager
+from gitshell.repo.models import RepoManager
+from gitshell.feed.feed import FeedAction
 
 class Feed(models.Model):
     create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
@@ -43,6 +45,9 @@ class Feed(models.Model):
 
     def is_commit_message(self):
         return self.feed_type == FEED_TYPE.PUSH_COMMIT_MESSAGE
+
+    def is_issue_event(self):
+        return self.feed_type == FEED_TYPE.ISSUES_CREATE or self.feed_type == FEED_TYPE.ISSUES_UPDATE or self.feed_type == FEED_TYPE.ISSUES_STATUS_CHANGE
 
 class NotifMessage(models.Model):
     create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
@@ -101,9 +106,58 @@ class FeedManager():
         return notifMessages
 
     @classmethod
+    def get_notifmessage_by_userId_relativeId(self, user_id, relative_id):
+        notifMessage = query_first(NotifMessage, user_id, 'notifMessage_s_userId_relativeId', [user_id, relative_id])
+        return notifMessage
+
+    @classmethod
     def list_feed_by_ids(self, ids):
         feeds = get_many(Feed, ids)
         return feeds
+
+    @classmethod
+    def feed_issue_change(self, user, repo, orgi_issue, current_issue_id):
+        current_issue = RepoManager.get_issues_by_id(current_issue_id)
+        if current_issue is None:
+            return
+        feed_cate = FEED_CATE.ISSUES
+        message = ''
+        if orgi_issue is None and current_issue is not None:
+            feed_type = FEED_TYPE.ISSUES_CREATE
+            message = 'create issue'
+        if orgi_issue is not None and (orgi_issue.subject != current_issue.subject or orgi_issue.content != current_issue.content or orgi_issue.category != current_issue.category):
+            feed_type = FEED_TYPE.ISSUES_UPDATE
+            message = 'update issue'
+        # status update
+        status_changes = []
+        if orgi_issue is not None:
+            if orgi_issue.tracker != current_issue.tracker:
+                status_changes.append('跟踪: ' + ISSUE_ATTR_DICT.TRACKER[current_issue.tracker])
+            if orgi_issue.status != current_issue.status:
+                status_changes.append('状态: ' + ISSUE_ATTR_DICT.STATUS[current_issue.status])
+            if orgi_issue.assigned != current_issue.assigned:
+                assigned_user = GsuserManager.get_user_by_id(current_issue.assigned)
+                if assigned_user is not None:
+                    status_changes.append('指派给: @' + assigned_user.username)
+            if orgi_issue.priority != current_issue.priority:
+                status_changes.append('优先级: ' + ISSUE_ATTR_DICT.PRIORITY[current_issue.priority])
+            
+            if len(status_changes) > 0:
+                message = ', '.join(status_changes)
+                feed_type = FEED_TYPE.ISSUES_STATUS_CHANGE
+
+        if message != '':
+            feed = Feed.create(user.id, repo.id, feed_cate, feed_type, current_issue.id)
+            # TODO
+            feed.first_refname = message
+            feed.save()
+            feedAction = FeedAction()
+            timestamp = float(time.mktime(feed.create_time.timetuple()))
+            feedAction.add_repo_feed(repo.id, timestamp, feed.id)
+            if repo.auth_type == 2:
+                feedAction.add_pri_user_feed(user.id, timestamp, feed.id)
+            else:
+                feedAction.add_pub_user_feed(user.id, timestamp, feed.id)
 
     @classmethod
     def notif_at(self, feed_type, from_user_id, relative_id, message):
@@ -115,6 +169,10 @@ class FeedManager():
             if at_user is not None:
                 to_user_id = at_user.id
                 notifMessage = None
+                # disable duplicate notify
+                exists_notifMessage = self.get_notifmessage_by_userId_relativeId(to_user_id, relative_id)
+                if exists_notifMessage is not None:
+                    continue
                 if feed_type == NOTIF_TYPE.AT_COMMIT:
                     notifMessage = NotifMessage.create_at_commit(from_user_id, to_user_id, relative_id)
                 elif feed_type == NOTIF_TYPE.AT_ISSUE:
@@ -178,6 +236,27 @@ class FeedUtils():
             j = j + 1
         return at_name_list
 
+class ISSUE_ATTR_DICT:
+
+    TRACKER = { 
+        1: '缺陷',
+        2: '功能',
+        3: '支持',
+    }
+    STATUS = {
+        1: '新建',
+        2: '已指派',
+        3: '进行中',
+        4: '已解决',
+        5: '已关闭',
+        6: '已拒绝',
+    }
+    PRIORITY = {
+        1: '紧急',
+        2: '高',
+        3: '普通',
+        4: '低',
+    }
 
 class NOTIF_CATE:
 
@@ -217,8 +296,9 @@ class FEED_TYPE:
     TODO_ASSIGN_TO = 205
 
     ISSUES_CREATE = 300
-    ISSUES_STATUS_CHANGE = 301
-    ISSUES_COMMENT_ON_ISSUE = 302
+    ISSUES_UPDATE = 301
+    ISSUES_STATUS_CHANGE = 302
+    ISSUES_COMMENT_ON_ISSUE = 303
 
     ACTIVE_STARTED_FOLLOWING = 400
     ACTIVE_STARTED_STAR = 401
@@ -249,8 +329,9 @@ class FEED_TYPE:
     205) assign to xxx
 3 issues
     300) create
-    301) status change
-    302) comment on issue
+    301) update
+    302) status change
+    303) comment on issue
 4 active
     400) started following
     401) started star

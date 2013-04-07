@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-  
 import os, re
-import shutil
+import shutil, copy
 import json, time
 from datetime import datetime
 from datetime import timedelta
@@ -306,11 +306,14 @@ def issues_create(request, user_name, repo_name, issues_id):
     has_issues_modify = False
     repoIssuesForm = RepoIssuesForm()
     issues = Issues()
+    orgi_issue = None
     if issues_id != 0:
         issues = RepoManager.get_issues(repo.id, issues_id)
+        orgi_issue = copy.copy(issues)
         has_issues_modify = __has_issues_modify_right(request, issues, repo)
         if not has_issues_modify: 
             issues = Issues()
+            orgi_issue = None
         repoIssuesForm = RepoIssuesForm(instance = issues)
     repoIssuesForm.fill_assigned(repo)
     error = ''
@@ -322,6 +325,7 @@ def issues_create(request, user_name, repo_name, issues_id):
         if repoIssuesForm.is_valid():
             nid = repoIssuesForm.save().id
             FeedManager.notif_issue_at(request.user.id, nid, repoIssuesForm.cleaned_data['subject'] + ' ' + repoIssuesForm.cleaned_data['content'])
+            FeedManager.feed_issue_change(request.user, repo, orgi_issue, nid)
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
         else:
             error = u'issues 内容不能为空'
@@ -353,9 +357,13 @@ def issues_update(request, user_name, repo_name, issue_id, attr):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    if not request.user.id == repo.user_id:
-        return json_failed()
     issues = RepoManager.get_issues(repo.id, issue_id)
+    if issues is None:
+        raise Http404
+    has_issues_modify = __has_issues_modify_right(request, issues, repo)
+    if not has_issues_modify:
+        return json_failed()
+    orgi_issue = copy.copy(issues)
     (key, value) = attr.split('___', 1)
     if key == 'assigned':
         user = GsuserManager.get_user_by_name(value)
@@ -364,6 +372,7 @@ def issues_update(request, user_name, repo_name, issue_id, attr):
             if repoMember is not None:
                 issues.assigned = repoMember.user_id
                 issues.save()
+                FeedManager.feed_issue_change(request.user, repo, orgi_issue, issues.id)
         return json_ok()
     value = int(value)
     if key == 'tracker':
@@ -373,6 +382,7 @@ def issues_update(request, user_name, repo_name, issue_id, attr):
     elif key == 'priority':
         issues.priority = value
     issues.save()
+    FeedManager.feed_issue_change(request.user, repo, orgi_issue, issues.id)
     return json_ok()
 
 @login_required

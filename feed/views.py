@@ -1,6 +1,6 @@
 #!/user/bin/python
 # -*- coding: utf-8 -*-  
-import re, json, time
+import re, json, time, copy
 from sets import Set
 from django.template import RequestContext
 from django.forms.models import model_to_dict
@@ -112,10 +112,12 @@ def doissues(request):
     if action == '' or repo_id == '' or issues_id == '':
         response_dictionary = {'result': 'failed'}
         return json_httpResponse(response_dictionary)
+    repo = RepoManager.get_repo_by_id(int(repo_id))
     issues = RepoManager.get_issues(int(repo_id), int(issues_id))
     if issues is None or issues.user_id != request.user.id:
         response_dictionary = {'result': 'failed'}
         return json_httpResponse(response_dictionary)
+    orgi_issue = copy.copy(issues)
     if action == 'fixed':
         issues.status = 4
     elif action == 'close':
@@ -130,6 +132,7 @@ def doissues(request):
         issuesComment.save()
         issues.comment_count = issues.comment_count + 1
     issues.save()
+    FeedManager.feed_issue_change(request.user, repo, orgi_issue, issues.id)
     response_dictionary = {'result': 'sucess'}
     return json_httpResponse(response_dictionary)
         
@@ -186,12 +189,14 @@ def feed_by_ids(request):
     if re.match('^\w+$', ids_str):
         feeds = _list_feeds(request, ids_str)
     usernames = []
-    _fillwith_commit_message(feeds, usernames)
-    gravatar_dict = _get_gravatar_dict(usernames)
-    response_dictionary = {'feeds': obj2dict(feeds), 'gravatar_dict': gravatar_dict}
+    userIds = [x.user_id for x in feeds]
+    _fillwith_commit_message(feeds, usernames, userIds)
+    _fillwith_issue_event(feeds, usernames, userIds)
+    (gravatar_dict, gravatar_userId_dict) = _get_gravatar_dict(usernames, userIds)
+    response_dictionary = {'feeds': obj2dict(feeds), 'gravatar_dict': gravatar_dict, 'gravatar_userId_dict': gravatar_userId_dict}
     return json_httpResponse(response_dictionary)
 
-def _get_gravatar_dict(username_list):
+def _get_gravatar_dict(username_list, userIds):
     gravatar_dict = {}
     for username in username_list:
         if username not in gravatar_dict:
@@ -202,7 +207,20 @@ def _get_gravatar_dict(username_list):
                 continue
             gravatar_dict[username] = '0'
             gravatar_dict[username+'_tweet'] = ''
-    return gravatar_dict
+    gravatar_userId_dict = {}
+    for userId in userIds:
+        if userId not in gravatar_userId_dict:
+            user = GsuserManager.get_user_by_id(userId)
+            userprofile = GsuserManager.get_userprofile_by_id(userId)
+            if user is not None and userprofile is not None:
+                gravatar_userId_dict[userId] = userprofile.imgurl
+                gravatar_userId_dict[str(userId)+'_username'] = user.username
+                gravatar_userId_dict[str(userId)+'_tweet'] = userprofile.tweet
+                continue
+            gravatar_userId_dict[userId] = '0'
+            gravatar_userId_dict[str(userId)+'_username'] = ''
+            gravatar_userId_dict[str(userId)+'_tweet'] = ''
+    return (gravatar_dict, gravatar_userId_dict)
     
 
 def _list_feeds(request, ids_str):
@@ -210,7 +228,7 @@ def _list_feeds(request, ids_str):
     feeds = FeedManager.list_feed_by_ids(ids)
     return feeds
 
-def _fillwith_commit_message(feeds, usernames):
+def _fillwith_commit_message(feeds, usernames, userIds):
     commit_ids = []
     for feed in feeds:
         if feed.is_commit_message():
@@ -252,6 +270,18 @@ def _fillwith_commit_message(feeds, usernames):
     for feed in feeds:
         if feed.is_commit_message():
             feed.relative_obj = commit_view_dict[feed.relative_id]
+
+def _fillwith_issue_event(feeds, usernames, userIds):
+    issues = []
+    for feed in feeds:
+        if feed.is_issue_event():
+            issue = RepoManager.get_issues_by_id(feed.relative_id)
+            if issue is not None:
+                repo = RepoManager.get_repo_by_id(issue.repo_id)
+                issue.username = repo.get_repo_username()
+                issue.reponame = repo.name
+                feed.relative_obj = issue
+                issues.append(issue)
 
 def _get_feed_ids(ids_str):
     ids = []

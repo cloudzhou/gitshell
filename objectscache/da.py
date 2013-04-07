@@ -24,7 +24,7 @@ table_ptkey_field = {
     'stats_statsuser': 'user_id',
     'todolist_scene': 'user_id',
     'todolist_todolist': 'user_id',
-    'feed_notifmessage': 'from_user_id',
+    'feed_notifmessage': 'to_user_id',
 }
 rawsql = {
     # userpubkey #
@@ -108,7 +108,9 @@ rawsql = {
         'select * from todolist_scene where visibly = 0 and user_id = %s and name = %s',
     # feed #
     'notifMessage_l_userId':
-        'select * from feed_notifmessage where visibly = 0 and from_user_id = %s order by modify_time desc limit %s, %s',
+        'select * from feed_notifmessage where visibly = 0 and to_user_id = %s order by modify_time desc limit %s, %s',
+    'notifMessage_s_userId_relativeId':
+        'select * from feed_notifmessage where visibly = 0 and to_user_id = %s and relative_id = %s limit 0, 1',
 }
 
 def get(model, pkid):
@@ -183,6 +185,11 @@ def query(model, pt_id, rawsql_id, parameters):
             cache.add(id_key, obj)
         cache.add(sqlkey, value)
     return get_many(model, value)
+
+def query_first(model, pt_id, rawsql_id, parameters):
+    objects = query(model, pt_id, rawsql_id, parameters)
+    if len(objects) > 0:
+        return objects[0]
 
 def queryraw(model, rawsql_id, parameters):
     try:
