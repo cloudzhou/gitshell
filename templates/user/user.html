@@ -215,6 +215,9 @@ $(function(){
                 html = []
                 for(x in feeds) {
                     feed = feeds[x]
+                    if(feed.relative_obj === undefined) {
+                        continue;
+                    }
                     if(feed.feed_type == 0) {
                         commit = feed.relative_obj;
                         feed_date_str = moment(new Date(commit.committer_date*1000)).fromNow();
