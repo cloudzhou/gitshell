@@ -177,8 +177,9 @@ def notif(request):
                     issues_comment.username = repo.get_repo_username()
                     issues_comment.reponame = repo.name
             notifMessage.relative_obj = issues_comment
-    request.userprofile.unread_message = 0
-    request.userprofile.save()
+    if request.userprofile.unread_message != 0:
+        request.userprofile.unread_message = 0
+        request.userprofile.save()
     response_dictionary = {'current': current, 'notifMessages': notifMessages}
     return render_to_response('user/notif.html',
                           response_dictionary,
