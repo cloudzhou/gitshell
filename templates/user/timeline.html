@@ -81,7 +81,7 @@ $(function(){
                     for(y in ordered_date_reponame[ordered_date[x]]) {
                         feed_reponame = ordered_date_reponame[ordered_date[x]][y];
                         if(feed_reponame.indexOf('#') != 0) {
-                            html.push('<div style="margin-left: 50px;"><p>commit 到 <a href="">' + feed_reponame + '</a></p><ul>');
+                            html.push('<div style="margin-left: 50px;"><li>commit on <a href="">' + feed_reponame + '</a></li><ul>');
                             for(z in display_feeds_map[feed_date][feed_reponame]) {
                                 commit = display_feeds_map[feed_date][feed_reponame][z].relative_obj;
                                 html.push('<li style="margin: 1px"><code><a href="/{{ user.username }}/' + feed_reponame + '/">' + commit.commit_hash + '</a></code> ' + commit.subject + ' <span class="muted pull-right">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></li>');
