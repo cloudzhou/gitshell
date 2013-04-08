@@ -15,6 +15,7 @@ class Feed(models.Model):
     visibly = models.SmallIntegerField(default=0, null=False)
     user_id = models.IntegerField(default=0)
     repo_id = models.IntegerField(default=0)
+    auth_type = models.SmallIntegerField(default=0)
     feed_cate = models.SmallIntegerField(default=0)
     feed_type = models.SmallIntegerField(default=0)
     relative_id = models.IntegerField(default=0, null=True)
