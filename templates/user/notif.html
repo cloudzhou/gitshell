@@ -1,0 +1,60 @@
+{% extends "user/home_base.html" %}
+{% block css %}
+<style>
+.feedtime {padding: 8px}
+</style>
+{% endblock %}
+{% block subcontainer %}
+<div class="row" style="">
+    <div id='feeds_container' class="span7">
+        {% if notifMessages %}
+            <table class="table">
+                <thead>
+                    <th width="80px">来源</th>
+                    <th>内容</th>
+                </thead>
+                <tbody>
+                {% for notifMessage in notifMessages %}
+                    <tr><td><a href="/{{notifMessage.relative_name}}/">@{{notifMessage.relative_name}}</a></td>
+                        {% if notifMessage.relative_obj %}
+                            <td>
+                            {% if notifMessage.notif_type == 0 %}
+                            <span class="muted">commit: </span>{{notifMessage.relative_obj.subject}}
+                            <span class="muted"><a href="/{{notifMessage.relative_obj.get_repo_username}}/">{{notifMessage.relative_obj.get_repo_username}}</a>/<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/">{{notifMessage.relative_obj.repo_name}}</a>:<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commits/{{notifMessage.relative_obj.get_short_refname}}/">{{notifMessage.relative_obj.get_short_refname}}</a></span>
+                            {% elif notifMessage.notif_type == 1 %}
+                            <span class="muted">issues: </span>{{notifMessage.relative_obj.subject}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
+                            {% elif notifMessage.notif_type == 2 %}
+                            <span class="muted">comment on issues: </span>{{notifMessage.relative_obj.content}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.issues_id}}/">#{{notifMessage.relative_obj.issues_id}}</a>
+                            {% endif %}
+                            <span class="muted c_unixtime">{{notifMessage.relative_obj.modify_time|date:"U"}}</span>
+                            </td>
+                        {% endif %}
+                    <tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            没有更多消息
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+/*global jQuery, window */
+$(function(){
+    moment.lang('zh-cn');
+    $('.feedtime').live('mouseover mouseout', function(event) {
+        if (event.type == 'mouseover') {
+            $(this).css('background-color', '#D9EDF7');
+        } else {
+            $(this).css('background-color', '#FFFFFF');
+        }
+    });
+    $('.c_unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+        $(this).show();
+    });
+});
+</script>
+{% endblock %}

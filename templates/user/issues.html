@@ -6,14 +6,15 @@
 {% block subcontainer %}
 <div class="row" style="">
     <div id='issues_container' class="span10">
+        {% if issues %}
     	<table class="table table-striped">
     		<thead class="fixed">
     		    <tr>
     		        <th class="span6">主题</th>
-    				<th>状态</th>
-    			</tr>
-            </thead>
-			<tbody>
+    			<th>状态</th>
+    		    </tr>
+                </thead>
+		<tbody>
                 <tr style="display: none"><td></td></tr>
                 {% for issue in issues %}
 			    <tr class="c_issues" data="{{issue.id}}">
@@ -38,6 +39,9 @@
     		</tbody>
             <input id="id_action" class="hide" />
     	</table>
+        {% else %}
+            没有 Issues 信息
+        {% endif %}
     <ul class="pager pull-right">
         {%if hasPre%}
             <li><a href="/home/issues/0/">首页</a></li>

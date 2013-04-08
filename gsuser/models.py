@@ -21,6 +21,8 @@ class Userprofile(BaseModel):
     quote = models.BigIntegerField(null=False, default=268435456)
     used_quote = models.BigIntegerField(null=False, default=0)
 
+    unread_message = models.IntegerField(null=False, default=0)
+
     def get_total_repo(self):
         return self.prirepo + self.pubrepo
 

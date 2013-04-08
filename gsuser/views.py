@@ -20,7 +20,7 @@ from gitshell.repo.models import RepoManager
 from gitshell.stats.models import StatsManager
 from gitshell.feed.feed import FeedAction
 from gitshell.stats import timeutils
-from gitshell.feed.views import git_feeds_as_json
+from gitshell.feed.views import get_feeds_as_json
 from gitshell.viewtools.views import json_httpResponse
 
 def user(request, user_name):
@@ -54,7 +54,7 @@ def user(request, user_name):
     feedAction = FeedAction()
     pri_user_feeds = feedAction.get_pri_user_feeds(gsuser.id, 0, 10)
     pub_user_feeds = feedAction.get_pub_user_feeds(gsuser.id, 0, 10)
-    feeds_as_json = git_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
+    feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
 
     response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'repos': repos, 'watch_repos': watch_repos, 'watch_users': watch_users, 'bewatch_users': bewatch_users, 'last30days': last30days, 'last30days_commit': last30days_commit, 'feeds_as_json': feeds_as_json, 'recommends': recommends}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
@@ -68,9 +68,9 @@ def active(request, user_name):
         raise Http404
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     feedAction = FeedAction()
-    pri_user_feeds = feedAction.get_pri_user_feeds(request.user.id, 0, 10)
-    pub_user_feeds = feedAction.get_pub_user_feeds(request.user.id, 0, 10)
-    feeds_as_json = git_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
+    pri_user_feeds = feedAction.get_pri_user_feeds(gsuser.id, 0, 50)
+    pub_user_feeds = feedAction.get_pub_user_feeds(gsuser.id, 0, 50)
+    feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
     response_dictionary = {'mainnav': 'user', 'feeds_as_json': feeds_as_json}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/active.html',

@@ -1,18 +1,20 @@
 #!/user/bin/python
 # -*- coding: utf-8 -*-  
-import re, json, time
+import re, json, time, copy
 from sets import Set
 from django.template import RequestContext
+from django.forms.models import model_to_dict
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.feed.feed import FeedAction, PositionKey, AttrKey
+from gitshell.feed.models import Feed, FeedManager
 from gitshell.repo.models import RepoManager, IssuesComment
 from gitshell.repo.cons import conver_issues
 from gitshell.gsuser.models import GsuserManager
-from gitshell.todolist.models import Scene, ToDoList, ToDoListManager
-from gitshell.viewtools.views import json_httpResponse
+from gitshell.todolist.views import todo
+from gitshell.viewtools.views import json_httpResponse, obj2dict
 
 @login_required
 def home(request):
@@ -22,14 +24,17 @@ def home(request):
         goto = PositionKey.FEED
     if goto == PositionKey.FEED:
         return feed(request)
-    elif goto == PositionKey.GIT:
-        return git(request)
+    elif goto == PositionKey.TIMELINE:
+        return timeline(request)
     elif goto == PositionKey.TODO:
         return todo(request)
     elif goto == PositionKey.ISSUES:
         return issues(request, 0)
     elif goto == PositionKey.EXPLORE:
         return explore(request)
+    elif goto == PositionKey.NOTIF:
+        return notif(request)
+    return feed(request)
 
 @login_required
 def feed(request):
@@ -41,109 +46,23 @@ def feed(request):
     raw_watch_repos = feedAction.get_watch_repos(request.user.id, 0, 100)
     watch_repo_ids = [int(x[0]) for x in raw_watch_repos]
 
-    feeds_as_json = multi_git_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids)
+    feeds_as_json = multi_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids)
     response_dictionary = {'current': current, 'feeds_as_json' : feeds_as_json}
     return render_to_response('user/feed.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 @login_required
-def git(request):
-    current = 'git'
+def timeline(request):
+    current = 'timeline'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.GIT)
     pri_user_feeds = feedAction.get_pri_user_feeds(request.user.id, 0, 100)
     pub_user_feeds = feedAction.get_pub_user_feeds(request.user.id, 0, 100)
-    feeds_as_json = git_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
+    feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
     response_dictionary = {'current': current, 'feeds_as_json': feeds_as_json}
-    return render_to_response('user/git.html',
+    return render_to_response('user/timeline.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
-@login_required
-def todo(request):
-    current = 'todo'
-    feedAction = FeedAction()
-    feedAction.set_user_position(request.user.id, PositionKey.TODO)
-    scene_id = feedAction.get_user_attr(request.user.id, AttrKey.SCENE_ID)
-    if scene_id is None:
-        scene_id = 0
-    return todo_scene(request, scene_id)
-
-@login_required
-def todo_scene(request, env_scene_id):
-    current = 'todo'
-    feedAction = FeedAction()
-    feedAction.set_user_position(request.user.id, PositionKey.TODO)
-    feedAction.set_user_attr(request.user.id, AttrKey.SCENE_ID, env_scene_id)
-    scene = get_scene(request.user.id, env_scene_id)
-    scene_list = ToDoListManager.list_scene_by_userId(request.user.id, 0, 100)
-    todoing_list = ToDoListManager.list_doing_todo_by_userId_sceneId(request.user.id, scene.id, 0, 100)
-    todone_list = ToDoListManager.list_done_todo_by_userId_sceneId(request.user.id, scene.id, 0, 100)
-    response_dictionary = {'current': current, 'scene_list': scene_list, 'scene': scene, 'todoing_list': todoing_list, 'todone_list': todone_list}
-    return render_to_response('user/todo.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-@login_required
-@require_http_methods(["POST"])
-def add_scene(request, env_scene_id):
-    scene_id = 0
-    name = request.POST.get('name', '').strip()
-    if name != '':
-        scene_id = ToDoListManager.add_scene(request.user.id, name)
-    response_dictionary = {'scene_id': scene_id, 'name': name}
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def remove_scene(request, env_scene_id):
-    scene_id = ToDoListManager.remove_scene(request.user.id, env_scene_id)
-    response_dictionary = {'scene_id': scene_id}
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def add_todo(request, env_scene_id):
-    scene = get_scene(request.user.id, env_scene_id)
-    todo_text = request.POST.get('todo_text', '').strip()
-    todo_id = 0
-    if todo_text != '':
-        todo_id = ToDoListManager.add_todo(request.user.id, scene.id, todo_text)
-    response_dictionary = {'todo_id': todo_id}
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def remove_todo(request, env_scene_id):
-    todo_id = int(request.POST.get('todo_id', '0'))
-    result_todo_id = ToDoListManager.remove_todo(request.user.id, todo_id)
-    response_dictionary = {'todo_id': result_todo_id}
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def doing_todo(request, env_scene_id):
-    todo_id = int(request.POST.get('todo_id', '0'))
-    result_todo_id = ToDoListManager.doing_todo(request.user.id, todo_id)
-    response_dictionary = {'todo_id': result_todo_id}
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def done_todo(request, env_scene_id):
-    todo_id = int(request.POST.get('todo_id', '0'))
-    result_todo_id = ToDoListManager.done_todo(request.user.id, todo_id)
-    response_dictionary = {'todo_id': result_todo_id}
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def update_scene_meta(request, env_scene_id):
-    scene = get_scene(request.user.id, env_scene_id)
-    todo_str_ids = request.POST.get('todo_ids', '')
-    todo_ids = [int(x) for x in todo_str_ids.split(',')]
-    result = ToDoListManager.update_scene_meta(request.user.id, scene.id, todo_ids)
-    response_dictionary = {'result': result}
-    return json_httpResponse(response_dictionary)
 
 @login_required
 def issues_default(request):
@@ -193,10 +112,12 @@ def doissues(request):
     if action == '' or repo_id == '' or issues_id == '':
         response_dictionary = {'result': 'failed'}
         return json_httpResponse(response_dictionary)
+    repo = RepoManager.get_repo_by_id(int(repo_id))
     issues = RepoManager.get_issues(int(repo_id), int(issues_id))
     if issues is None or issues.user_id != request.user.id:
         response_dictionary = {'result': 'failed'}
         return json_httpResponse(response_dictionary)
+    orgi_issue = copy.copy(issues)
     if action == 'fixed':
         issues.status = 4
     elif action == 'close':
@@ -211,6 +132,7 @@ def doissues(request):
         issuesComment.save()
         issues.comment_count = issues.comment_count + 1
     issues.save()
+    FeedManager.feed_issue_change(request.user, repo, orgi_issue, issues.id)
     response_dictionary = {'result': 'sucess'}
     return json_httpResponse(response_dictionary)
         
@@ -228,45 +150,93 @@ def explore(request):
 @login_required
 def notif(request):
     current = 'notif'
-    response_dictionary = {'current': current}
-    return render_to_response('user/home.html',
+    feedAction = FeedAction()
+    feedAction.set_user_position(request.user.id, PositionKey.NOTIF)
+    notifMessages = FeedManager.list_notifmessage_by_userId(request.user.id, 0, 100)
+    for notifMessage in notifMessages:
+        relative_user = GsuserManager.get_user_by_id(notifMessage.from_user_id)
+        if relative_user is not None:
+            notifMessage.relative_name = relative_user.username
+        if notifMessage.is_at_commit():
+            commitHistory = RepoManager.get_commit_by_id(notifMessage.relative_id)
+            notifMessage.relative_obj = commitHistory
+        elif notifMessage.is_at_issue():
+            issues = RepoManager.get_issues_by_id(notifMessage.relative_id)
+            if issues is not None:
+                repo = RepoManager.get_repo_by_id(issues.repo_id)
+                if repo is not None:
+                    issues.username = repo.get_repo_username()
+                    issues.reponame = repo.name
+            notifMessage.relative_obj = issues
+        elif notifMessage.is_at_issue_comment():
+            issues_comment = RepoManager.get_issues_comment(notifMessage.relative_id)
+            issues = RepoManager.get_issues_by_id(issues_comment.issues_id)
+            if issues is not None:
+                repo = RepoManager.get_repo_by_id(issues.repo_id)
+                if repo is not None:
+                    issues_comment.username = repo.get_repo_username()
+                    issues_comment.reponame = repo.name
+            notifMessage.relative_obj = issues_comment
+    if request.userprofile.unread_message != 0:
+        request.userprofile.unread_message = 0
+        request.userprofile.save()
+    response_dictionary = {'current': current, 'notifMessages': notifMessages}
+    return render_to_response('user/notif.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
-def feedbyids(request):
+def feed_by_ids(request):
     ids_str = request.POST.get('ids_str', '')
     feeds = []
     if re.match('^\w+$', ids_str):
-        feeds = get_feeds(request, ids_str)
-    gravatarmap = get_gravatarmap(feeds)
-    response_dictionary = {'feeds': feeds, 'gravatarmap': gravatarmap}
+        feeds = _list_feeds(request, ids_str)
+    usernames = []
+    userIds = [x.user_id for x in feeds]
+    _fillwith_commit_message(feeds, usernames, userIds)
+    _fillwith_issue_event(feeds, usernames, userIds)
+    (gravatar_dict, gravatar_userId_dict) = _get_gravatar_dict(usernames, userIds)
+    response_dictionary = {'feeds': obj2dict(feeds), 'gravatar_dict': gravatar_dict, 'gravatar_userId_dict': gravatar_userId_dict}
     return json_httpResponse(response_dictionary)
 
-def get_gravatarmap(feeds):
-    gravatarmap = {}
-    for feed in feeds:
-        username = feed['author']
-        if username not in gravatarmap:
+def _get_gravatar_dict(username_list, userIds):
+    gravatar_dict = {}
+    for username in username_list:
+        if username not in gravatar_dict:
             userprofile = GsuserManager.get_userprofile_by_name(username)
             if userprofile is not None:
-                gravatarmap[username] = userprofile.imgurl
-                gravatarmap[username+'_tweet'] = userprofile.tweet
+                gravatar_dict[username] = userprofile.imgurl
+                gravatar_dict[username+'_tweet'] = userprofile.tweet
                 continue
-            gravatarmap[username] = '0'
-            gravatarmap[username+'_tweet'] = ''
-    return gravatarmap
+            gravatar_dict[username] = '0'
+            gravatar_dict[username+'_tweet'] = ''
+    gravatar_userId_dict = {}
+    for userId in userIds:
+        if userId not in gravatar_userId_dict:
+            user = GsuserManager.get_user_by_id(userId)
+            userprofile = GsuserManager.get_userprofile_by_id(userId)
+            if user is not None and userprofile is not None:
+                gravatar_userId_dict[userId] = userprofile.imgurl
+                gravatar_userId_dict[str(userId)+'_username'] = user.username
+                gravatar_userId_dict[str(userId)+'_tweet'] = userprofile.tweet
+                continue
+            gravatar_userId_dict[userId] = '0'
+            gravatar_userId_dict[str(userId)+'_username'] = ''
+            gravatar_userId_dict[str(userId)+'_tweet'] = ''
+    return (gravatar_dict, gravatar_userId_dict)
     
 
-def get_feeds(request, ids_str):
-    feeds = []
-    ids = []
-    max_count = 0
-    for idstr in ids_str.split('_'):
-        if re.match('^\d+$', idstr):
-            ids.append(int(idstr))
-        max_count = max_count + 1
-        if max_count >= 99:
-            break
-    commits = RepoManager.get_commits_by_ids(ids)
+def _list_feeds(request, ids_str):
+    ids = _get_feed_ids(ids_str)
+    feeds = FeedManager.list_feed_by_ids(ids)
+    return feeds
+
+def _fillwith_commit_message(feeds, usernames, userIds):
+    commit_ids = []
+    for feed in feeds:
+        if feed.is_commit_message():
+            commit_ids.append(feed.relative_id)
+    if len(commit_ids) == 0:
+        return
+    commits = RepoManager.get_commits_by_ids(commit_ids)
     repo_ids = [x.repo_id for x in commits]
     repos = RepoManager.list_repo_by_ids(repo_ids)
     repos_dict = dict([(x.id, x) for x in repos])
@@ -274,6 +244,7 @@ def get_feeds(request, ids_str):
     users = GsuserManager.list_user_by_ids(user_ids)
     users_dict = dict([(x.id, x) for x in users])
     
+    commit_view_dict = {}
     for commit in commits:
         repo_id = commit.repo_id
         if repo_id not in repos_dict:
@@ -282,21 +253,49 @@ def get_feeds(request, ids_str):
         if repo.auth_type == 2:
             if not request.user.is_authenticated() or repo.user_id != request.user.id and not RepoManager.is_repo_member(repo, request.user):
                 continue
-        feed = {}
-        feed['id'] = commit.id
+        commit_view = {}
+        commit_view['id'] = commit.id
         if repo.user_id in users_dict:
-            feed['user_name'] = users_dict[repo.user_id].username
+            commit_view['user_name'] = users_dict[repo.user_id].username
         else:
-            feed['user_name'] = ''
-        feed['repo_name'] = commit.repo_name
-        feed['commit_hash'] = commit.commit_hash
-        feed['author'] = commit.author
-        feed['committer_date'] = time.mktime(commit.committer_date.timetuple())
-        feed['subject'] = commit.subject
-        feeds.append(feed)
-    return feeds
+            commit_view['user_name'] = ''
+        commit_view['repo_name'] = commit.repo_name
+        commit_view['commit_hash'] = commit.commit_hash
+        commit_view['author'] = commit.author
+        if commit.author not in usernames:
+            usernames.append(commit.author)
+        commit_view['committer_date'] = time.mktime(commit.committer_date.timetuple())
+        commit_view['subject'] = commit.subject
+        commit_view_dict[commit.id] = commit_view
+    # fillwith feed
+    for feed in feeds:
+        if feed.is_commit_message():
+            feed.relative_obj = commit_view_dict[feed.relative_id]
 
-def multi_git_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids):
+def _fillwith_issue_event(feeds, usernames, userIds):
+    issues = []
+    for feed in feeds:
+        if feed.is_issue_event():
+            issue = RepoManager.get_issues_by_id(feed.relative_id)
+            if issue is not None:
+                repo = RepoManager.get_repo_by_id(issue.repo_id)
+                issue.username = repo.get_repo_username()
+                issue.reponame = repo.name
+                feed.relative_obj = issue
+                issues.append(issue)
+
+def _get_feed_ids(ids_str):
+    ids = []
+    max_count = 0
+    for idstr in ids_str.split('_'):
+        if re.match('^\d+$', idstr):
+            ids.append(int(idstr))
+        max_count = max_count + 1
+        if max_count >= 99:
+            break
+    return ids
+
+def multi_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids):
     feeds_json_val = {}
     for user_id in watch_user_ids:
         pub_user_feeds = feedAction.get_pub_user_feeds(user_id, 0, 50)
@@ -308,7 +307,7 @@ def multi_git_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids)
             feeds_json_val['rf_%s' % repo_id] = feeds_as_json(repo_feeds)
     return str(feeds_json_val)
 
-def git_feeds_as_json(request, pri_user_feeds, pub_user_feeds):
+def get_feeds_as_json(request, pri_user_feeds, pub_user_feeds):
     feeds_json_val = {}
     feeds_json_val['pri_user_feeds_%s' % request.user.id] = feeds_as_json(pri_user_feeds)
     feeds_json_val['pub_user_feeds_%s' % request.user.id] = feeds_as_json(pub_user_feeds)
@@ -325,10 +324,3 @@ def feeds_as_json(feeds):
         json_arr.append(list(feed))
     return json_arr
     
-def get_scene(user_id, env_scene_id):
-    env_scene_id = int(env_scene_id)
-    scene = ToDoListManager.get_scene_by_id(user_id, env_scene_id)
-    if scene is None:
-        scene = ToDoListManager.get_scene_by_id(user_id, 0)
-    return scene
-

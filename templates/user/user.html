@@ -215,8 +215,24 @@ $(function(){
                 html = []
                 for(x in feeds) {
                     feed = feeds[x]
-                    feed_date_str = moment(new Date(feed.committer_date*1000)).fromNow();
-                    html.push('<tr><td><a href="/' + feed.user_name + '/' + feed.repo_name + '/">' + feed.repo_name + '</a></td><td>' + feed.subject + ' <span class="pull-right muted">' + feed_date_str + '</span></td></tr>')
+                    if(feed.feed_type == 0) {
+                        commit = feed.relative_obj;
+                        feed_date_str = moment(new Date(commit.committer_date*1000)).fromNow();
+                        html.push('<tr><td><a href="/' + commit.user_name + '/' + commit.repo_name + '/">' + commit.repo_name + '</a></td><td>' + commit.subject + ' <span class="pull-right muted">' + feed_date_str + '</span></td></tr>');
+                    } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
+                        issue = feed.relative_obj;
+                        action = 'create issue';
+                        detail = '';
+                        if(feed.feed_type == 300) {
+                            action = 'create issue';
+                        } else if(feed.feed_type == 301) {
+                            action = 'update issue';
+                        } else if(feed.feed_type == 302) {
+                            action = 'change issue';
+                            detail = feed.first_refname;
+                        }
+                        html.push('<tr><td><a href="/' + issue.username + '/' + issue.reponame + '/">' + issue.reponame + '</a></td><td>' + action + ' #' + issue.id + ' on <strong><a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></strong> ' + detail + '<div><a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a> <span class="muted">' + moment(new Date(issue.create_time*1000)).fromNow() + '</span></div></td>')
+                    }
                 }
                 $('#id_lastest_active').html(html.join(''));
                 if(feeds.length == 0) {

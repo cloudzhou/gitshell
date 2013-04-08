@@ -23,9 +23,11 @@ class PositionKey:
     # user
     FEED = 'ufd'
     GIT = 'ugit'
+    TIMELINE = 'utime'
     TODO = 'utodo'
     ISSUES = 'uis'
     EXPLORE = 'uex'
+    NOTIF = 'unotif'
     # repo
     TREE = 'tr'
     COMMITS = 'ci'
