@@ -5,7 +5,7 @@ from django.core.cache import cache
 from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many, get_version, get_sqlkey
 from gitshell.objectscache.da import get_raw, get_raw_many
-from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH
+from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
 
@@ -45,12 +45,7 @@ class Repo(BaseModel):
         return ''
 
     def get_abs_repopath(self, user_name):
-        parent_path = ""
-        if self.auth_type == 0:
-            parent_path = PUBLIC_REPO_PATH
-        else:
-            parent_path = PRIVATE_REPO_PATH
-        repopath = '%s/%s/%s.git' % (parent_path, user_name, self.name)
+        repopath = '%s/%s/%s.git' % (REPO_PATH, user_name, self.name)
         return repopath
 
 class RepoMember(BaseModel):

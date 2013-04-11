@@ -1,11 +1,27 @@
-import os, re
+import os, re, hashlib, base64
+from django.contrib.auth import authenticate
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.models import User
 from gitshell.repo.models import RepoManager
 from gitshell.gsuser.models import GsuserManager
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
-from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH
+from gitshell.settings import REPO_PATH
 from gitshell.dist.views import repo as dist_repo
+
+def http_auth(request):
+    print request.META
+    if request.META.has_key('HTTP_AUTHORIZATION'):
+        auth = request.META['HTTP_AUTHORIZATION'].split()
+        if len(auth) == 2 and auth[0].lower() == 'basic':
+            username, password = base64.b64decode(auth[1]).split(':')
+            password = hashlib.md5(password).hexdigest()
+            user = authenticate(username=username, password=password)
+            if user:
+                return HttpResponse(status=200)
+    httpResponse = HttpResponse(status=401)
+    httpResponse['WWW-Authenticate'] = 'Basic realm="%s"' % 'Restricted'
+    return httpResponse
+                
 
 def pubkey(request, fingerprint):
     userPubkey = KeyauthManager.get_userpubkey_by_fingerprint(fingerprint)

@@ -14,7 +14,7 @@ from gitshell.feed.models import Feed, NotifMessage, FeedManager
 from gitshell.feed.feed import FeedAction
 from gitshell.stats.models import StatsManager
 from gitshell.daemon.models import EventManager, EVENT_TUBE_NAME
-from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
+from gitshell.settings import REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
 from gitshell.objectscache.da import da_post_save
 
 MAX_COMMIT_COUNT = 100

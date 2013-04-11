@@ -21,7 +21,7 @@ from gitshell.gsuser.models import GsuserManager
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
-from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH
+from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH
 from gitshell.daemon.models import EventManager
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.gsuser.middleware import KEEP_REPO_NAME
@@ -671,25 +671,21 @@ def get_commits_by_ids(ids):
     return RepoManager.get_commits_by_ids(ids)
 
 def fulfill_gitrepo(username, reponame, auth_type):
-    for base_repo_path in [PUBLIC_REPO_PATH, PRIVATE_REPO_PATH]:
-        user_repo_path = '%s/%s' % (base_repo_path, username)
-        if not os.path.exists(user_repo_path):
-            os.makedirs(user_repo_path)
-            os.chmod(user_repo_path, 0755)
-    pub_repo_path = ('%s/%s/%s.git' % (PUBLIC_REPO_PATH, username, reponame))
-    pri_repo_path = ('%s/%s/%s.git' % (PRIVATE_REPO_PATH, username, reponame))
-    if int(auth_type) == 0: 
-        if not os.path.exists(pub_repo_path):
-            if os.path.exists(pri_repo_path):
-                shutil.move(pri_repo_path, pub_repo_path)
-            else:
-                shutil.copytree(GIT_BARE_REPO_PATH, pub_repo_path)             
+    user_repo_path = '%s/%s' % (REPO_PATH, username)
+    if not os.path.exists(user_repo_path):
+        os.makedirs(user_repo_path)
+        os.chmod(user_repo_path, 0755)
+    repo_path = ('%s/%s/%s.git' % (REPO_PATH, username, reponame))
+    if not os.path.exists(repo_path):
+        shutil.copytree(GIT_BARE_REPO_PATH, repo_path)
+    git_daemon_export_ok_file_path = '%s/%s' % (repo_path, 'git-daemon-export-ok')
+    if auth_type == 0:
+        if not os.path.exists(git_daemon_export_ok_file_path):
+            with open(git_daemon_export_ok_file_path, 'w') as _file:
+                _file.close()
     else:
-        if not os.path.exists(pri_repo_path):
-            if os.path.exists(pub_repo_path):
-                shutil.move(pub_repo_path, pri_repo_path)
-            else:
-                shutil.copytree(GIT_BARE_REPO_PATH, pri_repo_path)             
+        if os.path.exists(git_daemon_export_ok_file_path):
+            os.remove(git_daemon_export_ok_file_path)
 
 def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)

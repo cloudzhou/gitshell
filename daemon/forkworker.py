@@ -8,7 +8,7 @@ from subprocess import PIPE
 from gitshell.repo.models import RepoManager
 from gitshell.gsuser.models import GsuserManager
 from gitshell.daemon.models import EventManager, FORK_TUBE_NAME
-from gitshell.settings import PRIVATE_REPO_PATH, PUBLIC_REPO_PATH, GIT_BARE_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
+from gitshell.settings import GIT_BARE_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
 from django.db.models.signals import post_save
 from gitshell.objectscache.da import da_post_save
 

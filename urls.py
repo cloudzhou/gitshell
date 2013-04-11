@@ -68,6 +68,7 @@ urlpatterns = patterns('gitshell',
     url(r'^settings/destroy/?$', 'gssettings.views.destroy'),
 
     # gitshell openssh keyauth and dist, private for subnetwork access by iptables, nginx port 9000
+    url(r'^private/http_auth/?$', 'keyauth.views.http_auth'),
     url(r'^private/keyauth/([A-Za-z0-9:]+)/?$', 'keyauth.views.pubkey'),
     url(r'^private/keyauth/([A-Za-z0-9:]+)/([A-Za-z0-9_ "\-\'\/\.]+)$', 'keyauth.views.keyauth'),
     url(r'^private/dist/repo/(\w+)/(\w+)/?$', 'dist.views.repo'),
