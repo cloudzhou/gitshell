@@ -1,4 +1,4 @@
 *.pyc
-env.ini
 .gitignore
+env.ini
 settings.py

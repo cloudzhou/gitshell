@@ -74,6 +74,9 @@ $(function(){
                     html.push('<div class="page-header" style="clear:both; margin: 0px; padding-top: ' + padding_top + 'px; padding-bottom: 10px"><h4 class="muted"> ' + feed_date.substring(3) + ' </h4></div>');
                     for(y in display_feeds_map[feed_date]) {
                         feed = display_feeds_map[feed_date][y];
+                        if(feed.relative_obj === undefined) {
+                            continue;
+                        }
                         if(feed.feed_type == 0) {
                             commit = feed.relative_obj
                             html.push('<div style="margin: 0px" class="event_feed span7"><div style="margin-left: 15px">');

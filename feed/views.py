@@ -191,7 +191,7 @@ def feed_by_ids(request):
         feeds = _list_feeds(request, ids_str)
     usernames = []
     userIds = [x.user_id for x in feeds]
-    _fillwith_commit_message(feeds, usernames, userIds)
+    _fillwith_commit_message(request, feeds, usernames, userIds)
     _fillwith_issue_event(feeds, usernames, userIds)
     (gravatar_dict, gravatar_userId_dict) = _get_gravatar_dict(usernames, userIds)
     response_dictionary = {'feeds': obj2dict(feeds), 'gravatar_dict': gravatar_dict, 'gravatar_userId_dict': gravatar_userId_dict}
@@ -229,7 +229,7 @@ def _list_feeds(request, ids_str):
     feeds = FeedManager.list_feed_by_ids(ids)
     return feeds
 
-def _fillwith_commit_message(feeds, usernames, userIds):
+def _fillwith_commit_message(request, feeds, usernames, userIds):
     commit_ids = []
     for feed in feeds:
         if feed.is_commit_message():
@@ -269,7 +269,7 @@ def _fillwith_commit_message(feeds, usernames, userIds):
         commit_view_dict[commit.id] = commit_view
     # fillwith feed
     for feed in feeds:
-        if feed.is_commit_message():
+        if feed.is_commit_message() and feed.relative_id in commit_view_dict:
             feed.relative_obj = commit_view_dict[feed.relative_id]
 
 def _fillwith_issue_event(feeds, usernames, userIds):

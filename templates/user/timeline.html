@@ -56,6 +56,9 @@ $(function(){
                 })
                 for(x in feeds) {
                     feed = feeds[x];
+                    if(feed.relative_obj === undefined) {
+                        continue;
+                    }
                     feed_date_str = moment(new Date(feed.create_time*1000)).format('YY/MM/DD');
                     if(!display_feeds_map[feed_date_str]) {
                         ordered_date.push(feed_date_str);
