@@ -76,7 +76,7 @@
                             {% if is_repo_member %}
                                 <input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git"/>
                             {% elif repo.auth_type == 0 %}
-                                <input class="input-xlarge focused" value="http://repo.gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>
+                                <input class="input-xlarge focused" value="https://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>
                             {% endif %}
                         </span>
                         <span id="id_read_write" class="muted">
