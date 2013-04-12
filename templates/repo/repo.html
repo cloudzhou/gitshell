@@ -64,14 +64,12 @@
                     {% endif %}
                     {% if has_fork_right %}
                         <span style="margin-bottom: 5px">
-                            {% if repo.auth_type == 0 %}
-                                <span id="id_http_fork">HTTP</span>
-                            {% endif %}
                             {% if is_repo_member %}
-                                <span id="id_ssh_fork">
-                                {% if repo.auth_type == 0 %} | {% endif %}
-                                SSH
-                                </span>
+                                <span id="id_ssh_fork">SSH</span> |
+                            {% endif %}
+                                <span id="id_http_fork">HTTP</span>
+                            {% if repo.auth_type == 0 %}
+                                | <span id="id_git_fork">GIT</span>
                             {% endif %}
                         </span>
                         <span id="id_git_url" style="margin-left: 10px">
@@ -241,13 +239,17 @@ $(function(){
     $('.c_repo_action').tooltip({
         selector: "a[rel=tooltip]"
     });
-    $('#id_http_fork').mouseover(function(event) {
-        $('#id_git_url').html('<input class="input-xlarge focused" value="http://repo.gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>');
-        $('#id_read_write').html('只读');
-    });
     $('#id_ssh_fork').mouseover(function(event) {
         $('#id_git_url').html('<input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git"/>');
         $('#id_read_write').html('读写');
+    });
+    $('#id_http_fork').mouseover(function(event) {
+        $('#id_git_url').html('<input class="input-xlarge focused" value="https://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>');
+        $('#id_read_write').html('读写');
+    });
+    $('#id_git_fork').mouseover(function(event) {
+        $('#id_git_url').html('<input class="input-xlarge focused" value="git://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>');
+        $('#id_read_write').html('只读');
     });
 {% if is_owner %}
     $('#id_repo_desc').live('mouseover mouseout', function(event) {
