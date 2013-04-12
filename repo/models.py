@@ -230,6 +230,8 @@ class RepoManager():
 
     @classmethod
     def is_repo_member(self, repo, user):
+        if user is None:
+            return False
         if user.is_authenticated():
             if repo.user_id == user.id:
                 return True
