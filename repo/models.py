@@ -105,6 +105,7 @@ class WatchHistory(BaseModel):
     watch_repo_id = models.IntegerField(default=0)
     watch_user_id = models.IntegerField(default=0)
 
+#TODO not using now
 class ForkHistory(BaseModel):
     repo_id = models.IntegerField()
     fork_repo_id = models.IntegerField()
@@ -299,8 +300,8 @@ class RepoManager():
 
     @classmethod
     def list_fork_repo(self, repo_id):
-        forkHistorys = query(ForkHistory, repo_id, 'forkhistory_l_repoId', [repo_id]) 
-        repo_ids = [o.fork_repo_id for o in forkHistorys]
+        forkRepos = query(Repo, None, 'repo_l_forkRepoId', [repo_id]) 
+        repo_ids = [o.id for o in forkRepos]
         unorder_repos = get_many(Repo, repo_ids)
         repo_map = {}
         for repo in unorder_repos:

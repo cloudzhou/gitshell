@@ -11,6 +11,8 @@ create index recommend_uid_idx on gsuser_recommend (visibly, user_id);
 create unique index auth_user_email_idx on auth_user (email);
 
 create index repo_uid_name_idx on repo_repo (visibly, user_id, name);
+create index repo_forkid on repo_repo (visibly, fork_repo_id)
+
 create index commithistory_rid_cid_idx on repo_commithistory (visibly, repo_id, commit_id);
 create index repomember_rid_uid on repo_repomember (visibly, repo_id, user_id);
 create index issues_cons_mtime_idx on repo_issues (visibly, repo_id, assigned, tracker, status, priority, modify_time desc);

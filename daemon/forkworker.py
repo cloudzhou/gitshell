@@ -64,9 +64,11 @@ def do_event(event):
     if not os.path.exists(to_repo_dirname):
         os.makedirs(to_repo_dirname)
     shutil.copytree(from_repo_path, to_repo_path) 
-    update_repo_status(to_repo)
+    update_repo_status(from_repo, to_repo)
 
-def update_repo_status(to_repo):
+def update_repo_status(from_repo, to_repo):
+    from_repo.fork = from_repo.fork + 1
+    from_repo.save()
     to_repo.status = 0
     to_repo.save()
 
