@@ -6,6 +6,7 @@ import beanstalkc
 from subprocess import Popen
 from subprocess import PIPE
 from datetime import datetime
+from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from gitshell.gsuser.models import Userprofile, GsuserManager
@@ -13,6 +14,7 @@ from gitshell.repo.models import CommitHistory, Repo, RepoManager
 from gitshell.feed.models import Feed, NotifMessage, FeedManager
 from gitshell.feed.feed import FeedAction
 from gitshell.stats.models import StatsManager
+from gitshell.objectscache.models import CacheKey
 from gitshell.daemon.models import EventManager, EVENT_TUBE_NAME
 from gitshell.settings import REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
 from gitshell.objectscache.da import da_post_save
@@ -56,6 +58,7 @@ def do_event(event):
         repopath = get_repopath(user, repo)
         if user is None or gsuser is None or repo is None or repopath is None or not os.path.exists(repopath):
             return
+        __clear_relative_cache(user, gsuser, repo)
         rev_ref_arr = event['revrefarr']
         commit_count = 0
         for rev_ref in rev_ref_arr:
@@ -210,6 +213,11 @@ def __stats(commitHistorys, repo, member_username_dict, member_email_dict):
             stats_commits.append([repo.id, committer_id, author_id, timestamp])
     StatsManager.stats(stats_commits)
 
+def __clear_relative_cache(user, gsuser, repo):
+    cache.delete(CacheKey.REFS_TAG % repo.id)
+    cache.delete(CacheKey.REFS_BRANCH % repo.id)
+    cache.delete(CacheKey.REFS_COMMIT_HASH % repo.id)
+    
 def get_username_reponame(abspath):
     rfirst_slash_idx = abspath.rfind('/')
     rsecond_slash_idx = abspath.rfind('/', 0, rfirst_slash_idx)

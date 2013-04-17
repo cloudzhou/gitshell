@@ -89,7 +89,7 @@ def repo_raw_tree(request, user_name, repo_name, refs, path):
         raise Http404
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath(user_name)
-    commit_hash = gitHandler.get_commit_hash(abs_repopath, refs)
+    commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
     return HttpResponse(blob, content_type="text/plain")
 
@@ -104,7 +104,7 @@ def repo_ls_tree(request, user_name, repo_name, refs, path, current):
         path = '.'
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath(user_name)
-    commit_hash = gitHandler.get_commit_hash(abs_repopath, refs)
+    commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     is_tree = True ; tree = {} ; blob = u''; lang = 'Plain'; brush = 'plain'
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
         if path == '.' or path.endswith('/'):
@@ -139,7 +139,7 @@ def repo_commits(request, user_name, repo_name, refs, path):
         path = '.'
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath(user_name)
-    commit_hash = gitHandler.get_commit_hash(abs_repopath, refs)
+    commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     commits = gitHandler.repo_log_file(abs_repopath, commit_hash, path)
     response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'path': path, 'commits': commits}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
@@ -530,8 +530,8 @@ def repo_refs(request, user_name, repo_name):
     repopath = repo.get_abs_repopath(user_name)
 
     gitHandler = GitHandler()
-    branches_refs = gitHandler.repo_ls_branches(repopath)
-    tags_refs = gitHandler.repo_ls_tags(repopath)
+    branches_refs = gitHandler.repo_ls_branches(repo, repopath)
+    tags_refs = gitHandler.repo_ls_tags(repo, repopath)
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'branches': branches_refs, 'tags': tags_refs}
     return json_httpResponse(response_dictionary)
 

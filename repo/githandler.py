@@ -1,12 +1,11 @@
 #!/python
 # -*- coding: utf-8 -*-
 import os, re
-import time
-import json
-import hashlib
-import shutil
+import time, json, hashlib, shutil
+from django.core.cache import cache
 from subprocess import check_output
 from chardet.universaldetector import UniversalDetector
+from gitshell.objectscache.models import CacheKey
 from gitshell.viewtools.views import json_httpResponse
 """
 git ls-tree `cat .git/refs/heads/master` -- githooks/
@@ -162,7 +161,7 @@ class GitHandler():
                 pre_path = path
                 if path == '.':
                     pre_path = ''
-                last_commit_command = 'for i in %s; do echo -n "$i "; git log -1 --pretty="%%ct %%an %%s" -- %s$i | /usr/bin/head -c 524288; done' % (' '.join(result.keys()), pre_path)
+                last_commit_command = 'for i in %s; do echo -n "$i "; git log %s -1 --pretty="%%ct %%an %%s" -- %s$i | /usr/bin/head -c 524288; done' % (' '.join(result.keys()), commit_hash, pre_path)
                 last_commit_output = check_output(last_commit_command, shell=True)
                 for last_commit in last_commit_output.split('\n'):
                     last_commit_array = last_commit.split(' ', 3)
@@ -205,7 +204,16 @@ class GitHandler():
             return False
         return True
     
-    def repo_ls_tags(self, repo_path):
+    def repo_ls_tags_branches(self, repo, repo_path):
+        tags = self.repo_ls_tags(repo, repo_path)
+        branches = self.repo_ls_branches(repo, repo_path)
+        return {'tags': tags, 'branches': branches}
+
+    def repo_ls_tags(self, repo, repo_path):
+        cacheKey = CacheKey.REFS_TAG % repo.id
+        tags = cache.get(cacheKey)
+        if tags is not None:
+            return tags
         tags = []
         dirpath = '%s/refs/tags' % repo_path
         if not self.is_allowed_path(dirpath) or not os.path.exists(dirpath):
@@ -219,9 +227,14 @@ class GitHandler():
                     break
         tags.sort()
         tags.reverse()
+        cache.add(cacheKey, tags, 3600)
         return tags
     
-    def repo_ls_branches(self, repo_path):
+    def repo_ls_branches(self, repo, repo_path):
+        cacheKey = CacheKey.REFS_BRANCH % repo.id
+        branches = cache.get(cacheKey)
+        if branches is not None:
+            return branches
         branches = []
         dirpath = '%s/refs/heads' % repo_path
         if not self.is_allowed_path(dirpath) or not os.path.exists(dirpath):
@@ -236,10 +249,15 @@ class GitHandler():
                 max = max - 1
                 if(max <= 0):
                     break
+        cache.add(cacheKey, branches, 3600)
         return branches
     
     """ refs: branch, tag """
-    def get_commit_hash(self, repo_path, refs):
+    def get_commit_hash(self, repo, repo_path, refs):
+        cacheKey = CacheKey.REFS_COMMIT_HASH % repo.id
+        commit_hash = cache.get(cacheKey)
+        if commit_hash is not None:
+            return commit_hash
         refs_path = '%s/refs/heads/%s' % (repo_path, refs)
         if not os.path.exists(refs_path):
             refs_path = '%s/refs/tags/%s' % (repo_path, refs)
@@ -251,6 +269,7 @@ class GitHandler():
                 f = open(refs_path, 'r')
                 commit_hash = f.read(40)
                 if re.match('^\w+$', commit_hash):
+                    cache.add(cacheKey, commit_hash, 3600)
                     return commit_hash
             finally:
                 if f != None:
@@ -270,6 +289,7 @@ class GitHandler():
                         commit_hash = array[0].strip()
                         refs_from_f = array[1].strip()
                         if refs_from_f == full_refs:
+                            cache.add(cacheKey, commit_hash, 3600)
                             return commit_hash
             finally:
                 if refs_f != None:
@@ -293,8 +313,8 @@ class GitHandler():
 
 if __name__ == '__main__':
     gitHandler = GitHandler()
-    print gitHandler.repo_ls_branches('/opt/8001/gitshell/.git')
-    print gitHandler.get_commit_hash('/opt/8001/gitshell/.git', 'refs/heads/master')
+    #print gitHandler.repo_ls_branches('/opt/8001/gitshell/.git')
+    #print gitHandler.get_commit_hash('/opt/8001/gitshell/.git', 'refs/heads/master')
     print gitHandler.is_allowed_path('abc')
     print gitHandler.is_allowed_path('abc b')
     print gitHandler.is_allowed_path('abc-_/.b')

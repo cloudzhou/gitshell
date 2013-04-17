@@ -13,3 +13,8 @@ class Count(models.Model):
 
 class Select(models.Model):
     pass
+
+class CacheKey:
+    REFS_BRANCH = 'repo.refs_branch_%s'
+    REFS_TAG = 'repo.refs_tag_%s'
+    REFS_COMMIT_HASH = 'repo.refs_commit_hash_%s'

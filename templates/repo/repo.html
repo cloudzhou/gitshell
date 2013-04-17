@@ -97,7 +97,7 @@
 	    <div id="repo_nav" class="span12">
 	        <ul class="nav nav-tabs">
                 <li id="i_refs" class="dropdown">
-                    <a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle">分支&标签<b class="caret"></b></a>
+                    <a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle"><span id="id_branch_or_tag">分支：</span><b>{{ refs }}</b> <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                     </ul>
                 </li>
@@ -123,7 +123,12 @@ $(function(){
     $('#i_git_url').click(function(event) {
         $('#i_git_url').select();
     });
+    var current_refs = '{{ refs }}';
+    if(current_refs == '') {
+        current_refs = 'master';
+    }
     var do_refs = function() {
+        is_refs_mouseover = true;
         $.ajax({
             url: '/ajax/repo/{{user_name}}/{{repo_name}}/refs/',
             type: 'POST',
@@ -138,13 +143,23 @@ $(function(){
                     return;
                 }
                 for(x in json.branches) {
-                    $('#i_refs .dropdown-menu').append('<li><a href="/{{user_name}}/{{repo_name}}/tree/' + json.branches[x] + '/">' + json.branches[x] + '</a></li>');
+                    var current = ' ';
+                    if(json.branches[x] == current_refs) {
+                        current = '✓';
+                        $('#id_branch_or_tag').text('分支：');
+                    }
+                    $('#i_refs .dropdown-menu').append('<li><a href="/{{user_name}}/{{repo_name}}/tree/' + json.branches[x] + '/">' + current + json.branches[x] + '</a></li>');
                 } 
                 if(json.tags.length > 0) {
                     $('#i_refs .dropdown-menu').append('<li class="divider"></li>');
                 }
                 for(x in json.tags) {
-                    $('#i_refs .dropdown-menu').append('<li><a href="/{{user_name}}/{{repo_name}}/tree/' + json.tags[x] + '/">' + json.tags[x] + '</a></li>');
+                    var current = ' ';
+                    if(json.tags[x] == current_refs) {
+                        current = '✓';
+                        $('#id_branch_or_tag').text('标签：');
+                    }
+                    $('#i_refs .dropdown-menu').append('<li><a href="/{{user_name}}/{{repo_name}}/tree/' + json.tags[x] + '/">' + current + json.tags[x] + '</a></li>');
                 } 
             },
         })
@@ -231,8 +246,10 @@ $(function(){
         })
     })
 {% endif %}
+    do_refs();
+    var is_refs_mouseover = false;
     $('#i_refs').mouseover(function(event) {
-        if($('#i_refs .dropdown-menu li').size() == 0) {
+        if($('#i_refs .dropdown-menu li').size() == 0 && !is_refs_mouseover) {
             do_refs();
         }
     });
