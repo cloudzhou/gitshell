@@ -1,0 +1,142 @@
+{% extends "repo/repo.html" %}
+{% block subcontainer %}
+<style>
+.repo-refs { border: 1px solid #D4D4D4; padding: 10px }    
+</style>
+<div>
+    <h4 style="margin: 10px"><a href="/{{user_name}}/{{repo_name}}/pulls/">{{repo_name}}</a> /
+        <span id="i_repo_path"></span>
+        <span>创建一个合并请求</span>
+    </h4>
+    <!--create pull request-->
+    <div class="row" style="margin-top: 20px">
+        <div class="span10">
+            <div id="source-repo-refs" class="span4 repo-refs">
+                <span style="font-size: 15px; font-weight: 500; margin-right: 2px">仓库：</span>
+                <select class="span3">
+                    <option>cloudzhou/test2</option>
+                </select>
+                <br/>
+                <span style="font-size: 15px; font-weight: 500; margin-right: 2px">分支：</span>
+                <select class="span3">
+                    <option>master</option>
+                </select>
+            </div>
+            <div class="span0">
+                <i class="icon-chevron-right"></i>
+            </div>
+            <div id="desc-repo-refs" class="span4 repo-refs">
+                <span style="font-size: 15px; font-weight: 500; margin-right: 2px">仓库：</span>
+                <select class="span3">
+                    <option>cloudzhou/test2</option>
+                </select>
+                <br/>
+                <span style="font-size: 15px; font-weight: 500; margin-right: 2px">分支：</span>
+                <select class="span3">
+                    <option>master</option>
+                </select>
+            </div>
+        </div>
+        <div class="span9" style="margin-top: 20px">
+            <form method="post" action="" class="form-horizontal">
+                <div style="display:none"><input type="hidden" value="ZguEZLW3loJHXHFHbRrSYim4EHeiwrPh" name="csrfmiddlewaretoken"></div>
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="id_title">* 标题</label>
+                        <div class="controls">
+                            <input id="id_title" name="title" style="width: 500px;" type="text" maxlength="64" placeholder="输入标题">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="id_desc">描述</label>
+                        <div class="controls">
+                            <textarea id="id_desc" name="desc" style="height: 200px; width: 500px;" rows="10" cols="40" maxlength="2048"></textarea>
+                        </div>
+                    </div>
+                    <div style="margin-left: 160px">
+                        <button type="submit" class="btn btn-primary" id="id_pull_submit">创建合并请求</button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>		  
+{% endblock %}
+{% block subjs %}
+<script src='/static/js/app/syntaxhighlighter/shCore.js' type='text/javascript'></script>
+<script src='/static/js/app/syntaxhighlighter/shAutoloader.js' type='text/javascript'></script>
+<script src='/static/js/app/syntaxhighlighter/shBrushDiff.js' type='text/javascript'></script>
+<script>
+$(function(){
+    $('.c_unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+        $(this).show();
+    });
+    set_path_href = function() {
+        var base_href_path = '/{{user_name}}/{{repo_name}}/commits/{{refs}}/';
+        var path = '{{path}}';
+        if(path == '.') {
+            return;
+        }
+        var paths = path.split('/');
+        path_href_html = '';
+        for(x in paths) {
+            subpath = paths[x];
+            if(subpath == '') {
+                break;
+            }
+            base_href_path = (base_href_path + subpath + '/');
+            if(path.substr(-1) === "/") {
+                if(x != (paths.length-2)) {
+                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+                } else {
+                    path_href_html = (path_href_html + ' ' + subpath + ' /');
+                }
+            } else {
+                if(x != (paths.length-1)) {
+                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+                } else {
+                    path_href_html = (path_href_html + ' ' + subpath);
+                }
+            }
+        }
+        $('#i_repo_path').html(path_href_html);
+    };
+    set_path_href();
+    $('.c_diff_commit').click(function() {
+        commit_hash = $(this).attr('value');
+        pre_commit_hash = $(this).closest('tr').next().next().find('.c_diff_commit').attr('value')
+        if(pre_commit_hash === undefined) {
+            return
+        }
+        label = $('#i_label_' + commit_hash).text()
+        if(label == '+') {
+            pre_html = $('#i_pre_' + commit_hash).html()
+            if(pre_html != '') {
+                $('#i_label_' + commit_hash).text('-')
+                $('#i_diff_' + commit_hash).show();
+                return
+            }
+            $.ajax({
+                url: '/ajax/repo/{{user_name}}/{{repo_name}}/diff/' + pre_commit_hash + '/' + commit_hash + '/{{path}}',
+                type: 'POST',
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+                dataType: 'json',
+                timeout: 10000,
+                error: function(){
+                },
+                success: function(json){
+                    $('#i_pre_' + commit_hash).html('<pre class="brush: diff;">' + json.diff + '</pre>');
+                    $('#i_label_' + commit_hash).text('-');
+                    $('#i_diff_' + commit_hash).show();
+                    SyntaxHighlighter.highlight();
+                },
+            });
+        } else {
+            $('#i_label_' + commit_hash).text('+')
+            $('#i_diff_' + commit_hash).hide();
+        }
+    });
+});
+</script>
+{% endblock %}

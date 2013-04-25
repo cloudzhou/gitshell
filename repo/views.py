@@ -148,6 +148,38 @@ def repo_commits(request, user_name, repo_name, refs, path):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
+def repo_pulls(request, user_name, repo_name):
+    refs = 'master'; path = '.'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/pulls.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
+def repo_default_pull_new(request, user_name, repo_name):
+    source_username = None
+    source_refs = None
+    desc_username = None
+    desc_refs = None
+    return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+
+@repo_permission_check
+def repo_pull_new(request, user_name, repo_name, source_usernmae, source_refs, desc_username, desc_refs):
+    refs = 'master'; path = '.'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/pull_new.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
 @require_http_methods(["POST"])
 def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)

@@ -111,6 +111,18 @@ class ForkHistory(BaseModel):
     fork_repo_id = models.IntegerField()
     user_id = models.IntegerField(default=0)
 
+class PullRequest(BaseModel):
+    repo_id = models.IntegerField()
+    pull_user_id = models.IntegerField()
+    source_usernmae = models.CharField(max_length=64)
+    source_refname = models.CharField(max_length=32)
+    desc_usernmae = models.CharField(max_length=64)
+    desc_refname = models.CharField(max_length=32)
+    title = models.CharField(max_length=256)
+    desc = models.CharField(max_length=2048, default='')
+    delete_refs = models.SmallIntegerField(default=0)
+    status = models.IntegerField(default=0) 
+
 class Issues(BaseModel):
     repo_id = models.IntegerField()
     user_id = models.IntegerField()
