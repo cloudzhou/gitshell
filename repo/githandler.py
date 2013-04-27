@@ -254,10 +254,10 @@ class GitHandler():
     
     """ refs: branch, tag """
     def get_commit_hash(self, repo, repo_path, refs):
-        cacheKey = CacheKey.REFS_COMMIT_HASH % repo.id
-        commit_hash = cache.get(cacheKey)
-        if commit_hash is not None:
-            return commit_hash
+        #cacheKey = CacheKey.REFS_COMMIT_HASH % repo.id
+        #commit_hash = cache.get(cacheKey)
+        #if commit_hash is not None:
+        #    return commit_hash
         refs_path = '%s/refs/heads/%s' % (repo_path, refs)
         if not os.path.exists(refs_path):
             refs_path = '%s/refs/tags/%s' % (repo_path, refs)
@@ -269,7 +269,7 @@ class GitHandler():
                 f = open(refs_path, 'r')
                 commit_hash = f.read(40)
                 if re.match('^\w+$', commit_hash):
-                    cache.add(cacheKey, commit_hash, 3600)
+                    #cache.add(cacheKey, commit_hash, 3600)
                     return commit_hash
             finally:
                 if f != None:
@@ -289,7 +289,7 @@ class GitHandler():
                         commit_hash = array[0].strip()
                         refs_from_f = array[1].strip()
                         if refs_from_f == full_refs:
-                            cache.add(cacheKey, commit_hash, 3600)
+                            #cache.add(cacheKey, commit_hash, 3600)
                             return commit_hash
             finally:
                 if refs_f != None:
