@@ -15,7 +15,7 @@ from gitshell.feed.feed import FeedAction
 from gitshell.feed.models import FeedManager
 from gitshell.repo.Forms import RepoForm, RepoIssuesForm, IssuesComment, RepoIssuesCommentForm, RepoMemberForm
 from gitshell.repo.githandler import GitHandler
-from gitshell.repo.models import Repo, RepoManager, Issues
+from gitshell.repo.models import Repo, RepoManager, Issues, PullRequest, PULL_STATUS
 from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, TRACKERS_VAL, STATUSES_VAL, PRIORITIES_VAL, ISSUES_ATTRS, conver_issues, conver_issue_comments, conver_repos
 from gitshell.gsuser.models import GsuserManager
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
@@ -159,21 +159,45 @@ def repo_pulls(request, user_name, repo_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@login_required
 @repo_permission_check
 def repo_default_pull_new(request, user_name, repo_name):
-    source_username = None
-    source_refs = None
-    desc_username = None
-    desc_refs = None
+    source_username = user_name
+    source_refs = 'master'
+    desc_username = user_name
+    desc_refs = 'master'
+    # pull action
+    if request.method == 'POST' and request.user.is_authenticated():
+        source_repo = request.POST.get('source_repo', '')
+        source_refs = request.POST.get('source_refs', '')
+        desc_repo = request.POST.get('desc_repo', '')
+        desc_refs = request.POST.get('desc_refs', '')
+        title = request.POST.get('title', '')
+        desc = request.POST.get('desc', '')
+        if source_repo == '' or source_refs == '' or desc_repo == '' or desc_refs == '' or title == '' or '/' not in source_repo or '/' not in desc_repo:
+            return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+        (source_username, source_reponame) = source_repo.split('/', 1)
+        (desc_username, desc_reponame) = desc_repo.split('/', 1)
+        source_pull_repo = RepoManager.get_repo_by_name(source_username, source_reponame)
+        desc_pull_repo = RepoManager.get_repo_by_name(desc_username, desc_reponame)
+        if source_pull_repo is None or desc_pull_repo is None:
+            return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+        pullRequest = PullRequest.create(request.user.id, source_pull_repo.id, source_refs, desc_pull_repo.id, desc_refs, title, desc, 0, PULL_STATUS.NEW)
+        pullRequest.save()
+        return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
     return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
 
+@login_required
 @repo_permission_check
-def repo_pull_new(request, user_name, repo_name, source_usernmae, source_refs, desc_username, desc_refs):
+def repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
     refs = 'master'; path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
+    source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
+    desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
+    if repo is None or source_repo is None or desc_repo is None or source_repo.user_id != request.user.id:
         raise Http404
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path}
+    desc_repo_list = RepoManager.list_parent_repo(source_repo, 10)
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'desc_repo_list': desc_repo_list}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_new.html',
                           response_dictionary,

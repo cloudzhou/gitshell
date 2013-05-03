@@ -44,9 +44,14 @@ class Repo(BaseModel):
             return user.username
         return ''
 
+    def init_repo_username(self):
+        self.username = self.get_repo_username()
+
     def get_abs_repopath(self, user_name):
         repopath = '%s/%s/%s.git' % (REPO_PATH, user_name, self.name)
         return repopath
+
+    username = ''
 
 class RepoMember(BaseModel):
     repo_id = models.IntegerField()
@@ -122,6 +127,21 @@ class PullRequest(BaseModel):
     delete_refs = models.SmallIntegerField(default=0)
     status = models.IntegerField(default=0) 
 
+    @classmethod
+    def create(self, pull_user_id, source_repo_id, source_refname, desc_repo_id, desc_refname, title, desc, delete_refs, status):
+        pullRequest = PullRequest(
+            pull_user_id = pull_user_id,
+            source_repo_id = source_repo_id,
+            source_refname = source_refname,
+            desc_repo_id = desc_repo_id,
+            desc_refname = desc_refname,
+            title = title,
+            desc = desc,
+            delete_refs = delete_refs,
+            status = status,
+        )
+        return pullRequest
+
 class Issues(BaseModel):
     repo_id = models.IntegerField()
     user_id = models.IntegerField()
@@ -171,6 +191,32 @@ class RepoManager():
     @classmethod
     def get_repo_by_id(self, repo_id):
         return get(Repo, repo_id)
+
+    @classmethod
+    def get_repo_by_forkrepo(self, username, repo):
+        user = GsuserManager.get_user_by_name(username)
+        if user is None:
+            return None
+        if repo.user_id == user.id:
+            return repo
+        repo = query_first(Repo, None, 'repo_s_userId_forkrepoId', [user.id, repo.id])
+        return repo
+
+    @classmethod
+    def list_parent_repo(self, repo, limit):
+        parent_repos = []
+        repo.init_repo_username()
+        parent_repos.append(repo)
+        parent_repo = repo
+        for x in range(0, limit):
+            if parent_repo.fork_repo_id is None or parent_repo.fork_repo_id == 0:
+                break
+            parent_repo = RepoManager.get_repo_by_id(parent_repo.fork_repo_id)
+            parent_repo.init_repo_username()
+            if parent_repo is None:
+                break
+            parent_repos.append(parent_repo)
+        return parent_repos
 
     @classmethod
     def get_rawrepo_by_id(self, repo_id):
@@ -476,3 +522,8 @@ class RepoManager():
             repo_vo_dict[repo.id] = repo_vo
         return repo_vo_dict
 
+class PULL_STATUS:
+
+    NEW = 0
+    MERGED = 1
+    REJECTED = 2
