@@ -142,6 +142,29 @@ class PullRequest(BaseModel):
         )
         return pullRequest
 
+    pull_user = None
+    source_repo = None
+    desc_repo = None
+    short_title = ''
+    short_desc = ''
+    status_view = '' 
+    status_label = ''
+
+    def fillwith(self):
+        self.pull_user = GsuserManager.get_user_by_id(self.pull_user_id)
+        self.source_repo = RepoManager.get_repo_by_id(self.source_repo_id)
+        self.desc_repo = RepoManager.get_repo_by_id(self.desc_repo_id)
+        self.source_repo.init_repo_username()
+        self.desc_repo.init_repo_username()
+        self.short_title = self.title
+        self.short_desc = self.desc
+        if len(self.short_title) > 20:
+            self.short_title = self.short_title[0:20] + '...'
+        if len(self.short_desc) > 20:
+            self.short_desc = self.short_desc[0:20] + '...'
+        self.status_view = PULL_STATUS.VIEW_MAP[self.status]
+        self.status_label = PULL_STATUS.LABEL_MAP[self.status]
+
 class Issues(BaseModel):
     repo_id = models.IntegerField()
     user_id = models.IntegerField()
@@ -492,6 +515,33 @@ class RepoManager():
         return True
 
     @classmethod
+    def get_pullRequest_by_id(self, repo_id, pullRequest_id):
+        pullRequest = get(PullRequest, pullRequest_id)
+        if pullRequest.desc_repo_id == repo_id:
+            pullRequest.fillwith()
+            return pullRequest
+        return None
+
+    @classmethod
+    def list_pullRequest_by_descRepoId(self, descRepo_id):
+        offset = 0
+        row_count = 100
+        pullRequests = query(PullRequest, descRepo_id, 'pullrequest_l_descRepoId', [descRepo_id, offset, row_count])
+        for pullRequest in pullRequests:
+            pullRequest.fillwith()
+        return pullRequests
+
+    @classmethod
+    def list_pullRequest_by_pullUserId(self, pullUser_id):
+        offset = 0
+        row_count = 100
+        pullRequests = query(PullRequest, None, 'pullrequest_l_pullUserId', [pullUser_id, offset, row_count])
+        for pullRequest in pullRequests:
+            pullRequest.fillwith()
+        return pullRequests
+
+    # ====================
+    @classmethod
     def merge_repo_map(self, repo_ids):
         repos = self.list_repo_by_ids(repo_ids)
         return self.__inner_merge_repo_map(repos)
@@ -527,3 +577,18 @@ class PULL_STATUS:
     NEW = 0
     MERGED = 1
     REJECTED = 2
+    CLOSE = 3
+
+    VIEW_MAP = {
+        0 : '未合并',
+        1 : '合并',
+        2 : '拒绝',
+        3 : '关闭',
+    }
+
+    LABEL_MAP = {
+        0 : 'label-info',
+        1 : 'label-success',
+        2 : 'label-inverse',
+        3 : 'label-default',
+    }

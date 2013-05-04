@@ -55,7 +55,7 @@ def feed(request):
 def timeline(request):
     current = 'timeline'
     feedAction = FeedAction()
-    feedAction.set_user_position(request.user.id, PositionKey.GIT)
+    feedAction.set_user_position(request.user.id, PositionKey.TIMELINE)
     pri_user_feeds = feedAction.get_pri_user_feeds(request.user.id, 0, 100)
     pub_user_feeds = feedAction.get_pub_user_feeds(request.user.id, 0, 100)
     feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)

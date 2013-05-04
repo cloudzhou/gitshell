@@ -153,7 +153,8 @@ def repo_pulls(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path}
+    pullRequests = RepoManager.list_pullRequest_by_descRepoId(repo.id)
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequests': pullRequests}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pulls.html',
                           response_dictionary,
@@ -197,6 +198,37 @@ def repo_pull_new(request, user_name, repo_name, source_username, source_refs, d
     if repo is None or source_repo is None or desc_repo is None or source_repo.user_id != request.user.id:
         raise Http404
     desc_repo_list = RepoManager.list_parent_repo(source_repo, 10)
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'desc_repo_list': desc_repo_list}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/pull_new.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
+def repo_pull_show(request, user_name, repo_name, pullRequest_id):
+    refs = 'master'; path = '.'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    pullRequest = RepoManager.get_pullRequest_by_id(repo, id)
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'desc_repo_list': desc_repo_list}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/pull_new.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
+def repo_pull_commit(request, user_name, repo_name, pullRequest_id):
+    refs = 'master'; path = '.'
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'desc_repo_list': desc_repo_list}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/pull_new.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+    
+@repo_permission_check
+def repo_pull_diff(request, user_name, repo_name, pullRequest_id):
+    refs = 'master'; path = '.'
     response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'desc_repo_list': desc_repo_list}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_new.html',
