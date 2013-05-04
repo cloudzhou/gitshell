@@ -1,0 +1,103 @@
+{% extends "repo/repo.html" %}
+{% block subcontainer %}
+<style>
+.repo-refs { border: 1px solid #D4D4D4; padding: 10px }    
+</style>
+<div>
+    <h4 style="margin: 10px"><a href="/{{user_name}}/{{repo_name}}/pulls/">{{repo_name}}</a> /
+        <span id="i_repo_path"></span>
+        <span>查看 #{{pullRequest.id}} 合并请求</span>
+    </h4>
+    <!--create pull request-->
+    <div class="row" style="margin-top: 20px">
+        <div class="span10">
+            <div class="span4 repo-refs">
+                <span>仓库：</span>
+                <select id="id_source_repo" class="span3">
+                    <option value="{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}">{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}</option>
+                </select>
+                <br/>
+                <span>分支：</span>
+                <select id="id_source_refs" class="span3">
+                    <option value="{{pullRequest.source_refname}}">{{pullRequest.source_refname}}</option>
+                </select>
+            </div>
+            <div class="span0">
+                <i class="icon-chevron-right"></i>
+            </div>
+            <div class="span4 repo-refs">
+                <span>仓库：</span>
+                <select id="id_desc_repo" class="span3">
+                    <option value="{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}">{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}</option>
+                </select>
+                <br/>
+                <span>分支：</span>
+                <select id="id_desc_refs" class="span3">
+                    <option value="{{pullRequest.desc_refname}}">{{pullRequest.desc_refname}}</option>
+                </select>
+            </div>
+        </div>
+        <div class="span9" style="margin-top: 20px">
+            <form id="id_pull_form" method="post" action="" class="form-horizontal">
+                <div style="display:none"><input id="id_pullRequest_id" type="hidden" value="{{pullRequest.id}}" name="pullRequest_id"></div>
+                <div style="display:none"><input id="id_pull_action" type="hidden" value="" name="pull_action"></div>
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="id_title">* 标题</label>
+                        <div class="controls">
+                            <input id="id_title" name="title" style="width: 500px;" type="text" maxlength="64" value="{{pullRequest.title}}" readonly="readonly">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="id_desc">描述</label>
+                        <div class="controls">
+                            <textarea id="id_desc" name="desc" style="height: 200px; width: 500px;" rows="10" cols="40" maxlength="2048" readonly="readonly">{{pullRequest.desc}}</textarea>
+                        </div>
+                    </div>
+                    <div id="id_merge" style="margin-left: 160px">
+                        <a style="margin-right: 10px" class="muted" data-original-title=" 将尝试合并该请求，进行分支合并" rel="tooltip" href="javascript: void(0)"><button type="submit" class="btn btn-primary" id="id_pull_merge">开始合并</button></a>
+                        <a style="margin-right: 10px" class="muted" data-original-title=" 由于各种原因，你可能不同意此次合并请求，请和发起者做好沟通" rel="tooltip" href="javascript: void(0)"><button type="submit" class="btn btn-danger" id="id_pull_reject">拒绝</button></a>
+                        <a style="margin-right: 10px" class="muted" data-original-title=" 由于各种原因，不再需要此次合并分支，将进行关闭" rel="tooltip" href="javascript: void(0)"><button type="submit" class="btn btn-inverse" id="id_pull_close">关闭</button></a>
+                    </div>
+                </fieldset>
+                <div style="display:none"><input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken"></div>
+            </form>
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="javascript:void(0)">Commits</a></li>
+                <li><a href="javascript:void(0)">Diff</a></li>
+            </ul>
+            <div id="id_pull_meta_data">
+                <img id='feeds_loading' style="margin-left: 50px" src='/static/img/loading.gif'>
+            </div>
+        </div>
+    </div>
+</div>		  
+{% endblock %}
+{% block subjs %}
+<script src='/static/js/app/syntaxhighlighter/shCore.js' type='text/javascript'></script>
+<script src='/static/js/app/syntaxhighlighter/shAutoloader.js' type='text/javascript'></script>
+<script src='/static/js/app/syntaxhighlighter/shBrushDiff.js' type='text/javascript'></script>
+<script>
+$(function(){
+    var global_repo_branch_map = {};
+    $('.c_unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+        $(this).show();
+    });
+    $('#id_merge').tooltip({
+      selector: "a[rel=tooltip]"
+    });
+    $('#id_pull_form').submit(function() {
+        if($('#id_title').val() == '' || $('#id_source_repo option:selected').val() == '' || $('#id_source_refs option:selected').val() == '' || $('#id_desc_repo option:selected').val() == '' || $('#id_desc_refs option:selected').val() == '') {
+            $('#id_alert').show();
+            return false;
+        }
+        $('#id_source_repo_select').val($('#id_source_repo option:selected').val());
+        $('#id_source_refs_select').val($('#id_source_refs option:selected').val());
+        $('#id_desc_repo_select').val($('#id_desc_repo option:selected').val());
+        $('#id_desc_refs_select').val($('#id_desc_refs option:selected').val());
+        return true;
+    });
+});
+</script>
+{% endblock %}

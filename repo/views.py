@@ -210,10 +210,10 @@ def repo_pull_show(request, user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    pullRequest = RepoManager.get_pullRequest_by_id(repo, id)
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'desc_repo_list': desc_repo_list}
+    pullRequest = RepoManager.get_pullRequest_by_id(repo.id, pullRequest_id)
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequest': pullRequest}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/pull_new.html',
+    return render_to_response('repo/pull_show.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
@@ -780,7 +780,12 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_repo_member = RepoManager.is_repo_member(repo, request.user)
     is_owner = (repo.user_id == request.user.id)
     has_fork_right = (repo.auth_type == 0 or is_repo_member)
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'has_fork_right': has_fork_right}
+    has_pull_right = is_owner
+    if not is_owner:
+        child_repo = RepoManager.get_repo_by_forkrepo(request.user.username, repo)
+        if child_repo is not None:
+            has_pull_right = True
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right}
 
 def __has_issues_modify_right(request, issues, repo):
     return issues is not None and (request.user.id == issues.user_id or request.user.id == repo.user_id)

@@ -28,7 +28,9 @@
                 </span>
             </li>
             <li class="pull-right" id="eye-box">
+                {% if has_pull_right %}
                 <a href="/{{ user_name }}/{{ repo_name }}/pull/new/"><button class="btn" type="button" style="margin-right: 20px">合并请求</button></a>
+                {% endif %}
                 <span style="margin-right: 5px" class="c_repo_action">
                     {% if not is_watched_repo %}
                         <a id="i_watch" data-original-title="关注该项目" rel="tooltip" href="javascript: void(0)" style="display:inline-block"><img src="/static/img/glyphicons_051_eye_open.png" align="absmiddle"/></a>
