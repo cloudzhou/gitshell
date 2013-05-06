@@ -216,7 +216,7 @@ def __stats(commitHistorys, repo, member_username_dict, member_email_dict):
 def __clear_relative_cache(user, gsuser, repo):
     cache.delete(CacheKey.REFS_TAG % repo.id)
     cache.delete(CacheKey.REFS_BRANCH % repo.id)
-    cache.delete(CacheKey.REFS_COMMIT_HASH % repo.id)
+    cache.delete(CacheKey.REFS_REPO_COMMIT_VERSION % repo.id)
     
 def get_username_reponame(abspath):
     rfirst_slash_idx = abspath.rfind('/')

@@ -254,10 +254,9 @@ class GitHandler():
     
     """ refs: branch, tag """
     def get_commit_hash(self, repo, repo_path, refs):
-        #cacheKey = CacheKey.REFS_COMMIT_HASH % repo.id
-        #commit_hash = cache.get(cacheKey)
-        #if commit_hash is not None:
-        #    return commit_hash
+        commit_hash = self._get_commit_hash_by_cache(repo, refs)
+        if commit_hash is not None:
+            return commit_hash
         refs_path = '%s/refs/heads/%s' % (repo_path, refs)
         if not os.path.exists(refs_path):
             refs_path = '%s/refs/tags/%s' % (repo_path, refs)
@@ -269,7 +268,7 @@ class GitHandler():
                 f = open(refs_path, 'r')
                 commit_hash = f.read(40)
                 if re.match('^\w+$', commit_hash):
-                    #cache.add(cacheKey, commit_hash, 3600)
+                    self._cache_commit_hash(repo, refs, commit_hash)
                     return commit_hash
             finally:
                 if f != None:
@@ -289,12 +288,31 @@ class GitHandler():
                         commit_hash = array[0].strip()
                         refs_from_f = array[1].strip()
                         if refs_from_f == full_refs:
-                            #cache.add(cacheKey, commit_hash, 3600)
+                            self._cache_commit_hash(repo, refs, commit_hash)
                             return commit_hash
             finally:
                 if refs_f != None:
                     refs_f.close()
         return self.empty_commit_hash
+
+    def _get_commit_hash_by_cache(self, repo, refs):
+        cacheKey = CacheKey.REFS_REPO_COMMIT_VERSION % repo.id
+        version = cache.get(cacheKey)
+        if version is not None:
+            cacheKey = CacheKey.REFS_COMMIT_HASH % (str(repo.id), version, refs)
+            commit_hash = cache.get(cacheKey)
+            if commit_hash is not None:
+                return commit_hash
+        return None
+
+    def _cache_commit_hash(self, repo, refs, commit_hash):
+        cacheKey = CacheKey.REFS_REPO_COMMIT_VERSION % repo.id
+        version = cache.get(cacheKey)
+        if version is None:
+            version = time.time()
+            cache.add(cacheKey, version, 3600)
+        cacheKey = CacheKey.REFS_COMMIT_HASH % (str(repo.id), version, refs)
+        cache.add(cacheKey, commit_hash, 3600)
     
     def is_allowed_path(self, path):
         if '..' in path:
