@@ -59,21 +59,25 @@ class GitHandler():
             print e
             return None
     
-    def repo_log_file(self, repo_path, commit_hash, path):
-        if not self.path_check_chdir(repo_path, commit_hash, path):
+    def repo_log_file(self, repo_path, from_commit_hash, commit_hash, path):
+        if not self.path_check_chdir(repo_path, commit_hash, path) or not re.match('^\w+$', from_commit_hash):
             return None
-        stage_file = self.get_stage_file(repo_path, commit_hash, path)
+        between_commit_hash = from_commit_hash + '...' + commit_hash
+        stage_file = self.get_stage_file(repo_path, between_commit_hash, path)
         stage_file = stage_file + '.log'
         result = self.read_load_stage_file(stage_file)
         if result is not None:
             return result
-        result = self.repo_load_log_file(commit_hash, path)
+        result = self.repo_load_log_file(from_commit_hash, commit_hash, path)
         self.dumps_write_stage_file(result, stage_file)
         return result
 
-    def repo_load_log_file(self, commit_hash, path):
+    def repo_load_log_file(self, from_commit_hash, commit_hash, path):
         commits = []
-        command = '/usr/bin/git log -10 --pretty="%%h______%%t______%%an______%%cn______%%ct|%%s" %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
+        between_commit_hash = from_commit_hash
+        if commit_hash is not None and not commit_hash.startswith('0000000'):
+            between_commit_hash = from_commit_hash + '...' + commit_hash
+        command = '/usr/bin/git log -50 --pretty="%%h______%%t______%%an______%%cn______%%ct|%%s" %s -- %s | /usr/bin/head -c 524288' % (between_commit_hash, path)
         try:
             raw_result = check_output(command, shell=True)
             for line in raw_result.split('\n'):
@@ -275,7 +279,8 @@ class GitHandler():
                     f.close()
         packed_refs_path = '%s/packed-refs' % (repo_path)
         blank_p = re.compile(r'\s+')
-        full_refs = 'refs/heads/%s' % refs
+        full_heads_refs = 'refs/heads/%s' % refs
+        full_tags_refs = 'refs/tags/%s' % refs
         if os.path.exists(packed_refs_path):
             refs_f = None
             try:
@@ -287,13 +292,16 @@ class GitHandler():
                     if len(array) >= 2:
                         commit_hash = array[0].strip()
                         refs_from_f = array[1].strip()
-                        if refs_from_f == full_refs:
+                        if refs_from_f == full_heads_refs or refs_from_f == full_tags_refs:
                             self._cache_commit_hash(repo, refs, commit_hash)
                             return commit_hash
             finally:
                 if refs_f != None:
                     refs_f.close()
         return self.empty_commit_hash
+
+    def init_pull_request_env(self, pullrequest_repo_path, source_abs_repopath, source_remote_name, dest_abs_repopath, desc_remote_name):
+        pass
 
     def _get_commit_hash_by_cache(self, repo, refs):
         cacheKey = CacheKey.REFS_REPO_COMMIT_VERSION % repo.id
@@ -339,5 +347,5 @@ if __name__ == '__main__':
     print gitHandler.repo_ls_tree('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', 'githooks/')
     print gitHandler.repo_ls_tree('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', '.')
     print gitHandler.repo_cat_file('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', 'README.md')
-    print gitHandler.repo_log_file('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', 'README.md')
+    print gitHandler.repo_log_file('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', '0000000', 'README.md')
     print gitHandler.repo_diff('/opt/8001/gitshell/.git', '7daf915', '1e25868', 'README.md')

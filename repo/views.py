@@ -140,7 +140,7 @@ def repo_commits(request, user_name, repo_name, refs, path):
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath(user_name)
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
-    commits = gitHandler.repo_log_file(abs_repopath, commit_hash, path)
+    commits = gitHandler.repo_log_file(abs_repopath, commit_hash, '0000000', path)
     response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'path': path, 'commits': commits}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/commits.html',
@@ -220,16 +220,27 @@ def repo_pull_show(request, user_name, repo_name, pullRequest_id):
 @repo_permission_check
 def repo_pull_commit(request, user_name, repo_name, pullRequest_id):
     refs = 'master'; path = '.'
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'desc_repo_list': desc_repo_list}
-    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/pull_new.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        return json_httpResponse({'commit': []})
+    pullRequest = RepoManager.get_pullRequest_by_id(repo.id, pullRequest_id)
+    if pullRequest is None:
+        return json_httpResponse({'commit': []})
+    source_repo = RepoManager.get_repo_by_id(pullRequest.source_repo_id)
+    desc_repo = RepoManager.get_repo_by_id(pullRequest.desc_repo_id)
+    if source_repo is None or desc_repo is None:
+        return json_httpResponse({'commit': []})
+
+    gitHandler = GitHandler()
+    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(source_repo.get_repo_username()), pullRequest.source_refname)
+    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(desc_repo.get_repo_username()), pullRequest.desc_refname)
+    
+    return json_httpResponse({'commit': [], 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash})
     
 @repo_permission_check
 def repo_pull_diff(request, user_name, repo_name, pullRequest_id):
     refs = 'master'; path = '.'
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'desc_repo_list': desc_repo_list}
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_new.html',
                           response_dictionary,
