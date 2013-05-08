@@ -21,7 +21,7 @@ from gitshell.gsuser.models import GsuserManager
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
-from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH
+from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, PULLREQUEST_REPO_PATH
 from gitshell.daemon.models import EventManager
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.gsuser.middleware import KEEP_REPO_NAME
@@ -218,34 +218,75 @@ def repo_pull_show(request, user_name, repo_name, pullRequest_id):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
+@require_http_methods(["POST"])
 def repo_pull_commit(request, user_name, repo_name, pullRequest_id):
     refs = 'master'; path = '.'
+    args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
+    if args is None:
+        return json_httpResponse({'commits': commits, 'result': 'failed'})
+    (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
+
+    gitHandler = GitHandler()
+    # prepare pullrequest
+    gitHandler.prepare_pull_request(pullRequest, source_repo, desc_repo)
+
+    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(source_repo.get_repo_username()), pullRequest.source_refname)
+    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(desc_repo.get_repo_username()), pullRequest.desc_refname)
+    commits = gitHandler.repo_log_file(pullrequest_repo_path, source_repo_refs_commit_hash, desc_repo_refs_commit_hash, path)
+    return json_httpResponse({'commits': commits, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
+    
+@repo_permission_check
+@require_http_methods(["POST"])
+def repo_pull_diff(request, user_name, repo_name, pullRequest_id):
+    refs = 'master'; path = '.'
+    args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
+    if args is None:
+        return json_httpResponse({'commits': commits, 'result': 'failed'})
+    (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
+
+    gitHandler = GitHandler()
+    # prepare pullrequest
+    gitHandler.prepare_pull_request(pullRequest, source_repo, desc_repo)
+
+    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(source_repo.get_repo_username()), pullRequest.source_refname)
+    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(desc_repo.get_repo_username()), pullRequest.desc_refname)
+    diff = gitHandler.repo_diff(pullrequest_repo_path, source_repo_refs_commit_hash, desc_repo_refs_commit_hash, path)
+    return json_httpResponse({'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
+
+@repo_permission_check
+@require_http_methods(["POST"])
+def repo_pull_merge(request, user_name, repo_name, pullRequest_id):
+    refs = 'master'; path = '.'
+    args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
+    if args is None:
+        return json_httpResponse({'commits': commits, 'result': 'failed'})
+    (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
+    return json_httpResponse({'result': 'success'})
+
+@repo_permission_check
+@require_http_methods(["POST"])
+def repo_pull_reject(request, user_name, repo_name, pullRequest_id):
+    return json_httpResponse({'result': 'success'})
+
+@repo_permission_check
+@require_http_methods(["POST"])
+def repo_pull_close(request, user_name, repo_name, pullRequest_id):
+    return json_httpResponse({'result': 'success'})
+
+def _get_repo_pull_args(user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
-        return json_httpResponse({'commit': []})
+        return None
     pullRequest = RepoManager.get_pullRequest_by_id(repo.id, pullRequest_id)
     if pullRequest is None:
-        return json_httpResponse({'commit': []})
+        return None
     source_repo = RepoManager.get_repo_by_id(pullRequest.source_repo_id)
     desc_repo = RepoManager.get_repo_by_id(pullRequest.desc_repo_id)
     if source_repo is None or desc_repo is None:
-        return json_httpResponse({'commit': []})
-
-    gitHandler = GitHandler()
-    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(source_repo.get_repo_username()), pullRequest.source_refname)
-    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(desc_repo.get_repo_username()), pullRequest.desc_refname)
+        return None
+    pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.get_repo_username(), desc_repo.name)
+    return [repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path]
     
-    return json_httpResponse({'commit': [], 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash})
-    
-@repo_permission_check
-def repo_pull_diff(request, user_name, repo_name, pullRequest_id):
-    refs = 'master'; path = '.'
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path}
-    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/pull_new.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
 @repo_permission_check
 @require_http_methods(["POST"])
 def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path):

@@ -7,6 +7,7 @@ from subprocess import check_output
 from chardet.universaldetector import UniversalDetector
 from gitshell.objectscache.models import CacheKey
 from gitshell.viewtools.views import json_httpResponse
+from gitshell.settings import PULLREQUEST_REPO_PATH
 """
 git ls-tree `cat .git/refs/heads/master` -- githooks/
 git log -1 --pretty='%ct %s' -- githooks/
@@ -300,7 +301,25 @@ class GitHandler():
                     refs_f.close()
         return self.empty_commit_hash
 
-    def init_pull_request_env(self, pullrequest_repo_path, source_abs_repopath, source_remote_name, dest_abs_repopath, desc_remote_name):
+    def prepare_pull_request(self, pullRequest, source_repo, desc_repo):
+        pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.get_repo_username(), desc_repo.name)
+        source_abs_repopath = source_repo.get_abs_repopath(source_repo.get_repo_username())
+        source_remote_name = '%s-%s' % (source_repo.get_repo_username(), source_repo.name)
+        dest_abs_repopath = desc_repo.get_abs_repopath(desc_repo.get_repo_username())
+        desc_remote_name = '%s-%s' % (desc_repo.get_repo_username(), desc_repo.name)
+        action = 'prepare'
+        args = [pullrequest_repo_path, source_abs_repopath, source_remote_name, dest_abs_repopath, desc_remote_name, action]
+        if not self.is_allowed_paths(args):
+            return False
+        command = '/bin/bash /opt/bin/git-pullrequest.sh %s %s %s %s %s %s' % tuple(args)
+        try:
+            check_output(command, shell=True)
+            return True
+        except Exception, e:
+            print e
+            return False
+
+    def merge_pull_request(self, pullRequest, source_repo, desc_repo):
         pass
 
     def _get_commit_hash_by_cache(self, repo, refs):
@@ -322,6 +341,12 @@ class GitHandler():
         cacheKey = CacheKey.REFS_COMMIT_HASH % (str(repo.id), version, refs)
         cache.add(cacheKey, commit_hash, 3600)
     
+    def is_allowed_paths(self, paths):
+        for path in paths:
+            if not self.is_allowed_path(path):
+                return False
+        return True
+
     def is_allowed_path(self, path):
         if '..' in path:
             return False

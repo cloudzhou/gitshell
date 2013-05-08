@@ -43,6 +43,9 @@ function merge {
     git merge $local_source_refs -m "$pullrequest_commit_message"
     if [ $? == 0 ]; then
         git push $desc_remote_name $local_desc_refs:$desc_refs
+        if [ $? == 0 ]; then
+            echo 'merge and push success'
+        fi
     else
         git merge --abort
     fi
