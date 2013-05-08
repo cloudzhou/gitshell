@@ -575,23 +575,23 @@ class RepoManager():
 class PULL_STATUS:
 
     NEW = 0
-    MERGED = 1
-    MERGED_FAILED = 2
+    MERGED_FAILED = 1
+    MERGED = 2
     REJECTED = 3
     CLOSE = 4
 
     VIEW_MAP = {
         0 : '未合并',
-        1 : '合并',
-        2 : '合并失败',
+        1 : '合并失败',
+        2 : '合并',
         3 : '拒绝',
         4 : '关闭',
     }
 
     LABEL_MAP = {
         0 : 'label-info',
-        1 : 'label-success',
-        2 : 'label-warning',
+        1 : 'label-warning',
+        2 : 'label-success',
         3 : 'label-important',
         4 : 'label-inverse',
     }
