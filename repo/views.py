@@ -211,6 +211,7 @@ def repo_pull_show(request, user_name, repo_name, pullRequest_id):
     if repo is None:
         raise Http404
     pullRequest = RepoManager.get_pullRequest_by_id(repo.id, pullRequest_id)
+    
     response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequest': pullRequest}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_show.html',
@@ -250,10 +251,13 @@ def repo_pull_diff(request, user_name, repo_name, pullRequest_id):
 
     source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(source_repo.get_repo_username()), pullRequest.source_refname)
     desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(desc_repo.get_repo_username()), pullRequest.desc_refname)
-    diff = gitHandler.repo_diff(pullrequest_repo_path, source_repo_refs_commit_hash, desc_repo_refs_commit_hash, path)
+    diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
+    if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
+        diff = gitHandler.repo_diff(pullrequest_repo_path, source_repo_refs_commit_hash, desc_repo_refs_commit_hash, path)
     return json_httpResponse({'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
 
 @repo_permission_check
+@login_required
 @require_http_methods(["POST"])
 def repo_pull_merge(request, user_name, repo_name, pullRequest_id):
     refs = 'master'; path = '.'
@@ -261,16 +265,50 @@ def repo_pull_merge(request, user_name, repo_name, pullRequest_id):
     if args is None:
         return json_httpResponse({'commits': commits, 'result': 'failed'})
     (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
-    return json_httpResponse({'result': 'success'})
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        return json_httpResponse({'result': 'failed'})
+    source_refs = pullRequest.source_refname
+    desc_refs = pullRequest.desc_refname
+    gitHandler = GitHandler()
+    (returncode, output) = gitHandler.merge_pull_request(pullRequest, source_repo, desc_repo, source_refs, desc_refs)
+    pullRequest.status = PULL_STATUS.MERGED
+    if returncode != 0:
+        pullRequest.status = PULL_STATUS.MERGED_FAILED
+    pullRequest.save()
+    merge_output_split = '----------- starting merge -----------'
+    if merge_output_split in output:
+        output = output.split(merge_output_split)[1].strip()
+    return json_httpResponse({'returncode': returncode, 'output': output, 'result': 'success'})
 
 @repo_permission_check
+@login_required
 @require_http_methods(["POST"])
 def repo_pull_reject(request, user_name, repo_name, pullRequest_id):
+    refs = 'master'; path = '.'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        return json_httpResponse({'result': 'failed'})
+    pullRequest = RepoManager.get_pullRequest_by_id(repo.id, pullRequest_id)
+    if pullRequest is None:
+        return json_httpResponse({'result': 'failed'})
+    pullRequest.status = PULL_STATUS.REJECTED
+    pullRequest.save()
     return json_httpResponse({'result': 'success'})
 
 @repo_permission_check
+@login_required
 @require_http_methods(["POST"])
 def repo_pull_close(request, user_name, repo_name, pullRequest_id):
+    refs = 'master'; path = '.'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        return json_httpResponse({'result': 'failed'})
+    pullRequest = RepoManager.get_pullRequest_by_id(repo.id, pullRequest_id)
+    if pullRequest is None:
+        return json_httpResponse({'result': 'failed'})
+    pullRequest.status = PULL_STATUS.CLOSE
+    pullRequest.save()
     return json_httpResponse({'result': 'success'})
 
 def _get_repo_pull_args(user_name, repo_name, pullRequest_id):

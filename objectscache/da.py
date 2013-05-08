@@ -59,7 +59,7 @@ rawsql = {
         'select * from repo_repo where visibly = 0 and user_id = %s and fork_repo_id = %s limit 0, 1',
     # repo_pullrequest #
     'pullrequest_l_descRepoId':
-        'select * from repo_pullrequest where visibly = 0 and desc_repo_id = %s order by modify_time desc limit %s, %s',
+        'select * from repo_pullrequest where visibly = 0 and desc_repo_id = %s order by status, modify_time desc limit %s, %s',
     'pullrequest_l_pullUserId':
         'select * from repo_pullrequest where visibly = 0 and pull_user_id = %s order by modify_time desc limit %s, %s',
     # repo_member #

@@ -78,7 +78,7 @@ def do_event(event):
 def update_quote(user, gsuser, repo, repopath, parameters):
     args = ['/opt/run/bin/diff-tree-blob-size.sh', repopath]
     args.extend(parameters)
-    popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
+    pepen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
     result = popen.communicate()[0].strip()
     diff_size = 0
     if popen.returncode == 0:

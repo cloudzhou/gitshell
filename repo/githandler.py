@@ -3,7 +3,7 @@
 import os, re
 import time, json, hashlib, shutil
 from django.core.cache import cache
-from subprocess import check_output
+from subprocess import check_output, Popen, PIPE
 from chardet.universaldetector import UniversalDetector
 from gitshell.objectscache.models import CacheKey
 from gitshell.viewtools.views import json_httpResponse
@@ -319,8 +319,25 @@ class GitHandler():
             print e
             return False
 
-    def merge_pull_request(self, pullRequest, source_repo, desc_repo):
-        pass
+    def merge_pull_request(self, pullRequest, source_repo, desc_repo, source_refs, desc_refs):
+        pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.get_repo_username(), desc_repo.name)
+        source_abs_repopath = source_repo.get_abs_repopath(source_repo.get_repo_username())
+        source_remote_name = '%s-%s' % (source_repo.get_repo_username(), source_repo.name)
+        dest_abs_repopath = desc_repo.get_abs_repopath(desc_repo.get_repo_username())
+        desc_remote_name = '%s-%s' % (desc_repo.get_repo_username(), desc_repo.name)
+        action = 'merge'
+        pullrequest_commit_message = ''
+        args = [pullrequest_repo_path, source_abs_repopath, source_remote_name, dest_abs_repopath, desc_remote_name, action, source_refs, desc_refs]
+        if not self.is_allowed_paths(args):
+            return (128, '合并失败，请检查是否存在冲突 或者 non-fast-forward')
+        args = ['/bin/bash', '/opt/bin/git-pullrequest.sh'] + args + [pullrequest_commit_message]
+        try:
+            popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
+            output = popen.communicate()[0].strip()
+            return (popen.returncode, output)
+        except Exception, e:
+            print e
+        return (128, '合并失败，请检查是否存在冲突 或者 non-fast-forward')
 
     def _get_commit_hash_by_cache(self, repo, refs):
         cacheKey = CacheKey.REFS_REPO_COMMIT_VERSION % repo.id
