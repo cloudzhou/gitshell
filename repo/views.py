@@ -233,7 +233,7 @@ def repo_pull_commit(request, user_name, repo_name, pullRequest_id):
 
     source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(source_repo.get_repo_username()), pullRequest.source_refname)
     desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(desc_repo.get_repo_username()), pullRequest.desc_refname)
-    commits = gitHandler.repo_log_file(pullrequest_repo_path, source_repo_refs_commit_hash, desc_repo_refs_commit_hash, path)
+    commits = gitHandler.repo_log_file(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, path)
     return json_httpResponse({'commits': commits, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
     
 @repo_permission_check
@@ -253,7 +253,7 @@ def repo_pull_diff(request, user_name, repo_name, pullRequest_id):
     desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(desc_repo.get_repo_username()), pullRequest.desc_refname)
     diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
-        diff = gitHandler.repo_diff(pullrequest_repo_path, source_repo_refs_commit_hash, desc_repo_refs_commit_hash, path)
+        diff = gitHandler.repo_diff(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, path)
     return json_httpResponse({'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
 
 @repo_permission_check

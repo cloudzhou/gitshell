@@ -100,16 +100,20 @@ $(function(){
     var load_commit_meta = function() {
         $.post('/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/commit/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             var html = [];
-            html.push('<table class="table table-striped"><thead class="fixed"><tr><th width="20%">提交HASH (作者)</th><th width="10%">时间</th><th>日志</th></tr></thead><tbody>');
-            for(x in json.commits) {
-                var commit_hash = json.commits[x].commit_hash;
-                var committer = json.commits[x].committer;
-                var committer_date = json.commits[x].committer_date;
-                var committer_moment = moment(new Date(committer_date*1000)).fromNow();
-                var commit_message = json.commits[x].commit_message;
-                html.push('<tr><td><code>' + commit_hash + '</code><span>(' + committer + ')</span></td><td><span style="display: inline;">' + committer_moment + '</span></td><td>' + commit_message + '</td></tr>');
+            if(json.commits.length > 0) {
+                html.push('<table class="table table-striped"><thead class="fixed"><tr><th width="20%">提交HASH (作者)</th><th width="10%">时间</th><th>日志</th></tr></thead><tbody>');
+                for(x in json.commits) {
+                    var commit_hash = json.commits[x].commit_hash;
+                    var committer = json.commits[x].committer;
+                    var committer_date = json.commits[x].committer_date;
+                    var committer_moment = moment(new Date(committer_date*1000)).fromNow();
+                    var commit_message = json.commits[x].commit_message;
+                    html.push('<tr><td><code>' + commit_hash + '</code><span>(' + committer + ')</span></td><td><span style="display: inline;">' + committer_moment + '</span></td><td>' + commit_message + '</td></tr>');
+                }
+                html.push('</tbody></table>');
+            } else {
+                html.push('<p>Already up-to-date. 你并不需要进行合并操作</p>');
             }
-            html.push('</tbody></table>');
             $('.c_pull_request_content').each(function(index){
                 $(this).hide();
             });
