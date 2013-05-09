@@ -67,7 +67,6 @@ case "$action" in
     ;;
   merge)
     prepare
-    echo $#
     if [ $# -lt 9 ]; then
         exit 128
     fi
@@ -81,3 +80,5 @@ case "$action" in
   *)
     exit 128
 esac
+
+

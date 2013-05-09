@@ -271,7 +271,8 @@ def repo_pull_merge(request, user_name, repo_name, pullRequest_id):
     source_refs = pullRequest.source_refname
     desc_refs = pullRequest.desc_refname
     gitHandler = GitHandler()
-    (returncode, output) = gitHandler.merge_pull_request(pullRequest, source_repo, desc_repo, source_refs, desc_refs)
+    pullrequest_user = GsuserManager.get_user_by_id(pullRequest.pull_user_id)
+    (returncode, output) = gitHandler.merge_pull_request(pullRequest, source_repo, desc_repo, source_refs, desc_refs, pullrequest_user)
     pullRequest.status = PULL_STATUS.MERGED
     if returncode != 0:
         pullRequest.status = PULL_STATUS.MERGED_FAILED
