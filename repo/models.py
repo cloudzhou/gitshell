@@ -8,6 +8,7 @@ from gitshell.objectscache.da import get_raw, get_raw_many
 from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
+from gitshell.objectscache.models import CacheKey
 
 class Repo(BaseModel):
     user_id = models.IntegerField()
@@ -552,6 +553,10 @@ class RepoManager():
         for pullRequest in pullRequests:
             pullRequest.fillwith()
         return pullRequests
+
+    @classmethod
+    def delete_repo_commit_version(self, repo):
+        cache.delete(CacheKey.REPO_COMMIT_VERSION % repo.id)
 
     # ====================
     @classmethod

@@ -14,7 +14,6 @@ from gitshell.repo.models import CommitHistory, Repo, RepoManager
 from gitshell.feed.models import Feed, NotifMessage, FeedManager
 from gitshell.feed.feed import FeedAction
 from gitshell.stats.models import StatsManager
-from gitshell.objectscache.models import CacheKey
 from gitshell.daemon.models import EventManager, EVENT_TUBE_NAME
 from gitshell.settings import REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
 from gitshell.objectscache.da import da_post_save
@@ -214,7 +213,7 @@ def __stats(commitHistorys, repo, member_username_dict, member_email_dict):
     StatsManager.stats(stats_commits)
 
 def __clear_relative_cache(user, gsuser, repo):
-    cache.delete(CacheKey.REPO_COMMIT_VERSION % repo.id)
+    RepoManager.delete_repo_commit_version(repo)
     
 def get_username_reponame(abspath):
     rfirst_slash_idx = abspath.rfind('/')

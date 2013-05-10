@@ -293,6 +293,7 @@ def repo_pull_merge(request, user_name, repo_name, pullRequest_id):
     merge_output_split = '----------- starting merge -----------'
     if merge_output_split in output:
         output = output.split(merge_output_split)[1].strip()
+    RepoManager.delete_repo_commit_version(repo)
     return json_httpResponse({'returncode': returncode, 'output': output, 'result': 'success'})
 
 @repo_permission_check
