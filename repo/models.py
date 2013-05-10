@@ -3,7 +3,7 @@ import time
 from django.db import models
 from django.core.cache import cache
 from gitshell.objectscache.models import BaseModel
-from gitshell.objectscache.da import query, queryraw, execute, count, get, get_many, get_version, get_sqlkey
+from gitshell.objectscache.da import query, query_first, queryraw, execute, count, get, get_many, get_version, get_sqlkey
 from gitshell.objectscache.da import get_raw, get_raw_many
 from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager

@@ -211,95 +211,22 @@ class GitHandler():
         return True
     
     def repo_ls_tags_branches(self, repo, repo_path):
-        tags = self.repo_ls_tags(repo, repo_path)
-        branches = self.repo_ls_branches(repo, repo_path)
-        return {'tags': tags, 'branches': branches}
+        meta = self._get_repo_meta(repo)
+        return meta
 
     def repo_ls_tags(self, repo, repo_path):
-        cacheKey = CacheKey.REFS_TAG % repo.id
-        tags = cache.get(cacheKey)
-        if tags is not None:
-            return tags
-        tags = []
-        dirpath = '%s/refs/tags' % repo_path
-        if not self.is_allowed_path(dirpath) or not os.path.exists(dirpath):
-            return tags
-        max = 20
-        for tag in os.listdir(dirpath):
-            if self.is_allowed_path(tag):
-                tags.append(tag)
-                max = max - 1
-                if(max <= 0):
-                    break
-        tags.sort()
-        tags.reverse()
-        cache.add(cacheKey, tags, 3600)
-        return tags
+        meta = self._get_repo_meta(repo)
+        return meta['tags']
     
     def repo_ls_branches(self, repo, repo_path):
-        cacheKey = CacheKey.REFS_BRANCH % repo.id
-        branches = cache.get(cacheKey)
-        if branches is not None:
-            return branches
-        branches = []
-        dirpath = '%s/refs/heads' % repo_path
-        if not self.is_allowed_path(dirpath) or not os.path.exists(dirpath):
-            return branches
-        max = 20
-        for branch in os.listdir(dirpath):
-            if self.is_allowed_path(branch):
-                if branch == 'master':
-                    branches.insert(0, branch)
-                else:
-                    branches.append(branch)
-                max = max - 1
-                if(max <= 0):
-                    break
-        cache.add(cacheKey, branches, 3600)
-        return branches
-    
+        meta = self._get_repo_meta(repo)
+        return meta['branches']
+
     """ refs: branch, tag """
     def get_commit_hash(self, repo, repo_path, refs):
-        commit_hash = self._get_commit_hash_by_cache(repo, refs)
-        if commit_hash is not None:
-            return commit_hash
-        refs_path = '%s/refs/heads/%s' % (repo_path, refs)
-        if not os.path.exists(refs_path):
-            refs_path = '%s/refs/tags/%s' % (repo_path, refs)
-        if not self.is_allowed_path(refs_path):
-            return self.empty_commit_hash
-        if os.path.exists(refs_path):
-            f = None
-            try:
-                f = open(refs_path, 'r')
-                commit_hash = f.read(40)
-                if re.match('^\w+$', commit_hash):
-                    self._cache_commit_hash(repo, refs, commit_hash)
-                    return commit_hash
-            finally:
-                if f != None:
-                    f.close()
-        packed_refs_path = '%s/packed-refs' % (repo_path)
-        blank_p = re.compile(r'\s+')
-        full_heads_refs = 'refs/heads/%s' % refs
-        full_tags_refs = 'refs/tags/%s' % refs
-        if os.path.exists(packed_refs_path):
-            refs_f = None
-            try:
-                refs_f = open(packed_refs_path, 'r')
-                for line in refs_f:
-                    if line.startswith('#'):
-                        continue
-                    array = blank_p.split(line)
-                    if len(array) >= 2:
-                        commit_hash = array[0].strip()
-                        refs_from_f = array[1].strip()
-                        if refs_from_f == full_heads_refs or refs_from_f == full_tags_refs:
-                            self._cache_commit_hash(repo, refs, commit_hash)
-                            return commit_hash
-            finally:
-                if refs_f != None:
-                    refs_f.close()
+        meta = self._get_repo_meta(repo)
+        if refs in meta['commit_hash']:
+            return meta['commit_hash'][refs]
         return self.empty_commit_hash
 
     def prepare_pull_request(self, pullRequest, source_repo, desc_repo):
@@ -327,7 +254,7 @@ class GitHandler():
         dest_abs_repopath = desc_repo.get_abs_repopath(desc_repo.get_repo_username())
         desc_remote_name = '%s-%s' % (desc_repo.get_repo_username(), desc_repo.name)
         action = 'merge'
-        pullrequest_commit_message = PULLREQUEST_COMMIT_MESSAGE_TMPL % (source_refs, source_repo.get_repo_username(), source_repo.name, desc_refs, source_repo.get_repo_username(), source_repo.name, pullRequest.id, '@' + str(pullrequest_user.username))
+        pullrequest_commit_message = PULLREQUEST_COMMIT_MESSAGE_TMPL % (source_refs, source_repo.get_repo_username(), source_repo.name, desc_refs, desc_repo.get_repo_username(), desc_repo.name, pullRequest.id, '@' + str(pullrequest_user.username))
         print pullrequest_commit_message
         args = [pullrequest_repo_path, source_abs_repopath, source_remote_name, dest_abs_repopath, desc_remote_name, action, source_refs, desc_refs]
         if not self.is_allowed_paths(args):
@@ -341,24 +268,106 @@ class GitHandler():
             print e
         return (128, '合并失败，请检查是否存在冲突 或者 non-fast-forward')
 
-    def _get_commit_hash_by_cache(self, repo, refs):
-        cacheKey = CacheKey.REFS_REPO_COMMIT_VERSION % repo.id
+    def _get_repo_meta(self, repo):
+        meta = self._get_repo_meta_by_cache(repo)
+        if meta is not None:
+            return meta
+        branches = []
+        tags = []
+        commit_hash_dict = {}
+        meta = {'branches': branches, 'tags': tags, 'commit_hash': commit_hash_dict}
+
+        repo_path = repo.get_abs_repopath(repo.get_repo_username());
+        heads_path = '%s/refs/heads' % (repo_path)
+        tags_path = '%s/refs/tags' % (repo_path)
+        self._append_refs_and_put_dict(heads_path, branches, commit_hash_dict)
+        self._append_refs_and_put_dict(tags_path, tags, commit_hash_dict)
+
+        blank_p = re.compile(r'\s+')
+        info_refs_path = '%s/info/refs' % (repo_path)
+        if not os.path.exists(info_refs_path):
+            self._repo_meta_sort_refs(branches, tags)
+            self._cache_repo_meta(repo, meta)
+            return meta
+        refs_heads = 'refs/heads/'
+        refs_tags = 'refs/tags/'
+        refs_f = None
+        try:
+            refs_f = open(info_refs_path, 'r')
+            for line in refs_f:
+                if line.startswith('#'):
+                    continue
+                if len(branches) >= 100 or len(tags) >= 100:
+                    break
+                array = blank_p.split(line)
+                if len(array) < 2:
+                    continue
+                commit_hash = array[0].strip()
+                refs_from_f = array[1].strip()
+                if not re.match('^\w+$', commit_hash) or not self.is_allowed_path(refs_from_f):
+                    continue
+                if refs_from_f.startswith(refs_heads):
+                    refs = refs_from_f[len(refs_heads):]
+                    if refs not in branches:
+                        branches.append(refs)
+                    commit_hash_dict[refs] = commit_hash
+                elif refs_from_f.startswith(refs_tags):
+                    refs = refs_from_f[len(refs_tags):]
+                    if refs not in tags:
+                        tags.append(refs)
+                    commit_hash_dict[refs] = commit_hash
+        finally:
+            if refs_f != None:
+                refs_f.close()
+        self._repo_meta_sort_refs(branches, tags)
+        self._cache_repo_meta(repo, meta)
+        return meta
+
+    def _repo_meta_sort_refs(self, branches, tags):
+        branches.sort()
+        if 'master' in branches:
+            branches.remove('master')
+            branches.insert(0, 'master')
+        tags.sort()
+        tags.reverse()
+
+    def _get_repo_meta_by_cache(self, repo):
+        cacheKey = CacheKey.REPO_COMMIT_VERSION % repo.id
         version = cache.get(cacheKey)
         if version is not None:
-            cacheKey = CacheKey.REFS_COMMIT_HASH % (str(repo.id), version, refs)
-            commit_hash = cache.get(cacheKey)
-            if commit_hash is not None:
-                return commit_hash
+            cacheKey = CacheKey.REPO_META % (repo.id, version)
+            repo_meta = cache.get(cacheKey)
+            if repo_meta is not None:
+                return repo_meta
         return None
 
-    def _cache_commit_hash(self, repo, refs, commit_hash):
-        cacheKey = CacheKey.REFS_REPO_COMMIT_VERSION % repo.id
+    def _cache_repo_meta(self, repo, meta):
+        cacheKey = CacheKey.REPO_COMMIT_VERSION % repo.id
         version = cache.get(cacheKey)
         if version is None:
             version = time.time()
             cache.add(cacheKey, version, 3600)
-        cacheKey = CacheKey.REFS_COMMIT_HASH % (str(repo.id), version, refs)
-        cache.add(cacheKey, commit_hash, 3600)
+        cacheKey = CacheKey.REPO_META % (repo.id, version)
+        cache.add(cacheKey, meta, 3600)
+
+    def _append_refs_and_put_dict(self, dirpath, refs_array, commit_hash_dict):
+        for refs in os.listdir(dirpath):
+            if self.is_allowed_path(refs):
+                if len(refs_array) >= 100:
+                    return
+                if refs in refs_array:
+                    continue
+                refs_array.append(refs)
+                refs_path = '%s/%s' % (dirpath, refs)
+                f = None
+                try:
+                    f = open(refs_path, 'r')
+                    commit_hash = f.read(40)
+                    if re.match('^\w+$', commit_hash):
+                        commit_hash_dict[refs] = commit_hash
+                finally:
+                    if f != None:
+                        f.close()
     
     def is_allowed_paths(self, paths):
         for path in paths:
