@@ -222,8 +222,21 @@ class RepoManager():
             return None
         if repo.user_id == user.id:
             return repo
-        repo = query_first(Repo, None, 'repo_s_userId_forkrepoId', [user.id, repo.id])
-        return repo
+        child_repo = self.get_childrepo_by_user_forkrepo(user, repo)
+        if child_repo is not None:
+            return child_repo
+        if repo.fork_repo_id is None:
+            return None
+        parent_repo = RepoManager.get_repo_by_id(repo.fork_repo_id)
+        if parent_repo is None:
+            return None
+        if parent_repo.user_id == user.id:
+            return parent_repo
+
+    @classmethod
+    def get_childrepo_by_user_forkrepo(self, user, repo):
+        child_repo = query_first(Repo, None, 'repo_s_userId_forkrepoId', [user.id, repo.id])
+        return child_repo
 
     @classmethod
     def list_parent_repo(self, repo, limit):
@@ -235,9 +248,9 @@ class RepoManager():
             if parent_repo.fork_repo_id is None or parent_repo.fork_repo_id == 0:
                 break
             parent_repo = RepoManager.get_repo_by_id(parent_repo.fork_repo_id)
-            parent_repo.init_repo_username()
             if parent_repo is None:
                 break
+            parent_repo.init_repo_username()
             parent_repos.append(parent_repo)
         return parent_repos
 

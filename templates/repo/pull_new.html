@@ -14,7 +14,13 @@
             <div class="span4 repo-refs">
                 <span>仓库：</span>
                 <select id="id_source_repo" class="span3">
-                    <option value="{{user_name}}/{{repo_name}}">{{user_name}}/{{repo_name}}</option>
+                    {% for repo in pull_repo_list %}
+                        {% if repo.username == source_repo.username and repo.name == source_repo.name %}
+                            <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+                        {% else %}
+                            <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+                        {% endif %}
+                    {% endfor %}
                 </select>
                 <br/>
                 <span>分支：</span>
@@ -28,8 +34,12 @@
             <div class="span4 repo-refs">
                 <span>仓库：</span>
                 <select id="id_desc_repo" class="span3">
-                    {% for repo in desc_repo_list %}
-                    <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+                    {% for repo in pull_repo_list %}
+                        {% if repo.username == desc_repo.username and repo.name == desc_repo.name %}
+                            <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+                        {% else %}
+                            <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 <br/>

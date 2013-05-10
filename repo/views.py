@@ -167,8 +167,29 @@ def repo_default_pull_new(request, user_name, repo_name):
     source_refs = 'master'
     desc_username = user_name
     desc_refs = 'master'
+    if user_name != request.user.username:
+        repo = RepoManager.get_repo_by_name(user_name, repo_name)
+        if repo is None:
+            raise Http404
+        child_repo = RepoManager.get_childrepo_by_user_forkrepo(request.user, repo)
+        if child_repo is not None:
+            child_repo.init_repo_username()
+            source_username = child_repo.username
+            source_refs = 'master'
+    return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+
+@login_required
+@repo_permission_check
+def repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
+    refs = 'master'; path = '.'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
+    desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
+    if repo is None or source_repo is None or desc_repo is None:
+        raise Http404
+
     # pull action
-    if request.method == 'POST' and request.user.is_authenticated():
+    if request.method == 'POST':
         source_repo = request.POST.get('source_repo', '')
         source_refs = request.POST.get('source_refs', '')
         desc_repo = request.POST.get('desc_repo', '')
@@ -181,24 +202,16 @@ def repo_default_pull_new(request, user_name, repo_name):
         (desc_username, desc_reponame) = desc_repo.split('/', 1)
         source_pull_repo = RepoManager.get_repo_by_name(source_username, source_reponame)
         desc_pull_repo = RepoManager.get_repo_by_name(desc_username, desc_reponame)
-        if source_pull_repo is None or desc_pull_repo is None:
+        if not __has_pull_right(request, source_pull_repo, desc_pull_repo):
             return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         pullRequest = PullRequest.create(request.user.id, source_pull_repo.id, source_refs, desc_pull_repo.id, desc_refs, title, desc, 0, PULL_STATUS.NEW)
         pullRequest.save()
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
-    return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
 
-@login_required
-@repo_permission_check
-def repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
-    refs = 'master'; path = '.'
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
-    desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
-    if repo is None or source_repo is None or desc_repo is None or source_repo.user_id != request.user.id:
-        raise Http404
-    desc_repo_list = RepoManager.list_parent_repo(source_repo, 10)
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'desc_repo_list': desc_repo_list}
+    source_repo.init_repo_username()
+    desc_repo.init_repo_username()
+    pull_repo_list = __list_pull_repo(request, repo)
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_new.html',
                           response_dictionary,
@@ -877,6 +890,23 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
         if child_repo is not None:
             has_pull_right = True
     return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right}
+
+def __list_pull_repo(request, repo):
+    pull_repo_list = RepoManager.list_parent_repo(repo, 10)
+    child_repo = RepoManager.get_childrepo_by_user_forkrepo(request.user, repo)
+    if child_repo is not None:
+        child_repo.init_repo_username()
+        pull_repo_list = [child_repo] + pull_repo_list
+    return pull_repo_list
+
+def __has_pull_right(request, source_pull_repo, desc_pull_repo):
+    if source_pull_repo is None or desc_pull_repo is None:
+        return False
+    if source_pull_repo.auth_type != 0 and not RepoManager.is_repo_member(source_pull_repo, request.user):
+        return False
+    if desc_pull_repo.auth_type != 0 and not RepoManager.is_repo_member(desc_pull_repo, request.user):
+        return False
+    return True
 
 def __has_issues_modify_right(request, issues, repo):
     return issues is not None and (request.user.id == issues.user_id or request.user.id == repo.user_id)
