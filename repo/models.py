@@ -537,7 +537,14 @@ class RepoManager():
         return True
 
     @classmethod
-    def get_pullRequest_by_id(self, repo_id, pullRequest_id):
+    def get_pullRequest_by_id(self, id):
+        pullRequest = get(PullRequest, id)
+        if pullRequest is not None:
+            pullRequest.fillwith()
+        return pullRequest
+
+    @classmethod
+    def get_pullRequest_by_repoId_id(self, repo_id, pullRequest_id):
         pullRequest = get(PullRequest, pullRequest_id)
         if pullRequest.desc_repo_id == repo_id:
             pullRequest.fillwith()

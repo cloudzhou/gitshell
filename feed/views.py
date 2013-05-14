@@ -200,6 +200,9 @@ def notif(request):
                     issues_comment.username = repo.get_repo_username()
                     issues_comment.reponame = repo.name
             notifMessage.relative_obj = issues_comment
+        elif notifMessage.is_merge_create_pull_request():
+            pullRequest = RepoManager.get_pullRequest_by_id(notifMessage.relative_id)
+            notifMessage.relative_obj = pullRequest
     if request.userprofile.unread_message != 0:
         request.userprofile.unread_message = 0
         request.userprofile.save()

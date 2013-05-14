@@ -206,6 +206,7 @@ def repo_pull_new(request, user_name, repo_name, source_username, source_refs, d
             return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         pullRequest = PullRequest.create(request.user.id, desc_pull_repo.user_id, source_pull_repo.user_id, source_pull_repo.id, source_refs, desc_pull_repo.user_id, desc_pull_repo.id, desc_refs, title, desc, 0, PULL_STATUS.NEW)
         pullRequest.save()
+        FeedManager.notif_pull_request_create(pullRequest)
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
 
     source_repo.init_repo_username()
@@ -223,7 +224,7 @@ def repo_pull_show(request, user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    pullRequest = RepoManager.get_pullRequest_by_id(repo.id, pullRequest_id)
+    pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     
     response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequest': pullRequest}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
@@ -304,7 +305,7 @@ def repo_pull_reject(request, user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
         return json_httpResponse({'result': 'failed'})
-    pullRequest = RepoManager.get_pullRequest_by_id(repo.id, pullRequest_id)
+    pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     if pullRequest is None:
         return json_httpResponse({'result': 'failed'})
     pullRequest.status = PULL_STATUS.REJECTED
@@ -319,7 +320,7 @@ def repo_pull_close(request, user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
         return json_httpResponse({'result': 'failed'})
-    pullRequest = RepoManager.get_pullRequest_by_id(repo.id, pullRequest_id)
+    pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     if pullRequest is None:
         return json_httpResponse({'result': 'failed'})
     pullRequest.status = PULL_STATUS.CLOSE
@@ -330,7 +331,7 @@ def _get_repo_pull_args(user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         return None
-    pullRequest = RepoManager.get_pullRequest_by_id(repo.id, pullRequest_id)
+    pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     if pullRequest is None:
         return None
     source_repo = RepoManager.get_repo_by_id(pullRequest.source_repo_id)

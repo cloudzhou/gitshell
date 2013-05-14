@@ -6,7 +6,7 @@ from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, query_first, queryraw, execute, count, get, get_many, get_version, get_sqlkey
 from gitshell.objectscache.da import get_raw, get_raw_many
 from gitshell.gsuser.models import GsuserManager
-from gitshell.repo.models import RepoManager
+from gitshell.repo.models import RepoManager, PullRequest
 from gitshell.feed.feed import FeedAction
 
 class Feed(models.Model):
@@ -98,6 +98,8 @@ class NotifMessage(models.Model):
         return self.notif_type == NOTIF_TYPE.AT_ISSUE
     def is_at_issue_comment(self):
         return self.notif_type == NOTIF_TYPE.AT_ISSUE_COMMENT
+    def is_merge_create_pull_request(self):
+        return self.notif_type == NOTIF_TYPE.MERGE_CREATE_PULL_REQUEST
 
 class FeedManager():
 
@@ -204,6 +206,15 @@ class FeedManager():
     def notif_issue_comment_at(self, from_user_id, issue_comment_id, issue_comment_message):
         self.notif_at(NOTIF_TYPE.AT_ISSUE_COMMENT, from_user_id, issue_comment_id, issue_comment_message)
 
+    @classmethod
+    def notif_pull_request_create(self, pullRequest):
+        merge_user_profile = GsuserManager.get_userprofile_by_id(pullRequest.merge_user_id)
+        if merge_user_profile is not None:
+            notifMessage = NotifMessage.create(FEED_CATE.MERGE, FEED_TYPE.MERGE_CREATE_PULL_REQUEST, pullRequest.pull_user_id, pullRequest.merge_user_id, pullRequest.id)
+            notifMessage.save()
+            merge_user_profile.unread_message = merge_user_profile.unread_message + 1
+            merge_user_profile.save()
+
 class FeedUtils():
 
     @classmethod
@@ -269,6 +280,8 @@ class NOTIF_TYPE:
     AT_COMMIT = 0
     AT_ISSUE = 1
     AT_ISSUE_COMMENT = 2
+
+    MERGE_CREATE_PULL_REQUEST = 100
     
 class FEED_CATE:
 
@@ -287,7 +300,7 @@ class FEED_TYPE:
     MERGE_MERGED_PULL_REQUEST = 101
     MERGE_COMMENT_ON_PULL_REQUEST = 102
     MERGE_REJECTED_PULL_REQUEST = 103
-    MERGE_DELETE_PULL_REQUEST = 104
+    MERGE_CLOSE_PULL_REQUEST = 104
 
     TODO_CREATE = 200
     TODO_DOING = 201
@@ -320,7 +333,7 @@ class FEED_TYPE:
     101) merged pull request
     102) comment on pull request
     103) rejected pull request
-    104) delete pull request
+    104) close pull request
 2 todo
     200) create
     201) doing
