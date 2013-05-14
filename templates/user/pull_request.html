@@ -21,7 +21,7 @@
         {% if pullRequests %}
             {% for pullRequest in pullRequests %}
                 <tr>
-                    <td><a href="/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/">#{{pullRequest.id}} {{pullRequest.short_title}}</a>&nbsp;<a class="muted" href="/{{pullRequest.merge_user.username}}/">[{{pullRequest.merge_user.username}}]</a> <span class="label {{pullRequest.status_label}}">{{pullRequest.status_view}}</span></td>
+                    <td><a style="font-size: 15px; font-weight: 500" href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/pull/{{pullRequest.id}}/">#{{pullRequest.id}} {{pullRequest.short_title}}</a>&nbsp;<a class="muted" href="/{{pullRequest.merge_user.username}}/">[{{pullRequest.merge_user.username}}]</a> <span class="label {{pullRequest.status_label}}">{{pullRequest.status_view}}</span></td>
                     <td><a href="/{{pullRequest.source_repo.username}}/">{{pullRequest.source_repo.username}}</a>/<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/">{{pullRequest.source_refname}}</a> -&gt; <a href="/{{pullRequest.desc_repo.username}}/">{{pullRequest.desc_repo.username}}</a>/<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/">{{pullRequest.desc_refname}}</a></td>
                     <td>{{pullRequest.short_desc}}</td>
                 </tr>
