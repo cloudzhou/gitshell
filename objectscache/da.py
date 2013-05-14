@@ -61,7 +61,15 @@ rawsql = {
     'pullrequest_l_descRepoId':
         'select * from repo_pullrequest where visibly = 0 and desc_repo_id = %s order by status, modify_time desc limit %s, %s',
     'pullrequest_l_pullUserId':
-        'select * from repo_pullrequest where visibly = 0 and pull_user_id = %s order by modify_time desc limit %s, %s',
+        'select * from repo_pullrequest where visibly = 0 and pull_user_id = %s order by status, modify_time desc limit %s, %s',
+    'pullrequest_l_mergeUserId':
+        'select * from repo_pullrequest where visibly = 0 and merge_user_id = %s order by status, modify_time desc limit %s, %s',
+    'pullrequest_c_descRepoId':
+        'select 0 as id, count(1) as count from repo_pullrequest where visibly = 0 and desc_repo_id = %s and status = %s',
+    'pullrequest_c_pullUserId':
+        'select 0 as id, count(1) as count from repo_pullrequest where visibly = 0 and pull_user_id = %s and status = %s',
+    'pullrequest_c_mergeUserId':
+        'select 0 as id, count(1) as count from repo_pullrequest where visibly = 0 and merge_user_id = %s and status = %s',
     # repo_member #
     'repomember_l_repoId':
         'select * from repo_repomember where visibly = 0 and repo_id = %s order by modify_time asc',
@@ -142,7 +150,8 @@ def __get(model, pkid, only_visibly):
             obj = model.objects.get(id = pkid)
         cache.add(id_key, obj)
         return obj
-    except:
+    except Exception, e:
+        print 'exception: %s' % e
         return None
 
 def get_many(model, pkids):
@@ -168,7 +177,8 @@ def __get_many(model, pkids, only_visibly):
                 objects = model.objects.filter(visibly=0).filter(id__in=uncache_ids)
             else:
                 objects = model.objects.filter(id__in=uncache_ids)
-        except:
+        except Exception, e:
+            print 'exception: %s' % e
             pass
         __add_many(table, objects)
         many_objects.extend(objects)
@@ -204,7 +214,8 @@ def query_first(model, pt_id, rawsql_id, parameters):
 def queryraw(model, rawsql_id, parameters):
     try:
         return list(model.objects.raw(rawsql[rawsql_id], parameters))
-    except:
+    except Exception, e:
+        print 'exception: %s' % e
         return []
     
 def count(model, pt_id, rawsql_id, parameters):

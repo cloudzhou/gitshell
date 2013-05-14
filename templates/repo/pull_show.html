@@ -100,10 +100,22 @@ $(function(){
     var load_commit_meta = function() {
         $.post('/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/commit/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             var html = [];
+            var is_up_to_date = false;
+            var source_commit_hash = json.source_repo_refs_commit_hash.substr(0, 7);
+            var desc_commit_hash = json.desc_repo_refs_commit_hash.substr(0, 7);
+            var exists_commit_hash_map = {};
+            exists_commit_hash_map[desc_commit_hash] = 1
+            var up_to_date = '<p>Already up-to-date. 你并不需要进行合并操作</p>';
             if(json.commits.length > 0) {
                 html.push('<table class="table table-striped"><thead class="fixed"><tr><th width="20%">提交HASH (作者)</th><th width="10%">时间</th><th>日志</th></tr></thead><tbody>');
                 for(x in json.commits) {
                     var commit_hash = json.commits[x].commit_hash;
+                    if(commit_hash in exists_commit_hash_map) {
+                        var tmp_parent_commit_hashs = json.commits[x].parent_commit_hash.split(' ')
+                        for(y in tmp_parent_commit_hashs) {
+                            exists_commit_hash_map[tmp_parent_commit_hashs[y]] = 1;
+                        }
+                    }
                     var committer = json.commits[x].committer;
                     var committer_date = json.commits[x].committer_date;
                     var committer_moment = moment(new Date(committer_date*1000)).fromNow();
@@ -112,12 +124,19 @@ $(function(){
                 }
                 html.push('</tbody></table>');
             } else {
-                html.push('<p>Already up-to-date. 你并不需要进行合并操作</p>');
+                html.push(up_to_date);
+            }
+            if(source_commit_hash in exists_commit_hash_map) {
+                is_up_to_date = true;
             }
             $('.c_pull_request_content').each(function(index){
                 $(this).hide();
-            });
-            $('#id_pull_request_commit').html(html.join(''));
+             });
+            if(is_up_to_date) {
+                $('#id_pull_request_commit').html(up_to_date);
+            } else {
+                $('#id_pull_request_commit').html(html.join(''));
+            }
             $('#id_pull_request_commit').show();
         });
     }

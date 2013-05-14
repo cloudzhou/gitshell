@@ -119,8 +119,11 @@ class ForkHistory(BaseModel):
 
 class PullRequest(BaseModel):
     pull_user_id = models.IntegerField()
+    merge_user_id = models.IntegerField()
+    source_user_id = models.IntegerField()
     source_repo_id = models.IntegerField()
     source_refname = models.CharField(max_length=32)
+    desc_user_id = models.IntegerField()
     desc_repo_id = models.IntegerField()
     desc_refname = models.CharField(max_length=32)
     title = models.CharField(max_length=256)
@@ -129,11 +132,14 @@ class PullRequest(BaseModel):
     status = models.IntegerField(default=0) 
 
     @classmethod
-    def create(self, pull_user_id, source_repo_id, source_refname, desc_repo_id, desc_refname, title, desc, delete_refs, status):
+    def create(self, pull_user_id, merge_user_id, source_user_id, source_repo_id, source_refname, desc_user_id, desc_repo_id, desc_refname, title, desc, delete_refs, status):
         pullRequest = PullRequest(
             pull_user_id = pull_user_id,
+            merge_user_id = merge_user_id,
+            source_user_id = source_user_id,
             source_repo_id = source_repo_id,
             source_refname = source_refname,
+            desc_user_id = desc_user_id,
             desc_repo_id = desc_repo_id,
             desc_refname = desc_refname,
             title = title,
@@ -144,6 +150,7 @@ class PullRequest(BaseModel):
         return pullRequest
 
     pull_user = None
+    merge_user = None
     source_repo = None
     desc_repo = None
     short_title = ''
@@ -153,6 +160,7 @@ class PullRequest(BaseModel):
 
     def fillwith(self):
         self.pull_user = GsuserManager.get_user_by_id(self.pull_user_id)
+        self.merge_user = GsuserManager.get_user_by_id(self.merge_user_id)
         self.source_repo = RepoManager.get_repo_by_id(self.source_repo_id)
         self.desc_repo = RepoManager.get_repo_by_id(self.desc_repo_id)
         self.source_repo.init_repo_username()
@@ -553,6 +561,25 @@ class RepoManager():
         for pullRequest in pullRequests:
             pullRequest.fillwith()
         return pullRequests
+
+    @classmethod
+    def list_pullRequest_by_mergeUserId(self, mergeUser_id):
+        offset = 0
+        row_count = 100
+        pullRequests = query(PullRequest, None, 'pullrequest_l_mergeUserId', [mergeUser_id, offset, row_count])
+        for pullRequest in pullRequests:
+            pullRequest.fillwith()
+        return pullRequests
+
+    @classmethod
+    def count_pullRequest_by_descRepoId(self, descRepo_id, status):
+        _count = count(PullRequest, descRepo_id, 'pullrequest_c_descRepoId', [descRepo_id, status])
+        return _count
+
+    @classmethod
+    def count_pullRequest_by_mergeUserId(self, mergeUser_id, status):
+        _count = count(PullRequest, None, 'pullrequest_c_mergeUserId', [mergeUser_id, status])
+        return _count
 
     @classmethod
     def delete_repo_commit_version(self, repo):

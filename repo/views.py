@@ -204,7 +204,7 @@ def repo_pull_new(request, user_name, repo_name, source_username, source_refs, d
         desc_pull_repo = RepoManager.get_repo_by_name(desc_username, desc_reponame)
         if not __has_pull_right(request, source_pull_repo, desc_pull_repo):
             return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
-        pullRequest = PullRequest.create(request.user.id, source_pull_repo.id, source_refs, desc_pull_repo.id, desc_refs, title, desc, 0, PULL_STATUS.NEW)
+        pullRequest = PullRequest.create(request.user.id, desc_pull_repo.user_id, source_pull_repo.user_id, source_pull_repo.id, source_refs, desc_pull_repo.user_id, desc_pull_repo.id, desc_refs, title, desc, 0, PULL_STATUS.NEW)
         pullRequest.save()
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
 
@@ -890,7 +890,8 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
         child_repo = RepoManager.get_repo_by_forkrepo(request.user.username, repo)
         if child_repo is not None:
             has_pull_right = True
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right}
+    repo_pull_new_count = RepoManager.count_pullRequest_by_descRepoId(repo.id, PULL_STATUS.NEW)
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count}
 
 def __list_pull_repo(request, repo):
     pull_repo_list = RepoManager.list_parent_repo(repo, 10)

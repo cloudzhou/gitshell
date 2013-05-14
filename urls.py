@@ -43,6 +43,10 @@ urlpatterns = patterns('gitshell',
     url(r'^home/issues/?$', 'feed.views.issues_default'),
     url(r'^home/issues/(\d+)/?$', 'feed.views.issues'),
 
+    url(r'^home/pull/?$', 'feed.views.pull_merge'),
+    url(r'^home/pull/merge/?$', 'feed.views.pull_merge'),
+    url(r'^home/pull/request/?$', 'feed.views.pull_request'),
+
     url(r'^home/explore/?$', 'feed.views.explore'),
     url(r'^home/notif/?$', 'feed.views.notif'),
     url(r'^login/?$', 'gsuser.views.login'),

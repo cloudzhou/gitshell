@@ -28,6 +28,8 @@ def home(request):
         return timeline(request)
     elif goto == PositionKey.TODO:
         return todo(request)
+    elif goto == PositionKey.PULL:
+        return pull_merge(request)
     elif goto == PositionKey.ISSUES:
         return issues(request, 0)
     elif goto == PositionKey.EXPLORE:
@@ -61,6 +63,27 @@ def timeline(request):
     feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
     response_dictionary = {'current': current, 'feeds_as_json': feeds_as_json}
     return render_to_response('user/timeline.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
+def pull_merge(request):
+    current = 'pull'
+    feedAction = FeedAction()
+    feedAction.set_user_position(request.user.id, PositionKey.PULL)
+    pullRequests = RepoManager.list_pullRequest_by_mergeUserId(request.user.id)
+    response_dictionary = {'current': current, 'pullRequests': pullRequests}
+    return render_to_response('user/pull_merge.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+@login_required
+def pull_request(request):
+    current = 'pull'
+    feedAction = FeedAction()
+    feedAction.set_user_position(request.user.id, PositionKey.PULL)
+    pullRequests = RepoManager.list_pullRequest_by_pullUserId(request.user.id)
+    response_dictionary = {'current': current, 'pullRequests': pullRequests}
+    return render_to_response('user/pull_request.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 

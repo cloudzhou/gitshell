@@ -24,6 +24,7 @@ class PositionKey:
     FEED = 'ufd'
     GIT = 'ugit'
     TIMELINE = 'utime'
+    PULL = 'upull'
     TODO = 'utodo'
     ISSUES = 'uis'
     EXPLORE = 'uex'

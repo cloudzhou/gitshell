@@ -79,7 +79,7 @@ class GitHandler():
         between_commit_hash = from_commit_hash
         if commit_hash is not None and not commit_hash.startswith('0000000'):
             between_commit_hash = from_commit_hash + '...' + commit_hash
-        command = '/usr/bin/git log -50 --pretty="%%h______%%t______%%an______%%cn______%%ct|%%s" %s -- %s | /usr/bin/head -c 524288' % (between_commit_hash, path)
+        command = '/usr/bin/git log -50 --pretty="%%h______%%p______%%t______%%an______%%cn______%%ct|%%s" %s -- %s | /usr/bin/head -c 524288' % (between_commit_hash, path)
         try:
             raw_result = check_output(command, shell=True)
             for line in raw_result.split('\n'):
@@ -87,12 +87,13 @@ class GitHandler():
                 if len(ars) != 2:
                     continue
                 attr, commit_message = ars
-                attrs = attr.split('______', 5)
-                if len(attrs) != 5:
+                attrs = attr.split('______', 6)
+                if len(attrs) != 6:
                     continue
-                (commit_hash, tree_hash, author, committer, committer_date) = (attrs)
+                (commit_hash, parent_commit_hash, tree_hash, author, committer, committer_date) = (attrs)
                 commits.append({
                     'commit_hash': commit_hash,
+                    'parent_commit_hash': parent_commit_hash,
                     'tree_hash': tree_hash,
                     'author': author,
                     'committer': committer,
