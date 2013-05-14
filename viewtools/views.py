@@ -5,9 +5,9 @@ from django.utils.html import escape
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 
 def json_httpResponse(o):
-    return json_httpResponse(o, False)
+    return json_httpResponse_obj2dict(o, False)
 
-def json_httpResponse(o, is_obj2dict):
+def json_httpResponse_obj2dict(o, is_obj2dict):
     if is_obj2dict:
         o = obj2dict(o)
     return HttpResponse(json_escape_dumps(o), mimetype='application/json')
