@@ -1,6 +1,7 @@
 {% extends "user/home_base.html" %}
 {% block css %}
 <style>
+.cl_merge_repo_branch a { color: #999999 }
 </style>
 {% endblock %}
 {% block subcontainer %}
@@ -9,8 +10,8 @@
         <table class="table table-striped">
             <thead class="fixed">
                 <th width="35%">标题</th>
-                <th width="35%">合并分支</th>
-                <th width="30%">描述
+                <th width="33%">合并分支</th>
+                <th width="32%">描述
                     <div class="btn-group pull-right">
                         <button id="id_pull_merge" class="btn btn-mini btn-primary">需要我合并的请求</button>
                         <button id="id_pull_request" class="btn btn-mini">我发出的</button>
@@ -22,7 +23,7 @@
             {% for pullRequest in pullRequests %}
                 <tr>
                     <td><a style="font-size: 15px; font-weight: 500" href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/pull/{{pullRequest.id}}/">#{{pullRequest.id}} {{pullRequest.short_title}}</a>&nbsp;<a class="muted" href="/{{pullRequest.pull_user.username}}/">[{{pullRequest.pull_user.username}}]</a> <span class="label {{pullRequest.status_label}}">{{pullRequest.status_view}}</span></td>
-                    <td><a href="/{{pullRequest.source_repo.username}}/">{{pullRequest.source_repo.username}}</a>/<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/">{{pullRequest.source_refname}}</a> -&gt; <a href="/{{pullRequest.desc_repo.username}}/">{{pullRequest.desc_repo.username}}</a>/<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/">{{pullRequest.desc_refname}}</a></td>
+                    <td class="cl_merge_repo_branch"><a href="/{{pullRequest.source_repo.username}}/">{{pullRequest.source_repo.username}}</a>/<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/">{{pullRequest.source_refname}}</a> -&gt; <a href="/{{pullRequest.desc_repo.username}}/">{{pullRequest.desc_repo.username}}</a>/<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/">{{pullRequest.desc_refname}}</a></td>
                     <td>{{pullRequest.short_desc}}</td>
                 </tr>
             {% endfor %}
