@@ -75,7 +75,7 @@ def do_event(event):
         return
 
 def update_quote(user, gsuser, repo, repopath, parameters):
-    args = ['/opt/run/bin/diff-tree-blob-size.sh', repopath]
+    args = ['/opt/bin/diff-tree-blob-size.sh', repopath]
     args.extend(parameters)
     pepen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
     result = popen.communicate()[0].strip()
@@ -169,7 +169,7 @@ def __add_user_and_repo_feed(feedAction, repo, user_feed_key_values, total_feed_
         feedAction.madd_repo_feed(repo.id, total_feed_key_values)
 
 def __list_raw_commitHistorys(repo, repopath, oldrev, newrev, refname):
-    args = ['/opt/run/bin/git-pretty-log.sh', repopath, oldrev, newrev]
+    args = ['/opt/bin/git-pretty-log.sh', repopath, oldrev, newrev]
     popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
     result = popen.communicate()[0].strip()
     raw_commitHistorys = []
