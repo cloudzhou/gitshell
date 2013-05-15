@@ -190,8 +190,9 @@ def feed_by_ids(request):
         feeds = _list_feeds(request, ids_str)
     usernames = []
     userIds = [x.user_id for x in feeds]
-    _fillwith_commit_message(request, feeds, usernames, userIds)
+    _fillwith_commit_message(feeds, usernames, userIds)
     _fillwith_issue_event(feeds, usernames, userIds)
+    _fillwith_pull_event(feeds, usernames, userIds)
     (gravatar_dict, gravatar_userId_dict) = _get_gravatar_dict(usernames, userIds)
     response_dictionary = {'feeds': obj2dict(feeds), 'gravatar_dict': gravatar_dict, 'gravatar_userId_dict': gravatar_userId_dict}
     return json_httpResponse(response_dictionary)
@@ -228,7 +229,7 @@ def _list_feeds(request, ids_str):
     feeds = FeedManager.list_feed_by_ids(ids)
     return feeds
 
-def _fillwith_commit_message(request, feeds, usernames, userIds):
+def _fillwith_commit_message(feeds, usernames, userIds):
     commit_ids = []
     for feed in feeds:
         if feed.is_commit_message():
@@ -272,16 +273,26 @@ def _fillwith_commit_message(request, feeds, usernames, userIds):
             feed.relative_obj = commit_view_dict[feed.relative_id]
 
 def _fillwith_issue_event(feeds, usernames, userIds):
-    issues = []
     for feed in feeds:
-        if feed.is_issue_event():
-            issue = RepoManager.get_issues_by_id(feed.relative_id)
-            if issue is not None:
-                repo = RepoManager.get_repo_by_id(issue.repo_id)
-                issue.username = repo.get_repo_username()
-                issue.reponame = repo.name
-                feed.relative_obj = issue
-                issues.append(issue)
+        if not feed.is_issue_event():
+            continue
+        issue = RepoManager.get_issues_by_id(feed.relative_id)
+        if issue is not None:
+            repo = RepoManager.get_repo_by_id(issue.repo_id)
+            issue.username = repo.get_repo_username()
+            issue.reponame = repo.name
+            feed.relative_obj = issue
+
+def _fillwith_pull_event(feeds, usernames, userIds):
+    for feed in feeds:
+        if not feed.is_pull_event():
+            continue
+        pullRequest = RepoManager.get_pullRequest_by_id(feed.relative_id)
+        if pullRequest is None:
+            continue
+        action = ''
+        pullRequest_view = {'id': pullRequest.id, 'desc_repo_username': pullRequest.desc_repo.username, 'desc_repo_name': pullRequest.desc_repo.name, 'short_title': pullRequest.short_title, 'create_time': time.mktime(pullRequest.create_time.timetuple())}
+        feed.relative_obj = pullRequest_view
 
 def _get_feed_ids(ids_str):
     ids = []

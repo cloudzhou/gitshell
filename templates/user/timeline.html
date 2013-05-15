@@ -93,19 +93,36 @@ $(function(){
                         } else {
                             feed = display_feeds_map[feed_date][feed_reponame][0];
                             if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
-                                issue = feed.relative_obj;
-                                action = 'create issue';
-                                detail = '';
+                                var issue = feed.relative_obj;
+                                var action = 'created issue';
+                                var detail = '';
                                 if(feed.feed_type == 300) {
-                                    action = 'create issue';
+                                    action = 'created issue';
                                 } else if(feed.feed_type == 301) {
-                                    action = 'update issue';
+                                    action = 'updated issue';
                                 } else if(feed.feed_type == 302) {
-                                    action = 'change issue';
+                                    action = 'changed issue';
                                     detail = feed.first_refname;
                                 }
-                                html.push('<div style="margin-left: 50px;"><li style="margin: 1px">' + action + ' #' + issue.id + ' on <strong><a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></strong> ' + detail + '<div><a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a> <span class="muted">' + moment(new Date(issue.create_time*1000)).fromNow() + '</span></div>')
+                                html.push('<div style="margin-left: 50px;"><li style="margin: 1px">' + action + ' #' + issue.id + ' on <strong><a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></strong> ' + detail + '<div style="margin-left: 20px"><a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a> <span class="muted">' + moment(new Date(issue.create_time*1000)).fromNow() + '</span></div>')
                                 html.push('</li></div>');
+                            } else if(feed.feed_type >= 100 && feed.feed_type <= 105) {
+                                var pullRequest = feed.relative_obj; 
+                                var action = ''
+                                if(feed.feed_type == 100) {
+                                    action = 'created pull request';
+                                } else if(feed.feed_type == 101) {
+                                    action = 'merged pull request';
+                                } else if(feed.feed_type == 102) {
+                                    action = 'merged failed pull request';
+                                } else if(feed.feed_type == 103) {
+                                    action = 'rejected pull request';
+                                } else if(feed.feed_type == 104) {
+                                    action = 'closed pull request';
+                                } else if(feed.feed_type == 105) {
+                                    action = 'comment on pull request';
+                                }
+                                html.push('<div style="margin-left: 50px;"><li style="margin: 1px">' + action + ' #' + pullRequest.id + ' on <strong><a href="/'+ pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name +'/">' + pullRequest.desc_repo_name + '</a></strong> <div style="margin-left: 20px"><a href="/'+pullRequest.desc_repo_username+'/'+pullRequest.desc_repo_name+'/pull/'+pullRequest.id+'/">#' + pullRequest.id + ' ' + pullRequest.short_title + '</a> <span class="muted">' + moment(new Date(pullRequest.create_time*1000)).fromNow() + '</span></div></li></div>')
                             }
                         }
                     }

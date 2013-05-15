@@ -50,6 +50,9 @@ class Feed(models.Model):
     def is_issue_event(self):
         return self.feed_type == FEED_TYPE.ISSUES_CREATE or self.feed_type == FEED_TYPE.ISSUES_UPDATE or self.feed_type == FEED_TYPE.ISSUES_STATUS_CHANGE
 
+    def is_pull_event(self):
+        return self.feed_type >= FEED_TYPE.MERGE_CREATE_PULL_REQUEST and self.feed_type <= FEED_TYPE.MERGE_COMMENT_ON_PULL_REQUEST
+
 class NotifMessage(models.Model):
     create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
     modify_time = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
@@ -188,6 +191,33 @@ class FeedManager():
                 feedAction.add_pri_user_feed(user.id, timestamp, feed.id)
             else:
                 feedAction.add_pub_user_feed(user.id, timestamp, feed.id)
+
+    @classmethod
+    def feed_pull_change(self, pullRequest, pullStatus):
+        feed_cate = FEED_CATE.MERGE
+        feed_type = FEED_TYPE.MERGE_CREATE_PULL_REQUEST
+        timestamp = float(time.mktime(pullRequest.modify_time.timetuple()))
+        repo = pullRequest.desc_repo
+        user = pullRequest.merge_user
+        if pullStatus == PULL_STATUS.NEW:
+            user = pullRequest.pull_user
+            feed_type = FEED_TYPE.MERGE_CREATE_PULL_REQUEST
+        elif pullStatus == PULL_STATUS.MERGED_FAILED:
+            feed_type = FEED_TYPE.MERGE_MERGED_FAILED_PULL_REQUEST
+        elif pullStatus == PULL_STATUS.MERGED:
+            feed_type = FEED_TYPE.MERGE_MERGED_PULL_REQUEST
+        elif pullStatus == PULL_STATUS.REJECTED:
+            feed_type = NOTIF_TYPE.MERGE_REJECTED_PULL_REQUEST
+        elif pullStatus == PULL_STATUS.CLOSE:
+            feed_type = NOTIF_TYPE.MERGE_CLOSE_PULL_REQUEST
+        feed = Feed.create(user.id, repo.id, feed_cate, feed_type, pullRequest.id)
+        feed.save()
+        feedAction = FeedAction()
+        feedAction.add_repo_feed(repo.id, timestamp, feed.id)
+        if repo.auth_type == 2:
+            feedAction.add_pri_user_feed(user.id, timestamp, feed.id)
+        else:
+            feedAction.add_pub_user_feed(user.id, timestamp, feed.id)
 
     @classmethod
     def notif_at(self, feed_type, from_user_id, relative_id, message):
