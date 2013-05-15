@@ -5,7 +5,7 @@ from django.utils.functional import lazy
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.functional import SimpleLazyObject
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from gitshell.gsuser.models import GsuserManager
+from gitshell.gsuser.models import GsuserManager, Userprofile
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from gitshell.objectscache.da import da_post_save
