@@ -206,7 +206,7 @@ def repo_pull_new(request, user_name, repo_name, source_username, source_refs, d
             return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         pullRequest = PullRequest.create(request.user.id, desc_pull_repo.user_id, source_pull_repo.user_id, source_pull_repo.id, source_refs, desc_pull_repo.user_id, desc_pull_repo.id, desc_refs, title, desc, 0, PULL_STATUS.NEW)
         pullRequest.save()
-        FeedManager.notif_pull_request_create(pullRequest)
+        FeedManager.notif_pull_request_status(pullRequest, pullRequest.status)
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
 
     source_repo.init_repo_username()
@@ -291,6 +291,7 @@ def repo_pull_merge(request, user_name, repo_name, pullRequest_id):
     if returncode != 0:
         pullRequest.status = PULL_STATUS.MERGED_FAILED
     pullRequest.save()
+    FeedManager.notif_pull_request_status(pullRequest, pullRequest.status)
     merge_output_split = '----------- starting merge -----------'
     if merge_output_split in output:
         output = output.split(merge_output_split)[1].strip()
@@ -310,6 +311,7 @@ def repo_pull_reject(request, user_name, repo_name, pullRequest_id):
         return json_httpResponse({'result': 'failed'})
     pullRequest.status = PULL_STATUS.REJECTED
     pullRequest.save()
+    FeedManager.notif_pull_request_status(pullRequest, pullRequest.status)
     return json_httpResponse({'result': 'success'})
 
 @repo_permission_check
@@ -325,6 +327,7 @@ def repo_pull_close(request, user_name, repo_name, pullRequest_id):
         return json_httpResponse({'result': 'failed'})
     pullRequest.status = PULL_STATUS.CLOSE
     pullRequest.save()
+    FeedManager.notif_pull_request_status(pullRequest, pullRequest.status)
     return json_httpResponse({'result': 'success'})
 
 def _get_repo_pull_args(user_name, repo_name, pullRequest_id):

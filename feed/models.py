@@ -6,7 +6,7 @@ from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, query_first, queryraw, execute, count, get, get_many, get_version, get_sqlkey
 from gitshell.objectscache.da import get_raw, get_raw_many
 from gitshell.gsuser.models import GsuserManager
-from gitshell.repo.models import RepoManager, PullRequest
+from gitshell.repo.models import RepoManager, PullRequest, PULL_STATUS
 from gitshell.feed.feed import FeedAction
 
 class Feed(models.Model):
@@ -98,14 +98,41 @@ class NotifMessage(models.Model):
         return self.notif_type == NOTIF_TYPE.AT_ISSUE
     def is_at_issue_comment(self):
         return self.notif_type == NOTIF_TYPE.AT_ISSUE_COMMENT
-    def is_merge_create_pull_request(self):
-        return self.notif_type == NOTIF_TYPE.MERGE_CREATE_PULL_REQUEST
+    def is_pull_request_cate(self):
+        return self.notif_cate == NOTIF_CATE.MERGE
 
 class FeedManager():
 
     @classmethod
     def list_notifmessage_by_userId(self, user_id, offset, row_count):
         notifMessages = query(NotifMessage, user_id, 'notifMessage_l_userId', [user_id, offset, row_count])
+        for notifMessage in notifMessages:
+            relative_user = GsuserManager.get_user_by_id(notifMessage.from_user_id)
+            if relative_user is not None:
+                notifMessage.relative_name = relative_user.username
+            if notifMessage.is_at_commit():
+                commitHistory = RepoManager.get_commit_by_id(notifMessage.relative_id)
+                notifMessage.relative_obj = commitHistory
+            elif notifMessage.is_at_issue():
+                issues = RepoManager.get_issues_by_id(notifMessage.relative_id)
+                if issues is not None:
+                    repo = RepoManager.get_repo_by_id(issues.repo_id)
+                    if repo is not None:
+                        issues.username = repo.get_repo_username()
+                        issues.reponame = repo.name
+                notifMessage.relative_obj = issues
+            elif notifMessage.is_at_issue_comment():
+                issues_comment = RepoManager.get_issues_comment(notifMessage.relative_id)
+                issues = RepoManager.get_issues_by_id(issues_comment.issues_id)
+                if issues is not None:
+                    repo = RepoManager.get_repo_by_id(issues.repo_id)
+                    if repo is not None:
+                        issues_comment.username = repo.get_repo_username()
+                        issues_comment.reponame = repo.name
+                notifMessage.relative_obj = issues_comment
+            elif notifMessage.is_pull_request_cate():
+                pullRequest = RepoManager.get_pullRequest_by_id(notifMessage.relative_id)
+                notifMessage.relative_obj = pullRequest
         return notifMessages
 
     @classmethod
@@ -207,13 +234,38 @@ class FeedManager():
         self.notif_at(NOTIF_TYPE.AT_ISSUE_COMMENT, from_user_id, issue_comment_id, issue_comment_message)
 
     @classmethod
-    def notif_pull_request_create(self, pullRequest):
-        merge_user_profile = GsuserManager.get_userprofile_by_id(pullRequest.merge_user_id)
-        if merge_user_profile is not None:
-            notifMessage = NotifMessage.create(FEED_CATE.MERGE, FEED_TYPE.MERGE_CREATE_PULL_REQUEST, pullRequest.pull_user_id, pullRequest.merge_user_id, pullRequest.id)
-            notifMessage.save()
+    def notif_pull_request_status(self, pullRequest, pullStatus):
+        notfi_type = NOTIF_TYPE.MERGE_CREATE_PULL_REQUEST
+        message = ''
+        if pullStatus == PULL_STATUS.NEW:
+            message = 'created'
+            merge_user_profile = GsuserManager.get_userprofile_by_id(pullRequest.merge_user_id)
+            if merge_user_profile is not None:
+                notifMessage = NotifMessage.create(NOTIF_CATE.MERGE, NOTIF_TYPE.MERGE_CREATE_PULL_REQUEST, pullRequest.pull_user_id, pullRequest.merge_user_id, pullRequest.id)
+                notifMessage.message = message
+                notifMessage.save()
             merge_user_profile.unread_message = merge_user_profile.unread_message + 1
             merge_user_profile.save()
+            return
+        if pullStatus == PULL_STATUS.MERGED_FAILED:
+            notif_type = NOTIF_TYPE.MERGE_MERGED_FAILED_PULL_REQUEST
+            message = 'merge failed'
+        elif pullStatus == PULL_STATUS.MERGED:
+            notif_type = NOTIF_TYPE.MERGE_MERGED_PULL_REQUEST
+            message = 'merged'
+        elif pullStatus == PULL_STATUS.REJECTED:
+            notif_type = NOTIF_TYPE.MERGE_REJECTED_PULL_REQUEST
+            message = 'rejected'
+        elif pullStatus == PULL_STATUS.CLOSE:
+            notif_type = NOTIF_TYPE.MERGE_CLOSE_PULL_REQUEST
+            message = 'closed'
+        pull_user_profile = GsuserManager.get_userprofile_by_id(pullRequest.pull_user_id)
+        if pull_user_profile is not None:
+            notifMessage = NotifMessage.create(NOTIF_CATE.MERGE, notif_type, pullRequest.merge_user_id, pullRequest.pull_user_id, pullRequest.id)
+            notifMessage.message = message
+            notifMessage.save()
+        pull_user_profile.unread_message = pull_user_profile.unread_message + 1
+        pull_user_profile.save()
 
 class FeedUtils():
 
@@ -273,7 +325,7 @@ class ISSUE_ATTR_DICT:
 class NOTIF_CATE:
 
     AT = 0
-    MESSAGE = 1
+    MERGE = 1
 
 class NOTIF_TYPE:
 
@@ -282,6 +334,11 @@ class NOTIF_TYPE:
     AT_ISSUE_COMMENT = 2
 
     MERGE_CREATE_PULL_REQUEST = 100
+    MERGE_MERGED_PULL_REQUEST = 101
+    MERGE_MERGED_FAILED_PULL_REQUEST = 102
+    MERGE_REJECTED_PULL_REQUEST = 103
+    MERGE_CLOSE_PULL_REQUEST = 104
+    MERGE_COMMENT_ON_PULL_REQUEST = 105
     
 class FEED_CATE:
 
@@ -298,9 +355,10 @@ class FEED_TYPE:
 
     MERGE_CREATE_PULL_REQUEST = 100
     MERGE_MERGED_PULL_REQUEST = 101
-    MERGE_COMMENT_ON_PULL_REQUEST = 102
+    MERGE_MERGED_FAILED_PULL_REQUEST = 102
     MERGE_REJECTED_PULL_REQUEST = 103
     MERGE_CLOSE_PULL_REQUEST = 104
+    MERGE_COMMENT_ON_PULL_REQUEST = 105
 
     TODO_CREATE = 200
     TODO_DOING = 201

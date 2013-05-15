@@ -176,33 +176,6 @@ def notif(request):
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.NOTIF)
     notifMessages = FeedManager.list_notifmessage_by_userId(request.user.id, 0, 100)
-    for notifMessage in notifMessages:
-        relative_user = GsuserManager.get_user_by_id(notifMessage.from_user_id)
-        if relative_user is not None:
-            notifMessage.relative_name = relative_user.username
-        if notifMessage.is_at_commit():
-            commitHistory = RepoManager.get_commit_by_id(notifMessage.relative_id)
-            notifMessage.relative_obj = commitHistory
-        elif notifMessage.is_at_issue():
-            issues = RepoManager.get_issues_by_id(notifMessage.relative_id)
-            if issues is not None:
-                repo = RepoManager.get_repo_by_id(issues.repo_id)
-                if repo is not None:
-                    issues.username = repo.get_repo_username()
-                    issues.reponame = repo.name
-            notifMessage.relative_obj = issues
-        elif notifMessage.is_at_issue_comment():
-            issues_comment = RepoManager.get_issues_comment(notifMessage.relative_id)
-            issues = RepoManager.get_issues_by_id(issues_comment.issues_id)
-            if issues is not None:
-                repo = RepoManager.get_repo_by_id(issues.repo_id)
-                if repo is not None:
-                    issues_comment.username = repo.get_repo_username()
-                    issues_comment.reponame = repo.name
-            notifMessage.relative_obj = issues_comment
-        elif notifMessage.is_merge_create_pull_request():
-            pullRequest = RepoManager.get_pullRequest_by_id(notifMessage.relative_id)
-            notifMessage.relative_obj = pullRequest
     if request.userprofile.unread_message != 0:
         request.userprofile.unread_message = 0
         request.userprofile.save()
