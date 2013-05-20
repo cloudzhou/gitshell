@@ -7,17 +7,14 @@ class LoginForm(forms.Form):
     #captcha = CaptchaField()
     rememberme = forms.BooleanField(required=False)
 
-class JoinForm0(forms.Form):
+class JoinForm(forms.Form):
     email = forms.EmailField()
-    captcha = CaptchaField()
-
-class JoinForm1(forms.Form):
-    name = forms.CharField(max_length=12)
+    username = forms.CharField(max_length=12)
     password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False))
+    #captcha = CaptchaField()
 
 class ResetpasswordForm0(forms.Form):
     email = forms.EmailField()
-    captcha = CaptchaField()
 
 class ResetpasswordForm1(forms.Form):
     password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False))

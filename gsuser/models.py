@@ -56,6 +56,14 @@ class GsuserManager():
             return None 
 
     @classmethod
+    def get_user_by_email(self, email):
+        try:
+            user = User.objects.get(email=email)
+            return user
+        except User.DoesNotExist:
+            return None 
+
+    @classmethod
     def list_user_by_ids(self, user_ids):
         return get_many(User, user_ids)
 
@@ -107,4 +115,18 @@ class GsuserManager():
     @classmethod
     def get_recommend_by_id(self, rid):
         return get(Recommend, rid)
+
+COMMON_EMAIL_DOMAIN = {
+    'qq.com': 'mail.qq.com',
+    '163.com': 'mail.163.com',
+    '126.com': '126.com',
+    'sina.com': 'mail.sina.com.cn',
+    'yahoo.com.cn': 'cn.mail.yahoo.com',
+    'hotmail.com': 'hotmail.com',
+    'gmail.com': 'gmail.com',
+    'sohu.com': 'mail.sohu.com',
+    'yahoo.cn': 'cn.mail.yahoo.com',
+    'tom.com': 'mail.tom.com',
+    'live.com': 'mail.live.com',
+}
 

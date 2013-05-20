@@ -13,8 +13,8 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate as auth_authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
-from gitshell.gsuser.Forms import LoginForm, JoinForm0, JoinForm1, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
-from gitshell.gsuser.models import Recommend, Userprofile, GsuserManager
+from gitshell.gsuser.Forms import LoginForm, JoinForm, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
+from gitshell.gsuser.models import Recommend, Userprofile, GsuserManager, COMMON_EMAIL_DOMAIN
 from gitshell.gsuser.middleware import MAIN_NAVS
 from gitshell.repo.models import RepoManager
 from gitshell.stats.models import StatsManager
@@ -170,6 +170,24 @@ def recommend(request, user_name):
     return render_to_response('user/recommend.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+@require_http_methods(["POST"])
+def find(request):
+    user = None
+    is_user_exist = False
+    username = request.POST.get('username')
+    if username is not None:
+        if username in MAIN_NAVS:
+            is_user_exist = True
+        user = GsuserManager.get_user_by_name(username)
+    email = request.POST.get('email')
+    if email is not None:
+        user = GsuserManager.get_user_by_email(email)
+    if user is not None:
+        is_user_exist = True
+    response_dictionary = { 'is_user_exist': is_user_exist }
+    return json_httpResponse(response_dictionary)
+
 @login_required
 @require_http_methods(["POST"])
 def recommend_delete(request, user_name, recommend_id):
@@ -251,55 +269,57 @@ def join(request, step):
     if step is None:
         step = '0'
     error = u''
-    joinForm0 = JoinForm0()
+    joinForm = JoinForm()
     if step == '0' and request.method == 'POST':
-        joinForm0 = JoinForm0(request.POST)
-        if joinForm0.is_valid():
+        joinForm = JoinForm(request.POST)
+        if joinForm.is_valid():
             random_hash = '%032x' % random.getrandbits(128)
-            email = joinForm0.cleaned_data['email']
-            try:
-                user = User.objects.get(email=email)
-            except User.DoesNotExist:
-                user = None
-            if user is None:
-                cache.set(random_hash, email)
+            email = joinForm.cleaned_data['email']
+            username = joinForm.cleaned_data['username']
+            password = joinForm.cleaned_data['password']
+            user_by_email = GsuserManager.get_user_by_email(email)
+            user_by_username = GsuserManager.get_user_by_name(username)
+            if user_by_email is None and user_by_username is None:
+                cache.set(random_hash + '_email', email)
+                cache.set(random_hash + '_username', username)
+                cache.set(random_hash + '_password', password)
                 active_url = 'http://www.gitshell.com/join/%s/' % random_hash
                 message = u'尊敬的gitshell用户：\n感谢您选择了gitshell，请点击下面的地址激活你在gitshell的帐号：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
                 send_mail('[gitshell]注册邮件', message, 'noreply@gitshell.com', [email], fail_silently=False)
-                return HttpResponseRedirect('/join/1/')
-            error = u'%s 已经注册，如果您是邮箱的主人，可以执行重置密码' % email
+                goto = ''
+                email_suffix = email.split('@')[-1]
+                if email_suffix in COMMON_EMAIL_DOMAIN:
+                    goto = COMMON_EMAIL_DOMAIN[email_suffix]
+                return HttpResponseRedirect('/join/1/?goto=' + goto)
+            error = u'email: %s 或者 name: %s 已经注册，如果您是邮箱的主人，可以执行重置密码' % (email, username)
         else:
             error = u'请检查邮箱，验证码是否正确，注意大小写和前后空格。'
-    joinForm1 = JoinForm1()
-    if len(step) > 1 and request.method == 'POST':
-        joinForm1 = JoinForm1(request.POST)
-        if joinForm1.is_valid():
-            email = cache.get(step)
-            if email is None or not email_re.match(email):
-                return HttpResponseRedirect('/join/4/')
-            name = joinForm1.cleaned_data['name']
-            password = joinForm1.cleaned_data['password']
-            if name is not None and re.match("^\w+$", name) and name not in MAIN_NAVS:
-                try:
-                    user = User.objects.create_user(name, email, password)
-                except IntegrityError:
-                    user = None
-                if user is not None and user.is_active:
-                    user = auth_authenticate(username=user.username, password=password)
-                    if user is not None and user.is_active:
-                        auth_login(request, user)
-                        cache.delete(step)
-                        userprofile = Userprofile()
-                        userprofile.id = user.id
-                        userprofile.imgurl = hashlib.md5(user.email.lower()).hexdigest()
-                        userprofile.save()
-                        return HttpResponseRedirect('/join/3/')
-                error = u'用户名 %s 或者 邮箱 %s 已经注册' % (name, email)
-            else:
-                error = u'请检查用户名是否规范[A-Za-z0-9_]'
+    if len(step) > 1:
+        email = cache.get(step + '_email')
+        username = cache.get(step + '_username')
+        password = cache.get(step + '_password')
+        if email is None or username is None or password is None or not email_re.match(email) or not re.match("^\w+$", username) or username in MAIN_NAVS:
+            return HttpResponseRedirect('/join/4/')
+        user = None
+        try:
+            user = User.objects.create_user(username, email, password)
+        except IntegrityError:
+            print 'user IntegrityError'
+        if user is not None and user.is_active:
+            user = auth_authenticate(username=user.username, password=password)
+            if user is not None and user.is_active:
+                auth_login(request, user)
+                cache.delete(step + '_email')
+                cache.delete(step + '_username')
+                cache.delete(step + '_password')
+                userprofile = Userprofile()
+                userprofile.id = user.id
+                userprofile.imgurl = hashlib.md5(user.email.lower()).hexdigest()
+                userprofile.save()
+                return HttpResponseRedirect('/join/3/')
         else:
             error = u'请检查用户名，密码是否正确，注意大小写和前后空格。'
-    response_dictionary = {'step': step, 'error': error, 'joinForm0': joinForm0, 'joinForm1': joinForm1}
+    response_dictionary = {'step': step, 'error': error, 'joinForm': joinForm}
     return render_to_response('user/join.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block container %}
 <style>
 .command { padding: 5px; margin-left: 20px; margin-bottom: 5px; font-size: 16px }
 </style>
+{% block container %}
 {% ifequal step '3'  %}
 <div class="page-header">
         <h1>:-), {{ user.username }}，欢迎您</h1>
@@ -14,46 +14,36 @@
 {% endifequal %}
 <div class="row">
 {% ifequal step '0' %}
-    <div class="span9">
-        <form class="well form-inline" action="/join/0/" method="post">
-            {% csrf_token %}
-            {{ joinForm0.email }}
-            &nbsp;·&nbsp;
-            {{ joinForm0.captcha }}
-            <button class="btn" type="submit">注册</button>
-        </form>
-        {% if error %}
-        <div class="alert">
-            <a data-dismiss="alert" class="close">×</a>
-            <strong>出错了！</strong> {{ error }}
-        </div>
-        {% endif %}
-    </div>
-{% endifequal %}
-{% ifequal step '1' %}
-    <div class="span12">
-    <p class="lead">谢谢你，已经发送注册邮件，请在半小时内激活，注意查收</p>
-    <p class="lead">（部分运营商会拦截邮件，您有可能需要查看一下垃圾邮件）</p>
-    <small>如果发送邮件失败，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="/static/img/sina_logo.png"/>&nbsp;gitshell</a></small>
-    </div>
-{% endifequal %}
-{% if step|length > 1 %}
     <div class="span7">
         <form class="form-horizontal" action="" method="post">
             {% csrf_token %}
             <fieldset>
                 <div class="control-group">
-                    <label for="id_name" class="control-label">用户名</label>
+                    <label for="id_username" class="control-label">用户名</label>
                     <div class="controls">
-                        {{ joinForm1.name }}
-                        <span class="help-inline">注册后不可修改, 最长12字符</span>
+                        {{ joinForm.username }}
+                        <code id="id_username_alert" class="hide">
+                            用户名已经存在
+                        </code>
                     </div>
                 </div>
                 <div class="control-group">
-                    <label for="id_password" class="control-label">密码</label>
+                    <label for="id_email" class="control-label">邮箱</label>
                     <div class="controls">
-                        {{ joinForm1.password }}
+                        {{ joinForm.email }}
+                        <code id="id_email_alert" class="hide">
+                            邮箱已经存在
+                        </code>
                     </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_unencrypt_password" class="control-label">密码</label>
+                    <div class="controls">
+                        <input type="password" maxlength="64" name="unencrypt_password" id="id_unencrypt_password" placeholder="输入密码，注意大小写">
+                    </div>
+                    <span style="display: none">
+                        {{ joinForm.password }}
+                    </span>
                 </div>
                 {% if error %}
                 <div class="alert">
@@ -67,7 +57,14 @@
             </fieldset>
         </form>
     </div>
-{% endif %}
+{% endifequal %}
+{% ifequal step '1' %}
+    <div class="span12">
+    <p class="lead">谢谢你，已经发送注册邮件，请在半小时内激活，注意查收。 <a id="id_goto_a" target="_blank" class="hide"><button class="btn btn-success">点击到<span id="id_goto_domain"></span></button></a></p>
+    <p class="lead">（部分运营商会拦截邮件，您有可能需要查看一下垃圾邮件）</p>
+    <small>如果发送邮件失败，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="/static/img/sina_logo.png"/>&nbsp;gitshell</a></small>
+    </div>
+{% endifequal %}
 {% ifequal step '3' %}
     <div class="span12">
     <p class="lead">为了gitshell能更好的为您服务，你有必要看一下：</p>
@@ -138,24 +135,58 @@ cat ~/.ssh/gitshell.com_rsa.pub
 <script>
 /*global jQuery, window */
 $(function(){
-    var md5_user_passwd = function() {
-        $('#id_password').val(window.md5($('#id_password').val()));
-    },
-    join0_init = function() {
-        $('#id_email').attr('placeholder', '输入邮箱');
-        $('#id_captcha_1').attr('placeholder', '输入验证码');
-    };
-    join1_init = function() {
-        $('#id_name').attr('placeholder', '用户名，[A-Za-z0-9_]');
+    var join_init = function() {
+        $('#id_username').attr('placeholder', '用户名，[A-Za-z0-9_]，唯一');
+        $('#id_email').attr('placeholder', '输入邮箱，唯一');
         $('#id_password').attr('placeholder', '密码，包含数字和字母');
     };
+
 {% ifequal step '0' %}
-    join0_init();
+    join_init();
 {% endifequal %}
-{% if step|length > 1 %}
-    join1_init();
-{% endif %}
+
+    var md5_user_passwd = function() {
+        $('#id_password').val(window.md5($('#id_unencrypt_password').val()));
+    };
     $('#id_join_submit').on('click', md5_user_passwd);
+
+    $('#id_username').change(function(){
+        var username = $(this).val();
+        $.post('/ajax/user/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', username: username}, function(json){
+            if(json.is_user_exist) {
+                $('#id_username_alert').show();
+            } else {
+                $('#id_username_alert').hide();
+            };
+        });
+    });
+    $('#id_email').change(function(){
+        var email = $(this).val();
+        $.post('/ajax/user/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', email: email}, function(json){
+            if(json.is_user_exist) {
+                $('#id_email_alert').show();
+            } else {
+                $('#id_email_alert').hide();
+            };
+        });
+    });
+    function goto_button() {
+        var prmstr = window.location.search.substr(1);
+        var prmarr = prmstr.split ("&");
+        var params = {};
+    
+        for ( var i = 0; i < prmarr.length; i++) {
+            var tmparr = prmarr[i].split("=");
+            params[tmparr[0]] = tmparr[1];
+        }
+        var _goto = params['goto'];
+        if(_goto != '') {
+            $('#id_goto_a').attr('href', 'http://' + _goto);
+            $('#id_goto_domain').text(_goto);
+            $('#id_goto_a').show();
+        }
+    }
+    goto_button();
 });
 </script>
 {% endblock %}
