@@ -131,10 +131,10 @@ def response_full_git_command(quote, pre_command, user, repo):
     if quote in blocks_quote:
         blocks = blocks_quote[quote]
         kbytes = kbytes_quote[quote]
-    abs_repopath = repo.get_abs_repopath(user.username)
+    abs_repopath = repo.get_abs_repopath()
     if not os.path.exists(abs_repopath):
         return not_git_command()
-    return HttpResponse("ulimit -f %s && ulimit -m %s && ulimit -v %s && /usr/bin/git-shell -c \"%s '%s'\"" % (blocks, kbytes, kbytes, pre_command, repo.get_abs_repopath(user.username)), content_type="text/plain")
+    return HttpResponse("ulimit -f %s && ulimit -m %s && ulimit -v %s && /usr/bin/git-shell -c \"%s '%s'\"" % (blocks, kbytes, kbytes, pre_command, repo.get_abs_repopath()), content_type="text/plain")
 
 def not_git_command():
     return HttpResponse("'git repoitory size limit exceeded or you have not rights or does not appear to be a git command'", content_type="text/plain")

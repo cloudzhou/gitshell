@@ -121,7 +121,7 @@ class FeedManager():
                 if issues is not None:
                     repo = RepoManager.get_repo_by_id(issues.repo_id)
                     if repo is not None:
-                        issues.username = repo.get_repo_username()
+                        issues.username = repo.username
                         issues.reponame = repo.name
                 notifMessage.relative_obj = issues
             elif notifMessage.is_at_issue_comment():
@@ -130,7 +130,7 @@ class FeedManager():
                 if issues is not None:
                     repo = RepoManager.get_repo_by_id(issues.repo_id)
                     if repo is not None:
-                        issues_comment.username = repo.get_repo_username()
+                        issues_comment.username = repo.username
                         issues_comment.reponame = repo.name
                 notifMessage.relative_obj = issues_comment
             elif notifMessage.is_pull_request_cate():

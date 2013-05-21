@@ -44,10 +44,8 @@ def do_event(event):
         copy_from_bare = True
     from_repo_path = GIT_BARE_REPO_PATH
     if not copy_from_bare:
-        from_user = GsuserManager.get_user_by_id(from_repo.user_id)
-        from_repo_path = from_repo.get_abs_repopath(from_user.username)
-    to_user = GsuserManager.get_user_by_id(to_repo.user_id)
-    to_repo_path = to_repo.get_abs_repopath(to_user.username)
+        from_repo_path = from_repo.get_abs_repopath()
+    to_repo_path = to_repo.get_abs_repopath()
     if not os.path.exists(from_repo_path):
         print 'from_repo_path: %s is not exists, clone failed' % from_repo_path
         return

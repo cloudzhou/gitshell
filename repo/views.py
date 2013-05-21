@@ -88,7 +88,7 @@ def repo_raw_tree(request, user_name, repo_name, refs, path):
     if repo is None or path.endswith('/'):
         raise Http404
     gitHandler = GitHandler()
-    abs_repopath = repo.get_abs_repopath(user_name)
+    abs_repopath = repo.get_abs_repopath()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
     return HttpResponse(blob, content_type="text/plain")
@@ -103,7 +103,7 @@ def repo_ls_tree(request, user_name, repo_name, refs, path, current):
     if path is None or path == '':
         path = '.'
     gitHandler = GitHandler()
-    abs_repopath = repo.get_abs_repopath(user_name)
+    abs_repopath = repo.get_abs_repopath()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     is_tree = True ; tree = {} ; blob = u''; lang = 'Plain'; brush = 'plain'
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
@@ -138,7 +138,7 @@ def repo_commits(request, user_name, repo_name, refs, path):
     if path is None or path == '':
         path = '.'
     gitHandler = GitHandler()
-    abs_repopath = repo.get_abs_repopath(user_name)
+    abs_repopath = repo.get_abs_repopath()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     commits = gitHandler.repo_log_file(abs_repopath, commit_hash, '0000000', path)
     response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'path': path, 'commits': commits}
@@ -173,7 +173,6 @@ def repo_default_pull_new(request, user_name, repo_name):
             raise Http404
         child_repo = RepoManager.get_childrepo_by_user_forkrepo(request.user, repo)
         if child_repo is not None:
-            child_repo.init_repo_username()
             source_username = child_repo.username
             source_refs = 'master'
     return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
@@ -211,8 +210,6 @@ def repo_pull_new(request, user_name, repo_name, source_username, source_refs, d
         FeedManager.feed_pull_change(pullRequest, pullRequest.status)
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
 
-    source_repo.init_repo_username()
-    desc_repo.init_repo_username()
     pull_repo_list = __list_pull_repo(request, repo)
     response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
@@ -247,8 +244,8 @@ def repo_pull_commit(request, user_name, repo_name, pullRequest_id):
     # prepare pullrequest
     gitHandler.prepare_pull_request(pullRequest, source_repo, desc_repo)
 
-    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(source_repo.get_repo_username()), pullRequest.source_refname)
-    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(desc_repo.get_repo_username()), pullRequest.desc_refname)
+    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), pullRequest.source_refname)
+    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), pullRequest.desc_refname)
     commits = gitHandler.repo_log_file(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, path)
     return json_httpResponse({'commits': commits, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
     
@@ -265,8 +262,8 @@ def repo_pull_diff(request, user_name, repo_name, pullRequest_id):
     # prepare pullrequest
     gitHandler.prepare_pull_request(pullRequest, source_repo, desc_repo)
 
-    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(source_repo.get_repo_username()), pullRequest.source_refname)
-    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(desc_repo.get_repo_username()), pullRequest.desc_refname)
+    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), pullRequest.source_refname)
+    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), pullRequest.desc_refname)
     diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
         diff = gitHandler.repo_diff(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, path)
@@ -346,7 +343,7 @@ def _get_repo_pull_args(user_name, repo_name, pullRequest_id):
     desc_repo = RepoManager.get_repo_by_id(pullRequest.desc_repo_id)
     if source_repo is None or desc_repo is None:
         return None
-    pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.get_repo_username(), desc_repo.name)
+    pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.username, desc_repo.name)
     return [repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path]
     
 @repo_permission_check
@@ -358,7 +355,7 @@ def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path)
     if path is None or path == '':
         path = '.'
     gitHandler = GitHandler()
-    abs_repopath = repo.get_abs_repopath(user_name)
+    abs_repopath = repo.get_abs_repopath()
     diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
         diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
@@ -729,7 +726,7 @@ def repo_refs(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'branches': [], 'tags': []})
-    repopath = repo.get_abs_repopath(user_name)
+    repopath = repo.get_abs_repopath()
 
     gitHandler = GitHandler()
     branches_refs = gitHandler.repo_ls_branches(repo, repopath)
@@ -761,7 +758,7 @@ def repo_fork(request, user_name, repo_name):
         has_error = True
     if has_error:
         return json_httpResponse({'result': 'failed', 'message': message})
-    fork_repo = Repo.create(request.user.id, repo.id, repo.name, repo.desc, repo.lang, repo.auth_type, repo.used_quote)
+    fork_repo = Repo.create(request.user.id, repo.id, request.user.username, repo.name, repo.desc, repo.lang, repo.auth_type, repo.used_quote)
     fork_repo.status = 1
     fork_repo.save()
     userprofile.used_quote = userprofile.used_quote + repo.used_quote
@@ -823,6 +820,7 @@ def edit(request, user_name, rid):
     elif repo.user_id != request.user.id:
         raise Http404
     repo.user_id = request.user.id
+    repo.username = request.user.username
     repoForm = RepoForm(instance = repo)
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
@@ -858,7 +856,7 @@ def delete(request, user_name, repo_name):
         gsuser.save()
         repo.save()
         delete_path = '%s/%s' % (DELETE_REPO_PATH, repo.id)
-        abs_repopath = repo.get_abs_repopath(request.user.username)
+        abs_repopath = repo.get_abs_repopath()
         if os.path.exists(abs_repopath):
             shutil.move(abs_repopath, delete_path)
         feedAction = FeedAction()
@@ -906,7 +904,6 @@ def __list_pull_repo(request, repo):
     pull_repo_list = RepoManager.list_parent_repo(repo, 10)
     child_repo = RepoManager.get_childrepo_by_user_forkrepo(request.user, repo)
     if child_repo is not None:
-        child_repo.init_repo_username()
         pull_repo_list = [child_repo] + pull_repo_list
     return pull_repo_list
 

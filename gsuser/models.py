@@ -5,6 +5,8 @@ from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, get, get_many, execute, count, countraw
 
 class Userprofile(BaseModel):
+    username = models.CharField(max_length=30, null=True)
+    email = models.CharField(max_length=75, null=True)
     tweet = models.CharField(max_length=128, null=True)
     nickname = models.CharField(max_length=30, null=True)
     website = models.CharField(max_length=64, null=True) 

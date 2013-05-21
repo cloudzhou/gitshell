@@ -239,7 +239,7 @@ def get_repo(user, reponame):
 def get_repopath(user, repo):
     if user is None or repo is None:
         return None
-    return repo.get_abs_repopath(user.username)
+    return repo.get_abs_repopath()
 
 def update_gsuser_repo_quote(gsuser, repo, diff_size):
     gsuser = GsuserManager.get_userprofile_by_id(gsuser.id)

@@ -314,6 +314,8 @@ def join(request, step):
                 cache.delete(step + '_password')
                 userprofile = Userprofile()
                 userprofile.id = user.id
+                userprofile.username = user.username
+                userprofile.email = user.email
                 userprofile.imgurl = hashlib.md5(user.email.lower()).hexdigest()
                 userprofile.save()
                 return HttpResponseRedirect('/join/3/')

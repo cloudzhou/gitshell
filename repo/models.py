@@ -13,6 +13,7 @@ from gitshell.objectscache.models import CacheKey
 class Repo(BaseModel):
     user_id = models.IntegerField()
     fork_repo_id = models.IntegerField(default=0)
+    username = models.CharField(max_length=64)
     name = models.CharField(max_length=64)
     desc = models.CharField(max_length=512, default='')
     lang = models.CharField(max_length=16)
@@ -27,10 +28,11 @@ class Repo(BaseModel):
     status = models.IntegerField(default=0) 
 
     @classmethod
-    def create(self, user_id, fork_repo_id, name, desc, lang, auth_type, used_quote):
+    def create(self, user_id, fork_repo_id, username, name, desc, lang, auth_type, used_quote):
         repo = Repo(
             user_id = user_id,
             fork_repo_id = fork_repo_id,
+            username = username,
             name = name,
             desc = desc,
             lang = lang,
@@ -39,20 +41,13 @@ class Repo(BaseModel):
         )
         return repo
 
-    def get_repo_username(self):
-        user = GsuserManager.get_user_by_id(self.user_id)
-        if user is not None:
-            return user.username
-        return ''
+    def get_relative_repopath(self):
+        relative_repopath = '%s/%s.git' % (self.username, self.name)
+        return relative_repopath
 
-    def init_repo_username(self):
-        self.username = self.get_repo_username()
-
-    def get_abs_repopath(self, user_name):
-        repopath = '%s/%s/%s.git' % (REPO_PATH, user_name, self.name)
-        return repopath
-
-    username = ''
+    def get_abs_repopath(self):
+        abs_repopath = '%s/%s/%s.git' % (REPO_PATH, self.username, self.name)
+        return abs_repopath
 
 class RepoMember(BaseModel):
     repo_id = models.IntegerField()
@@ -104,7 +99,7 @@ class CommitHistory(BaseModel):
 
     def get_repo_username(self):
         repo = RepoManager.get_repo_by_id(self.repo_id)
-        return repo.get_repo_username()
+        return repo.username
 
 class WatchHistory(BaseModel):
     user_id = models.IntegerField(default=0)
@@ -163,8 +158,6 @@ class PullRequest(BaseModel):
         self.merge_user = GsuserManager.get_user_by_id(self.merge_user_id)
         self.source_repo = RepoManager.get_repo_by_id(self.source_repo_id)
         self.desc_repo = RepoManager.get_repo_by_id(self.desc_repo_id)
-        self.source_repo.init_repo_username()
-        self.desc_repo.init_repo_username()
         self.short_title = self.title
         self.short_desc = self.desc
         if len(self.short_title) > 20:
@@ -250,7 +243,6 @@ class RepoManager():
     @classmethod
     def list_parent_repo(self, repo, limit):
         parent_repos = []
-        repo.init_repo_username()
         parent_repos.append(repo)
         parent_repo = repo
         for x in range(0, limit):
@@ -259,7 +251,6 @@ class RepoManager():
             parent_repo = RepoManager.get_repo_by_id(parent_repo.fork_repo_id)
             if parent_repo is None:
                 break
-            parent_repo.init_repo_username()
             parent_repos.append(parent_repo)
         return parent_repos
 

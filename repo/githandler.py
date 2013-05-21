@@ -231,11 +231,11 @@ class GitHandler():
         return self.empty_commit_hash
 
     def prepare_pull_request(self, pullRequest, source_repo, desc_repo):
-        pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.get_repo_username(), desc_repo.name)
-        source_abs_repopath = source_repo.get_abs_repopath(source_repo.get_repo_username())
-        source_remote_name = '%s-%s' % (source_repo.get_repo_username(), source_repo.name)
-        dest_abs_repopath = desc_repo.get_abs_repopath(desc_repo.get_repo_username())
-        desc_remote_name = '%s-%s' % (desc_repo.get_repo_username(), desc_repo.name)
+        pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.username, desc_repo.name)
+        source_abs_repopath = source_repo.get_abs_repopath()
+        source_remote_name = '%s-%s' % (source_repo.username, source_repo.name)
+        dest_abs_repopath = desc_repo.get_abs_repopath()
+        desc_remote_name = '%s-%s' % (desc_repo.username, desc_repo.name)
         action = 'prepare'
         args = [pullrequest_repo_path, source_abs_repopath, source_remote_name, dest_abs_repopath, desc_remote_name, action]
         if not self.is_allowed_paths(args):
@@ -249,13 +249,13 @@ class GitHandler():
             return False
 
     def merge_pull_request(self, pullRequest, source_repo, desc_repo, source_refs, desc_refs, pullrequest_user):
-        pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.get_repo_username(), desc_repo.name)
-        source_abs_repopath = source_repo.get_abs_repopath(source_repo.get_repo_username())
-        source_remote_name = '%s-%s' % (source_repo.get_repo_username(), source_repo.name)
-        dest_abs_repopath = desc_repo.get_abs_repopath(desc_repo.get_repo_username())
-        desc_remote_name = '%s-%s' % (desc_repo.get_repo_username(), desc_repo.name)
+        pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.username, desc_repo.name)
+        source_abs_repopath = source_repo.get_abs_repopath()
+        source_remote_name = '%s-%s' % (source_repo.username, source_repo.name)
+        dest_abs_repopath = desc_repo.get_abs_repopath()
+        desc_remote_name = '%s-%s' % (desc_repo.username, desc_repo.name)
         action = 'merge'
-        pullrequest_commit_message = PULLREQUEST_COMMIT_MESSAGE_TMPL % (source_refs, source_repo.get_repo_username(), source_repo.name, desc_refs, desc_repo.get_repo_username(), desc_repo.name, pullRequest.id, '@' + str(pullrequest_user.username))
+        pullrequest_commit_message = PULLREQUEST_COMMIT_MESSAGE_TMPL % (source_refs, source_repo.username, source_repo.name, desc_refs, desc_repo.username, desc_repo.name, pullRequest.id, '@' + str(pullrequest_user.username))
         print pullrequest_commit_message
         args = [pullrequest_repo_path, source_abs_repopath, source_remote_name, dest_abs_repopath, desc_remote_name, action, source_refs, desc_refs]
         if not self.is_allowed_paths(args):
@@ -278,7 +278,7 @@ class GitHandler():
         commit_hash_dict = {}
         meta = {'branches': branches, 'tags': tags, 'commit_hash': commit_hash_dict}
 
-        repo_path = repo.get_abs_repopath(repo.get_repo_username());
+        repo_path = repo.get_abs_repopath();
         heads_path = '%s/refs/heads' % (repo_path)
         tags_path = '%s/refs/tags' % (repo_path)
         self._append_refs_and_put_dict(heads_path, branches, commit_hash_dict)

@@ -279,7 +279,7 @@ def _fillwith_issue_event(request, feeds, usernames, userIds):
         issue = RepoManager.get_issues_by_id(feed.relative_id)
         if issue is not None:
             repo = RepoManager.get_repo_by_id(issue.repo_id)
-            issue.username = repo.get_repo_username()
+            issue.username = repo.username
             issue.reponame = repo.name
             feed.relative_obj = issue
 
