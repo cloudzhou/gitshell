@@ -24,3 +24,10 @@ create index forkhistory_rid_mtime_idx on repo_forkhistory (visibly, repo_id, mo
 create index watchhistory_rid_mtime_idx on repo_watchhistory (visibly, watch_repo_id, modify_time desc);
 create index scene_uid_idx on todolist_scene (visibly, user_id)
 create index todolist_uid_idx on todolist_todolist (visibly, user_id)
+
+alter table gsuser_userprofile add `username` varchar(30) NOT NULL after `visibly`;
+alter table gsuser_userprofile add `email` varchar(30) NOT NULL after `username`;
+alter table repo_repo add `username` varchar(30) NOT NULL after `fork_repo_id`;
+update gsuser_userprofile as t1 inner join auth_user as t2 on t1.id = t2.id set t1.username = t2.username, t1.email = t2.email;
+update repo_repo as t1 inner join auth_user as t2 on t1.user_id = t2.id set t1.username = t2.username;
+
