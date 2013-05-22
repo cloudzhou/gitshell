@@ -1,97 +1,100 @@
 {% extends "base.html" %}
+
 {% load gstools %}
+
 {% block css %}
-<style type="text/css">
-.shell {padding: 18px; }
-.shell p {font-size: 16px; }
-.hero-unit { padding: 30px; }
-.short_tutorial li {font-size: 16px; margin-bottom: 8px; }
-</style>
+    <style>
+    .shell {padding: 18px; }
+    .shell p {font-size: 16px; }
+    .hero-unit { padding: 30px; }
+    .short_tutorial li {font-size: 16px; margin-bottom: 8px; }
+    </style>
 {% endblock %}
+
 {% block container %}
-<div class="container top-container">
-    <h2 style="text-align: center;">抛弃 x，投入 <img width="80" src="/static/img/git-logo.png"/> 怀抱！</h2>
-    <div class="hero-unit" style="background-color: #D9EDF7;">
+    <div class="container top-container">
+        <h2>抛弃 x，投入 <img width="80" src="/static/img/git-logo.png"/> 怀抱！</h2>
+        <div class="hero-unit">
+            <div class="row">
+                <div class="pull-left shell span4">
+                    <p> &gt; git clone git@gitshell.com:your/repo </p>
+                    <p> &gt; cd repo; vim README.md  </p>
+                    <p> &gt; git add README.md  </p>
+                    <p> &gt; git commit -m "init README.md" </p>
+                    <p> &gt; git push -u origin master </p>
+                    <p> &gt; git <a href="/help/">help</a> </p>
+                </div>
+                <div class="span5">
+                    <h2>Hello Gitster , 欢迎您</h2>
+                    <p>五分钟使用gitshell</p>
+                    <ul class="short_tutorial">
+                        <li><a href="/join/">加入</a> gitshell</li>
+                        <li><a href="/login/">登录</a> gitshell</li>
+                        <li><a href="/settings/sshpubkey/">创建公钥</a> 用于 git 权限认证</li>
+                        {% if user.is_authenticated %}
+                            <li><a href="/{{ user.username }}/repo/edit/0/">添加</a> 新的初始仓库</li>
+                        {% else %}
+                            <li><a href="javascript: void(0);">添加</a> 新的初始仓库</li>
+                        {% endif %}
+                        <li>&gt; git clone 到本地，添加编辑代码</li>
+                        <li><a href="/home/">开始</a> git 的历程吧</li>
+                    </ul>
+                    <p><a href="/join/" class="btn btn-primary">注册</a>
+                    <a href="/login/" class="btn btn-primary">登录</a></p>
+                    <div class="muted">更多帮助，查看<a href="/help/">这里</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span4">
+            <img src="/static/img/git-logo.png" class="bs-icon"/>
+            <h2>专注于 git 托管</h2>
+            <p>gitshell 专注于 git 托管，这是一切的基础</p>
+            <p>尽最大的努力提高用户体验，安全，多重备份</p>
+            <p>迭代更新频繁，持续给用户带来价值，code wins</p>
+        </div>
+        <div class="span4">
+            <img src="/static/img/glyphicons_042_group.png" class="bs-icon">
+            <h2>团队协作，快速开发</h2>
+            <p>gitshell 适合于小团队基于 git 的快速迭代开发</p>
+            <p>仓库协同开发，issues，commit，视图统计</p>
+            <p>加入社交因素，快速获知，让每个成员置身开发中</p>
+        </div>
+        <div class="span4">
+            <img src="/static/img/glyphicons_082_roundabout.png" class="bs-icon">
+            <h2>良好的社区氛围</h2>
+            <p>开放的开发社区，<a href="/cloudzhou/gitshell/">gitshell</a> 仓库 <a href="/cloudzhou/gitshell/issues/">issues</a> 公开</p>
+            <p>技能，评价，git pull 请求，mail 通知</p>
+            <p>对“噪音”零容忍，我们相信自由来自于自律</p>
+        </div>
+    </div>
+    <div class="page-header">
+        <h2>最新 commit 信息</h2>
+    </div>
+    <div class="row">
+        <div class="span5">
+        {% load humanize %}
         <div class="row">
-            <div class="pull-left shell span4">
-                <p> &gt; git clone git@gitshell.com:your/repo </p>
-                <p> &gt; cd repo; vim README.md  </p>
-                <p> &gt; git add README.md  </p>
-                <p> &gt; git commit -m "init README.md" </p>
-                <p> &gt; git push -u origin master </p>
-                <p> &gt; git <a href="/help/">help</a> </p>
+        {% for repo in repos %}
+            <div class="span5">
+                <h3>{{forloop.counter}}. <img class="avatar" src="https://gravatar.com/avatar/{{userimgurl_dict|keyvalue:repo.user_id}}?s=20"><a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
+                <a href="/{{username_dict|keyvalue:repo.user_id}}/{{repo.name}}/">{{repo.name}}</a>
+                <span>
+                <a data-original-title="提交次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♯ {{repo.commit}}</a>
+                <a data-original-title="关注数量" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♥ {{repo.watch}}</a>
+                <a data-original-title="衍生次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♂ {{repo.fork}}</a></span></h3>
+                <div>
+                    <h6>创建于 {{repo.modify_time|date:'y/m/d'}}，最近更新 {{repo.create_time|date:'y/m/d'}}</h6> 
+                    <p>{{repo.desc}}</p>
+                </div>
             </div>
-            <div class="span5" style="padding-left: 10px">
-                <h2>Hello Gitster , 欢迎您</h2>
-                <p>五分钟使用gitshell</p>
-                <ul class="short_tutorial">
-                    <li><a href="/join/">加入</a> gitshell</li>
-                    <li><a href="/login/">登录</a> gitshell</li>
-                    <li><a href="/settings/sshpubkey/">创建公钥</a> 用于 git 权限认证</li>
-                    {% if user.is_authenticated %}
-                        <li><a href="/{{ user.username }}/repo/edit/0/">添加</a> 新的初始仓库</li>
-                    {% else %}
-                        <li><a href="javascript: void(0);">添加</a> 新的初始仓库</li>
-                    {% endif %}
-                    <li>&gt; git clone 到本地，添加编辑代码</li>
-                    <li><a href="/home/">开始</a> git 的历程吧</li>
-                </ul>
-                <p><a href="/join/" class="btn btn-primary">注册</a>
-                <a href="/login/" style="margin-left: 15px" class="btn btn-primary">登录</a></p>
-                <div class="muted">更多帮助，查看<a href="/help/">这里</a></div>
-            </div>
+        {% endfor %}
+        </div>
         </div>
     </div>
-</div>
-<div class="row">
-    <div class="span4">
-        <img src="/static/img/git-logo.png" width=55 class="bs-icon"/>
-        <h2>专注于 git 托管</h2>
-        <p>gitshell 专注于 git 托管，这是一切的基础</p>
-        <p>尽最大的努力提高用户体验，安全，多重备份</p>
-        <p>迭代更新频繁，持续给用户带来价值，code wins</p>
-    </div>
-    <div class="span4">
-        <img src="/static/img/glyphicons_042_group.png" class="bs-icon">
-        <h2>团队协作，快速开发</h2>
-        <p>gitshell 适合于小团队基于 git 的快速迭代开发</p>
-        <p>仓库协同开发，issues，commit，视图统计</p>
-        <p>加入社交因素，快速获知，让每个成员置身开发中</p>
-    </div>
-    <div class="span4">
-        <img src="/static/img/glyphicons_082_roundabout.png" class="bs-icon">
-        <h2>良好的社区氛围</h2>
-        <p>开放的开发社区，<a href="/cloudzhou/gitshell/">gitshell</a> 仓库 <a href="/cloudzhou/gitshell/issues/">issues</a> 公开</p>
-        <p>技能，评价，git pull 请求，mail 通知</p>
-        <p>对“噪音”零容忍，我们相信自由来自于自律</p>
-    </div>
-</div>
-<div class="page-header">
-    <h2>最新 commit 信息</h2>
-</div>
-<div class="row">
-    <div class="span5">
-    {% load humanize %}
-    <div class="row" style="margin: 0px;">
-    {% for repo in repos %}
-        <div class="span5" style="margin: 0px">
-            <h3>{{forloop.counter}}. <img class="avatar" style="margin: 10px;" src="https://gravatar.com/avatar/{{userimgurl_dict|keyvalue:repo.user_id}}?s=20"><a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
-            <a href="/{{username_dict|keyvalue:repo.user_id}}/{{repo.name}}/">{{repo.name}}</a>
-            <span style="float: right;">
-            <a data-original-title="提交次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♯ {{repo.commit}}</a>
-            <a data-original-title="关注数量" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♥ {{repo.watch}}</a>
-            <a data-original-title="衍生次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♂ {{repo.fork}}</a></span></h3>
-            <div style="margin-left: 30px;">
-                <h6 style="margin-bottom: 3px">
-                创建于 {{repo.modify_time|date:'y/m/d'}}，最近更新 {{repo.create_time|date:'y/m/d'}}</h6> 
-                <p>{{repo.desc}}</p>
-            </div>
-        </div>
-    {% endfor %}
-    </div>
-    </div>
-</div>
 {% endblock %}
+
 {% block js %}
 {% endblock %}
 

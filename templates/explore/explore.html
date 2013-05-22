@@ -1,134 +1,138 @@
 {% extends "base.html" %}
-{% load gstools %}
-{% block css %}
-<style>
-.user_chart {min-width: 400px; height: 200px; margin: 0 auto}
-.c_repo_attr {margin-right: 10px}
-</style>
-{% endblock %}
-{% block container %}
-<div class="row">
-    <div class="span5">
-        <div class="page-header" style="padding-bottom: 0px">
-            <div style="margin-bottom: 10px">
-                <h3>活跃仓库列表</h3>
-            </div>
-        </div>
-        {%for repo in repos%}
-        <div class="c_repo">
-            <h3>{{forloop.counter}}. <img class="avatar" style="margin: 10px;" src="https://gravatar.com/avatar/{{userimgurl_dict|keyvalue:repo.user_id}}?s=25"><a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
-            <a href="/{{username_dict|keyvalue:repo.user_id}}/{{repo.name}}/">{{repo.name}}</a>
-            <span style="float: right;">
-            <a data-original-title="提交次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♯ {{repo.commit}}</a>
-            <a data-original-title="关注数量" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♥ {{repo.watch}}</a>
-            <a data-original-title="衍生次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♂ {{repo.fork}}</a></span></h3>
-            <div style="margin-left: 30px;">
-                <h6 style="margin-bottom: 3px">
-                创建于 {{repo.create_time|date:'y/m/d'}}，最近更新 {{repo.modify_time|date:'y/m/d'}}</h6> 
-                <p>{{repo.desc}}</p>
-            </div>
-        </div>
-        {%endfor%}
-    </div>
-    <div class="span5">
-        <div class="page-header" style="padding-bottom: 0px">
-            <div style="margin-bottom: 10px">
-                <h3>最新提交信息</h3>
-            </div>
-        </div>
-        <div id='feeds_container' class="span7" style="margin: 0px">
-            <img id='feeds_loading' style="margin-left: 50px" src='/static/img/loading.gif'>
-        </div>
-    </div>
-</div>
-{% endblock %}
-{% block js %}
-<script src="/static/js/moment.min.js"></script>
-<script src="/static/js/moment.zh-cn.js"></script>
-<script>
-/*global jQuery, window */
-$(function(){
-    moment.lang('zh-cn');
-    var orgi_feeds = {{ feeds_as_json|safe }}
-    var sorted_feeds = []
-    var do_orgi_feeds = function() {
-        all_ids = []
-        all_feeds = []
-        for (x in orgi_feeds) {
-            all_feeds = all_feeds.concat(orgi_feeds[x]);
-        } 
-        all_feeds.sort(function(a,b) {
-            return a[1] - b[1];
-        })
-        var i = 0;
-        var pre_feed_id = 0;
-        for (x in all_feeds) {
-            feed_id = all_feeds[x][0]
-            if(pre_feed_id != feed_id) {
-                i++;
-                all_ids.push(feed_id);
-            }
-            pre_feed_id = feed_id
-            if(i >= 100) { break; }
-        }
-        all_ids_str = all_ids.join('_');
-        $.ajax({
-            url: '/ajax/feed/ids/',
-            type: 'POST',
-            data: {'ids_str': all_ids_str, csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-                //alert('');
-            },
-            success: function(json){
-                ordered_date = []
-                ordered_date_reponame = {}
-                display_feeds_map = {}
-                feeds = json.feeds
-                gravatar_dict = json.gravatar_dict
-                feeds.sort(function(a,b) {
-                    return b.committer_date - a.committer_date;
-                })
-                html = []
-                for(x in feeds) {
-                    feed = feeds[x];
-                    if(feed.relative_obj === undefined) {
-                        continue;
-                    }
-                    if(feed.feed_type == 0) {
-                        commit = feed.relative_obj
-                        html.push('<div style="margin: 0px" class="event_feed span5">');
-                        html.push('<img class="avatar_left" src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=35"><strong><a href="/' + commit.author + '/">' + commit.author + '</a></strong>')
-                        html.push(' commit at <strong><a href="/'+ commit.user_name + '/' + commit.repo_name +'/">' + commit.repo_name + '</a></strong><div>' + commit.subject + ' <span class="muted">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></div>')
-                        html.push('</div>');
-                    } else if(feed.feed_type == 1) {
-                    }
-                }
-                $('#feeds_container').append(html.join(''));
-                if(feeds.length == 0) {
-                    $('#feeds_container').append('还没有最新提交信息，等，等等，等等');
-                }
-                $('#feeds_loading').remove()
-            }
-        });
-    };
-    do_orgi_feeds();
-    $('.c_unixtime').each(function(index){ 
-        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-        $(this).show();
-    });
-    $('.c_repo').tooltip({
-      selector: "a[rel=tooltip]"
-    });
-    $('.c_repo').live('mouseover mouseout', function(event) {
-        if (event.type == 'mouseover') {
-            $(this).css('background-color', '#D9EDF7');
-        } else {
-            $(this).css('background-color', '#FFFFFF');
-        }
-    });
 
-});
-</script>
+{% load gstools %}
+
+{% block css %}
+    <style>
+    .user_chart {min-width: 400px; height: 200px; margin: 0 auto}
+    .c_repo_attr {margin-right: 10px}
+    </style>
+{% endblock %}
+
+{% block container %}
+    <div class="row">
+        <div class="span5">
+            <div class="page-header" style="padding-bottom: 0px">
+                <div style="margin-bottom: 10px">
+                    <h3>活跃仓库列表</h3>
+                </div>
+            </div>
+            {%for repo in repos%}
+            <div class="c_repo">
+                <h3>{{forloop.counter}}. <img class="avatar" style="margin: 10px;" src="https://gravatar.com/avatar/{{userimgurl_dict|keyvalue:repo.user_id}}?s=25"><a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
+                <a href="/{{username_dict|keyvalue:repo.user_id}}/{{repo.name}}/">{{repo.name}}</a>
+                <span style="float: right;">
+                <a data-original-title="提交次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♯ {{repo.commit}}</a>
+                <a data-original-title="关注数量" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♥ {{repo.watch}}</a>
+                <a data-original-title="衍生次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♂ {{repo.fork}}</a></span></h3>
+                <div style="margin-left: 30px;">
+                    <h6 style="margin-bottom: 3px">
+                    创建于 {{repo.create_time|date:'y/m/d'}}，最近更新 {{repo.modify_time|date:'y/m/d'}}</h6> 
+                    <p>{{repo.desc}}</p>
+                </div>
+            </div>
+            {%endfor%}
+        </div>
+        <div class="span5">
+            <div class="page-header" style="padding-bottom: 0px">
+                <div style="margin-bottom: 10px">
+                    <h3>最新提交信息</h3>
+                </div>
+            </div>
+            <div id='feeds_container' class="span7" style="margin: 0px">
+                <img id='feeds_loading' style="margin-left: 50px" src='/static/img/loading.gif'>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="/static/js/moment.min.js"></script>
+    <script src="/static/js/moment.zh-cn.js"></script>
+    <script>
+    /*global jQuery, window */
+        $(function(){
+            moment.lang('zh-cn');
+            var orgi_feeds = {{ feeds_as_json|safe }}
+            var sorted_feeds = []
+            var do_orgi_feeds = function() {
+                all_ids = []
+                all_feeds = []
+                for (x in orgi_feeds) {
+                    all_feeds = all_feeds.concat(orgi_feeds[x]);
+                } 
+                all_feeds.sort(function(a,b) {
+                    return a[1] - b[1];
+                })
+                var i = 0;
+                var pre_feed_id = 0;
+                for (x in all_feeds) {
+                    feed_id = all_feeds[x][0]
+                    if(pre_feed_id != feed_id) {
+                        i++;
+                        all_ids.push(feed_id);
+                    }
+                    pre_feed_id = feed_id
+                    if(i >= 100) { break; }
+                }
+                all_ids_str = all_ids.join('_');
+                $.ajax({
+                    url: '/ajax/feed/ids/',
+                    type: 'POST',
+                    data: {'ids_str': all_ids_str, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                    dataType: 'json',
+                    timeout: 10000,
+                    error: function(){
+                        //alert('');
+                    },
+                    success: function(json){
+                        ordered_date = []
+                        ordered_date_reponame = {}
+                        display_feeds_map = {}
+                        feeds = json.feeds
+                        gravatar_dict = json.gravatar_dict
+                        feeds.sort(function(a,b) {
+                            return b.committer_date - a.committer_date;
+                        })
+                        html = []
+                        for(x in feeds) {
+                            feed = feeds[x];
+                            if(feed.relative_obj === undefined) {
+                                continue;
+                            }
+                            if(feed.feed_type == 0) {
+                                commit = feed.relative_obj
+                                html.push('<div style="margin: 0px" class="event_feed span5">');
+                                html.push('<img class="avatar_left" src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=35"><strong><a href="/' + commit.author + '/">' + commit.author + '</a></strong>')
+                                html.push(' commit at <strong><a href="/'+ commit.user_name + '/' + commit.repo_name +'/">' + commit.repo_name + '</a></strong><div>' + commit.subject + ' <span class="muted">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></div>')
+                                html.push('</div>');
+                            } else if(feed.feed_type == 1) {
+                            }
+                        }
+                        $('#feeds_container').append(html.join(''));
+                        if(feeds.length == 0) {
+                            $('#feeds_container').append('还没有最新提交信息，等，等等，等等');
+                        }
+                        $('#feeds_loading').remove()
+                    }
+                });
+            };
+            do_orgi_feeds();
+            $('.c_unixtime').each(function(index){ 
+                $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+                $(this).show();
+            });
+            $('.c_repo').tooltip({
+              selector: "a[rel=tooltip]"
+            });
+            $('.c_repo').live('mouseover mouseout', function(event) {
+                if (event.type == 'mouseover') {
+                    $(this).css('background-color', '#D9EDF7');
+                } else {
+                    $(this).css('background-color', '#FFFFFF');
+                }
+            });
+
+        });
+    </script>
 {% endblock %}
