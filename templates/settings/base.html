@@ -14,10 +14,10 @@
         <ul class="nav nav-list">
             <li class="nav-header">:-) {{ user }}</li>
             <li><a href="/settings/profile/">个人资料</a></li>
-            <li><a href="/settings/changepassword/">修改密码</a></li>
             <li><a href="/settings/sshpubkey/">SSH公钥</a></li>
-            <li><a href="/settings/email/">Email通知</a></li>
-            <!--li><a href="/settings/repo/">仓库</a></li-->
+            <li><a href="/settings/notif/">消息通知</a></li>
+            <li><a href="/settings/changepassword/">修改密码</a></li>
+            <li><a href="/settings/change_username_email/">修改用户名·登录邮箱</a></li>
             <li><a href="/settings/destroy/">刪除帐号</a></li>
             <li class="divider"></li>
             <li>仓库数目 {{userprofile.get_total_repo}}/100</li>
@@ -34,4 +34,5 @@
 {% block container-right %}
 {% endblock %}
 </div>
+</script>
 {% endblock %}

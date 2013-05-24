@@ -274,7 +274,8 @@ class RepoManager():
 
     @classmethod
     def count_repo_by_userId(self, user_id):
-        pass
+        _count = count(Repo, None, 'repo_c_userId', [user_id])
+        return _count
 
     @classmethod
     def get_commit_by_id(self, id):

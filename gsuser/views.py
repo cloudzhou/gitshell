@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-  
 import random, re, json, time
+import httplib, urllib
 from datetime import datetime
 import base64, hashlib
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -22,6 +23,7 @@ from gitshell.feed.feed import FeedAction
 from gitshell.stats import timeutils
 from gitshell.feed.views import get_feeds_as_json
 from gitshell.viewtools.views import json_httpResponse
+from gitshell.settings import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
 
 def user(request, user_name):
     gsuser = GsuserManager.get_user_by_name(user_name)
@@ -190,6 +192,44 @@ def find(request):
 
 @login_required
 @require_http_methods(["POST"])
+def change(request):
+    user = None
+    is_user_exist = True
+    is_exist_repo = False
+    username = request.POST.get('username')
+    if username is not None and re.match("^\w+$", username) and username not in MAIN_NAVS:
+        repo_count = RepoManager.count_repo_by_userId(request.user.id)
+        if repo_count > 0:
+            return json_httpResponse({'is_exist_repo': True})
+        user = GsuserManager.get_user_by_name(username)
+        if user is None:
+            request.user.username = username
+            request.userprofile.username = username
+            request.user.save()
+            request.userprofile.save()
+            for repo in RepoManager.list_repo_by_userId(request.user.id, 0, 100):
+                repo.username = username
+                repo.save()
+            is_user_exist = False
+    goto = ''
+    email = request.POST.get('email')
+    if email is not None and email_re.match(email):
+        user = GsuserManager.get_user_by_email(email)
+        if user is None:
+            random_hash = '%032x' % random.getrandbits(128)
+            cache.set(random_hash + '_email', email)
+            active_url = 'https://gitshell.com/settings/validate_email/%s/' % random_hash
+            message = u'尊敬的gitshell用户：\n请点击下面的地址更改您在gitshell的登录邮箱：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
+            send_mail('[gitshell]更改邮件地址', message, 'noreply@gitshell.com', [email], fail_silently=False)
+            email_suffix = email.split('@')[-1]
+            if email_suffix in COMMON_EMAIL_DOMAIN:
+                goto = COMMON_EMAIL_DOMAIN[email_suffix]
+            is_user_exist = False
+    response_dictionary = { 'is_exist_repo': is_exist_repo, 'is_user_exist': is_user_exist, 'goto': goto, 'new_username': username, 'new_email': email }
+    return json_httpResponse(response_dictionary)
+
+@login_required
+@require_http_methods(["POST"])
 def recommend_delete(request, user_name, recommend_id):
     gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
@@ -261,6 +301,15 @@ def login(request):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+def login_github(request):
+    if request.GET.get('code') is None:
+        return HttpResponseRedirect('/login/')
+    code = request.GET.get('code')
+    json_str = __github_oauth_login(code)
+    response = json.loads(json_str)
+    access_token = str(response['access_token'])
+    return HttpResponseRedirect('/home/')
+
 def logout(request):
     auth_logout(request)
     return HttpResponseRedirect('/')
@@ -283,8 +332,8 @@ def join(request, step):
                 cache.set(random_hash + '_email', email)
                 cache.set(random_hash + '_username', username)
                 cache.set(random_hash + '_password', password)
-                active_url = 'http://www.gitshell.com/join/%s/' % random_hash
-                message = u'尊敬的gitshell用户：\n感谢您选择了gitshell，请点击下面的地址激活你在gitshell的帐号：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
+                active_url = 'https://gitshell.com/join/%s/' % random_hash
+                message = u'尊敬的gitshell用户：\n感谢您选择了gitshell，请点击下面的地址激活您在gitshell的帐号：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
                 send_mail('[gitshell]注册邮件', message, 'noreply@gitshell.com', [email], fail_silently=False)
                 goto = ''
                 email_suffix = email.split('@')[-1]
@@ -342,8 +391,8 @@ def resetpassword(request, step):
                 user = None
             if user is not None and user.is_active:
                 cache.set(random_hash, email)
-                active_url = 'http://www.gitshell.com/resetpassword/%s/' % random_hash
-                message = u'尊敬的gitshell用户：\n如果您没有重置密码的请求，请忽略此邮件。点击下面的地址重置你在gitshell的帐号密码：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
+                active_url = 'https://gitshell.com/resetpassword/%s/' % random_hash
+                message = u'尊敬的gitshell用户：\n如果您没有重置密码的请求，请忽略此邮件。点击下面的地址重置您在gitshell的帐号密码：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
                 send_mail('[gitshell]重置密码邮件', message, 'noreply@gitshell.com', [email], fail_silently=False)
                 return HttpResponseRedirect('/resetpassword/1/')
             error = u'邮箱 %s 还没有注册' % email
@@ -391,5 +440,16 @@ def __conver_to_recommends_vo(raw_recommends):
     users_map = GsuserManager.map_users(user_ids)
     recommends_vo = [x.to_recommend_vo(users_map) for x in raw_recommends]
     return recommends_vo
+
+def __github_oauth_login(code):
+    githup_connection = httplib.HTTPSConnection('github.com', 443, timeout=10)
+    params = urllib.urlencode({'client_id': GITHUB_CLIENT_ID, 'client_secret': GITHUB_CLIENT_SECRET, 'code': code})
+    headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "application/json"}
+    githup_connection.request("POST", "/login/oauth/access_token", params, headers)
+    response = githup_connection.getresponse()
+    if response.status == 200:
+        json = response.read()
+        return json
+    githup_connection.close()
 
 # TODO note: add email unique support ! UNIQUE KEY `email` (`email`) #
