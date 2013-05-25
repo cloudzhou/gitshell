@@ -111,7 +111,7 @@
 			<div class="repo-navtab clearfix">
 
 				<div class="branches dropdown">
-					<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle">
+					<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle btn">
 						<span class="branch">Branch:</span>
 						<span class="branch-name">{{ refs }}</span>
 						<i class="caret"></i>
@@ -121,13 +121,13 @@
 				</div>
 
 				<ul class="nav nav-tabs">
-					<li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/{{ refs }}/">File List</a></li>
+					<li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/{{ refs }}/">文件</a></li>
 					<li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/">Commits</a></li>
 					<li {% if current == 'pull' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/pulls/">Merge Request{% if repo_pull_new_count > 0 %} <span class="badge">{{repo_pull_new_count}}</span>{% endif %}</a></li>
-					<li {% if current == 'issues' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/issues/">Issues</a></li>
-					<li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/network/">Cooperate</a></li>
+					<!--<li {% if current == 'issues' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/issues/">Issues</a></li>-->
+					<li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/network/">协作</a></li>
 					<li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/clone_watch/">衍生&amp;关注</a></li>
-					<li {% if current == 'stats' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/stats/">Graphs</a></li>
+					<li {% if current == 'stats' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/stats/">统计</a></li>
 				</ul>
 
 

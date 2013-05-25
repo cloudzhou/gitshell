@@ -4,17 +4,24 @@
 
 	<div class="repo-file-container">
 
-		<div class="repo-meta">
-			<a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">{{repo_name}}</a>
-			<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="commit-history label">历史提交</a>
+		<div class="repo-meta clearfix">
+			<a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/" class="repo-name">{{repo_name}}</a>
+			<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="commit-history label label-info">历史提交</a>
 			{% if not is_tree %}
-				<a href="/{{user_name}}/{{repo_name}}/raw/tree/{{refs}}/{{path}}" class="origin-file label">原始文件</a>
+				<a href="/{{user_name}}/{{repo_name}}/raw/tree/{{refs}}/{{path}}" class="origin-file label label-info">原始文件</a>
 			{% endif %}
     </div>
 
     {% if is_tree %}
 
+			<div class="file-container">
 			<table class="table frame">
+			<colgroup>
+				<col class="icon">
+				<col class="file-name">
+				<col class="commit-data">
+				<col class="commiter">
+			</colgroup>
 				<tbody>
 					{% if not tree %}
 						<tr>
@@ -26,7 +33,7 @@
 						<tr>
 							<td class="icon">
 								{% if attrs.0 == 'tree' %}
-									<i class="icon-folder-open"></i>
+									<i class="icon-folder-close"></i>
 								{% else %}
 									<i class="icon-file"></i> 
 								{% endif %}
@@ -44,6 +51,7 @@
 					{% endfor %}
 				</tbody>
 			</table>
+			</div>
 
     {% else %}
 
