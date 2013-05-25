@@ -1,94 +1,97 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-    <head>
-        <meta charset="utf-8">
-        <title>{% block title %}gitshell - git 代码托管{% endblock %}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="GitShell 专注git代码托管, 项目开发, 个人技能">
-        <meta name="author" content="gitshell">
-        <link href="/static/css/bootstrap.css" rel="stylesheet">
-        <link href="/static/css/todc-bootstrap.css" rel="stylesheet">
-        <link href="/static/css/gitshell.css" rel="stylesheet">
-        {% block css %}{% endblock %}
-        <link rel="shortcut icon" href="/static/img/favicon.ico">
-    </head>
+	<head>
+		<meta charset="utf-8">
+		<title>{% block title %}gitshell - git 代码托管{% endblock %}</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="GitShell 专注git代码托管, 项目开发, 个人技能">
+		<meta name="author" content="gitshell">
+		<link href="/static/css/bootstrap.css" rel="stylesheet">
+		<link href="/static/css/todc-bootstrap.css" rel="stylesheet">
+		<link href="//netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css" rel="stylesheet">
+		<link href="/static/css/gitshell.css" rel="stylesheet">
+		{% block css %}{% endblock %}
+		<link rel="shortcut icon" href="/static/img/favicon.ico">
+	</head>
 
-    <body>
-        <div class="navbar navbar-inverse navbar-fixed-top">
-            <div class="navbar-inner">
-                <div class="container">
+	<body>
+		<div class="navbar navbar-fixed-top">
+			<div class="navbar-inner">
+				<div class="container">
 
-                    <a class="brand" href="/">Gitshell</a>
+					<a class="brand" href="/">Gitshell</a>
 
-                    <ul class="nav">
-                        {% if user.is_authenticated %}
-                            <li {%if mainnav == 'home'%} class="active" {%endif%}><a href="/home/">首页</a></li>
-                            <li {%if mainnav == 'repo'%} class="active" {%endif%}><a href="/{{ user.username }}/repo/">仓库</a></li>
-                            <li {%if mainnav == 'user'%} class="active" {%endif%}><a href="/{{ user.username }}/">@{{ user.username }}</a></li>
-                            <li {%if mainnav == 'stats'%} class="active" {%endif%}><a href="/stats/{{ user.username }}/">统计</a></li>
-                        {% else %}
-                            <li><a href="/">首页</a></li>
-                            <li><a href="/join/">仓库</a></li>
-                        {% endif %}
-                        <li {%if mainnav == 'explore'%} class="active" {%endif%}><a href="/explore/">浏览</a></li>
-                    </ul>
+					<ul class="nav">
+						{% if user.is_authenticated %}
+							<li {%if mainnav == 'user'%} class="active" {%endif%}>
+								<a href="/{{ user.username }}/" class="user">
+									<span class="user-avatar"><img class="avatar" src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=40" alt=""></span>
+									{{ user.username }}
+								</a>
+							</li>
+							<li {%if mainnav == 'repo'%} class="active" {%endif%}><a href="/{{ user.username }}/repo/">我的仓库</a></li>
+							<li {%if mainnav == 'stats'%} class="active" {%endif%}><a href="/stats/{{ user.username }}/">使用统计</a></li>
+						{% else %}
+							<li><a href="/join/">浏览仓库</a></li>
+						{% endif %}
+						<li {%if mainnav == 'explore'%} class="active" {%endif%}><a href="/explore/">浏览仓库</a></li>
+					</ul>
 
-                    <ul class="nav pull-right">
-                        {% if user.is_authenticated %}
-                            <li {%if mainnav == 'settings'%} class="active" {%endif%}><a href="/settings/">设置</a></li>
-                            <li {%if mainnav == 'help'%} class="active" {%endif%}><a href="/help/">帮助</a></li>
-                            <li {%if mainnav == 'logout'%} class="active" {%endif%}><a href="/logout/">退出</a></li>
-                        {% else %}
-                            <li {%if mainnav == 'help'%} class="active" {%endif%}><a href="/help/">帮助</a></li>
-                            <li {%if mainnav == 'login'%} class="active" {%endif%}><a href="/login/">登录</a></li>
-                            <li {%if mainnav == 'join'%} class="active" {%endif%}><a href="/join/0/">注册</a></li>
-                        {% endif %}
-                    </ul>
+					<ul class="nav account">
+						{% if user.is_authenticated %}
+						<li {%if mainnav == 'help'%} class="active" {%endif%}><a href="/help/"><i class="icon-info-sign"></i>帮助</a></li>
+							<li {%if mainnav == 'settings'%} class="active" {%endif%}><a href="/settings/"><i class="icon-wrench"></i>设置</a></li>
+							<li {%if mainnav == 'logout'%} class="active" {%endif%}><a href="/logout/" class="btn">登出</a></li>
+						{% else %}
+						<li {%if mainnav == 'help'%} class="active" {%endif%}><a href="/help/"><i class="icon-info-sign"></i>帮助</a></li>
+							<li {%if mainnav == 'login'%} class="active" {%endif%}><a href="/login/" class="btn">登录</a></li>
+							<li {%if mainnav == 'join'%} class="active" {%endif%}><a href="/join/0/" class="btn">注册</a></li>
+						{% endif %}
+					</ul>
 
-                </div>
-            </div>
-        </div>
-
-
-        <div class="container">
-
-            {% block container %}{% endblock %}
-
-        </div>
+				</div>
+			</div>
+		</div>
 
 
-        <footer class="footer">
-            <div class="container">
-                <a href="#" class="btn pull-right">Back to top</a>
-                <nav class="nav">
-                    <a href="/help/#about">关于</a>
-                    <a href="/help/#mission">愿景</a> 
-                    <a href="/help/#faq">FAQ</a>
-                    <a href="/help/#join_login">快速入门</a>
-                    <a href="/help/">帮助</a>
-                    <a target="_blank" href="http://blog.gitshell.com">官方博客</a>
-                    <a href="/help/#contact">联系方式</a>
-                </nav>
-                <p class="copyright">&copy; <strong>Gitshell</strong> 2013 专注于 <a target="_blank" href="http://git-scm.com/">Git</a> 托管 <a class="muted" href="http://www.miitbeian.gov.cn">苏ICP备12042031号</a></p>
-                <p class="info">得益于优美的 bootstrap 框架, 图片来源<a href="http://glyphicons.com"> Glyphicons Free </a></p>
-            </div>
-        </footer>
+		<div class="container main">
+
+			{% block container %}{% endblock %}
+
+		</div>
 
 
-        <script src="/static/js/jquery-1.7.2.min.js"></script>
-        <script src="/static/js/bootstrap.min.js"></script>
-        {% block js %}{% endblock %}
-        <script>
-            var _gaq = _gaq || [];
-            _gaq.push(['_setAccount', 'UA-33142900-1']);
-            _gaq.push(['_trackPageview']);
+		<div class="footer">
+			<div class="container">
+				<a href="#" class="btn pull-right"><i class="icon-circle-arrow-up"></i>Back to Top</a>
+				<nav class="nav">
+					<a href="/help/#about">About</a>
+					<a href="/help/#mission">愿景</a> 
+					<a href="/help/#faq">FAQ</a>
+					<a href="/help/#join_login">Guide</a>
+					<a href="/help/">Help</a>
+					<a target="_blank" href="http://blog.gitshell.com">Official Blog</a>
+					<a href="/help/#contact">Contact</a>
+				</nav>
+				<p class="copyright">&copy; <strong>Gitshell</strong> 2013 专注于 <a target="_blank" href="http://git-scm.com/">Git</a> 托管 <a class="muted" href="http://www.miitbeian.gov.cn">苏ICP备12042031号</a></p>
+			</div>
+		</div>
 
-            (function() {
-              var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-              ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-              var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-            })();
-        </script>
-    </body>
+
+		<script src="/static/js/jquery-1.7.2.min.js"></script>
+		<script src="/static/js/bootstrap.min.js"></script>
+		{% block js %}{% endblock %}
+		<script>
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-33142900-1']);
+			_gaq.push(['_trackPageview']);
+
+			(function() {
+				var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+				ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+				var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+	</body>
 </html>
 

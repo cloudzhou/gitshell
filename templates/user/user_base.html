@@ -1,22 +1,13 @@
 {% extends "base.html" %}
+
 {% block css %}
-<style>
-#id_user_detail dt {text-align: left; font-weight: normal; color: #999999;}
-#id_user_detail .dl-horizontal {margin-top: 0px;}
-#id_user_resume strong {font-size: 12px; font-weight: 300}
-.small_page-header { padding-bottom: 2px; margin-bottom: 10px; }
-.more { float:right; font-size: 13px; color: #999999 }
-.big_font { font-size: 25px; font-weight: 400 }
-.zero_border_table td { border-top: 0px; }
-#id_watch_user { font-size: 35px; }
-#id_unwatch_user { font-size: 35px; }
-</style>
 {% endblock %}
+
 {% block container %}
 <div class="page-header">
     <div class="row">
         <div class="span1">
-            <a href="https://gravatar.com/"><img class="avatar" src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=40"/></a>
+            <a href="https://gravatar.com/"><img class="avatar" src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=20"/></a>
         </div>
         <div class="span6">
             <div style="margin-bottom: 5px">

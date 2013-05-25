@@ -5,117 +5,144 @@
         <link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet'>
         <link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet'>
     {% endif %}
-    <style>
-        #eye-box span,#eye-box a{display:inline-block;height:18px;line-height:18px;}
-        #eye-box a.count {top:4px;position:relative;}
-    </style>
 {% endblock %}
 
 {% block container %}
-    <div class="code">
-        <div class="page-header">
-                <span class="repo-icon">
-                    {% if repo.auth_type == 0 %}
-                        <img src="/static/img/glyphicons_204_unlock.png" alt="glyphicons_204_unlock">
-                    {% else %}
-                        <img src="/static/img/glyphicons_203_lock.png" alt="glyphicons_203_lock">
-                    {% endif %}
-                </span>
-                <ul class="breadcrumb">
-                    <li><a href="/{{ user_name }}/">{{ user_name }}</a><span class="divider">/</span></li>
-                    <li><a href="/{{ user_name }}/{{ repo_name }}/">{{ repo_name }}</a></li>
-                </ul>
-                <ul class="pull-right">
-                    {% if has_pull_right %}
-                        <a href="/{{ user_name }}/{{ repo_name }}/pull/new/"><button class="btn" type="button">合并请求</button></a>
-                    {% endif %}
-                    <span>
-                        {% if not is_watched_repo %}
-                            <a id="i_watch" data-original-title="关注该项目" rel="tooltip" href="javascript: void(0)"><img src="/static/img/glyphicons_051_eye_open.png" alt=""></a>
-                        {% else %}
-                            <a id="i_unwatch" data-original-title="取消关注该项目" rel="tooltip" href="javascript: void(0)"><img src="/static/img/glyphicons_052_eye_close.png" alt=""></a>
-                        {% endif %}
-                        <a class="count" title="关注次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</a>
-                    </span>
-                    <span>
-                        <a id="i_fork" data-original-title="衍生作为本地仓库" rel="tooltip" href="javascript: void(0)"><img src="/static/img/glyphicons_114_list.png"/></a>
-                        <a class="count" title="衍生次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.fork}}</a>
-                    </span>
-                </ul>
 
-            {% if current == 'index' %}
-                <div id="id_repo_desc" class="breadcrumb">
-                    <div class="row">
-                        <div class="span9">
-                            <p>{{repo.desc}} — <a href="#README.md">更多介绍</a></p>
-                        </div>
-                        <span id="id_manage_repo" class="pull-right">
-                            <a href="/{{user_name}}/repo/edit/{{repo.id}}/"><span class="label label-info">编辑</span></a>
-                            <a href="/{{user_name}}/{{repo_name}}/delete/"><span class="label label-info">删除</span></a>
-                        </span>
-                        </div>
-                        <div class="row">
-                                <div class="span10">
-                            {% if repo.status != 0 %}
-                                <div>
-                                    <span class="label label-important">
-                                        仓库正在初始化中...暂时不能提交，查看源代码，请耐心等候。（这种情况很可能是因为fork一个较大的仓库）
-                                    </span>
-                                </div>
-                            {% endif %}
-                            {% if has_fork_right %}
-                                <span>
-                                    {% if is_repo_member %}
-                                        <span id="id_ssh_fork">SSH</span>
-                                    {% endif %}
-                                        <span id="id_http_fork">HTTP</span>
-                                    {% if repo.auth_type == 0 %}
-                                        <span id="id_git_fork">GIT</span>
-                                    {% endif %}
-                                </span>
-                                <span id="id_git_url">
-                                    {% if is_repo_member %}
-                                        <input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git"/>
-                                    {% elif repo.auth_type == 0 %}
-                                        <input class="input-xlarge focused" value="https://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>
-                                    {% endif %}
-                                </span>
-                                <span id="id_read_write" class="muted">
-                                    {% if is_repo_member %}
-                                        读写
-                                    {% elif repo.auth_type == 0 %}
-                                        只读
-                                    {% endif %}
-                                </span>
-                            {% endif %}
-                            </div>
-                        </div>
-                        </div>
-            {% endif %}
-            </div>
+	<div class="repo-header">
 
-            <div class="row">
-                <div id="repo_nav" class="span12">
-                    <ul class="nav nav-tabs">
-                        <li id="i_refs" class="dropdown">
-                            <a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle"><span id="id_branch_or_tag">分支：</span><b>{{ refs }}</b> <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                            </ul>
-                        </li>
-                        <li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/{{ refs }}/">文件列表</a></li>
-                        <li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/">提交信息</a></li>
-                        <li {% if current == 'pull' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/pulls/">合并请求{% if repo_pull_new_count > 0 %} <span class="badge">{{repo_pull_new_count}}</span>{% endif %}</a></li>
-                        <li {% if current == 'issues' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/issues/">Issues</a></li>
-                        <li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/network/">协同</a></li>
-                        <li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/clone_watch/">衍生&amp;关注</a></li>
-                        <li {% if current == 'stats' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/stats/">统计</a></li>
-                    </ul>
-        {% block subcontainer %}{% endblock %}
-                </div>
-            </div>
+		<div class="repo-actions-bar">
 
-    </div>
+			<span class="repo-icon {% if repo.auth_type == 0 %}unlock{% else %}lock{% endif %}"></span>
+
+				<ul class="repocrumb">
+						<li class="user"><a href="/{{ user_name }}/">{{ user_name }}</a><span class="divider">/</span></li>
+						<li><a href="/{{ user_name }}/{{ repo_name }}/">{{ repo_name }}</a></li>
+				</ul>
+
+				<ul class="repo-actions">
+						{% if has_pull_right %}
+						<li><a href="/{{ user_name }}/{{ repo_name }}/pull/new/"><button class="btn" type="button">合并请求</button></a></li>
+						{% endif %}
+						<li>
+								{% if not is_watched_repo %}
+								<a class="btn watch" data-original-title="关注该项目" rel="tooltip" href="javascript: void(0)"><i class="icon-eye-open"></i>关注</a>
+								{% else %}
+								<a class="btn unwatch" data-original-title="取消关注该项目" rel="tooltip" href="javascript: void(0)"><i class="icon-eye-close"></i>取消关注</a>
+								{% endif %}
+								<span class="count" title="关注次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</span>
+						</li>
+						<li>
+							<a class="btn fork" data-original-title="衍生作为本地仓库" rel="tooltip" href="javascript: void(0)"><i class="icon-code-fork"></i>Fork</a>
+								<span class="count" title="衍生次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.fork}}</span>
+						</li>
+				</ul>
+
+		</div>
+
+		<div class="repo-details-tabs">
+
+			<ul class="nav repo-tabs">
+				<li class="active"><a href="#">Code</a></li>
+				<li><a href="#">Network</a></li>
+				<li><a href="#">Pull Request</a></li>
+				<li><a href="#">Issuse</a></li>
+				<li><a href="#">Wiki</a></li>
+				<li><a href="#">Graphs</a></li>
+			</ul>
+
+			{% if current == 'index' %}
+				<div class="repo-summary">
+					<div class="description">
+						<p>{{repo.desc}} — <a href="#README.md">阅读更多</a></p>
+						<p class="repo-admin-edit">
+							<a href="/{{user_name}}/repo/edit/{{repo.id}}/" class="btn"><i class="icon-edit"></i>编辑</a>
+							<a href="/{{user_name}}/{{repo_name}}/delete/" class="btn"><i class="icon-trash"></i>删除</a>
+						</p>
+					</div>
+
+					<div class="repo-clone-url">
+
+						{% if repo.status != 0 %}
+							<p class="info">仓库正在初始化中...暂时不能提交，查看源代码，请耐心等候。（这种情况很可能是因为fork一个较大的仓库）。</p>
+						{% endif %}
+
+						{% if has_fork_right %}
+							<dl class="clone-url clearfix">
+								<dt class="url-tab clearfix">
+									{% if is_repo_member %}
+										<span class="btn-holder first"><a id="id_ssh_fork" class="btn">SSH</a></span>
+									{% endif %}
+										<span class="btn-holder"><a id="id_http_fork" class="btn">HTTP</a></span>
+									{% if repo.auth_type == 0 %}
+										<span class="btn-holder last"><a id="id_git_fork" class="btn">GIT</a></span>
+									{% endif %}
+								</dt>
+								<dd class="url-holder clearfix">
+									{% if is_repo_member %}
+										<span class="btn btn-holder url"><input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git" readonly></span>
+									{% elif repo.auth_type == 0 %}
+										<span class="btn btn-holder"><input class="input-xlarge focused" value="https://gitshell.com/{{ user_name }}/{{ repo_name }}.git" readonly></span>
+									{% endif %}
+									<span class="btn btn-holder clipboard"><a class="url-js-copy"><i class="icon-copy"></i>复制</a></span>
+										<span class="muted url-info">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>
+								</dd>
+							</dl>
+						{% endif %}
+
+					</div>
+
+			{% endif %}
+
+		</div>
+
+
+			</div>
+
+	</div>
+
+
+
+
+
+
+		<div class="repo-body">
+
+			<div class="repo-navtab clearfix">
+
+				<div class="branches dropdown">
+					<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle">
+						<span class="branch">Branch:</span>
+						<span class="branch-name">{{ refs }}</span>
+						<i class="caret"></i>
+					</a>
+					<ul class="dropdown-menu">
+					</ul>
+				</div>
+
+				<ul class="nav nav-tabs">
+					<li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/{{ refs }}/">File List</a></li>
+					<li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/">Commits</a></li>
+					<li {% if current == 'pull' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/pulls/">Merge Request{% if repo_pull_new_count > 0 %} <span class="badge">{{repo_pull_new_count}}</span>{% endif %}</a></li>
+					<li {% if current == 'issues' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/issues/">Issues</a></li>
+					<li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/network/">Cooperate</a></li>
+					<li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/clone_watch/">衍生&amp;关注</a></li>
+					<li {% if current == 'stats' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/stats/">Graphs</a></li>
+				</ul>
+
+
+			</div>
+			{% block subcontainer %}{% endblock %}
+
+
+		</div>
+
+
+
 {% endblock %}
+
+
+
 
 {% block js %}
     <script src="/static/js/moment.min.js"></script>
