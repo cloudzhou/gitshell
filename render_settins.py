@@ -26,10 +26,11 @@ if __name__ == '__main__':
 ########### env.ini ###########
 """
 [env]
-debug = False
-template_debug = False
-password = 424953
+debug = True
+template_debug = True
+user = git
+password = gitshell
 host = 127.0.0.1
-template_dirs = /opt/8001/gitshell/templates
+template_dirs = /opt/app/8001/gitshell/templates
 logging_file_path = /opt/run/var/log/gitshell.8001.log
 """
