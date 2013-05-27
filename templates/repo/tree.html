@@ -5,11 +5,17 @@
 	<div class="repo-file-container">
 
 		<div class="repo-meta clearfix">
-			<a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/" class="repo-name">{{repo_name}}</a>
-			<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="commit-history label label-info">历史提交</a>
-			{% if not is_tree %}
-				<a href="/{{user_name}}/{{repo_name}}/raw/tree/{{refs}}/{{path}}" class="origin-file label label-info">原始文件</a>
-			{% endif %}
+			<span class="repo-name">
+				<i class="icon-list-alt"></i>
+				<a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">{{repo_name}}</a>
+			</span>
+			<span class="commits">
+				<i class="icon-time"></i>
+				<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}">Commits</a>
+				{% if not is_tree %}
+					<a href="/{{user_name}}/{{repo_name}}/raw/tree/{{refs}}/{{path}}">原始文件</a>
+				{% endif %}
+			</span>
     </div>
 
     {% if is_tree %}
@@ -19,7 +25,6 @@
 			<colgroup>
 				<col class="icon">
 				<col class="file-name">
-				<col class="commit-data">
 				<col class="commiter">
 			</colgroup>
 				<tbody>
@@ -33,20 +38,22 @@
 						<tr>
 							<td class="icon">
 								{% if attrs.0 == 'tree' %}
-									<i class="icon-folder-close"></i>
+									<i class="octicon octicon-file-directory"></i>
 								{% else %}
-									<i class="icon-file"></i> 
+									<i class="octicon octicon-file-text"></i> 
 								{% endif %}
 							</td>
-							<td>
+							<td class="file-name">
 								{% if current == 'index' %}
 									<a href="tree/{{ refs }}/{{ file }}" title="{{ file }}">{{ file }}</a>
 								{% else %}
 									<a href="{{ file }}" title="{{ file }}">{{ file }}</a>
 								{% endif %}
 							</td>
-							<td><span class="c_unixtime hide">{{ attrs.2 }}</span></td>
-							<td>{{ attrs.4 }} [<a href="/{{attrs.3}}/">{{attrs.3}}</a>]</td>
+							<td class="commit-info">
+								<a href="/{{attrs.3}}/" class="commiter"><span class="avatar"><img src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=14"></span>@{{attrs.3}}</a>
+								<a href="#" class="commit">{{ attrs.4 }}</a>
+								<span class="commit-data c_unixtime hide">{{ attrs.2 }}</span></td>
 						</tr>
 					{% endfor %}
 				</tbody>

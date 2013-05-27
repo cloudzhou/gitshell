@@ -30,9 +30,9 @@
 								</a>
 							</li>
 							<li {%if mainnav == 'repo'%} class="active" {%endif%}><a href="/{{ user.username }}/repo/">我的仓库</a></li>
-							<li {%if mainnav == 'stats'%} class="active" {%endif%}><a href="/stats/{{ user.username }}/">使用统计</a></li>
+							<li {%if mainnav == 'stats'%} class="active" {%endif%}><a href="/stats/{{ user.username }}/">统计</a></li>
 						{% else %}
-							<li><a href="/join/">浏览仓库</a></li>
+							<li><a href="/join/">我的仓库</a></li>
 						{% endif %}
 						<li {%if mainnav == 'explore'%} class="active" {%endif%}><a href="/explore/">浏览仓库</a></li>
 					</ul>
@@ -41,11 +41,11 @@
 						{% if user.is_authenticated %}
 						<li {%if mainnav == 'help'%} class="active" {%endif%}><a href="/help/"><i class="icon-info-sign"></i>帮助</a></li>
 							<li {%if mainnav == 'settings'%} class="active" {%endif%}><a href="/settings/"><i class="icon-wrench"></i>设置</a></li>
-							<li {%if mainnav == 'logout'%} class="active" {%endif%}><a href="/logout/" class="btn">登出</a></li>
+							<li {%if mainnav == 'logout'%} class="active" {%endif%}><a href="/logout/">登出</a></li>
 						{% else %}
 						<li {%if mainnav == 'help'%} class="active" {%endif%}><a href="/help/"><i class="icon-info-sign"></i>帮助</a></li>
-							<li {%if mainnav == 'login'%} class="active" {%endif%}><a href="/login/" class="btn">登录</a></li>
-							<li {%if mainnav == 'join'%} class="active" {%endif%}><a href="/join/0/" class="btn">注册</a></li>
+							<li {%if mainnav == 'login'%} class="active" {%endif%}><a href="/login/">登录</a></li>
+							<li {%if mainnav == 'join'%} class="active" {%endif%}><a href="/join/0/">注册</a></li>
 						{% endif %}
 					</ul>
 
@@ -63,15 +63,15 @@
 
 		<div class="footer">
 			<div class="container">
-				<a href="#" class="btn pull-right"><i class="icon-circle-arrow-up"></i>Back to Top</a>
+				<a href="#" class="btn pull-right"><i class="icon-circle-arrow-up"></i>返回顶部</a>
 				<nav class="nav">
-					<a href="/help/#about">About</a>
+					<a href="/help/#about">关于我们</a>
 					<a href="/help/#mission">愿景</a> 
 					<a href="/help/#faq">FAQ</a>
-					<a href="/help/#join_login">Guide</a>
-					<a href="/help/">Help</a>
-					<a target="_blank" href="http://blog.gitshell.com">Official Blog</a>
-					<a href="/help/#contact">Contact</a>
+					<a href="/help/#join_login">快速入手</a>
+					<a href="/help/">帮助</a>
+					<a target="_blank" href="http://blog.gitshell.com">官方博客</a>
+					<a href="/help/#contact">联系</a>
 				</nav>
 				<p class="copyright">&copy; <strong>Gitshell</strong> 2013 专注于 <a target="_blank" href="http://git-scm.com/">Git</a> 托管 <a class="muted" href="http://www.miitbeian.gov.cn">苏ICP备12042031号</a></p>
 			</div>
