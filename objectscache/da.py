@@ -26,6 +26,7 @@ table_ptkey_field = {
     'todolist_scene': 'user_id',
     'todolist_todolist': 'user_id',
     'feed_notifmessage': 'to_user_id',
+    'gsuser_thirdpartyuser': 'user_type',
 }
 rawsql = {
     # userpubkey #
@@ -44,6 +45,8 @@ rawsql = {
     # user #
     'recommend_l_userId':
         'select * from gsuser_recommend where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
+    'thirdpartyuser_s_userType_userId':
+        'select * from gsuser_thirdpartyuser where user_type = %s and tp_user_id = %s',
     # repo #
     'repo_s_userId_name':
         'select * from repo_repo where visibly = 0 and user_id = %s and name = %s limit 0, 1',
@@ -210,6 +213,7 @@ def query_first(model, pt_id, rawsql_id, parameters):
     objects = query(model, pt_id, rawsql_id, parameters)
     if len(objects) > 0:
         return objects[0]
+    return None
 
 def queryraw(model, rawsql_id, parameters):
     try:

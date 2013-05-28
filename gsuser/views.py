@@ -23,7 +23,7 @@ from gitshell.feed.feed import FeedAction
 from gitshell.stats import timeutils
 from gitshell.feed.views import get_feeds_as_json
 from gitshell.viewtools.views import json_httpResponse
-from gitshell.settings import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
+from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo
 
 def user(request, user_name):
     gsuser = GsuserManager.get_user_by_name(user_name)
@@ -197,7 +197,7 @@ def change(request):
     is_user_exist = True
     is_exist_repo = False
     username = request.POST.get('username')
-    if username is not None and re.match("^\w+$", username) and username not in MAIN_NAVS:
+    if username is not None and re.match("^\w+$", username) and username != request.user.username and username not in MAIN_NAVS:
         repo_count = RepoManager.count_repo_by_userId(request.user.id)
         if repo_count > 0:
             return json_httpResponse({'is_exist_repo': True})
@@ -213,7 +213,7 @@ def change(request):
             is_user_exist = False
     goto = ''
     email = request.POST.get('email')
-    if email is not None and email_re.match(email):
+    if email is not None and email_re.match(email) and email != request.user.email:
         user = GsuserManager.get_user_by_email(email)
         if user is None:
             random_hash = '%032x' % random.getrandbits(128)
@@ -225,6 +225,8 @@ def change(request):
             if email_suffix in COMMON_EMAIL_DOMAIN:
                 goto = COMMON_EMAIL_DOMAIN[email_suffix]
             is_user_exist = False
+    if username == request.user.username or email == request.user.email:
+        is_user_exist = False
     response_dictionary = { 'is_exist_repo': is_exist_repo, 'is_user_exist': is_user_exist, 'goto': goto, 'new_username': username, 'new_email': email }
     return json_httpResponse(response_dictionary)
 
@@ -302,13 +304,20 @@ def login(request):
                           context_instance=RequestContext(request))
 
 def login_github(request):
+    code = request.GET.get('code')
     if request.GET.get('code') is None:
         return HttpResponseRedirect('/login/')
-    code = request.GET.get('code')
-    json_str = __github_oauth_login(code)
-    response = json.loads(json_str)
-    access_token = str(response['access_token'])
-    return HttpResponseRedirect('/home/')
+    access_token = github_oauth_access_token(code)
+    print access_token
+    if access_token == '':
+        return HttpResponseRedirect('/login/')
+    thirdpartyUser = github_get_thirdpartyUser(access_token)
+    if thirdpartyUser.user_id is None or thirdpartyUser.username is None:
+        return HttpResponseRedirect('/login/')
+    user = github_authenticate(thirdpartyUser)
+    if user is not None:
+        request.session.set_expiry(2592000)
+        auth_login(request, user)
 
 def logout(request):
     auth_logout(request)
@@ -440,16 +449,5 @@ def __conver_to_recommends_vo(raw_recommends):
     users_map = GsuserManager.map_users(user_ids)
     recommends_vo = [x.to_recommend_vo(users_map) for x in raw_recommends]
     return recommends_vo
-
-def __github_oauth_login(code):
-    githup_connection = httplib.HTTPSConnection('github.com', 443, timeout=10)
-    params = urllib.urlencode({'client_id': GITHUB_CLIENT_ID, 'client_secret': GITHUB_CLIENT_SECRET, 'code': code})
-    headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "application/json"}
-    githup_connection.request("POST", "/login/oauth/access_token", params, headers)
-    response = githup_connection.getresponse()
-    if response.status == 200:
-        json = response.read()
-        return json
-    githup_connection.close()
 
 # TODO note: add email unique support ! UNIQUE KEY `email` (`email`) #
