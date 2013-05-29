@@ -16,6 +16,12 @@
 </div>
 <div class="row">
     <div class="span7">
+        {% if thirdpartyUser and thirdpartyUser.init == 0 %}
+        <div class="alert alert-error">
+            <p>来自 GitHub 的用户，我们尝试导入您 GitHub 账户的用户名和邮箱信息，</p><p>不过看来一些信息已经存在了，所以我们随机生成用户名或者邮箱。</p>
+            <p>在这里，强烈推荐您通过这里 -&gt; <a href="/settings/change_username_email/"><button class="btn btn-danger btn-small">修改用户名或者邮箱。</button></a></p>
+        </div>
+        {% else %}
         <form class="form-horizontal" action="" method="post">
             {% csrf_token %}
             <fieldset>
@@ -59,6 +65,7 @@
                 <span class="muted">公开：包括源代码公开；半公开：除了源代码之外公开；私有：对外不公开</span>
             </fieldset>
         </form>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

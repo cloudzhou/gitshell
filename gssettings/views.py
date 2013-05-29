@@ -105,7 +105,8 @@ def notif(request):
 
 @login_required
 def change_username_email(request):
-    response_dictionary = {'hello_world': 'hello world'}
+    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
+    response_dictionary = {'thirdpartyUser': thirdpartyUser}
     return render_to_response('settings/change_username_email.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

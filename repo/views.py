@@ -833,7 +833,8 @@ def edit(request, user_name, rid):
                     repoForm.save()
                     return HttpResponseRedirect('/' + request.user.username + '/repo/')
         error = u'输入正确的仓库名称[A-Za-z0-9_]，选择好语言和可见度，仓库名字不能重复，active、watch、recommend、repo是保留的名称。'
-    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'rid': rid, 'error': error}
+    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
+    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'rid': rid, 'error': error, 'thirdpartyUser': thirdpartyUser}
     return render_to_response('repo/edit.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

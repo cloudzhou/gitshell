@@ -30,10 +30,12 @@ class Userprofile(BaseModel):
 
 class ThirdpartyUser(BaseModel):
     user_type = models.IntegerField(default=0, null=True)
-    tp_user_id = models.IntegerField(default=0, null=True)
+    tp_id = models.IntegerField(default=0, null=True)
     tp_username = models.CharField(max_length=30, null=True)
     tp_email = models.CharField(max_length=75, null=True)
     identity = models.CharField(max_length=30, null=True)
+    access_token = models.CharField(max_length=40, null=True)
+    init = models.IntegerField(default=0, null=True)
 
     GITHUB = 1
     GOOGLE = 2
@@ -95,8 +97,12 @@ class GsuserManager():
         return self.get_userprofile_by_id(user.id)
 
     @classmethod
-    def get_thirdpartyUser_by_type_id(user_type, tp_user_id):
-        thirdpartyUser = query_first(ThirdpartyUser, user_type, 'thirdpartyuser_s_userType_userId', [user_type, tp_user_id]) 
+    def get_thirdpartyUser_by_id(self, id):
+        return get(ThirdpartyUser, id)
+
+    @classmethod
+    def get_thirdpartyUser_by_type_tpId(self, user_type, tp_id):
+        thirdpartyUser = query_first(ThirdpartyUser, user_type, 'thirdpartyuser_s_userType_tpId', [user_type, tp_id]) 
         return thirdpartyUser
 
     @classmethod

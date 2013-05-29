@@ -193,6 +193,7 @@ def find(request):
 @login_required
 @require_http_methods(["POST"])
 def change(request):
+    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
     user = None
     is_user_exist = True
     is_exist_repo = False
@@ -210,10 +211,13 @@ def change(request):
             for repo in RepoManager.list_repo_by_userId(request.user.id, 0, 100):
                 repo.username = username
                 repo.save()
+            if thirdpartyUser is not None:
+                thirdpartyUser.init = 1
+                thirdpartyUser.save()
             is_user_exist = False
     goto = ''
     email = request.POST.get('email')
-    if email is not None and email_re.match(email) and email != request.user.email:
+    if email is not None and email_re.match(email):
         user = GsuserManager.get_user_by_email(email)
         if user is None:
             random_hash = '%032x' % random.getrandbits(128)
@@ -224,8 +228,11 @@ def change(request):
             email_suffix = email.split('@')[-1]
             if email_suffix in COMMON_EMAIL_DOMAIN:
                 goto = COMMON_EMAIL_DOMAIN[email_suffix]
+            if thirdpartyUser is not None:
+                thirdpartyUser.init = 1
+                thirdpartyUser.save()
             is_user_exist = False
-    if username == request.user.username or email == request.user.email:
+    if username == request.user.username:
         is_user_exist = False
     response_dictionary = { 'is_exist_repo': is_exist_repo, 'is_user_exist': is_user_exist, 'goto': goto, 'new_username': username, 'new_email': email }
     return json_httpResponse(response_dictionary)
@@ -308,16 +315,19 @@ def login_github(request):
     if request.GET.get('code') is None:
         return HttpResponseRedirect('/login/')
     access_token = github_oauth_access_token(code)
-    print access_token
     if access_token == '':
         return HttpResponseRedirect('/login/')
     thirdpartyUser = github_get_thirdpartyUser(access_token)
-    if thirdpartyUser.user_id is None or thirdpartyUser.username is None:
+    if thirdpartyUser.tp_id is None or thirdpartyUser.tp_username is None:
         return HttpResponseRedirect('/login/')
     user = github_authenticate(thirdpartyUser)
     if user is not None:
         request.session.set_expiry(2592000)
+        user.backend='django.contrib.auth.backends.ModelBackend'
         auth_login(request, user)
+    if thirdpartyUser.init == 0:
+        return HttpResponseRedirect('/settings/change_username_email/')
+    return HttpResponseRedirect('/home/')
 
 def logout(request):
     auth_logout(request)

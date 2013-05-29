@@ -11,8 +11,8 @@
             {% endfor %}
             <li class="divider"></li>
             <li><a href="/{{ user.username }}/repo/edit/0/">+ 创建新的仓库</a></li>
-            <!--li><a href="/settings/repo/">+ 更多仓库管理</a></li-->
           </ul>
+          <a href="/{{ user.username }}/repo/edit/0/" class="pull-left"><button class="btn btn-success btn-small" style="margin-left: 10px"><strong>+</strong> 创建仓库</button></a>
 </div>
 </div>
 {% load humanize %}
