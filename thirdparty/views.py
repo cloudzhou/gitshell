@@ -52,7 +52,7 @@ def github_get_thirdpartyUser(access_token):
         print 'exception: %s' % e
     finally:
         if githup_connection: githup_connection.close()
-    return '' 
+    return None
     
 def github_authenticate(thirdpartyUser):
     tp_id, tp_username, tp_email = thirdpartyUser.tp_id, thirdpartyUser.tp_username, thirdpartyUser.tp_email

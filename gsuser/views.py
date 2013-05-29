@@ -318,6 +318,8 @@ def login_github(request):
     if access_token == '':
         return HttpResponseRedirect('/login/')
     thirdpartyUser = github_get_thirdpartyUser(access_token)
+    if thirdpartyUser is None:
+        return HttpResponseRedirect('/login/')
     if thirdpartyUser.tp_id is None or thirdpartyUser.tp_username is None:
         return HttpResponseRedirect('/login/')
     user = github_authenticate(thirdpartyUser)
@@ -325,6 +327,7 @@ def login_github(request):
         request.session.set_expiry(2592000)
         user.backend='django.contrib.auth.backends.ModelBackend'
         auth_login(request, user)
+        thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(user.id)
     if thirdpartyUser.init == 0:
         return HttpResponseRedirect('/settings/change_username_email/')
     return HttpResponseRedirect('/home/')
