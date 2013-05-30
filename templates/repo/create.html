@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% block css %}
+<style>
+#id_captcha_1 {display:block;margin-top:10px;}
+.repo-create-form .control-label { width: 60px; }
+.repo-create-form .controls {margin-left:80px }
+.repo-title { border-bottom: 1px solid #eeeeee; padding-bottom: 10px; margin-bottom: 15px }
+</style>
+{% endblock %}
+{% block container %}
+<div class="page-header">
+        <h1>:-),  创建仓库
+        <small>提交代码需要<a href="/settings/sshpubkey/">设置SSH公钥</a></small></h1>
+</div>
+<div class="row">
+    <div class="span">
+    <div class="tabbable tabs-left">
+              <ul class="nav nav-tabs">
+                <li id="id-choose-direct-create" class="left-choose-repo active"><a href="#direct-create" data-toggle="tab">直接创建仓库</a></li>
+                <li id="id-choose-via-github" class="left-choose-repo"><a href="#via_github" data-toggle="tab">关联 GitHub 导入</a></li>
+                <li id="id-choose-via-git-url" class="left-choose-repo"><a href="#via_git_url" data-toggle="tab">从 Git URL 导入</a></li>
+              </ul>
+            </div>
+            </div>
+    <div class="span7" style="margin-left: 0px">
+        {% if thirdpartyUser and thirdpartyUser.init == 0 %}
+        <div class="alert alert-error">
+            <p>来自 GitHub 的用户，我们尝试导入您 GitHub 账户的用户名和邮箱信息，</p><p>不过看来一些信息已经存在了，所以我们随机生成用户名或者邮箱。</p>
+            <p>所以，强烈推荐您通过这里 -&gt; <a href="/settings/change_username_email/"><button class="btn btn-danger btn-small">修改用户名或者邮箱。</button></a></p>
+        </div>
+        {% else %}
+        <div id="id-direct-create" class="cl-right-create-repo">
+            <form id="id_repo_create_form" class="repo-create-form form-horizontal" action="" method="post">
+                {% csrf_token %}
+                <fieldset id="id-source-repo-meta" class="hide">
+                    <h4 class="repo-title" style="">来源仓库：</h4>
+                    <div class="control-group" style="margin-bottom: 5px">
+                        <label for="id_git_url" class="control-label">Git URL</label>
+                        <div class="controls">
+                            <input id="id_git_url" type="text" name="git_url" maxlength="128" class="input-xxlarge" placeholder="https://github.com/twitter/bootstrap.git 只支持 HTTP 和 Git 协议">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="id_is_private" class="control-label"></label>
+                        <div class="controls">
+                            <label class="checkbox">
+                                <input type="checkbox" name="is_private" id="id_is_private"> 私有仓库
+                            </label>
+                        </div>
+                    </div>
+                    <div class="control-group source-repo-auth hide">
+                        <label for="id_username" class="control-label">用户名</label>
+                        <div class="controls">
+                            <input id="id_username" type="text" name="username" maxlength="64" class="input-xlarge" placeholder="源仓库用户名">
+                        </div>
+                    </div>
+                    <div class="control-group source-repo-auth hide">
+                        <label for="id_password" class="control-label">密码</label>
+                        <div class="controls">
+                            <input id="id_password" type="text" name="password" maxlength="64" class="input-xlarge" placeholder="源仓库密码">
+                        </div>
+                    </div>
+                    <div class="alert">由于国内的网络环境，初始化仓库可能需要一段很长的时间，请耐心等候... （不支持大于10M项目）</div>
+                    <h4 class="repo-title" style="">新的仓库：</h4>
+                </fieldset>
+                <fieldset>
+                    <div class="control-group">
+                        <label for="id_name" class="control-label">仓库名称</label>
+                        <div class="controls">
+                            {{ repoForm.name }}
+                        <code id="id_reponame_exist" class="hide">该仓库名已经存在</code>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="id_desc" class="control-label">简介</label>
+                        <div class="controls">
+                            {{ repoForm.desc }}
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="id_lang" class="control-label">语言选择</label>
+                        <div class="controls">
+                            {{ repoForm.lang }}
+                        </div>
+                    </div>
+                    <div id="id_other_lang_group" class="control-group" style="display: none">
+                        <label for="id_other_lang" class="control-label">其他语言</label>
+                        <div class="controls">
+                            <input type="text" maxlength="16" value="" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder="哇！难道你发明了新的语言:-)">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="id_auth_type" class="control-label">可见度</label>
+                        <div class="controls">
+                            {{ repoForm.auth_type }}
+                        </div>
+                    </div>
+                    <div id="id_error" class="alert {% if not error %}hide{% endif %}">
+                        <a data-dismiss="alert" class="close">×</a>
+                        <strong>出错了！</strong> <span id="id_error_message">{{ error }}</span>
+                    </div>
+                    <div class="form-actions">
+                        <button id="id_edit_submit" class="btn btn-primary" type="submit">确定</button>
+                    </div>
+                    <span class="muted">公开：包括源代码公开；半公开：除了源代码之外公开；私有：对外不公开</span>
+                </fieldset>
+            </form>
+        </div>
+        <div id="id-via-github" class="cl-right-create-repo hide">
+            {% if thirdpartyUser %}
+                    <h4 class="repo-title" style="">选择以下的仓库进行导入：<button id="id-refresh-repo" class="pull-right btn btn-mini">刷新</button></h4>
+                    <div id="id-repos-loading" style="margin-left: 10px"><img src="/static/img/loading.gif">&nbsp;&nbsp;正在连接 GitHub...</div>
+                    <div id="id-github-repos">
+                    </div>
+            {% else %}
+                您还没有关联 GitHub 账户，请点击这里<a href=""><button class="btn btn-success">进行关联。</button></a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script src="/static/js/md5.min.js"></script>
+<script>
+/*global jQuery, window */
+$(function(){
+    var edit_init = function() {
+        $('#id_name').addClass('input-xlarge');
+        $('#id_desc').addClass('input-xlarge');
+        $('#id_lang').addClass('input-xlarge');
+        $('#id_name').attr('placeholder', '必填，[A-Za-z0-9_]');
+        $('#id_desc').attr('placeholder', '必填，提供什么功能，解决什么问题');
+    },
+    change_other_lang = function() {
+        if($('#id_lang option:selected').val() == 'other') {
+            $('#id_other_lang_group').show();
+        } else {
+            $('#id_other_lang_group').hide();
+        }
+    };
+    $('#id_lang').click(change_other_lang);
+    edit_init();
+    $('#id_name').change(function(){
+        var name = $(this).val();
+        $.post('/ajax/repo/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'name': name}, function(json){
+            if(json.is_repo_exist) {
+                $('#id_reponame_exist').show();
+            } else {
+                $('#id_reponame_exist').hide();
+            }
+        });
+    });
+    $('#id_edit_submit').click(function() {
+        var error_messages = [];
+        if($('#id_git_url').val() != '' && !$('#id_git_url').val().match(/^[a-zA-Z0-9_\.-\/:]+$/)) {
+            error_messages.push('不支持的 Git URL');
+        }
+        if($('#id_name').val() == '' || !$('#id_name').val().match(/[A-Za-z0-9_]+/g)) {
+            error_messages.push('仓库名不能为空，只能是[A-Za-z0-9_]以内的字符');
+        }
+        if($('#id_desc').val() == '') {
+            error_messages.push('介绍内容不能为空');
+        }
+        if(error_messages.length != 0) {
+            $('#id_error_message').html(error_messages.join('， '));
+            $('#id_error').show();
+            return false;
+        }
+        var name = $('#id_name').val();
+        $.post('/ajax/repo/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'name': name}, function(json){
+            if(json.is_repo_exist) {
+                $('#id_reponame_exist').show();
+                return false;
+            } else {
+                $('#id_reponame_exist').hide();
+                $('#id_repo_create_form').submit();
+            }
+        });
+        return false;
+    });
+    var list_github_repo = function() {
+        $('#id-github-repos').html('')
+        $('#id-repos-loading').show();
+        $.get('/ajax/repo/list/github/', function(data) {
+            htmls = [] 
+            for(x in data) {
+                repo = data[x];
+                html_url = repo.html_url;
+                name = repo.name;
+                full_name = repo.full_name;
+                git_url = repo.git_url;
+                description = repo.description;
+                language = repo.language;
+                size = repo.size;
+                html = '<p><a target="_blank" href="' + html_url + '"><strong style="font-size: 20px; margin: 6px">* ' + full_name + '</strong></a><span class="muted">' + git_url + '</span> <button type="button" data-name="'+name+'" data-git-url="'+git_url+'" data-description="'+description+'" data-language="'+language+'" data-size="'+size+'" class="import-repo-button btn btn-mini" digabled>导入</button></p>';
+                htmls.push(html);
+            } 
+            $('#id-github-repos').html(htmls.join(''))
+            $('#id-repos-loading').hide();
+        });
+    };
+    $('#id-choose-direct-create').click(function(){
+        $('.left-choose-repo').removeClass('active');
+        $(this).addClass('active');
+        $('.cl-right-create-repo').hide();
+        $('#id-source-repo-meta').hide();
+        $('#id-direct-create').show();
+    });
+    $('#id-choose-via-github').click(function(){
+        $('.left-choose-repo').removeClass('active');
+        $(this).addClass('active');
+        $('.cl-right-create-repo').hide();
+        $('#id-via-github').show();
+        list_github_repo();
+    });
+    $('#id-choose-via-git-url').click(function(){
+        $('.left-choose-repo').removeClass('active');
+        $(this).addClass('active');
+        $('.cl-right-create-repo').hide();
+        $('#id-source-repo-meta').show();
+        $('#id-direct-create').show();
+    });
+    $('#id-refresh-repo').click(function() {
+        list_github_repo()
+    });
+    $('.import-repo-button').live('click', function() {
+        var name = $(this).data('name');
+        var git_url = $(this).data('git-url');
+        var description = $(this).data('description');
+        var language = $(this).data('language');
+        var size = $(this).data('size');
+        if(size > 10240) {
+            alert('目标仓库大小超过限制，不支持导入');
+            return;
+        }
+        $('#id-choose-via-git-url').click();
+        $('#id_name').val(name);
+        $('#id_git_url').val(git_url);
+        $('#id_desc').val(description);
+        if(language) {
+            $('#id_lang option').each(function() {
+                var value = $(this).val()
+                if(language.toUpperCase() === value.toUpperCase()) {
+                    $(this).attr('selected','selected');
+                } else {
+                    $(this).removeAttr('selected');
+                }
+            });
+        }
+    });
+    $('#id_is_private').click(function(){
+        if(this.checked) {
+            $('.source-repo-auth').show();
+        } else {
+            $('.source-repo-auth').hide();
+        }
+    });
+});
+</script>
+{% endblock %}

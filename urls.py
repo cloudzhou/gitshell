@@ -100,6 +100,7 @@ urlpatterns = patterns('gitshell',
     # repo
     url(r'^(\w+)/repo/?$', 'repo.views.user_repo'),
     url(r'^(\w+)/repo/(\d+)/?$', 'repo.views.user_repo_paging'),
+    url(r'^(\w+)/repo/create/?$', 'repo.views.create'),
     url(r'^(\w+)/repo/edit/(\d+)/?$', 'repo.views.edit'),
     url(r'^(\w+)/(\w+)/?$', 'repo.views.repo'),
     url(r'^(\w+)/(\w+)/tree/?$', 'repo.views.repo_default_tree'),

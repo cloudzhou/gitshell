@@ -821,34 +821,71 @@ def find(request):
     return json_httpResponse({'is_repo_exist': is_repo_exist, 'name': name})
 
 @login_required
+def create(request, user_name):
+    error = u''
+    if user_name != request.user.username:
+        raise Http404
+    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
+    repo = Repo()
+    repo.user_id = request.user.id
+    repo.username = request.user.username
+    repoForm = RepoForm(instance = repo)
+    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error, 'thirdpartyUser': thirdpartyUser}
+    if request.method == 'POST':
+        userprofile = request.userprofile
+        if (userprofile.pubrepo + userprofile.prirepo) >= 100:
+            error = u'您拥有的仓库数量已经达到 100 的限制。'
+            return __response_create_repo_error(request, response_dictionary, error)
+        repoForm = RepoForm(request.POST, instance = repo)
+        if not repoForm.is_valid():
+            error = u'输入正确的仓库名称[A-Za-z0-9_]，选择好语言和可见度，仓库名字不能重复，active、watch、recommend、repo是保留的名称。'
+            return __response_create_repo_error(request, response_dictionary, error)
+        name = repoForm.cleaned_data['name']
+        if not re.match("^\w+$", name) or name in KEEP_REPO_NAME:
+            error = u'输入正确的仓库名称[A-Za-z0-9_]，active、watch、recommend、repo是保留的名称。'
+            return __response_create_repo_error(request, response_dictionary, error)
+        dest_repo = RepoManager.get_repo_by_userId_name(request.user.id, name)
+        if dest_repo is not None:
+            error = u'仓库名称已经存在。'
+            return __response_create_repo_error(request, response_dictionary, error)
+        if userprofile.used_quote > userprofile.quote:
+            error = u'您剩余空间不足，总空间 %s kb，剩余 %s kb' % (userprofile.quote, userprofile.used_quote)
+            return __response_create_repo_error(request, response_dictionary, error)
+        fulfill_gitrepo(request.user.username, name, repoForm.cleaned_data['auth_type'])
+        repoForm.save()
+        return HttpResponseRedirect('/%s/%s/' % (request.user.username, name))
+    return render_to_response('repo/create.html', response_dictionary, context_instance=RequestContext(request))
+
+def __response_create_repo_error(request, response_dictionary, error):
+    response_dictionary['error'] = error
+    return render_to_response('repo/create.html', response_dictionary, context_instance=RequestContext(request))
+    
+@login_required
 def edit(request, user_name, rid):
     error = u''
     if user_name != request.user.username:
         raise Http404
     repo = RepoManager.get_repo_by_id(int(rid))
-    if repo is None:
-        repo = Repo()
-    elif repo.user_id != request.user.id:
+    if repo is None or repo.user_id != request.user.id:
         raise Http404
-    repo.user_id = request.user.id
-    repo.username = request.user.username
     repoForm = RepoForm(instance = repo)
+    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error}
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
-        if repoForm.is_valid():
-            name = repoForm.cleaned_data['name']
-            if re.match("^\w+$", name) and name not in KEEP_REPO_NAME:
-                dest_repo = RepoManager.get_repo_by_userId_name(request.user.id, name)
-                if dest_repo is None or (repo.id is not None and dest_repo.id == repo.id):
-                    fulfill_gitrepo(request.user.username, name, repoForm.cleaned_data['auth_type'])
-                    repoForm.save()
-                    return HttpResponseRedirect('/' + request.user.username + '/repo/')
-        error = u'输入正确的仓库名称[A-Za-z0-9_]，选择好语言和可见度，仓库名字不能重复，active、watch、recommend、repo是保留的名称。'
-    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
-    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'rid': rid, 'error': error, 'thirdpartyUser': thirdpartyUser}
-    return render_to_response('repo/edit.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
+        if not repoForm.is_valid():
+            error = u'输入正确的仓库名称[A-Za-z0-9_]，选择好语言和可见度，仓库名字不能重复，active、watch、recommend、repo是保留的名称。'
+            return __response_edit_repo_error(request, response_dictionary, error)
+        name = repoForm.cleaned_data['name']
+        if not re.match("^\w+$", name) or name in KEEP_REPO_NAME:
+            error = u'输入正确的仓库名称[A-Za-z0-9_]，active、watch、recommend、repo是保留的名称。'
+            return __response_edit_repo_error(request, response_dictionary, error)
+        repoForm.save()
+        return HttpResponseRedirect('/%s/%s/' % (repo.username, repo.name))
+    return render_to_response('repo/edit.html', response_dictionary, context_instance=RequestContext(request))
+
+def __response_edit_repo_error(request, response_dictionary, error):
+    response_dictionary['error'] = error
+    return render_to_response('repo/edit.html', response_dictionary, context_instance=RequestContext(request))
 
 @repo_permission_check
 @login_required

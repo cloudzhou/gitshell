@@ -10,9 +10,9 @@
             <li><a href="/{{ user_name }}/{{ repo.name }}/">{{ repo.name }}</a></li>
             {% endfor %}
             <li class="divider"></li>
-            <li><a href="/{{ user.username }}/repo/edit/0/">+ 创建新的仓库</a></li>
+            <li><a href="/{{ user.username }}/repo/create/">+ 创建新的仓库</a></li>
           </ul>
-          <a href="/{{ user.username }}/repo/edit/0/" class="pull-left"><button class="btn btn-success btn-small" style="margin-left: 10px"><strong>+</strong> 创建仓库</button></a>
+          <a href="/{{ user.username }}/repo/create/" class="pull-left"><button class="btn btn-success btn-small" style="margin-left: 10px"><strong>+</strong> 创建仓库</button></a>
 </div>
 </div>
 {% load humanize %}
