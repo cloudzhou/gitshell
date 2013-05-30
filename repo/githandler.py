@@ -212,19 +212,27 @@ class GitHandler():
         return True
     
     def repo_ls_tags_branches(self, repo, repo_path):
+        if repo.status != 0:
+            return  {'branches': [], 'tags': [], 'commit_hash': {}}
         meta = self._get_repo_meta(repo)
         return meta
 
     def repo_ls_tags(self, repo, repo_path):
+        if repo.status != 0:
+            return []
         meta = self._get_repo_meta(repo)
         return meta['tags']
     
     def repo_ls_branches(self, repo, repo_path):
+        if repo.status != 0:
+            return []
         meta = self._get_repo_meta(repo)
         return meta['branches']
 
     """ refs: branch, tag """
     def get_commit_hash(self, repo, repo_path, refs):
+        if repo.status != 0:
+            return self.empty_commit_hash
         meta = self._get_repo_meta(repo)
         if refs in meta['commit_hash']:
             return meta['commit_hash'][refs]
