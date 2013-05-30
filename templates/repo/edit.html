@@ -40,7 +40,7 @@
                 <fieldset id="id-source-repo-meta" class="hide">
                     <h4 class="repo-title" style="">来源仓库：</h4>
                     <div class="control-group" style="margin-bottom: 5px">
-                        <label for="id-git_url" class="control-label">Git URL</label>
+                        <label for="id_git_url" class="control-label">Git URL</label>
                         <div class="controls">
                             <input id="id_git_url" type="text" name="git_url" maxlength="128" class="input-xxlarge" placeholder="https://github.com/twitter/bootstrap.git 只支持 HTTP 和 Git 协议">
                         </div>
@@ -65,6 +65,7 @@
                             <input id="id_password" type="text" name="password" maxlength="64" class="input-xlarge" placeholder="源仓库密码">
                         </div>
                     </div>
+                    <div class="alert">由于国内的网络环境，初始化仓库可能需要一段很长的时间，请耐心等候... （不支持大于10M项目）</div>
                     <h4 class="repo-title" style="">新的仓库：</h4>
                 </fieldset>
                 <fieldset>
@@ -72,6 +73,7 @@
                         <label for="id_name" class="control-label">仓库名称</label>
                         <div class="controls">
                             {{ repoForm.name }}
+                        <code id="id_reponame_exist" class="hide">该仓库名已经存在</code>
                         </div>
                     </div>
                     <div class="control-group">
@@ -148,8 +150,21 @@ $(function(){
     };
     $('#id_lang').click(change_other_lang);
     edit_init();
+    $('#id_name').change(function(){
+        var name = $(this).val();
+        $.post('/ajax/repo/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'name': name}, function(json){
+            if(json.is_repo_exist) {
+                $('#id_reponame_exist').show();
+            } else {
+                $('#id_reponame_exist').hide();
+            }
+        });
+    });
     $('#id_edit_submit').click(function() {
         var error_messages = [];
+        if($('#id_git_url').val() != '' && !$('#id_git_url').val().match(/^[a-zA-Z0-9_\.-\/:]+$/)) {
+            error_messages.push('不支持的 Git URL');
+        }
         if($('#id_name').val() == '' || !$('#id_name').val().match(/[A-Za-z0-9_]+/g)) {
             error_messages.push('仓库名不能为空，只能是[A-Za-z0-9_]以内的字符');
         }
@@ -161,7 +176,24 @@ $(function(){
             $('#id_error').show();
             return false;
         }
-        return true;
+        var name = $('#id_name').val();
+        $.ajax({
+            async: false,
+            url: '/ajax/repo/find/',
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}', 'name': name},
+            dataType: 'json',
+            timeout: 10000,
+            success: function(json){
+                if(json.is_repo_exist) {
+                    $('#id_reponame_exist').show();
+                    return false;
+                } else {
+                    $('#id_reponame_exist').hide();
+                }
+            }
+        });
+        return false;
     });
     var list_github_repo = function() {
         $('#id-github-repos').html('')
@@ -176,7 +208,8 @@ $(function(){
                 git_url = repo.git_url;
                 description = repo.description;
                 language = repo.language;
-                html = '<p><a target="_blank" href="' + html_url + '"><strong style="font-size: 20px; margin: 6px">* ' + full_name + '</strong></a><span class="muted">' + git_url + '</span> <button type="button" data-name="'+name+'" data-git-url="'+git_url+'" data-description="'+description+'" data-language="'+language+'" class="import-repo-button btn btn-mini" digabled>导入</button></p>';
+                size = repo.size;
+                html = '<p><a target="_blank" href="' + html_url + '"><strong style="font-size: 20px; margin: 6px">* ' + full_name + '</strong></a><span class="muted">' + git_url + '</span> <button type="button" data-name="'+name+'" data-git-url="'+git_url+'" data-description="'+description+'" data-language="'+language+'" data-size="'+size+'" class="import-repo-button btn btn-mini" digabled>导入</button></p>';
                 htmls.push(html);
             } 
             $('#id-github-repos').html(htmls.join(''))
@@ -212,6 +245,11 @@ $(function(){
         var git_url = $(this).data('git-url');
         var description = $(this).data('description');
         var language = $(this).data('language');
+        var size = $(this).data('size');
+        if(size > 1048576) {
+            alert('目标仓库大小超过限制，不支持导入');
+            return;
+        }
         $('#id-choose-via-git-url').click();
         $('#id_name').val(name);
         $('#id_git_url').val(git_url);

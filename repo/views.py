@@ -811,6 +811,16 @@ def repo_unwatch(request, user_name, repo_name):
     return json_httpResponse(response_dictionary)
 
 @login_required
+def find(request):
+    repo = None
+    is_repo_exist = True
+    name = request.POST.get('name')
+    if name is not None and name not in KEEP_REPO_NAME:
+        repo = RepoManager.get_repo_by_name(request.user.username, name)
+        is_repo_exist = (repo is not None)
+    return json_httpResponse({'is_repo_exist': is_repo_exist, 'name': name})
+
+@login_required
 def edit(request, user_name, rid):
     error = u''
     if user_name != request.user.username:
