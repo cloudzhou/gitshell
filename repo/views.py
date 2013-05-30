@@ -25,6 +25,7 @@ from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, P
 from gitshell.daemon.models import EventManager
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.gsuser.middleware import KEEP_REPO_NAME
+from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo
 
 @login_required
 def user_repo(request, user_name):
@@ -900,6 +901,15 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
             has_pull_right = True
     repo_pull_new_count = RepoManager.count_pullRequest_by_descRepoId(repo.id, PULL_STATUS.NEW)
     return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count}
+
+@login_required
+def list_github_repos(request):
+    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
+    if thirdpartyUser is None:
+        return json_httpResponse({'result': 'failed', 'cdoe': 404, 'message': 'GitHub account not found', 'repos': []})
+    access_token = thirdpartyUser.access_token
+    repos_json_str = github_list_repo(access_token)
+    return HttpResponse(repos_json_str, mimetype='application/json')
 
 def __list_pull_repo(request, repo):
     pull_repo_list = RepoManager.list_parent_repo(repo, 10)

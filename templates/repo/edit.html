@@ -2,6 +2,8 @@
 {% block css %}
 <style>
 #id_captcha_1 {display:block;margin-top:10px;}
+.repo-create-form .control-label { width: 60px; }
+.repo-create-form .controls {margin-left:80px }
 </style>
 {% endblock %}
 {% block container %}
@@ -15,56 +17,80 @@
         <small>提交代码需要<a href="/settings/sshpubkey/">设置SSH公钥</a></small></h1>
 </div>
 <div class="row">
-    <div class="span7">
+    <div class="span">
+    <div class="tabbable tabs-left">
+              <ul class="nav nav-tabs">
+                <li id="id-choose-direct-create" class="left-choose-repo active"><a href="#direct-create" data-toggle="tab">直接创建仓库</a></li>
+                <li id="id-choose-via-github" class="left-choose-repo"><a href="#via_github" data-toggle="tab">关联 GitHub 导入</a></li>
+                <li id="id-choose-via-git-url" class="left-choose-repo"><a href="#via_git_url" data-toggle="tab">从 Git URL 导入</a></li>
+              </ul>
+            </div>
+            </div>
+    <div class="span7" style="margin-left: 0px">
         {% if thirdpartyUser and thirdpartyUser.init == 0 %}
         <div class="alert alert-error">
             <p>来自 GitHub 的用户，我们尝试导入您 GitHub 账户的用户名和邮箱信息，</p><p>不过看来一些信息已经存在了，所以我们随机生成用户名或者邮箱。</p>
-            <p>在这里，强烈推荐您通过这里 -&gt; <a href="/settings/change_username_email/"><button class="btn btn-danger btn-small">修改用户名或者邮箱。</button></a></p>
+            <p>所以，强烈推荐您通过这里 -&gt; <a href="/settings/change_username_email/"><button class="btn btn-danger btn-small">修改用户名或者邮箱。</button></a></p>
         </div>
         {% else %}
-        <form class="form-horizontal" action="" method="post">
-            {% csrf_token %}
-            <fieldset>
-                <div class="control-group">
-                    <label for="id_name" class="control-label">仓库名称</label>
-                    <div class="controls">
-                        {{ repoForm.name }}
+        <div id="id-direct-create" class="cl-right-create-repo">
+            <form class="repo-create-form form-horizontal" action="" method="post">
+                {% csrf_token %}
+                <fieldset>
+                    <div class="control-group">
+                        <label for="id_name" class="control-label">仓库名称</label>
+                        <div class="controls">
+                            {{ repoForm.name }}
+                        </div>
                     </div>
-                </div>
-                <div class="control-group">
-                    <label for="id_desc" class="control-label">简介</label>
-                    <div class="controls">
-                        {{ repoForm.desc }}
+                    <div class="control-group">
+                        <label for="id_desc" class="control-label">简介</label>
+                        <div class="controls">
+                            {{ repoForm.desc }}
+                        </div>
                     </div>
-                </div>
-                <div class="control-group">
-                    <label for="id_lang" class="control-label">语言选择</label>
-                    <div class="controls">
-                        {{ repoForm.lang }}
+                    <div class="control-group">
+                        <label for="id_lang" class="control-label">语言选择</label>
+                        <div class="controls">
+                            {{ repoForm.lang }}
+                        </div>
                     </div>
-                </div>
-                <div id="id_other_lang_group" class="control-group" style="display: none">
-                    <label for="id_other_lang" class="control-label">其他语言</label>
-                    <div class="controls">
-                        <input type="text" maxlength="16" value="" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder="哇！难道你发明了新的语言:-)">
+                    <div id="id_other_lang_group" class="control-group" style="display: none">
+                        <label for="id_other_lang" class="control-label">其他语言</label>
+                        <div class="controls">
+                            <input type="text" maxlength="16" value="" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder="哇！难道你发明了新的语言:-)">
+                        </div>
                     </div>
-                </div>
-                <div class="control-group">
-                    <label for="id_auth_type" class="control-label">可见度</label>
-                    <div class="controls">
-                        {{ repoForm.auth_type }}
+                    <div class="control-group">
+                        <label for="id_auth_type" class="control-label">可见度</label>
+                        <div class="controls">
+                            {{ repoForm.auth_type }}
+                        </div>
                     </div>
-                </div>
-                <div id="id_error" class="alert {% if not error %}hide{% endif %}">
-                    <a data-dismiss="alert" class="close">×</a>
-                    <strong>出错了！</strong> <span id="id_error_message">{{ error }}</span>
-                </div>
-                <div class="form-actions">
-                    <button id="id_edit_submit" class="btn btn-primary" type="submit">确定</button>
-                </div>
-                <span class="muted">公开：包括源代码公开；半公开：除了源代码之外公开；私有：对外不公开</span>
-            </fieldset>
-        </form>
+                    <div id="id_error" class="alert {% if not error %}hide{% endif %}">
+                        <a data-dismiss="alert" class="close">×</a>
+                        <strong>出错了！</strong> <span id="id_error_message">{{ error }}</span>
+                    </div>
+                    <div class="form-actions">
+                        <button id="id_edit_submit" class="btn btn-primary" type="submit">确定</button>
+                    </div>
+                    <span class="muted">公开：包括源代码公开；半公开：除了源代码之外公开；私有：对外不公开</span>
+                </fieldset>
+            </form>
+        </div>
+        <div id="id-via-github" class="cl-right-create-repo">
+            {% if thirdpartyUser %}
+                    <h4 style="border-bottom: 1px solid #eeeeee; padding-bottom: 12px; margin-bottom: 15px">选择以下的仓库进行导入：<button id="id-refresh-repo" class="pull-right btn btn-mini">刷新</button></h4>
+                    <img id="id-repos-loading" style="margin-left: 10px" src="/static/img/loading.gif">
+                    <div id="id-github-repos">
+                    </div>
+            {% else %}
+                您还没有关联 GitHub 账户，请点击这里<a href=""><button class="btn btn-success">进行关联。</button></a>
+            {% endif %}
+        </div>
+        <div id="id-via-git-url" class="cl-right-create-repo">
+            <p>via-git-url</p>
+        </div>
         {% endif %}
     </div>
 </div>
@@ -108,6 +134,48 @@ $(function(){
             return false;
         }
         return true;
+    });
+    var list_github_repo = function() {
+        $('#id-github-repos').html('')
+        $.get('/ajax/repo/list/github/', function(data) {
+            htmls = [] 
+            for(x in data) {
+                repo = data[x];
+                html_url = repo.html_url;
+                name = repo.name;
+                full_name = repo.full_name;
+                git_url = repo.git_url;
+                description = repo.description;
+                language = repo.language;
+                html = '<p><a target="_blank" href="' + html_url + '"><strong style="font-size: 20px; margin: 6px">* ' + full_name + '</strong></a><span class="muted">' + git_url + '</span> <button type="button" data-name="'+name+'" data-git-url="'+git_url+'" data-description="'+description+'" data-language="'+language+'" class="import-repo-button btn btn-mini" digabled>导入</button></p>';
+                htmls.push(html);
+            } 
+            $('#id-github-repos').html(htmls.join(''))
+            $('#id-repos-loading').hide();
+        });
+    };
+    $('#id-choose-direct-create').click(function(){
+        $('.left-choose-repo').removeClass('active');
+        $(this).addClass('active');
+        $('.cl-right-create-repo').hide();
+        $('#id-direct-create').show();
+    });
+    $('#id-choose-via-github').click(function(){
+        $('.left-choose-repo').removeClass('active');
+        $(this).addClass('active');
+        $('.cl-right-create-repo').hide();
+        $('#id-via-github').show();
+        list_github_repo();
+    });
+    $('#id-choose-via-git-url').click(function(){
+        $('.left-choose-repo').removeClass('active');
+        $(this).addClass('active');
+        $('.cl-right-create-repo').hide();
+        $('#id-via-git-url').show();
+    });
+    $('#id-refresh-repo').click(function() {
+        $('#id-repos-loading').show();
+        list_github_repo()
     });
 });
 </script>

@@ -27,6 +27,7 @@ def github_oauth_access_token(code):
         if githup_connection: githup_connection.close()
     return '' 
 
+# https://api.github.com/user?access_token=17f605153e39f01f55062f2b4b719e9a14f13821
 def github_get_thirdpartyUser(access_token):
     githup_connection = None
     try:
@@ -85,14 +86,23 @@ def github_authenticate(thirdpartyUser):
         print 'user IntegrityError'
     return create_user
 
+# https://api.github.com/user/repos?type=public&sort=pushed&access_token=17f605153e39f01f55062f2b4b719e9a14f13821
 def github_list_repo(access_token):
+    githup_connection = None
     try:
-        pass
+        thirdpartyUser = ThirdpartyUser()
+        githup_connection = httplib.HTTPSConnection('api.github.com', 443, timeout=10)
+        headers = {"Host": "api.github.com", "Accept": "application/json", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36"}
+        githup_connection.request("GET", "/user/repos?type=public&sort=pushed&access_token=" + access_token, {}, headers)
+        response = githup_connection.getresponse()
+        if response.status == 200:
+            json_str = response.read()
+            return json_str
     except Exception, e:
         print 'exception: %s' % e
     finally:
         if githup_connection: githup_connection.close()
-    return '' 
+    return '{}'
 
 def __get_uniq_username(tp_username):
     if tp_username is not None:
