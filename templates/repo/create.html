@@ -37,7 +37,7 @@
                     <div class="control-group" style="margin-bottom: 5px">
                         <label for="id_git_url" class="control-label">Git URL</label>
                         <div class="controls">
-                            <input id="id_git_url" type="text" name="git_url" maxlength="128" class="input-xxlarge" placeholder="https://github.com/twitter/bootstrap.git 只支持 HTTP 和 Git 协议">
+                            <input id="id_git_url" type="text" name="remote_git_url" maxlength="128" class="input-xxlarge" placeholder="https://github.com/twitter/bootstrap.git 只支持 HTTP 和 Git 协议">
                         </div>
                     </div>
                     <div class="control-group">
@@ -49,15 +49,15 @@
                         </div>
                     </div>
                     <div class="control-group source-repo-auth hide">
-                        <label for="id_username" class="control-label">用户名</label>
+                        <label for="id_remote_username" class="control-label">用户名</label>
                         <div class="controls">
-                            <input id="id_username" type="text" name="username" maxlength="64" class="input-xlarge" placeholder="源仓库用户名">
+                            <input id="id_remote_username" type="text" name="remote_username" maxlength="64" class="input-xlarge" placeholder="源仓库用户名">
                         </div>
                     </div>
                     <div class="control-group source-repo-auth hide">
-                        <label for="id_password" class="control-label">密码</label>
+                        <label for="id_remote_password" class="control-label">密码</label>
                         <div class="controls">
-                            <input id="id_password" type="text" name="password" maxlength="64" class="input-xlarge" placeholder="源仓库密码">
+                            <input id="id_remote_password" type="text" name="remote_password" maxlength="64" class="input-xlarge" placeholder="源仓库密码">
                         </div>
                     </div>
                     <div class="alert">由于国内的网络环境，初始化仓库可能需要一段很长的时间，请耐心等候... （不支持大于10M项目）</div>
