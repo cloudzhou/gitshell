@@ -264,7 +264,6 @@ class GitHandler():
         desc_remote_name = '%s-%s' % (desc_repo.username, desc_repo.name)
         action = 'merge'
         pullrequest_commit_message = PULLREQUEST_COMMIT_MESSAGE_TMPL % (source_refs, source_repo.username, source_repo.name, desc_refs, desc_repo.username, desc_repo.name, pullRequest.id, '@' + str(pullrequest_user.username))
-        print pullrequest_commit_message
         args = [pullrequest_repo_path, source_abs_repopath, source_remote_name, dest_abs_repopath, desc_remote_name, action, source_refs, desc_refs]
         if not self.is_allowed_paths(args):
             return (128, '合并失败，请检查是否存在冲突 或者 non-fast-forward')

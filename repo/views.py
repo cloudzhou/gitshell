@@ -197,7 +197,8 @@ def repo_pull_new(request, user_name, repo_name, source_username, source_refs, d
         title = request.POST.get('title', '')
         desc = request.POST.get('desc', '')
         if source_repo == '' or source_refs == '' or desc_repo == '' or desc_refs == '' or title == '' or '/' not in source_repo or '/' not in desc_repo:
-            return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+            if not RepoManager.is_allowed_refsname_pattern(source_refs) or not RepoManager.is_allowed_refsname_pattern(desc_refs):
+                return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         (source_username, source_reponame) = source_repo.split('/', 1)
         (desc_username, desc_reponame) = desc_repo.split('/', 1)
         source_pull_repo = RepoManager.get_repo_by_name(source_username, source_reponame)
@@ -927,7 +928,6 @@ def get_commits_by_ids(ids):
     return RepoManager.get_commits_by_ids(ids)
 
 def fulfill_gitrepo(username, reponame, auth_type, remote_git_url, remote_username, remote_password):
-    print username, reponame, remote_git_url, remote_username, remote_password
     user_repo_path = '%s/%s' % (REPO_PATH, username)
     if not os.path.exists(user_repo_path):
         os.makedirs(user_repo_path)

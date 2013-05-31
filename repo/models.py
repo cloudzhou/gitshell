@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-  
-import time
+import time, re
 from django.db import models
 from django.core.cache import cache
 from gitshell.objectscache.models import BaseModel
@@ -583,6 +583,18 @@ class RepoManager():
     @classmethod
     def delete_repo_commit_version(self, repo):
         cache.delete(CacheKey.REPO_COMMIT_VERSION % repo.id)
+
+    @classmethod
+    def is_allowed_reponame_pattern(self, name):
+        if re.match('^[a-zA-Z0-9_\-]+$', name) and not name.startswith('-'):
+            return True
+        return False
+
+    
+    def is_allowed_refsname_pattern(self, name):
+        if re.match('^[a-zA-Z0-9_\-\.]+$', name) and not name.startswith('-'):
+            return True
+        return False
 
     # ====================
     @classmethod
