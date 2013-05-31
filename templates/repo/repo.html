@@ -134,7 +134,7 @@ $(function(){
     var do_refs = function() {
         is_refs_mouseover = true;
         $.ajax({
-            url: '/ajax/repo/{{user_name}}/{{repo_name}}/refs/',
+            url: '/{{user_name}}/{{repo_name}}/refs/',
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
@@ -176,7 +176,7 @@ $(function(){
         }
         disabled_watch = true;
         $.ajax({
-            url: '/ajax/repo/{{user_name}}/{{repo_name}}/watch/',
+            url: '/{{user_name}}/{{repo_name}}/watch/',
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
@@ -202,7 +202,7 @@ $(function(){
         }
         disabled_watch = true;
         $.ajax({
-            url: '/ajax/repo/{{user_name}}/{{repo_name}}/unwatch/',
+            url: '/{{user_name}}/{{repo_name}}/unwatch/',
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
@@ -229,7 +229,7 @@ $(function(){
         }
         disabled_fork = true;
         $.ajax({
-            url: '/ajax/repo/{{user_name}}/{{repo_name}}/fork/',
+            url: '/{{user_name}}/{{repo_name}}/fork/',
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',

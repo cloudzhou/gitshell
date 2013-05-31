@@ -53,7 +53,7 @@ $(function(){
         }
         if(text == '确定删除') {
             $.ajax({
-                url: '/ajax/repo/{{user_name}}/{{repo_name}}/issues/delete/{{issues_id}}/',
+                url: '/{{user_name}}/{{repo_name}}/issues/delete/{{issues_id}}/',
                 type: 'POST',
                 data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
                 dataType: 'json',

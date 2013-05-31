@@ -109,7 +109,7 @@ $(function(){
             return tmp_global_repo_branch_map[repo];
         }
         $.ajax({
-            url: '/ajax/repo/' + repo + '/refs/',
+            url: '/' + repo + '/refs/',
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
