@@ -869,13 +869,12 @@ def __response_create_repo_error(request, response_dictionary, error):
     response_dictionary['error'] = error
     return render_to_response('repo/create.html', response_dictionary, context_instance=RequestContext(request))
     
+@repo_permission_check
 @login_required
-def edit(request, user_name, rid):
+def edit(request, user_name, repo_name):
     error = u''
-    if user_name != request.user.username:
-        raise Http404
-    repo = RepoManager.get_repo_by_id(int(rid))
-    if repo is None or repo.user_id != request.user.id:
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
         raise Http404
     repoForm = RepoForm(instance = repo)
     response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error}
