@@ -68,7 +68,7 @@
                         <label for="id_name" class="control-label">仓库名称</label>
                         <div class="controls">
                             {{ repoForm.name }}
-                        <code id="id_reponame_exist" class="hide">该仓库名已经存在</code>
+                        <code id="id_reponame_exist" class="hide">该仓库名已经存在或者不符合规范</code>
                         </div>
                     </div>
                     <div class="control-group">
@@ -129,7 +129,7 @@ $(function(){
         $('#id_name').addClass('input-xlarge');
         $('#id_desc').addClass('input-xlarge');
         $('#id_lang').addClass('input-xlarge');
-        $('#id_name').attr('placeholder', '必填，[A-Za-z0-9_]');
+        $('#id_name').attr('placeholder', '必填，[A-Za-z0-9_-]，不能 - 开头');
         $('#id_desc').attr('placeholder', '必填，提供什么功能，解决什么问题');
     },
     change_other_lang = function() {
@@ -156,8 +156,9 @@ $(function(){
         if($('#id_git_url').val() != '' && !$('#id_git_url').val().match(/^[a-zA-Z0-9_\.-\/:]+$/)) {
             error_messages.push('不支持的 Git URL');
         }
-        if($('#id_name').val() == '' || !$('#id_name').val().match(/[A-Za-z0-9_]+/g)) {
-            error_messages.push('仓库名不能为空，只能是[A-Za-z0-9_]以内的字符');
+        var repo_name = $('#id_name').val();
+        if(repo_name == '' || !repo_name.match(/[A-Za-z0-9_\-]+/g) || repo_name.startsWith('-')) {
+            error_messages.push('仓库名不能为空，只能是[A-Za-z0-9_-]以内的字符');
         }
         if($('#id_desc').val() == '') {
             error_messages.push('介绍内容不能为空');

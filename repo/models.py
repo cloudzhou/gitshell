@@ -9,6 +9,7 @@ from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
 from gitshell.objectscache.models import CacheKey
+from gitshell.gsuser.middleware import KEEP_REPO_NAME
 
 class Repo(BaseModel):
     user_id = models.IntegerField()
@@ -586,7 +587,9 @@ class RepoManager():
 
     @classmethod
     def is_allowed_reponame_pattern(self, name):
-        if re.match('^[a-zA-Z0-9_\-]+$', name) and not name.startswith('-'):
+        if name is None or name == '':
+            return False
+        if re.match('^[a-zA-Z0-9_\-]+$', name) and not name.startswith('-') and name not in KEEP_REPO_NAME:
             return True
         return False
 

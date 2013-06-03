@@ -817,7 +817,7 @@ def find(request):
     repo = None
     is_repo_exist = True
     name = request.POST.get('name')
-    if name is not None and name not in KEEP_REPO_NAME:
+    if RepoManager.is_allowed_reponame_pattern(name):
         repo = RepoManager.get_repo_by_name(request.user.username, name)
         is_repo_exist = (repo is not None)
     return json_httpResponse({'is_repo_exist': is_repo_exist, 'name': name})
@@ -840,11 +840,11 @@ def create(request, user_name):
             return __response_create_repo_error(request, response_dictionary, error)
         repoForm = RepoForm(request.POST, instance = repo)
         if not repoForm.is_valid():
-            error = u'输入正确的仓库名称[A-Za-z0-9_]，选择好语言和可见度，仓库名字不能重复，active、watch、recommend、repo是保留的名称。'
+            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，选择好语言和可见度，active、watch、recommend、repo是保留的名称。'
             return __response_create_repo_error(request, response_dictionary, error)
         name = repoForm.cleaned_data['name']
-        if not re.match("^\w+$", name) or name in KEEP_REPO_NAME:
-            error = u'输入正确的仓库名称[A-Za-z0-9_]，active、watch、recommend、repo是保留的名称。'
+        if not RepoManager.is_allowed_reponame_pattern(name):
+            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，active、watch、recommend、repo是保留的名称。'
             return __response_create_repo_error(request, response_dictionary, error)
         dest_repo = RepoManager.get_repo_by_userId_name(request.user.id, name)
         if dest_repo is not None:
@@ -881,11 +881,11 @@ def edit(request, user_name, repo_name):
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
         if not repoForm.is_valid():
-            error = u'输入正确的仓库名称[A-Za-z0-9_]，选择好语言和可见度，仓库名字不能重复，active、watch、recommend、repo是保留的名称。'
+            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，选择好语言和可见度，active、watch、recommend、repo是保留的名称。'
             return __response_edit_repo_error(request, response_dictionary, error)
         name = repoForm.cleaned_data['name']
-        if not re.match("^\w+$", name) or name in KEEP_REPO_NAME:
-            error = u'输入正确的仓库名称[A-Za-z0-9_]，active、watch、recommend、repo是保留的名称。'
+        if not RepoManager.is_allowed_reponame_pattern(name):
+            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，active、watch、recommend、repo是保留的名称。'
             return __response_edit_repo_error(request, response_dictionary, error)
         repoForm.save()
         return HttpResponseRedirect('/%s/%s/' % (repo.username, repo.name))

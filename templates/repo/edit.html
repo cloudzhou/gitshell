@@ -80,8 +80,8 @@ $(function(){
     edit_init();
     $('#id_edit_submit').click(function() {
         var error_messages = [];
-        if($('#id_name').val() == '' || !$('#id_name').val().match(/[A-Za-z0-9_]+/g)) {
-            error_messages.push('仓库名不能为空，只能是[A-Za-z0-9_]以内的字符');
+        if($('#id_name').val() == '' || !$('#id_name').val().match(/[A-Za-z0-9_-]+/g)) {
+            error_messages.push('仓库名不能为空，只能是[A-Za-z0-9_-]以内的字符');
         }
         if($('#id_desc').val() == '') {
             error_messages.push('介绍内容不能为空');
