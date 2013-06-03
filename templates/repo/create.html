@@ -17,8 +17,8 @@
     <div class="tabbable tabs-left">
               <ul class="nav nav-tabs">
                 <li id="id-choose-direct-create" class="left-choose-repo active"><a href="#direct-create" data-toggle="tab">直接创建仓库</a></li>
-                <li id="id-choose-via-github" class="left-choose-repo"><a href="#via_github" data-toggle="tab">关联 GitHub 导入</a></li>
-                <li id="id-choose-via-git-url" class="left-choose-repo"><a href="#via_git_url" data-toggle="tab">从 Git URL 导入</a></li>
+                <li id="id-choose-via-github" class="left-choose-repo"><a href="#via-github" data-toggle="tab">关联 GitHub 导入</a></li>
+                <li id="id-choose-via-git-url" class="left-choose-repo"><a href="#via-git-url" data-toggle="tab">从 Git URL 导入</a></li>
               </ul>
             </div>
             </div>
@@ -113,7 +113,12 @@
                     <div id="id-github-repos">
                     </div>
             {% else %}
-                您还没有关联 GitHub 账户，请点击这里<a href=""><button class="btn btn-success">进行关联。</button></a>
+                {% if apply_error %}
+                    <p class="alert">{{ apply_error }}</p>
+                    <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/"><button class="btn btn-small btn-success">再次进行关联</button></a>
+                {% else %}
+                您还没有关联 GitHub 账户，请点击这里 <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/"><button class="btn btn-small btn-success">进行关联</button></a>
+                {% endif %}
             {% endif %}
         </div>
         {% endif %}
@@ -202,6 +207,8 @@ $(function(){
         });
     };
     $('#id-choose-direct-create').click(function(){
+        window.location.hash = 'direct-create';
+        $('#id_git_url').val('');
         $('.left-choose-repo').removeClass('active');
         $(this).addClass('active');
         $('.cl-right-create-repo').hide();
@@ -209,6 +216,7 @@ $(function(){
         $('#id-direct-create').show();
     });
     $('#id-choose-via-github').click(function(){
+        window.location.hash = 'via-github';
         $('.left-choose-repo').removeClass('active');
         $(this).addClass('active');
         $('.cl-right-create-repo').hide();
@@ -216,6 +224,7 @@ $(function(){
         list_github_repo();
     });
     $('#id-choose-via-git-url').click(function(){
+        window.location.hash = 'via-git-url';
         $('.left-choose-repo').removeClass('active');
         $(this).addClass('active');
         $('.cl-right-create-repo').hide();
@@ -257,6 +266,14 @@ $(function(){
             $('.source-repo-auth').hide();
         }
     });
+    var location_hash = window.location.hash;
+    if(location_hash == '' || location_hash == '#direct-create') {
+        $('#id-choose-direct-create').click();
+    } else if(location_hash == '#via-github'){
+        $('#id-choose-via-github').click();
+    } else if(location_hash == '#via-git-url'){
+        $('#id-choose-via-git-url').click();
+    }
 });
 </script>
 {% endblock %}

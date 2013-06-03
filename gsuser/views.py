@@ -15,7 +15,7 @@ from django.contrib.auth import authenticate as auth_authenticate, login as auth
 from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
 from gitshell.gsuser.Forms import LoginForm, JoinForm, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
-from gitshell.gsuser.models import Recommend, Userprofile, GsuserManager, COMMON_EMAIL_DOMAIN
+from gitshell.gsuser.models import Recommend, Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
 from gitshell.gsuser.middleware import MAIN_NAVS
 from gitshell.repo.models import RepoManager
 from gitshell.stats.models import StatsManager
@@ -211,9 +211,6 @@ def change(request):
             for repo in RepoManager.list_repo_by_userId(request.user.id, 0, 100):
                 repo.username = username
                 repo.save()
-            if thirdpartyUser is not None:
-                thirdpartyUser.init = 1
-                thirdpartyUser.save()
             is_user_exist = False
     goto = ''
     email = request.POST.get('email')
@@ -228,10 +225,10 @@ def change(request):
             email_suffix = email.split('@')[-1]
             if email_suffix in COMMON_EMAIL_DOMAIN:
                 goto = COMMON_EMAIL_DOMAIN[email_suffix]
-            if thirdpartyUser is not None:
-                thirdpartyUser.init = 1
-                thirdpartyUser.save()
             is_user_exist = False
+    if thirdpartyUser is not None:
+        thirdpartyUser.init = 1
+        thirdpartyUser.save()
     if username == request.user.username:
         is_user_exist = False
     response_dictionary = { 'is_exist_repo': is_exist_repo, 'is_user_exist': is_user_exist, 'goto': goto, 'new_username': username, 'new_email': email }
@@ -318,9 +315,7 @@ def login_github(request):
     if access_token == '':
         return HttpResponseRedirect('/login/')
     thirdpartyUser = github_get_thirdpartyUser(access_token)
-    if thirdpartyUser is None:
-        return HttpResponseRedirect('/login/')
-    if thirdpartyUser.tp_id is None or thirdpartyUser.tp_username is None:
+    if thirdpartyUser is None or thirdpartyUser.tp_id is None or thirdpartyUser.tp_username is None:
         return HttpResponseRedirect('/login/')
     user = github_authenticate(thirdpartyUser)
     if user is not None:
@@ -331,6 +326,30 @@ def login_github(request):
     if thirdpartyUser.init == 0:
         return HttpResponseRedirect('/settings/change_username_email/')
     return HttpResponseRedirect('/home/')
+
+@login_required
+def login_github_apply(request):
+    error = ''
+    code = request.GET.get('code')
+    if code is None:
+        error = u'GitHub 关联失败，没有相关 code'
+    access_token = github_oauth_access_token(code)
+    if access_token == '':
+        error = u'GitHub 关联失败，获取不到 access_token，请再次重试'
+    thirdpartyUser = github_get_thirdpartyUser(access_token)
+    if thirdpartyUser is None or thirdpartyUser.tp_id is None or thirdpartyUser.tp_username is None:
+        error = u'获取不到 GitHub 信息，请再次重试'
+    thirdpartyUser_find = GsuserManager.get_thirdpartyUser_by_type_tpId(ThirdpartyUser.GITHUB, thirdpartyUser.tp_id)
+    if thirdpartyUser_find is not None:
+        error = u'该 GitHub 账户已经关联 Gitshell，请直接使用 GitHub 账户登录'
+    if error != '':
+        return HttpResponseRedirect('/%s/repo/create/?%s#via-github' % (request.user.username, urllib.urlencode({'apply_error': error})))
+    thirdpartyUser.user_type = ThirdpartyUser.GITHUB
+    thirdpartyUser.access_token = access_token
+    thirdpartyUser.id = request.user.id
+    thirdpartyUser.init = 1
+    thirdpartyUser.save()
+    return HttpResponseRedirect('/%s/repo/create/#via-github' % request.user.username)
 
 def logout(request):
     auth_logout(request)

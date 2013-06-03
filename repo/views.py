@@ -832,7 +832,7 @@ def create(request, user_name):
     repo.user_id = request.user.id
     repo.username = request.user.username
     repoForm = RepoForm(instance = repo)
-    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error, 'thirdpartyUser': thirdpartyUser}
+    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error, 'thirdpartyUser': thirdpartyUser, 'apply_error': request.GET.get('apply_error')}
     if request.method == 'POST':
         userprofile = request.userprofile
         if (userprofile.pubrepo + userprofile.prirepo) >= 100:
