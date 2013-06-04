@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-  
 import os, re
 import shutil, copy
-import json, time
+import json, time, urllib
 from datetime import datetime
 from datetime import timedelta
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -10,6 +10,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
 from django.shortcuts import render_to_response
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 from django.utils.html import escape
 from gitshell.feed.feed import FeedAction
 from gitshell.feed.models import FeedManager
@@ -858,7 +860,8 @@ def create(request, user_name):
         remote_username = request.POST.get('remote_username', '').strip()
         remote_password = request.POST.get('remote_password', '').strip()
         create_repo = repoForm.save()
-        fulfill_gitrepo(request.user.username, name, auth_type, remote_git_url, remote_username, remote_password)
+        remote_git_url = __validate_get_remote_git_url(remote_git_url, remote_username, remote_password)
+        fulfill_gitrepo(request.user.username, name, auth_type, remote_git_url)
         if remote_git_url is not None and remote_git_url != '':
             create_repo.status = 2
             create_repo.save()
@@ -868,6 +871,39 @@ def create(request, user_name):
 def __response_create_repo_error(request, response_dictionary, error):
     response_dictionary['error'] = error
     return render_to_response('repo/create.html', response_dictionary, context_instance=RequestContext(request))
+
+def __validate_get_remote_git_url(remote_git_url, remote_username, remote_password):
+    if remote_git_url != '' and not re.match('[a-zA-Z0-9_\.\-\/:]+', remote_git_url):
+        return ''
+    if remote_git_url.startswith('git://'):
+        remote_git_url_as_http = 'http://' + remote_git_url[len('git://'):]
+        if __is_url_valid(remote_git_url_as_http):
+            return remote_git_url
+        return ''
+    if remote_username is None or remote_username == '':
+        remote_username = 'remote_username'
+    if remote_password is None or remote_password == '':
+        remote_password = 'remote_password'
+    remote_username = urllib.quote_plus(remote_username)
+    remote_password = urllib.quote_plus(remote_password)
+    if not __is_url_valid(remote_git_url):
+        return ''
+    protocol = ''
+    remote_git_url_without_protocol = ''
+    for protocol in ['http://', 'https://']:
+        if remote_git_url.startswith(protocol):
+            remote_git_url_without_protocol = remote_git_url[len(protocol):]
+            return '%s%s:%s@%s' % (protocol, remote_username, remote_password, remote_git_url_without_protocol)
+    return ''
+
+def __is_url_valid(url):
+    validator = URLValidator(verify_exists=False)
+    try:
+        validator(url)
+        return True
+    except ValidationError, e:
+        print e
+    return False
     
 @repo_permission_check
 @login_required
@@ -927,7 +963,7 @@ def delete(request, user_name, repo_name):
 def get_commits_by_ids(ids):
     return RepoManager.get_commits_by_ids(ids)
 
-def fulfill_gitrepo(username, reponame, auth_type, remote_git_url, remote_username, remote_password):
+def fulfill_gitrepo(username, reponame, auth_type, remote_git_url):
     user_repo_path = '%s/%s' % (REPO_PATH, username)
     if not os.path.exists(user_repo_path):
         os.makedirs(user_repo_path)
@@ -935,7 +971,7 @@ def fulfill_gitrepo(username, reponame, auth_type, remote_git_url, remote_userna
     repo_path = ('%s/%s/%s.git' % (REPO_PATH, username, reponame))
     if not os.path.exists(repo_path):
         if remote_git_url is not None and remote_git_url != '':
-            EventManager.send_import_repo_event(username, reponame, remote_git_url, remote_username, remote_password)
+            EventManager.send_import_repo_event(username, reponame, remote_git_url)
         else:
             shutil.copytree(GIT_BARE_REPO_PATH, repo_path)
     git_daemon_export_ok_file_path = '%s/%s' % (repo_path, 'git-daemon-export-ok')

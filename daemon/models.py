@@ -33,7 +33,7 @@ class EventManager():
         self.sendevent(FORK_TUBE_NAME, json.dumps(fork_event))
 
     @classmethod
-    def send_import_repo_event(self, username, reponame, remote_git_url, remote_username, remote_password):
-        import_repo_event = {'type': 0, 'username': username, 'reponame': reponame, 'remote_git_url': remote_git_url, 'remote_username': remote_username, 'remote_password': remote_password}
+    def send_import_repo_event(self, username, reponame, remote_git_url):
+        import_repo_event = {'type': 0, 'username': username, 'reponame': reponame, 'remote_git_url': remote_git_url}
         self.sendevent(IMPORT_REPO_TUBE_NAME, json.dumps(import_repo_event))
 

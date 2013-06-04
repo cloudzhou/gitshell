@@ -54,26 +54,21 @@ class ImportRepoThread(threading.Thread):
         username = event['username']
         reponame = event['reponame']
         remote_git_url = event['remote_git_url']
-        remote_username = event['remote_username']
-        remote_password = event['remote_password']
         local_repo = RepoManager.get_repo_by_name(username, reponame)
         if local_repo is None or local_repo == 0:
             return
         local_repo_path = local_repo.get_abs_repopath()
         if os.path.exists(local_repo_path):
             return
-        if remote_username is None or remote_username == '':
-            remote_username = 'remote_username'
-        if remote_password is None or remote_password == '':
-            remote_password = 'remote_password'
-        remote_git_url
-        args = ['/bin/bash', '/opt/bin/git-import-remote-repo.sh'] + [local_repo_path, remote_git_url, remote_username, remote_password]
+        remote_git_url_with_auth = remote_git_url
+        if remote_git_url.start
+        args = ['/bin/bash', '/opt/bin/git-import-remote-repo.sh'] + [local_repo_path, remote_git_url]
         try:
             popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
             output = popen.communicate()[0].strip()
         except Exception, e:
             print e
-        print local_repo_path, remote_git_url, remote_username, remote_password
+        print local_repo_path, remote_git_url
     
 def __cache_version_update(sender, **kwargs):
     da_post_save(kwargs['instance'])

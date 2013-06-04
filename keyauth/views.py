@@ -40,7 +40,6 @@ def http_auth(request):
     except Exception, e:
         print e
     return unauthorized_httpResponse
-                
 
 def pubkey(request, fingerprint):
     userPubkey = KeyauthManager.get_userpubkey_by_fingerprint(fingerprint)
