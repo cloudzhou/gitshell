@@ -9,33 +9,36 @@ from gitshell.settings import REPO_PATH
 from gitshell.dist.views import repo as dist_repo
 
 def http_auth(request):
-    unauthorized_httpResponse = HttpResponse(status=401)
-    unauthorized_httpResponse['WWW-Authenticate'] = 'Basic realm="%s"' % 'Restricted'
-    if not request.META.has_key('HTTP_X_SET_REQUESTURI'):
-        return unauthorized_httpResponse
-
-    orgi_request_uri = request.META['HTTP_X_SET_REQUESTURI'].strip()
-    (desc_username, desc_reponame, action) = _get_desc_name(orgi_request_uri)
-    if desc_username == '' or desc_reponame == '':
-        return unauthorized_httpResponse
-    suffix = '.git'
-    if desc_reponame.endswith(suffix):
-        desc_reponame = desc_reponame[0:len(desc_reponame)-len(suffix)]
-    repo = RepoManager.get_repo_by_name(desc_username, desc_reponame)
-    if repo is None:
-        return unauthorized_httpResponse
-
-    if repo.auth_type != 0:
-        user = _http_authenticate_user(request)
-        if RepoManager.is_repo_member(repo, user):
-            return HttpResponse(status=200)
-    else:
-        #if orgi_request_uri.endswith('?service=git-receive-pack') or action == 'git-receive-pack':
-        if 'git-receive-pack' in orgi_request_uri:
+    try:
+        unauthorized_httpResponse = HttpResponse(status=401)
+        unauthorized_httpResponse['WWW-Authenticate'] = 'Basic realm="%s"' % 'Restricted'
+        if not request.META.has_key('HTTP_X_SET_REQUESTURI'):
+            return unauthorized_httpResponse
+    
+        orgi_request_uri = request.META['HTTP_X_SET_REQUESTURI'].strip()
+        (desc_username, desc_reponame, action) = _get_desc_name(orgi_request_uri)
+        if desc_username == '' or desc_reponame == '':
+            return unauthorized_httpResponse
+        suffix = '.git'
+        if desc_reponame.endswith(suffix):
+            desc_reponame = desc_reponame[0:len(desc_reponame)-len(suffix)]
+        repo = RepoManager.get_repo_by_name(desc_username, desc_reponame)
+        if repo is None:
+            return unauthorized_httpResponse
+    
+        if repo.auth_type != 0:
             user = _http_authenticate_user(request)
-            if not RepoManager.is_repo_member(repo, user):
-                return unauthorized_httpResponse
-        return HttpResponse(status=200)
+            if RepoManager.is_repo_member(repo, user):
+                return HttpResponse(status=200)
+        else:
+            #if orgi_request_uri.endswith('?service=git-receive-pack') or action == 'git-receive-pack':
+            if 'git-receive-pack' in orgi_request_uri:
+                user = _http_authenticate_user(request)
+                if not RepoManager.is_repo_member(repo, user):
+                    return unauthorized_httpResponse
+            return HttpResponse(status=200)
+    except Exception, e:
+        print e
     return unauthorized_httpResponse
                 
 
@@ -108,7 +111,7 @@ def _http_authenticate_user(request):
     auth = request.META['HTTP_AUTHORIZATION'].split()
     if len(auth) != 2 or auth[0].lower() != 'basic':
         return None
-    username, password = base64.b64decode(auth[1]).split(':')
+    username, password = base64.b64decode(auth[1]).split(':', 1)
     password = hashlib.md5(password).hexdigest()
     user = authenticate(username=username, password=password)
     return user
