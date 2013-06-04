@@ -293,41 +293,41 @@ class GitHandler():
         self._append_refs_and_put_dict(tags_path, tags, commit_hash_dict)
 
         blank_p = re.compile(r'\s+')
-        info_refs_path = '%s/info/refs' % (repo_path)
-        if not os.path.exists(info_refs_path):
-            self._repo_meta_sort_refs(branches, tags)
-            self._cache_repo_meta(repo, meta)
-            return meta
+        info_refs_path = '%s/info/refs' % repo_path
+        packed_refs_path = '%s/packed-refs' % repo_path
         refs_heads = 'refs/heads/'
         refs_tags = 'refs/tags/'
-        refs_f = None
-        try:
-            refs_f = open(info_refs_path, 'r')
-            for line in refs_f:
-                if line.startswith('#'):
-                    continue
-                if len(branches) >= 100 or len(tags) >= 100:
-                    break
-                array = blank_p.split(line)
-                if len(array) < 2:
-                    continue
-                commit_hash = array[0].strip()
-                refs_from_f = array[1].strip()
-                if not re.match('^\w+$', commit_hash) or not self._is_allowed_path(refs_from_f):
-                    continue
-                if refs_from_f.startswith(refs_heads):
-                    refs = refs_from_f[len(refs_heads):]
-                    if refs not in branches:
-                        branches.append(refs)
-                    commit_hash_dict[refs] = commit_hash
-                elif refs_from_f.startswith(refs_tags):
-                    refs = refs_from_f[len(refs_tags):]
-                    if refs not in tags:
-                        tags.append(refs)
-                    commit_hash_dict[refs] = commit_hash
-        finally:
-            if refs_f != None:
-                refs_f.close()
+        for refs_path in (info_refs_path, packed_refs_path):
+            if not os.path.exists(refs_path):
+                continue
+            refs_f = None
+            try:
+                refs_f = open(refs_path, 'r')
+                for line in refs_f:
+                    if line.startswith('#'):
+                        continue
+                    if len(branches) >= 100 or len(tags) >= 100:
+                        break
+                    array = blank_p.split(line)
+                    if len(array) < 2:
+                        continue
+                    commit_hash = array[0].strip()
+                    refs_from_f = array[1].strip()
+                    if not re.match('^\w+$', commit_hash) or not self._is_allowed_path(refs_from_f):
+                        continue
+                    if refs_from_f.startswith(refs_heads):
+                        refs = refs_from_f[len(refs_heads):]
+                        if refs not in branches:
+                            branches.append(refs)
+                        commit_hash_dict[refs] = commit_hash
+                    elif refs_from_f.startswith(refs_tags):
+                        refs = refs_from_f[len(refs_tags):]
+                        if refs not in tags:
+                            tags.append(refs)
+                        commit_hash_dict[refs] = commit_hash
+            finally:
+                if refs_f != None:
+                    refs_f.close()
         self._repo_meta_sort_refs(branches, tags)
         self._cache_repo_meta(repo, meta)
         return meta

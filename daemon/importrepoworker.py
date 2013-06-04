@@ -54,7 +54,7 @@ class ImportRepoThread(threading.Thread):
         username = event['username']
         reponame = event['reponame']
         remote_git_url = event['remote_git_url']
-        local_user = RepoManager.get_user_by_name(username)
+        local_user = GsuserManager.get_user_by_name(username)
         local_repo = RepoManager.get_repo_by_name(username, reponame)
         if local_user is None or local_repo is None or local_repo.status == 0:
             return
@@ -68,7 +68,7 @@ class ImportRepoThread(threading.Thread):
             returncode = popen.returncode
             if returncode == 0:
                 RepoManager.check_export_ok_file(local_repo)
-                diff_size = output
+                diff_size = long(output)
                 RepoManager.update_user_repo_quote(local_user, local_repo, diff_size)
                 local_repo.status = 0
                 local_repo.save()

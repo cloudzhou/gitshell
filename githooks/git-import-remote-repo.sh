@@ -8,7 +8,7 @@ remote_git_url="$2"
 
 /usr/bin/git clone -q --bare "$remote_git_url" "$local_repo_path"
 if [ $? == 0 ]; then
-    dusb=`du -sb $local_repo_path`
+    dusb=`du -sb $local_repo_path | awk '{print $1}'`
     echo -n "$dusb"
     exit 0
 fi
