@@ -128,13 +128,14 @@ class GitHandler():
         args = [pullrequest_repo_path, source_abs_repopath, source_remote_name, dest_abs_repopath, desc_remote_name, action]
         if not self._is_allowed_paths(args):
             return False
-        command = '/bin/bash /opt/bin/git-pullrequest.sh %s %s %s %s %s %s' % tuple(args)
+        args = ['/bin/bash', '/opt/bin/git-pullrequest.sh'] + args
         try:
-            check_output(command, shell=True)
-            return True
+            popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
+            output = popen.communicate()[0].strip()
+            return popen.returncode == 0
         except Exception, e:
             print e
-            return False
+        return False
 
     def merge_pull_request(self, pullRequest, source_repo, desc_repo, source_refs, desc_refs, pullrequest_user):
         pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.username, desc_repo.name)
