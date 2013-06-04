@@ -1,3 +1,16 @@
 #!/bin/bash
 
 set -e
+ulimit -f 327680 ; ulimit -m 1048576 ; ulimit -v 1048576
+
+local_repo_path="$1"
+remote_git_url="$2"
+
+/usr/bin/git clone -q --bare "$remote_git_url" "$local_repo_path"
+if [ $? == 0 ]; then
+    dusb=`du -sb $local_repo_path`
+    echo -n "$dusb"
+    exit 0
+fi
+echo -n "0"
+exit 128

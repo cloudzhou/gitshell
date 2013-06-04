@@ -922,8 +922,8 @@ def edit(request, user_name, repo_name):
         if not RepoManager.is_allowed_reponame_pattern(name):
             error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，active、watch、recommend、repo是保留的名称。'
             return __response_edit_repo_error(request, response_dictionary, error)
-        repoForm.save()
-        RepoManager.check_export_ok_file(user_name, repo_name)
+        repo = repoForm.save()
+        RepoManager.check_export_ok_file(repo)
         return HttpResponseRedirect('/%s/%s/' % (repo.username, repo.name))
     return render_to_response('repo/edit.html', response_dictionary, context_instance=RequestContext(request))
 
@@ -974,7 +974,8 @@ def fulfill_gitrepo(username, reponame, remote_git_url):
             EventManager.send_import_repo_event(username, reponame, remote_git_url)
         else:
             shutil.copytree(GIT_BARE_REPO_PATH, repo_path)
-    RepoManager.check_export_ok_file(username, reponame)
+    repo = RepoManager.get_repo_by_name(username, reponame)
+    RepoManager.check_export_ok_file(repo)
 
 def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)

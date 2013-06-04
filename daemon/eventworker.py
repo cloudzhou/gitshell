@@ -85,7 +85,7 @@ def update_quote(user, gsuser, repo, repopath, parameters):
             diff_size = int(result)
         else:
             diff_size = int(result) - repo.used_quote
-    update_gsuser_repo_quote(gsuser, repo, diff_size)
+    RepoManager.update_user_repo_quote(gsuser, repo, diff_size)
 
 # git log -100 --pretty='%h  %p  %t  %an  %cn  %ct  %ce  %ae  %s'
 def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
@@ -240,13 +240,6 @@ def get_repopath(user, repo):
     if user is None or repo is None:
         return None
     return repo.get_abs_repopath()
-
-def update_gsuser_repo_quote(gsuser, repo, diff_size):
-    gsuser = GsuserManager.get_userprofile_by_id(gsuser.id)
-    gsuser.used_quote = gsuser.used_quote + diff_size
-    repo.used_quote = repo.used_quote + diff_size
-    gsuser.save()
-    repo.save()
 
 def stop():
     EventManager.send_stop_event(EVENT_TUBE_NAME)

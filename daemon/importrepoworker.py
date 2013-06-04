@@ -54,8 +54,9 @@ class ImportRepoThread(threading.Thread):
         username = event['username']
         reponame = event['reponame']
         remote_git_url = event['remote_git_url']
+        local_user = RepoManager.get_user_by_name(username)
         local_repo = RepoManager.get_repo_by_name(username, reponame)
-        if local_repo is None or local_repo.status == 0:
+        if local_user is None or local_repo is None or local_repo.status == 0:
             return
         local_repo_path = local_repo.get_abs_repopath()
         if os.path.exists(local_repo_path):
@@ -66,10 +67,17 @@ class ImportRepoThread(threading.Thread):
             output = popen.communicate()[0].strip()
             returncode = popen.returncode
             if returncode == 0:
-                pass
+                RepoManager.check_export_ok_file(local_repo)
+                diff_size = output
+                RepoManager.update_user_repo_quote(local_user, local_repo, diff_size)
+                local_repo.status = 0
+                local_repo.save()
+            else:
+                local_repo.status = 500
+                local_repo.save()
         except Exception, e:
             print e
-        print local_repo_path, remote_git_url
+        RepoManager.check_export_ok_file(local_repo)
     
 def __cache_version_update(sender, **kwargs):
     da_post_save(kwargs['instance'])

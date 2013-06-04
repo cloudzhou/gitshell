@@ -586,8 +586,7 @@ class RepoManager():
         cache.delete(CacheKey.REPO_COMMIT_VERSION % repo.id)
 
     @classmethod
-    def check_export_ok_file(self, username, reponame):
-        repo = self.get_repo_by_name(username, reponame)
+    def check_export_ok_file(self, repo):
         if repo is None:
             return
         auth_type = repo.auth_type
@@ -602,6 +601,18 @@ class RepoManager():
                 os.remove(git_daemon_export_ok_file_path)
 
     @classmethod
+    def update_user_repo_quote(self, user, repo, diff_size):
+        userprofile = GsuserManager.get_userprofile_by_id(user.id)
+        userprofile.used_quote = userprofile.used_quote + diff_size
+        repo.used_quote = repo.used_quote + diff_size
+        if userprofile.used_quote < 0:
+            userprofile.used_quote = 0
+        if repo.used_quote < 0:
+            repo.used_quote = 0
+        userprofile.save()
+        repo.save()
+
+    @classmethod
     def is_allowed_reponame_pattern(self, name):
         if name is None or name == '':
             return False
@@ -609,7 +620,6 @@ class RepoManager():
             return True
         return False
 
-    
     def is_allowed_refsname_pattern(self, name):
         if re.match('^[a-zA-Z0-9_\-\.]+$', name) and not name.startswith('-'):
             return True
