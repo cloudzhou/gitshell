@@ -520,7 +520,7 @@ def issues_create(request, user_name, repo_name, issues_id):
             orgi_issue = None
         repoIssuesForm = RepoIssuesForm(instance = issues)
     repoIssuesForm.fill_assigned(repo)
-    error = ''
+    error = u''
     if request.method == 'POST':
         issues.user_id = request.user.id
         issues.repo_id = repo.id

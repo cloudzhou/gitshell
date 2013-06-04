@@ -329,7 +329,7 @@ def login_github(request):
 
 @login_required
 def login_github_apply(request):
-    error = ''
+    error = u''
     code = request.GET.get('code')
     if code is None:
         error = u'GitHub 关联失败，没有相关 code'
@@ -343,7 +343,7 @@ def login_github_apply(request):
     if thirdpartyUser_find is not None:
         error = u'该 GitHub 账户已经关联 Gitshell，请直接使用 GitHub 账户登录'
     if error != '':
-        return HttpResponseRedirect('/%s/repo/create/?%s#via-github' % (request.user.username, urllib.urlencode({'apply_error': error})))
+        return HttpResponseRedirect('/%s/repo/create/?%s#via-github' % (request.user.username, urllib.urlencode({'apply_error': error.encode('utf8')})))
     thirdpartyUser.user_type = ThirdpartyUser.GITHUB
     thirdpartyUser.access_token = access_token
     thirdpartyUser.id = request.user.id
