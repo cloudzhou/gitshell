@@ -293,13 +293,13 @@ class GitHandler():
         self._append_refs_and_put_dict(tags_path, tags, commit_hash_dict)
 
         blank_p = re.compile(r'\s+')
-        info_refs_path = '%s/info/refs' % repo_path
-        packed_refs_path = '%s/packed-refs' % repo_path
         refs_heads = 'refs/heads/'
         refs_tags = 'refs/tags/'
-        for refs_path in (info_refs_path, packed_refs_path):
-            if not os.path.exists(refs_path):
-                continue
+        refs_path = '%s/packed-refs' % repo_path
+        info_refs_path = '%s/info/refs' % repo_path
+        if os.path.exists(info_refs_path):
+            refs_path = info_refs_path
+        if os.path.exists(refs_path):
             refs_f = None
             try:
                 refs_f = open(refs_path, 'r')
