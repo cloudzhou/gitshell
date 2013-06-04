@@ -55,7 +55,7 @@ class ImportRepoThread(threading.Thread):
         reponame = event['reponame']
         remote_git_url = event['remote_git_url']
         local_repo = RepoManager.get_repo_by_name(username, reponame)
-        if local_repo is None or local_repo == 0:
+        if local_repo is None or local_repo.status == 0:
             return
         local_repo_path = local_repo.get_abs_repopath()
         if os.path.exists(local_repo_path):
@@ -64,6 +64,9 @@ class ImportRepoThread(threading.Thread):
         try:
             popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
             output = popen.communicate()[0].strip()
+            returncode = popen.returncode
+            if returncode == 0:
+                pass
         except Exception, e:
             print e
         print local_repo_path, remote_git_url

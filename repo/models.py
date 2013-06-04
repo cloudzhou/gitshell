@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-  
-import time, re
+import os, time, re
 from django.db import models
 from django.core.cache import cache
 from gitshell.objectscache.models import BaseModel
@@ -584,6 +584,22 @@ class RepoManager():
     @classmethod
     def delete_repo_commit_version(self, repo):
         cache.delete(CacheKey.REPO_COMMIT_VERSION % repo.id)
+
+    @classmethod
+    def check_export_ok_file(self, username, reponame):
+        repo = self.get_repo_by_name(username, reponame)
+        if repo is None:
+            return
+        auth_type = repo.auth_type
+        repo_path = repo.get_abs_repopath()
+        git_daemon_export_ok_file_path = '%s/%s' % (repo_path, 'git-daemon-export-ok')
+        if auth_type == 0:
+            if os.path.exists(repo_path) and not os.path.exists(git_daemon_export_ok_file_path):
+                with open(git_daemon_export_ok_file_path, 'w') as _file:
+                    _file.close()
+        else:
+            if os.path.exists(repo_path) and os.path.exists(git_daemon_export_ok_file_path):
+                os.remove(git_daemon_export_ok_file_path)
 
     @classmethod
     def is_allowed_reponame_pattern(self, name):

@@ -855,13 +855,12 @@ def create(request, user_name):
         if userprofile.used_quote > userprofile.quote:
             error = u'您剩余空间不足，总空间 %s kb，剩余 %s kb' % (userprofile.quote, userprofile.used_quote)
             return __response_create_repo_error(request, response_dictionary, error)
-        auth_type = repoForm.cleaned_data['auth_type']
         remote_git_url = request.POST.get('remote_git_url', '').strip()
         remote_username = request.POST.get('remote_username', '').strip()
         remote_password = request.POST.get('remote_password', '').strip()
         create_repo = repoForm.save()
         remote_git_url = __validate_get_remote_git_url(remote_git_url, remote_username, remote_password)
-        fulfill_gitrepo(request.user.username, name, auth_type, remote_git_url)
+        fulfill_gitrepo(request.user.username, name, remote_git_url)
         if remote_git_url is not None and remote_git_url != '':
             create_repo.status = 2
             create_repo.save()
@@ -924,6 +923,7 @@ def edit(request, user_name, repo_name):
             error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，active、watch、recommend、repo是保留的名称。'
             return __response_edit_repo_error(request, response_dictionary, error)
         repoForm.save()
+        RepoManager.check_export_ok_file(user_name, repo_name)
         return HttpResponseRedirect('/%s/%s/' % (repo.username, repo.name))
     return render_to_response('repo/edit.html', response_dictionary, context_instance=RequestContext(request))
 
@@ -963,7 +963,7 @@ def delete(request, user_name, repo_name):
 def get_commits_by_ids(ids):
     return RepoManager.get_commits_by_ids(ids)
 
-def fulfill_gitrepo(username, reponame, auth_type, remote_git_url):
+def fulfill_gitrepo(username, reponame, remote_git_url):
     user_repo_path = '%s/%s' % (REPO_PATH, username)
     if not os.path.exists(user_repo_path):
         os.makedirs(user_repo_path)
@@ -974,14 +974,7 @@ def fulfill_gitrepo(username, reponame, auth_type, remote_git_url):
             EventManager.send_import_repo_event(username, reponame, remote_git_url)
         else:
             shutil.copytree(GIT_BARE_REPO_PATH, repo_path)
-    git_daemon_export_ok_file_path = '%s/%s' % (repo_path, 'git-daemon-export-ok')
-    if auth_type == 0:
-        if os.path.exists(repo_path) and not os.path.exists(git_daemon_export_ok_file_path):
-            with open(git_daemon_export_ok_file_path, 'w') as _file:
-                _file.close()
-    else:
-        if os.path.exists(repo_path) and os.path.exists(git_daemon_export_ok_file_path):
-            os.remove(git_daemon_export_ok_file_path)
+    RepoManager.check_export_ok_file(username, reponame)
 
 def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)
