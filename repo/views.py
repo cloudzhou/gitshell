@@ -834,11 +834,11 @@ def create(request, user_name):
     repoForm = RepoForm(instance = repo)
     response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error, 'thirdpartyUser': thirdpartyUser, 'apply_error': request.GET.get('apply_error')}
     if request.method == 'POST':
+        repoForm = RepoForm(request.POST, instance = repo)
         userprofile = request.userprofile
         if (userprofile.pubrepo + userprofile.prirepo) >= 100:
             error = u'您拥有的仓库数量已经达到 100 的限制。'
             return __response_create_repo_error(request, response_dictionary, error)
-        repoForm = RepoForm(request.POST, instance = repo)
         if not repoForm.is_valid():
             error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，选择好语言和可见度，active、watch、recommend、repo是保留的名称。'
             return __response_create_repo_error(request, response_dictionary, error)
@@ -935,9 +935,6 @@ def fulfill_gitrepo(username, reponame, auth_type, remote_git_url, remote_userna
     repo_path = ('%s/%s/%s.git' % (REPO_PATH, username, reponame))
     if not os.path.exists(repo_path):
         if remote_git_url is not None and remote_git_url != '':
-            if not os.path.exists(repo_path):
-                os.makedirs(repo_path)
-                os.chmod(repo_path, 0755)
             EventManager.send_import_repo_event(username, reponame, remote_git_url, remote_username, remote_password)
         else:
             shutil.copytree(GIT_BARE_REPO_PATH, repo_path)
