@@ -60,8 +60,6 @@ class ImportRepoThread(threading.Thread):
         local_repo_path = local_repo.get_abs_repopath()
         if os.path.exists(local_repo_path):
             return
-        remote_git_url_with_auth = remote_git_url
-        if remote_git_url.start
         args = ['/bin/bash', '/opt/bin/git-import-remote-repo.sh'] + [local_repo_path, remote_git_url]
         try:
             popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
