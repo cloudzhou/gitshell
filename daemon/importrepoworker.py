@@ -39,6 +39,7 @@ class ImportRepoThread(threading.Thread):
             event_job = beanstalk.reserve()
             try:
                 event = json.loads(event_job.body)
+                print event
                 # exit signal
                 if event['type'] == -1:
                     event_job.delete()

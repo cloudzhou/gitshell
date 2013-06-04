@@ -860,10 +860,10 @@ def create(request, user_name):
         remote_password = request.POST.get('remote_password', '').strip()
         create_repo = repoForm.save()
         remote_git_url = __validate_get_remote_git_url(remote_git_url, remote_username, remote_password)
-        fulfill_gitrepo(request.user.username, name, remote_git_url)
         if remote_git_url is not None and remote_git_url != '':
             create_repo.status = 2
             create_repo.save()
+        fulfill_gitrepo(request.user.username, name, remote_git_url)
         return HttpResponseRedirect('/%s/%s/' % (request.user.username, name))
     return render_to_response('repo/create.html', response_dictionary, context_instance=RequestContext(request))
 
