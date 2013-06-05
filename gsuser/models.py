@@ -37,6 +37,7 @@ class ThirdpartyUser(BaseModel):
     access_token = models.CharField(max_length=40, null=True)
     init = models.IntegerField(default=0, null=True)
 
+    github_user_info = {}
     GITHUB = 1
     GOOGLE = 2
 

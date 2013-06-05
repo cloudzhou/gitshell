@@ -38,16 +38,17 @@ def github_get_thirdpartyUser(access_token):
         response = githup_connection.getresponse()
         if response.status == 200:
             json_str = response.read()
-            response = json.loads(json_str)
-            if 'login' in response:
-                thirdpartyUser.tp_username = response['login']
-            if 'id' in response:
-                thirdpartyUser.tp_id = response['id']
-            if 'email' in response:
-                thirdpartyUser.tp_email = response['email']
+            github_user_info = json.loads(json_str)
+            if 'login' in github_user_info:
+                thirdpartyUser.tp_username = github_user_info['login']
+            if 'id' in github_user_info:
+                thirdpartyUser.tp_id = github_user_info['id']
+            if 'email' in github_user_info:
+                thirdpartyUser.tp_email = github_user_info['email']
             thirdpartyUser.init = 0
             thirdpartyUser.access_token = access_token
             thirdpartyUser.user_type = ThirdpartyUser.GITHUB
+            thirdpartyUser.github_user_info = github_user_info
             return thirdpartyUser
     except Exception, e:
         print 'exception: %s' % e
@@ -56,7 +57,7 @@ def github_get_thirdpartyUser(access_token):
     return None
     
 def github_authenticate(thirdpartyUser):
-    tp_id, tp_username, tp_email = thirdpartyUser.tp_id, thirdpartyUser.tp_username, thirdpartyUser.tp_email
+    tp_id, tp_username, tp_email, github_user_info = thirdpartyUser.tp_id, thirdpartyUser.tp_username, thirdpartyUser.tp_email, thirdpartyUser.github_user_info
     thirdpartyUser_find = GsuserManager.get_thirdpartyUser_by_type_tpId(ThirdpartyUser.GITHUB, tp_id)
     if thirdpartyUser_find is not None:
         if thirdpartyUser_find.access_token != thirdpartyUser.access_token:
@@ -75,6 +76,7 @@ def github_authenticate(thirdpartyUser):
         create_user = User.objects.create_user(username, email, password)
         if create_user is not None and create_user.is_active:
             userprofile = Userprofile(username = create_user.username, email = create_user.email, imgurl = hashlib.md5(create_user.email.lower()).hexdigest())
+            _fill_github_user_info(userprofile, github_user_info)
             userprofile.id = create_user.id
             userprofile.save()
             if username == tp_username and email == tp_email:
@@ -103,6 +105,16 @@ def github_list_repo(access_token):
     finally:
         if githup_connection: githup_connection.close()
     return '{}'
+
+def _fill_github_user_info(userprofile, github_user_info):
+    if github_user_info is None:
+        return
+    if 'company' in github_user_info:
+        userprofile.company = github_user_info['company']
+    if 'blog' in github_user_info:
+        userprofile.website = github_user_info['blog']
+    if 'location' in github_user_info:
+        userprofile.location = github_user_info['location']
 
 def __get_uniq_username(tp_username):
     if tp_username is not None:
