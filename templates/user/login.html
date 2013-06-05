@@ -14,11 +14,15 @@
     </div>
     <div class="span7">
         <p>
-            <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841"><img src="https://github.com/favicon.ico"/></a>
+            <img id="id_github_logo" src="https://github.com/favicon.ico"/>
+            <div id="id_via_gitshell_first" class="alert hide">
+                <p>如果您已经拥有 Gitshell 帐号，请优先使用 Gitshell 帐号登录然后在“创建仓库页面”进行 GitHub 帐号关联。</p>
+                <p>我没有 Gitshell 帐号，<a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841">使用 GitHub 账户登录</a></p>
+            </div>
         </p>
     </div>
     <div class="span7">
-        <p>* 使用 Gitshell 帐号登录，可以关联 GitHub</p>
+        <p>* 使用 Gitshell 帐号登录，可以关联 <strong>GitHub</strong></p>
     </div>
     <div class="span7" style="">
         <form class="form-inline" action="" method="post" style="margin-bottom: 8px">
@@ -56,6 +60,9 @@ $(function(){
     };
     login_init();
     $('#id_login_submit').on('click', md5_user_passwd);
+    $('#id_github_logo').mouseover(function(){
+        $('#id_via_gitshell_first').show();
+    });
 });
 </script>
 {% endblock %}

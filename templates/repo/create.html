@@ -108,14 +108,14 @@
         </div>
         <div id="id-via-github" class="cl-right-create-repo hide">
             {% if thirdpartyUser %}
-                    <h4 class="repo-title" style="">选择以下的仓库进行导入：<button id="id-refresh-repo" class="pull-right btn btn-mini">刷新</button></h4>
+                    <h4 class="repo-title" style="">选择以下的仓库进行导入： {%if thirdpartyUser%}<span class="muted">({{thirdpartyUser.tp_username}})</span>{%endif%}<button id="id-refresh-repo" class="pull-right btn btn-mini">刷新</button></h4>
                     <div id="id-repos-loading" style="margin-left: 10px"><img src="/static/img/loading.gif">&nbsp;&nbsp;正在连接 GitHub...</div>
                     <div id="id-github-repos">
                     </div>
             {% else %}
                 {% if apply_error %}
                     <p class="alert">{{ apply_error }}</p>
-                    <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/"><button class="btn btn-small btn-success">再次进行关联</button></a>
+                    <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/"><button class="btn btn-small btn-success">退出当前 GitHub 账户，选择其他账户再次进行关联</button></a>
                 {% else %}
                 您还没有关联 GitHub 账户，请点击这里 <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/"><button class="btn btn-small btn-success">进行关联</button></a>，关联之后可以直接使用 GitHub 帐号登录
                 {% endif %}

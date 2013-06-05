@@ -12,12 +12,13 @@ from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, Userprof
 
 @login_required
 def profile(request):
+    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
     userprofileForm = UserprofileForm(instance = request.userprofile)
     if request.method == 'POST':
         userprofileForm = UserprofileForm(request.POST, instance = request.userprofile)
         if userprofileForm.is_valid():
             userprofileForm.save()
-    response_dictionary = {'userprofileForm': userprofileForm}
+    response_dictionary = {'userprofileForm': userprofileForm, 'thirdpartyUser': thirdpartyUser}
     return render_to_response('settings/profile.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
