@@ -1,0 +1,28 @@
+{% extends "settings/base.html" %}
+{% block container-right %}
+<div class="span9">
+    <h3 style="padding-bottom: 5px; border-bottom:1px solid #EEEEEE; margin-bottom:15px;">
+        第三方应用
+    </h3>
+    <dt>
+    {% if thirdpartyUser %}
+        当前 <button class="btn btn-mini btn-success" type="button">GitHub 账户 ({{ thirdpartyUser.tp_username }})</button>, <button id="id_github_relieve" class="btn btn-mini btn-danger" type="button">解除绑定</button>
+    {% else %}
+        <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/"><button class="btn btn-mini btn-success">进行 GitHub 账户关联</button></a>
+    {% endif %}
+</div>
+{% endblock %}
+{% block js %}
+<script>
+/*global jQuery, window */
+$(function(){
+    $('#id_github_relieve').click(function(){
+        $.post('/login/oauth/github/relieve/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            if(json.code == 200) {
+                window.location.href = window.location.href;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

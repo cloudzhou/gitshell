@@ -106,8 +106,6 @@ def notif(request):
 
 @login_required
 def thirdparty(request):
-    if request.method == 'POST':
-        pass
     thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
     response_dictionary = {'thirdpartyUser': thirdpartyUser}
     return render_to_response('settings/thirdparty.html',

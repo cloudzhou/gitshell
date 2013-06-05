@@ -351,6 +351,15 @@ def login_github_apply(request):
     thirdpartyUser.save()
     return HttpResponseRedirect('/%s/repo/create/#via-github' % request.user.username)
 
+@login_required
+@require_http_methods(["POST"])
+def login_github_relieve(request):
+    thirdpartyUser_find = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
+    if thirdpartyUser_find is not None:
+        thirdpartyUser_find.delete()
+    response_dictionary = {'code': 200, 'result': 'success'}
+    return json_httpResponse(response_dictionary)
+
 def logout(request):
     auth_logout(request)
     return HttpResponseRedirect('/')
