@@ -7,7 +7,7 @@ from django.utils.functional import SimpleLazyObject
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.gsuser.models import GsuserManager, Userprofile
 from django.dispatch import receiver
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from gitshell.objectscache.da import da_post_save
 
 MAIN_NAVS = ['index', 'stats', 'skills', 'home', 'login', 'logout', 'join', 'resetpassword', 'help', 'settings', 'private', 'captcha', 'ajax', 'explore', 'error']
@@ -72,4 +72,4 @@ def __cache_version_update(sender, **kwargs):
     da_post_save(kwargs['instance'])
 
 post_save.connect(__cache_version_update)
-
+post_delete.connect(__cache_version_update)

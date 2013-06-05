@@ -8,7 +8,7 @@ from subprocess import PIPE
 from datetime import datetime
 from django.core.cache import cache
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from gitshell.gsuser.models import Userprofile, GsuserManager
 from gitshell.repo.models import CommitHistory, Repo, RepoManager
 from gitshell.feed.models import Feed, NotifMessage, FeedManager
@@ -250,6 +250,7 @@ def __cache_version_update(sender, **kwargs):
 
 if __name__ == '__main__':
     post_save.connect(__cache_version_update)
+    post_delete.connect(__cache_version_update)
     if len(sys.argv) < 2:
         sys.exit(1)
     action = sys.argv[1]

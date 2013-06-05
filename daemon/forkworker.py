@@ -9,7 +9,7 @@ from gitshell.repo.models import RepoManager
 from gitshell.gsuser.models import GsuserManager
 from gitshell.daemon.models import EventManager, FORK_TUBE_NAME
 from gitshell.settings import GIT_BARE_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from gitshell.objectscache.da import da_post_save
 
 def start():
@@ -87,6 +87,7 @@ def __cache_version_update(sender, **kwargs):
 
 if __name__ == '__main__':
     post_save.connect(__cache_version_update)
+    post_delete.connect(__cache_version_update)
     if len(sys.argv) < 2:
         print 'usage: start|stop'
         sys.exit(1)
