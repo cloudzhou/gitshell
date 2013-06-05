@@ -859,6 +859,11 @@ def create(request, user_name):
         remote_username = request.POST.get('remote_username', '').strip()
         remote_password = request.POST.get('remote_password', '').strip()
         create_repo = repoForm.save()
+        if create_repo.auth_type == 0:
+            userprofile.pubrepo = userprofile.pubrepo + 1
+        else:
+            userprofile.prirepo = userprofile.prirepo + 1
+        userprofile.save()
         remote_git_url = __validate_get_remote_git_url(remote_git_url, remote_username, remote_password)
         if remote_git_url is not None and remote_git_url != '':
             create_repo.status = 2

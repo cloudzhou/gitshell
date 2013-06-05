@@ -161,10 +161,22 @@ $(function(){
         var unsupport_git_url = '不支持的 Git URL，只支持 Http(s)，Git 协议，以 http(s):// 或者 git:// 开头';
         var is_unsupport_git_url = false;
         var git_url = $('#id_git_url').val();
-        if(git_url != '' && !git_url.match(/^[a-zA-Z0-9_\.-\/:]+$/)) {
+        if(git_url != '' && git_url.indexOf('http://') != 0 && git_url.indexOf('https://') != 0 && git_url.indexOf('git://') != 0 ) {
             is_unsupport_git_url = true;
         }
-        if(git_url != '' && git_url.indexOf('http://') != 0 && git_url.indexOf('https://') != 0 && git_url.indexOf('git://') != 0 ) {
+        var indexOfAt = git_url.indexOf('@');
+        if(indexOfAt >= 0) {
+            var git_url_without_protocal = git_url.substring(indexOfAt+1, git_url.length);
+            var protocols = ['http://', 'https://', 'git://'];
+            for(x in protocols) {
+                var protocol = protocols[x];
+                if(git_url.indexOf(protocol) >= 0) {
+                    git_url = protocol + git_url_without_protocal;
+                    break;
+                }
+            }
+        }
+        if(git_url != '' && !git_url.match(/^[a-zA-Z0-9_\.-\/:]+$/)) {
             is_unsupport_git_url = true;
         }
         if(is_unsupport_git_url) {
@@ -270,8 +282,10 @@ $(function(){
     });
     $('#id_is_private').click(function(){
         if(this.checked) {
+            $('#id_auth_type_1').attr('checked','checked');
             $('.source-repo-auth').show();
         } else {
+            $('#id_auth_type_0').attr('checked','checked');
             $('.id_remote_username').val('');
             $('.id_remote_password').val('');
             $('.source-repo-auth').hide();
