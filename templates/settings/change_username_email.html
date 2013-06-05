@@ -3,12 +3,13 @@
 <div class="span9">
     {% if thirdpartyUser and thirdpartyUser.init == 0 %}
     <div class="alert alert-error">
-        <p>来自 GitHub 的用户，我们尝试导入您 GitHub 账户的用户名和邮箱信息，</p>
+        <p>我们尝试导入您 GitHub 账户的用户名和邮箱信息，</p>
         <p>不过看来一些信息已经存在了，所以我们随机生成用户名或者邮箱，</p>
-        <p>请按照实际情况修改用户名或者邮箱，输入框内容是目前用户的信息。</p>
-        <p>所有修改成功之后请刷新当前页面，看看是否改变为您希望的信息。</p>
+        <p>请按照实际情况修改用户名或者邮箱，所有修改成功之后请刷新页面，看看是否改变为您希望的信息。</p>
     </div>
     {% endif %}
+    {% if thirdpartyUser and thirdpartyUser.init == 0 and thirdpartyUser.tp_username == user.username %}
+    {% else %}
     <h3 style="border-bottom:1px solid #EEEEEE; margin-bottom:15px;">
         修改用户名<small>&nbsp;只允许[a-zA-Z0-9_]之内的字符</small>
     </h3>
@@ -18,7 +19,11 @@
                 <div class="control-group">
                     <label for="id_username" class="control-label">新用户名</label>
                     <div class="controls">
+                        {% if thirdpartyUser and thirdpartyUser.init == 0 %}
+                        <input id="id_username" type="text" name="username" maxlength="30" value="{{thirdpartyUser.tp_username}}" placeholder="新的用户名">
+                        {% else %}
                         <input id="id_username" type="text" name="username" maxlength="30" value="{{user.username}}" placeholder="新的用户名">
+                        {% endif %}
                         <code id="id_username_alert" class="hide"></code>
                     </div>
                 </div>
@@ -30,6 +35,9 @@
             </fieldset>
         </form>
     </div>
+    {% endif %}
+    {% if thirdpartyUser and thirdpartyUser.init == 0 and thirdpartyUser.tp_email == user.email %}
+    {% else %}
     <h3 style="border-bottom:1px solid #EEEEEE; margin-bottom:15px;">
         修改登录邮箱<small>&nbsp;使用常用邮箱</small>
     </h3>
@@ -39,7 +47,11 @@
                 <div class="control-group">
                     <label for="id_email" class="control-label">新登录邮箱</label>
                     <div class="controls">
+                        {% if thirdpartyUser and thirdpartyUser.init == 0 %}
+                        <input id="id_email" type="text" name="email" maxlength="30" value="{{thirdpartyUser.tp_email}}" placeholder="新的登录Email">
+                        {% else %}
                         <input id="id_email" type="text" name="email" maxlength="30" value="{{user.email}}" placeholder="新的登录Email">
+                        {% endif %}
                         <code id="id_email_alert" class="hide"></code>
                     </div>
                 </div>
@@ -52,6 +64,7 @@
             </fieldset>
         </form>
     </div>
+    {% endif %}
     <div class="alert">
         <p>我们不鼓励修改用户名和登录邮箱，这些修改会对现有的仓库或者统计产生影响，</p>
         <p>比如用户名由 username1 修改为 username2，</p>
@@ -72,7 +85,7 @@ $(function(){
     $('#id_username_change_submit').click(function(){
         var username = $('#id_username').val();
         $.post('/ajax/user/change/', {csrfmiddlewaretoken: '{{ csrf_token }}', username: username}, function(json){
-            if(json.username == username) { 
+            if(json.username == '{{user.username}}') { 
                 $('#id_username_alert').hide();
                 $('#id_username_change_submit').removeClass('btn-danger');
                 $('#id_username_change_submit').addClass('btn-success');
@@ -95,7 +108,7 @@ $(function(){
     $('#id_email_change_submit').click(function(){
         var email = $('#id_email').val();
         $.post('/ajax/user/change/', {csrfmiddlewaretoken: '{{ csrf_token }}', email: email}, function(json){
-            if(json.new_email == email) {
+            if(json.new_email == '{{user.email}}') {
                 $('#id_email_alert').hide();
                 $('#id_email_change_submit').removeClass('btn-danger');
                 $('#id_email_change_submit').addClass('btn-success');
@@ -106,10 +119,10 @@ $(function(){
             } else {
                 $('#id_email_alert').hide();
                 if(json.goto != '') {
-                    $('#id_email_goto button').text('点击这里到 ' + json.goto);
+                    $('#id_email_goto button').text('已发送验证邮件，点击这里到 ' + json.goto);
                     $('#id_email_goto').attr('href', 'http://' + json.goto);
                 } else {
-                    $('#id_email_goto button').text('获取邮件，点击更改URL，然后刷新页面');
+                    $('#id_email_goto button').text('已发送验证邮件，请收取邮件，点击更改URL，然后刷新页面');
                     $('#id_email_goto').attr('href', 'javascript: void(0)');
                 }
                 $('#id_email_change_submit').hide();
