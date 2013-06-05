@@ -77,6 +77,8 @@ class ImportRepoThread(threading.Thread):
                 local_repo.status = 500
                 local_repo.save()
         except Exception, e:
+            local_repo.status = 500
+            local_repo.save()
             print e
         RepoManager.check_export_ok_file(local_repo)
     

@@ -863,7 +863,7 @@ def create(request, user_name):
         if remote_git_url is not None and remote_git_url != '':
             create_repo.status = 2
             create_repo.save()
-        fulfill_gitrepo(request.user.username, name, remote_git_url)
+        fulfill_gitrepo(create_repo, remote_git_url)
         return HttpResponseRedirect('/%s/%s/' % (request.user.username, name))
     return render_to_response('repo/create.html', response_dictionary, context_instance=RequestContext(request))
 
@@ -963,7 +963,10 @@ def delete(request, user_name, repo_name):
 def get_commits_by_ids(ids):
     return RepoManager.get_commits_by_ids(ids)
 
-def fulfill_gitrepo(username, reponame, remote_git_url):
+def fulfill_gitrepo(repo, remote_git_url):
+    gitHandler = GitHandler()
+    username = repo.username
+    reponame = repo.name
     user_repo_path = '%s/%s' % (REPO_PATH, username)
     if not os.path.exists(user_repo_path):
         os.makedirs(user_repo_path)
@@ -974,6 +977,7 @@ def fulfill_gitrepo(username, reponame, remote_git_url):
             EventManager.send_import_repo_event(username, reponame, remote_git_url)
         else:
             shutil.copytree(GIT_BARE_REPO_PATH, repo_path)
+            gitHandler.update_server_info(repo)
     repo = RepoManager.get_repo_by_name(username, reponame)
     RepoManager.check_export_ok_file(repo)
 

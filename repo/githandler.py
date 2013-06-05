@@ -157,6 +157,19 @@ class GitHandler():
             print e
         return (128, '合并失败，请检查是否存在冲突 或者 non-fast-forward')
 
+    def update_server_info(self, repo):
+        abs_repopath = repo.get_abs_repopath()
+        if os.path.exists(abs_repopath):
+            self._chdir(abs_repopath)
+            args = ['/bin/bash', '/usr/bin/git', 'update-server-info']
+            try:
+                popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
+                output = popen.communicate()[0].strip()
+                return popen.returncode == 0
+            except Exception, e:
+                print e
+            return False
+
     def _repo_load_log_file(self, from_commit_hash, commit_hash, path):
         commits = []
         between_commit_hash = from_commit_hash
