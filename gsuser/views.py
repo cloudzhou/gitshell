@@ -293,6 +293,9 @@ def login(request):
                 if user is not None and user.is_active:
                     auth_login(request, user)
                     url_next = '/home/'
+                    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(user.id)
+                    if thirdpartyUser is None:
+                        url_next = '/settings/thirdparty/'
                     if request.GET.get('next') is not None:
                         url_next = request.GET.get('next')
                     return HttpResponseRedirect(url_next)
