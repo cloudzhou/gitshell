@@ -1,74 +1,94 @@
 {% extends "repo/repo.html" %}
-{% block subcontainer %}
+
+{% block css %}
 <style>
-.table-striped td { border-top: 0px; font-size: 16px}
-.c_tr_1 {border-left: 5px solid #0074CC}
-.c_img_1 {margin-left: 5px}
-.c_tr_2 {border-left: 10px solid #5BB75B}
-.c_img_2 {margin-left: 10px}
-.c_tr_3 {border-left: 15px solid #DA4F49}
-.c_img_3 {margin-left: 15px}
+	.repo-1 {
+		border-left: 2px solid #0074cc; }
+	.repo-2 {
+		border-left: 2px solid #5bb75b;
+		border-bottom-color: #bbb; }
+	.repo-3 {
+		margin-left: 50px;
+		border-left: 2px solid #da4f49; }
 </style>
-<div class="span6">
-    <div class="page-header" style="margin-top: 0px; margin-bottom: 10px;padding-bottom: 8px">
-        <h4>衍生仓库树<small>
-        <span style="color: #0074CC">▐ 父仓库</span>
-        <span style="color: #5BB75B">▐ 本仓库</span>
-        <span style="color: #DA4F49">▐ 子仓库</span>
-        </small></h4>
-    </div>
-    <div>
-        <table class="table table-striped">
-        {%for fork_repos in fork_repos_tree%}
-            {%for fork_repo in fork_repos%}
-                <tr class="c_tr_{{forloop.parentloop.counter}}"><td>
-                <a class="c_img_{{forloop.parentloop.counter}}" href="/{{fork_repo.username}}/"><img class="avatar" src="https://gravatar.com/avatar/{{fork_repo.imgurl}}?s=32"/></a>
-                <a style="margin-left: 5px" href="/{{fork_repo.username}}/{{fork_repo.name}}/">{{fork_repo.username}}</a>
-                <span>{{fork_repo.desc}}</span>
-                <a href="javascript:void(0)" style="margin-right: 5px" rel="tooltip" data-original-title="commit {{ fork_repo.commit }}次数">♯ {{ fork_repo.commit }}</a>
-                <a href="javascript:void(0)" style="margin-right: 5px" rel="tooltip" data-original-title="watch {{ fork_repo.watch }}次数">♥ {{ fork_repo.watch }}</a>
-                <a href="javascript:void(0)" style="margin-right: 5px" rel="tooltip" data-original-title="fork {{ fork_repo.fork }}次数">♂ {{ fork_repo.fork }}</a></span></h3>
-                </td></tr>
-            {%endfor%}
-        {%endfor%}
-	    </table>
-    </div>
-</div>
-<div class="span5">
-    <div class="page-header" style="margin-top: 0px; margin-bottom: 10px;padding-bottom: 8px">
-        <h4>关注此仓库用户</h4>
-    </div>
-    <div>
-        <table class="table table-striped">
-        {%for watch_user in watch_users%}
-            <tr class="c_tr"><td>
-                <a href="/{{watch_user.username}}/"><img class="avatar_left" src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=32"/></a>
-                <a href="/{{watch_user.username}}/">{{watch_user.username}}</a>
-                {%if watch_user.nickname%}
-                    <span>({{watch_user.nickname}})</span>
-                {%endif%}
-                <span style="font-size: 12px" class="muted">
-                    加入：<span class="c_unixtime">{{watch_user.date_joined}}</span>
-                    最近登录：<span class="c_unixtime">{{watch_user.last_login}}</span>
-                    <br/>
-                    {{watch_user.tweet}}
-                </span>
-            </td></tr>
-        {%endfor%}
-	    </table>
-    </div>
-</div>
 {% endblock %}
+
+{% block subcontainer %}
+
+<div class="repo-file-container">
+	<div class="repo-meta clearfix">
+		<h2 class="title pull-left">衍生仓库树</h2>
+		<!--<ul class="unstyled repo-list clearfix">-->
+			<!--<li class="parent-repo" style="color: #0074CC"><i></i>父仓库</li>-->
+			<!--<li class="current-repo" style="color: #5BB75B"><i></i>本仓库</li>-->
+			<!--<li class="child-repo" style="color: #DA4F49"><i></i>子仓库</li>-->
+			<!--</ul>-->
+	</div>
+
+    <div class="file-container">
+			<div class="frame">
+				{%for fork_repos in fork_repos_tree%}
+					{%for fork_repo in fork_repos%}
+						<div class="member repo-{{forloop.parentloop.counter}} clearfix">
+							<div class="avatar">
+								<img src="https://gravatar.com/avatar/{{fork_repo.imgurl}}?s=35">
+							</div>
+							<div class="user-body">
+								<p class="username">
+									<a class="c_img_{{forloop.parentloop.counter}}" href="/{{fork_repo.username}}/">{{fork_repo.username}}</a>
+								</p>
+								<p class="repo-description">{{fork_repo.desc}}</p>
+							</div>
+							<ul class="details unstyled clearfix">
+								<li><a href="javascript:void(0)" rel="tooltip" data-original-title="commit {{ fork_repo.commit }}次数" class="label"><span>{{ fork_repo.commit }}</span>commits</a></li>
+								<li><a href="javascript:void(0)" rel="tooltip" data-original-title="watch {{ fork_repo.watch }}次数" class="label"><span>{{ fork_repo.watch }}</span>watches</a></li>
+								<li><a href="javascript:void(0)" rel="tooltip" data-original-title="fork {{ fork_repo.fork }}次数" class="label"><span>{{ fork_repo.fork }}</span>forks</a></li>
+							</ul>
+						</div>
+					{%endfor%}
+				{%endfor%}
+			</div>
+
+			<div class="repo-meta">
+				<h2 class="title">关注用户</h2>
+			</div>
+			<div class="frame">
+				{%for watch_user in watch_users%}
+					<div class="member clearfix">
+						<div class="avatar">
+							<img class="avatar_left" src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=35">
+						</div>
+						<div class="user-body">
+							<p class="username">
+								<a href="/{{watch_user.username}}/">{{watch_user.username}}</a>
+								{%if watch_user.nickname%}
+									<span>({{watch_user.nickname}})</span>
+								{%endif%}
+								{%if watch_user.tweet%}
+									<span class="tweet">{{watch_user.tweet}}</span>
+								{%endif%}
+							</p>
+							<p class="muted"><i class="icon-time"></i>加入: <span class="c_unixtime">{{watch_user.date_joined}}</span><span class="divider">/</span><i class="icon-map-marker"></i>最近登录: <span class="c_unixtime">{{watch_user.last_login}}</span></p>
+						</div>
+					</div>
+				{%endfor%}
+		</div>
+    </div>
+
+	</div>
+
+{% endblock %}
+
 {% block subjs %}
-<script>
-$(function(){
-    $('.c_unixtime').each(function(index){ 
-        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-        $(this).show();
-    });
-    $('.table').tooltip({
-      selector: "a[rel=tooltip]"
-    })
-});
-</script>
+	<script>
+		$(function(){
+				$('.c_unixtime').each(function(index){ 
+						$(this).html(moment(new Date($(this).html()*1000)).fromNow());
+						$(this).show();
+				});
+				$('.table').tooltip({
+					selector: "a[rel=tooltip]"
+				})
+		});
+	</script>
 {% endblock %}

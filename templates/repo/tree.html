@@ -22,11 +22,6 @@
 
 			<div class="file-container">
 			<table class="table frame">
-			<colgroup>
-				<col class="icon">
-				<col class="file-name">
-				<col class="commiter">
-			</colgroup>
 				<tbody>
 					{% if not tree %}
 						<tr>
@@ -111,7 +106,6 @@
 					for(x in paths) {
 							subpath = paths[x];
 							if(subpath == '') {
-									break;
 							}
 							base_href_path = (base_href_path + subpath + '/');
 							if(path.substr(-1) === "/") {

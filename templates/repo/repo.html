@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
 {% block css %}
-    {% if current == 'index' or current == 'tree' or current == 'commits' %}
-        <link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet'>
-        <link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet'>
-    {% endif %}
+	{% if current == 'index' or current == 'tree' or current == 'commits' %}
+		<link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet'>
+		<link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet'>
+	{% endif %}
 {% endblock %}
 
 {% block container %}
@@ -16,26 +16,26 @@
 			<span class="repo-icon {% if repo.auth_type == 0 %}unlock{% else %}lock{% endif %}"></span>
 
 				<ul class="repocrumb">
-						<li class="user"><a href="/{{ user_name }}/">{{ user_name }}</a><span class="divider">/</span></li>
-						<li><a href="/{{ user_name }}/{{ repo_name }}/">{{ repo_name }}</a></li>
+					<li class="user"><a href="/{{ user_name }}/">{{ user_name }}</a><span class="divider">/</span></li>
+					<li><a href="/{{ user_name }}/{{ repo_name }}/">{{ repo_name }}</a></li>
 				</ul>
 
 				<ul class="repo-actions">
-						{% if has_pull_right %}
+					{% if has_pull_right %}
 						<li><a href="/{{ user_name }}/{{ repo_name }}/pull/new/"><button class="btn" type="button"><i class="octicon octicon-git-pull-request"></i>合并请求</button></a></li>
+					{% endif %}
+					<li>
+						{% if not is_watched_repo %}
+							<a class="btn watch" data-original-title="关注该项目" rel="tooltip" href="javascript: void(0)"><i class="icon-star"></i>关注</a>
+						{% else %}
+							<a class="btn unwatch" data-original-title="取消关注该项目" rel="tooltip" href="javascript: void(0)"><i class="icon-star-empty"></i>取消关注</a>
 						{% endif %}
-						<li>
-								{% if not is_watched_repo %}
-								<a class="btn watch" data-original-title="关注该项目" rel="tooltip" href="javascript: void(0)"><i class="icon-eye-open"></i>关注</a>
-								{% else %}
-								<a class="btn unwatch" data-original-title="取消关注该项目" rel="tooltip" href="javascript: void(0)"><i class="icon-eye-close"></i>取消关注</a>
-								{% endif %}
-								<span class="count" title="关注次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</span>
-						</li>
-						<li>
-							<a class="btn fork" data-original-title="衍生作为本地仓库" rel="tooltip" href="javascript: void(0)"><i class="icon-code-fork"></i>Fork</a>
-								<span class="count" title="衍生次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.fork}}</span>
-						</li>
+						<span class="count" title="关注次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</span>
+					</li>
+					<li>
+						<a class="btn fork" data-original-title="衍生作为本地仓库" rel="tooltip" href="javascript: void(0)"><i class="icon-code-fork"></i>Fork</a>
+						<span class="count" title="衍生次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.fork}}</span>
+					</li>
 				</ul>
 
 		</div>
@@ -43,15 +43,14 @@
 		<div class="repo-details-tabs">
 
 			<ul class="nav repo-tabs">
-				<li class="active"><a href="#">Code</a></li>
-				<li><a href="#">Network</a></li>
-				<li><a href="#">Pull Request</a></li>
-				<li><a href="#">Issuse</a></li>
-				<li><a href="#">Wiki</a></li>
-				<li><a href="#">Graphs</a></li>
+				<li class="active"><a href="#"><i class="icon-code"></i>Code</a></li>
+				<li><a href="#"><i class="icon-group"></i>Network</a></li>
+				<li><a href="#"><i class="icon-code-fork"></i>Pull Request</a></li>
+				<li><a href="#"><i class="icon-puzzle-piece"></i>Issuse</a></li>
+				<li><a href="#"><i class="icon-book"></i>Wiki</a></li>
+				<li><a href="#"><i class="icon-adjust"></i>Graphs</a></li>
 			</ul>
 
-			{% if current == 'index' %}
 				<div class="repo-summary">
 					<div class="description">
 						<p>{{repo.desc}} — <a href="#README.md">阅读更多</a></p>
@@ -91,10 +90,8 @@
 						{% endif %}
 
 					</div>
+			</div>
 
-			{% endif %}
-
-		</div>
 
 
 			</div>
@@ -122,7 +119,7 @@
 
 				<ul class="nav nav-tabs">
 					<li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/{{ refs }}/">文件</a></li>
-					<!--<li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/">Commits</a></li>-->
+					<li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/">Commits</a></li>
 					<li {% if current == 'pull' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/pulls/">合并请求{% if repo_pull_new_count > 0 %} <span class="badge">{{repo_pull_new_count}}</span>{% endif %}</a></li>
 					<!--<li {% if current == 'issues' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/issues/">Issues</a></li>-->
 					<li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/network/">协作者</a></li>
@@ -132,7 +129,9 @@
 
 
 			</div>
+
 			{% block subcontainer %}{% endblock %}
+
 
 
 		</div>
@@ -197,7 +196,7 @@
         }
         var disabled_watch = false;
         var disabled_fork = false;
-        $('#i_watch').click(function() {
+        $('.watch').click(function() {
             if(disabled_watch) {
                 return false;
             }
@@ -223,7 +222,7 @@
                 },
             })
         })
-        $('#i_unwatch').click(function() {
+        $('.unwatch').click(function() {
             if(disabled_watch) {
                 return false;
             }
@@ -250,7 +249,7 @@
             })
         })
     {% if has_fork_right %}
-        $('#i_fork').click(function() {
+        $('.fork').click(function() {
             if(disabled_fork) {
                 return false;
             }

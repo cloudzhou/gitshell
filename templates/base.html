@@ -10,6 +10,7 @@
 		<link href="/static/css/todc-bootstrap.css" rel="stylesheet">
 		<link href="//netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css" rel="stylesheet">
 		<link href="/static/css/gitshell.css" rel="stylesheet">
+		<link href="/static/css/select2.css" rel="stylesheet">
 		{% block css %}{% endblock %}
 		<link rel="shortcut icon" href="/static/img/favicon.ico">
 	</head>
@@ -25,27 +26,27 @@
 						{% if user.is_authenticated %}
 							<li {%if mainnav == 'user'%} class="active" {%endif%}>
 								<a href="/{{ user.username }}/" class="user">
-									<span class="user-avatar"><img class="avatar" src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=40" alt=""></span>
-									{{ user.username }}
+									<i class="user-avatar"><img class="avatar" src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=40" alt=""></i>
+									<span>{{ user.username }}</span>
 								</a>
 							</li>
-							<li {%if mainnav == 'repo'%} class="active" {%endif%}><a href="/{{ user.username }}/repo/">我的仓库</a></li>
-							<li {%if mainnav == 'stats'%} class="active" {%endif%}><a href="/stats/{{ user.username }}/">统计</a></li>
+							<li {%if mainnav == 'repo'%} class="active" {%endif%}><a href="/{{ user.username }}/repo/"><span>我的仓库</span></a></li>
+							<li><a href="#" class="btn new-repo"><i class="icon-chevron-sign-down"></i><span>创建仓库</span></a></li>
 						{% else %}
 							<li><a href="/join/">我的仓库</a></li>
 						{% endif %}
-						<li {%if mainnav == 'explore'%} class="active" {%endif%}><a href="/explore/">浏览仓库</a></li>
+						<li {%if mainnav == 'explore'%} class="active" {%endif%}><a href="/explore/"><i class="icon-search"></i><span>浏览仓库</span></a></li>
 					</ul>
 
 					<ul class="nav account">
 						{% if user.is_authenticated %}
-						<li {%if mainnav == 'help'%} class="active" {%endif%}><a href="/help/"><i class="icon-info-sign"></i>帮助</a></li>
-							<li {%if mainnav == 'settings'%} class="active" {%endif%}><a href="/settings/"><i class="icon-wrench"></i>设置</a></li>
-							<li {%if mainnav == 'logout'%} class="active" {%endif%}><a href="/logout/">登出</a></li>
+							<li {%if mainnav == 'help'%} class="active" {%endif%}><a href="/help/"><i class="icon-info-sign"></i><span>帮助</span></a></li>
+							<li {%if mainnav == 'settings'%} class="active" {%endif%}><a href="/settings/"><i class="icon-wrench"></i><span>设置</span></a></li>
+							<li {%if mainnav == 'logout'%} class="active" {%endif%}><a href="/logout/"><span>登出</span></a></li>
 						{% else %}
-						<li {%if mainnav == 'help'%} class="active" {%endif%}><a href="/help/"><i class="icon-info-sign"></i>帮助</a></li>
-							<li {%if mainnav == 'login'%} class="active" {%endif%}><a href="/login/">登录</a></li>
-							<li {%if mainnav == 'join'%} class="active" {%endif%}><a href="/join/0/">注册</a></li>
+							<li {%if mainnav == 'help'%} class="active" {%endif%}><a href="/help/"><i class="icon-info-sign"></i><span>帮助</span></a></li>
+							<li {%if mainnav == 'login'%} class="active" {%endif%}><a href="/login/"><span>登录</span></a></li>
+							<li {%if mainnav == 'join'%} class="active" {%endif%}><a href="/join/0/"><span>注册</span></a></li>
 						{% endif %}
 					</ul>
 
@@ -80,6 +81,7 @@
 
 		<script src="/static/js/jquery-1.7.2.min.js"></script>
 		<script src="/static/js/bootstrap.min.js"></script>
+		<script src="/static/js/select2.min.js"></script>
 		{% block js %}{% endblock %}
 		<script>
 			var _gaq = _gaq || [];
