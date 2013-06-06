@@ -220,11 +220,18 @@ $(function(){
                 description = repo.description;
                 language = repo.language;
                 size = repo.size;
-                html = '<p><a target="_blank" href="' + html_url + '"><strong style="font-size: 20px; margin: 6px">* ' + full_name + '</strong></a><span class="muted">' + git_url + '</span> <button type="button" data-name="'+name+'" data-git-url="'+git_url+'" data-description="'+description+'" data-language="'+language+'" data-size="'+size+'" class="import-repo-button btn btn-mini" digabled>导入</button></p>';
+                html = '<div class="clearfix repo" style="border-bottom: 1px solid #ddd; padding: 12px 0;"><div class="pull-left"><p class="repo-name" style="margin-bottom: 0;"><a target="_blank" href="' + html_url + '" style="font-size: 18px;">' + full_name + '</a></p><p style="margin-bottom: 0;"><span class="muted">' + git_url + '</span></p></div><div class="pull-right"><button type="button" data-name="'+name+'" data-git-url="'+git_url+'" data-description="'+description+'" data-language="'+language+'" data-size="'+size+'" class="import-repo-button btn btn-mini btn-primary" digabled>导入</button></div></div>';
                 htmls.push(html);
             } 
             $('#id-github-repos').html(htmls.join(''))
             $('#id-repos-loading').hide();
+            //========================================================
+            $('.repo.clearfix').hover(function(){
+                $(this).css('background-color','rgba(0, 0, 0, .025)');
+                },function(){
+                $(this).css('background-color','transparent');
+            });
+            //=========================================================
         });
     };
     $('#id-choose-direct-create').click(function(){
