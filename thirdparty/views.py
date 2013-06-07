@@ -9,13 +9,13 @@ from gitshell.gsuser.models import Userprofile, GsuserManager, ThirdpartyUser, C
 from gitshell.settings import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
 
 def github_oauth_access_token(code):
-    githup_connection = None
+    github_connection = None
     try:
-        githup_connection = httplib.HTTPSConnection('github.com', 443, timeout=10)
+        github_connection = httplib.HTTPSConnection('github.com', 443, timeout=10)
         params = urllib.urlencode({'client_id': GITHUB_CLIENT_ID, 'client_secret': GITHUB_CLIENT_SECRET, 'code': code})
         headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "application/json"}
-        githup_connection.request("POST", "/login/oauth/access_token", params, headers)
-        response = githup_connection.getresponse()
+        github_connection.request("POST", "/login/oauth/access_token", params, headers)
+        response = github_connection.getresponse()
         if response.status == 200:
             json_str = response.read()
             response = json.loads(json_str)
@@ -24,18 +24,18 @@ def github_oauth_access_token(code):
     except Exception, e:
         print 'exception: %s' % e
     finally:
-        if githup_connection: githup_connection.close()
+        if github_connection: github_connection.close()
     return '' 
 
 # https://api.github.com/user?access_token=17f605153e39f01f55062f2b4b719e9a14f13821
 def github_get_thirdpartyUser(access_token):
-    githup_connection = None
+    github_connection = None
     try:
         thirdpartyUser = ThirdpartyUser()
-        githup_connection = httplib.HTTPSConnection('api.github.com', 443, timeout=10)
+        github_connection = httplib.HTTPSConnection('api.github.com', 443, timeout=10)
         headers = {"Host": "api.github.com", "Accept": "application/json", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36"}
-        githup_connection.request("GET", "/user?access_token=" + access_token, {}, headers)
-        response = githup_connection.getresponse()
+        github_connection.request("GET", "/user?access_token=" + access_token, {}, headers)
+        response = github_connection.getresponse()
         if response.status == 200:
             json_str = response.read()
             github_user_info = json.loads(json_str)
@@ -53,7 +53,7 @@ def github_get_thirdpartyUser(access_token):
     except Exception, e:
         print 'exception: %s' % e
     finally:
-        if githup_connection: githup_connection.close()
+        if github_connection: github_connection.close()
     return None
     
 def github_authenticate(thirdpartyUser):
@@ -90,20 +90,20 @@ def github_authenticate(thirdpartyUser):
 
 # https://api.github.com/user/repos?type=public&sort=pushed&access_token=17f605153e39f01f55062f2b4b719e9a14f13821
 def github_list_repo(access_token):
-    githup_connection = None
+    github_connection = None
     try:
         thirdpartyUser = ThirdpartyUser()
-        githup_connection = httplib.HTTPSConnection('api.github.com', 443, timeout=10)
+        github_connection = httplib.HTTPSConnection('api.github.com', 443, timeout=10)
         headers = {"Host": "api.github.com", "Accept": "application/json", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36"}
-        githup_connection.request("GET", "/user/repos?type=public&sort=pushed&access_token=" + access_token, {}, headers)
-        response = githup_connection.getresponse()
+        github_connection.request("GET", "/user/repos?type=public&sort=pushed&access_token=" + access_token, {}, headers)
+        response = github_connection.getresponse()
         if response.status == 200:
             json_str = response.read()
             return json_str
     except Exception, e:
         print 'exception: %s' % e
     finally:
-        if githup_connection: githup_connection.close()
+        if github_connection: github_connection.close()
     return '{}'
 
 def _fill_github_user_info(userprofile, github_user_info):
