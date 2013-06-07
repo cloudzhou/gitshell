@@ -6,15 +6,17 @@ from django.db import IntegrityError
 from django.contrib.auth import authenticate as auth_authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, UserManager, check_password
 from gitshell.gsuser.models import Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
-from gitshell.settings import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
+from gitshell.settings import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, DROPBOX_APP_KEY, DROPBOX_APP_SECRET
+
+USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36'
 
 def github_oauth_access_token(code):
     github_connection = None
     try:
         github_connection = httplib.HTTPSConnection('github.com', 443, timeout=10)
         params = urllib.urlencode({'client_id': GITHUB_CLIENT_ID, 'client_secret': GITHUB_CLIENT_SECRET, 'code': code})
-        headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "application/json"}
-        github_connection.request("POST", "/login/oauth/access_token", params, headers)
+        headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+        github_connection.request('POST', '/login/oauth/access_token', params, headers)
         response = github_connection.getresponse()
         if response.status == 200:
             json_str = response.read()
@@ -33,8 +35,8 @@ def github_get_thirdpartyUser(access_token):
     try:
         thirdpartyUser = ThirdpartyUser()
         github_connection = httplib.HTTPSConnection('api.github.com', 443, timeout=10)
-        headers = {"Host": "api.github.com", "Accept": "application/json", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36"}
-        github_connection.request("GET", "/user?access_token=" + access_token, {}, headers)
+        headers = {'Host': 'api.github.com', 'Accept': 'application/json', 'User-Agent': USER_AGENT}
+        github_connection.request('GET', '/user?access_token=' + access_token, {}, headers)
         response = github_connection.getresponse()
         if response.status == 200:
             json_str = response.read()
@@ -94,8 +96,8 @@ def github_list_repo(access_token):
     try:
         thirdpartyUser = ThirdpartyUser()
         github_connection = httplib.HTTPSConnection('api.github.com', 443, timeout=10)
-        headers = {"Host": "api.github.com", "Accept": "application/json", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36"}
-        github_connection.request("GET", "/user/repos?type=public&sort=pushed&access_token=" + access_token, {}, headers)
+        headers = {'Host': 'api.github.com', 'Accept': 'application/json', 'User-Agent': USER_AGENT}
+        github_connection.request('GET', '/user/repos?type=public&sort=pushed&access_token=' + access_token, {}, headers)
         response = github_connection.getresponse()
         if response.status == 200:
             json_str = response.read()
@@ -105,6 +107,87 @@ def github_list_repo(access_token):
     finally:
         if github_connection: github_connection.close()
     return '{}'
+
+# ========================= DROPBOX =========================
+SANDBOX_ACCESS_LEVEL = 'sandbox'
+DROPBOX_ACCESS_LEVEL = 'dropbox'
+
+API_REQUEST_TOKEN_URL = '/1/oauth/request_token'
+API_ACCESS_TOKEN_URL = '/1/oauth/access_token'
+API_USER_AUTH_URL = 'https://www2.dropbox.com/1/oauth/authorize'
+ACCESS_TYPE = 'app_folder'
+
+def dropbox_request_token_pair():
+    dropbox_connection = None
+    try:
+        dropbox_connection = httplib.HTTPSConnection('api.dropbox.com', 443, timeout=10)
+        params = urllib.urlencode({'oauth_signature_method': 'PLAINTEXT', 'oauth_timestamp': _timestamp(), 'oauth_nonce': _oauth_nonce(), 'oauth_consumer_key': DROPBOX_APP_KEY, 'oauth_signature': DROPBOX_APP_SECRET + '&'})
+        headers = {'Host': 'api.dropbox.com', 'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': USER_AGENT}
+        dropbox_connection.request('POST', API_REQUEST_TOKEN_URL, params, headers)
+        response = dropbox_connection.getresponse()
+        if response.status == 200:
+            result = response.read()
+            key_value_dict = urlparse.parse_qs(result)
+            if 'oauth_token' in key_value_dict and 'oauth_token_secret' in key_value_dict:
+                return (key_value_dict['oauth_token'][0], key_value_dict['oauth_token_secret'][0])
+    except Exception, e:
+        print 'exception: %s' % e
+    finally:
+        if dropbox_connection: dropbox_connection.close()
+    return ('', '')
+
+def dropbox_authorize_url(oauth_token):
+    if oauth_token == '':
+        return ''
+    return '%s?oauth_token=%s' % (API_USER_AUTH_URL, oauth_token)
+
+def dropbox_access_token_pair():
+    (request_token, request_token_secret) = dropbox_request_token_pair()
+    authorize_url = dropbox_authorize_url(request_token)
+    # 'open authorize url and click allow button: ' + authorize_url
+    dropbox_connection = None
+    try:
+        dropbox_connection = httplib.HTTPSConnection('api.dropbox.com', 443, timeout=10)
+        params = urllib.urlencode({'oauth_signature_method': 'PLAINTEXT', 'oauth_timestamp': _timestamp(), 'oauth_nonce': _oauth_nonce(), 'oauth_consumer_key': DROPBOX_APP_KEY, 'oauth_token': request_token, 'oauth_signature': DROPBOX_APP_SECRET + '&' + request_token_secret})
+        headers = {'Host': 'api.dropbox.com', 'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': USER_AGENT}
+        dropbox_connection.request('POST', '/1/oauth/access_token', params, headers)
+        response = dropbox_connection.getresponse()
+        if response.status == 200:
+            result = response.read()
+            key_value_dict = urlparse.parse_qs(result)
+            if 'oauth_token' in key_value_dict and 'oauth_token_secret' in key_value_dict and 'uid' in key_value_dict:
+                return (key_value_dict['oauth_token'][0], key_value_dict['oauth_token_secret'][0])
+    except Exception, e:
+        print 'exception: %s' % e
+    finally:
+        if dropbox_connection: dropbox_connection.close()
+    return ('', '')
+    
+def dropbox_share(access_token, access_token_secret, share_path):
+    dropbox_connection = None
+    try:
+        dropbox_connection = httplib.HTTPSConnection('api.dropbox.com', 443, timeout=10)
+        headers = {'Host': 'api.dropbox.com', 'User-Agent': USER_AGENT}
+        params = urllib.urlencode({'oauth_signature_method': 'PLAINTEXT', 'oauth_timestamp': _timestamp(), 'oauth_nonce': _oauth_nonce(), 'oauth_consumer_key': DROPBOX_APP_KEY, 'oauth_token': access_token, 'oauth_signature': DROPBOX_APP_SECRET + '&' + access_token_secret, 'short_url': 'false'})
+        access_level = SANDBOX_ACCESS_LEVEL
+        urlencode_share_path = urllib.quote_plus(share_path)
+        share_url = ('/1/shares/%s/%s?' % (access_level, urlencode_share_path)) + params
+        dropbox_connection.request('GET', share_url, {}, headers)
+        response = dropbox_connection.getresponse()
+        if response.status == 200:
+            result = response.read()
+            print result
+    except Exception, e:
+        print 'exception: %s' % e
+    finally:
+        if dropbox_connection: dropbox_connection.close()
+    return ''
+
+def _timestamp():
+    return str(int(time.time()))
+
+def _oauth_nonce():
+    return '%d' % random.getrandbits(32)
 
 def _fill_github_user_info(userprofile, github_user_info):
     if github_user_info is None:
