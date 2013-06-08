@@ -1,19 +1,19 @@
 {% extends "repo/repo.html" %}
 
 {% block subcontainer %}
-<div class="repo-file-container">
+<div class="repo-main">
 
-	<div class="repo-meta">
+	<header class="repo-meta">
 		<ul class="breadcrumb">
 			<li><a href="/{{user_name}}/{{repo_name}}/pulls/">{{repo_name}}</a><span class="divider">/</span></li>
 			<li class="active">创建一个合并请求</li>
     </ul>
-	</div>
+	</header>
 
-	<div class="file-container">
+	<section class="repo-content">
 			<div class="pull-request-form clearfix">
 
-				<div class="repo-refs span form-horizontal">
+				<section class="repo-refs span form-horizontal">
 					<div class="control-group">
 						<label class="control-label">仓库:</label>
 						<div class="controls">
@@ -37,9 +37,9 @@
 						</div>
 					</div>
 
-				</div>
+				</section>
 
-				<div class="repo-refs span form-horizontal">
+				<section class="repo-refs span form-horizontal">
 					<div class="control-group">
 						<label class="control-label">仓库:</label>
 						<div class="controls">
@@ -62,7 +62,7 @@
 							</select>
 						</div>
 					</div>
-				</div>
+				</section>
 
 			</div>
 
@@ -99,7 +99,7 @@
 				</form>
 			</div>
 
-    </div>
+    </section>
 
 </div>		  
 {% endblock %}

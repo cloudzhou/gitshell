@@ -2,25 +2,25 @@
 
 {% block subcontainer %}
 
-	<div class="repo-file-container">
+	<div class="repo-main">
 
-		<div class="repo-meta clearfix">
-			<span class="repo-name">
+		<header class="repo-meta clearfix">
+			<h2 class="title pull-left">
 				<i class="icon-list-alt"></i>
 				<a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">{{repo_name}}</a>
-			</span>
-			<span class="commits">
+			</h2>
+			<p class="commits">
 				<i class="icon-time"></i>
 				<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}">Commits</a>
 				{% if not is_tree %}
 					<a href="/{{user_name}}/{{repo_name}}/raw/tree/{{refs}}/{{path}}">原始文件</a>
 				{% endif %}
-			</span>
-    </div>
+			</p>
+    </header>
 
     {% if is_tree %}
 
-			<div class="file-container">
+			<section class="repo-content">
 			<table class="table frame">
 				<tbody>
 					{% if not tree %}
@@ -33,9 +33,9 @@
 						<tr>
 							<td class="icon">
 								{% if attrs.0 == 'tree' %}
-									<i class="octicon octicon-file-directory"></i>
+									<i class="icon-folder-open"></i>
 								{% else %}
-									<i class="octicon octicon-file-text"></i> 
+									<i class="icon-file-alt"></i> 
 								{% endif %}
 							</td>
 							<td class="file-name">
@@ -67,7 +67,7 @@
 						<pre class="brush: {{ brush }}; ">{{ blob }}</pre>
 					{% endif %}
 				{% endif %}
-			</div>
+			</section>
 
     {% endif %}
 

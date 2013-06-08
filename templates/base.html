@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 	<head>
 		<meta charset="utf-8">
@@ -16,8 +16,8 @@
 	</head>
 
 	<body>
-		<div class="navbar navbar-fixed-top">
-			<div class="navbar-inner">
+		<header class="navbar navbar-fixed-top">
+			<nav class="navbar-inner">
 				<div class="container">
 
 					<a class="brand" href="/">Gitshell</a>
@@ -30,7 +30,6 @@
 									<span>{{ user.username }}</span>
 								</a>
 							</li>
-							<li {%if mainnav == 'repo'%} class="active" {%endif%}><a href="/{{ user.username }}/repo/"><span>我的仓库</span></a></li>
 							<li><a href="#" class="btn new-repo"><i class="icon-chevron-sign-down"></i><span>创建仓库</span></a></li>
 						{% else %}
 							<li><a href="/join/">我的仓库</a></li>
@@ -46,13 +45,13 @@
 						{% else %}
 							<li {%if mainnav == 'help'%} class="active" {%endif%}><a href="/help/"><i class="icon-info-sign"></i><span>帮助</span></a></li>
 							<li {%if mainnav == 'login'%} class="active" {%endif%}><a href="/login/"><span>登录</span></a></li>
-							<li {%if mainnav == 'join'%} class="active" {%endif%}><a href="/join/0/"><span>注册</span></a></li>
+							<li {%if mainnav == 'eoin'%} class="active" {%endif%}><a href="/join/0/"><span>注册</span></a></li>
 						{% endif %}
 					</ul>
 
 				</div>
-			</div>
-		</div>
+			</nav>
+		</header>
 
 
 		<div class="container main">
@@ -62,7 +61,7 @@
 		</div>
 
 
-		<div class="footer">
+		<footer class="footer">
 			<div class="container">
 				<a href="#" class="btn pull-right"><i class="icon-circle-arrow-up"></i>返回顶部</a>
 				<nav class="nav">
@@ -76,7 +75,7 @@
 				</nav>
 				<p class="copyright">&copy; <strong>Gitshell</strong> 2013 专注于 <a target="_blank" href="http://git-scm.com/">Git</a> 托管 <a class="muted" href="http://www.miitbeian.gov.cn">苏ICP备12042031号</a></p>
 			</div>
-		</div>
+		</footer>
 
 
 		<script src="/static/js/jquery-1.7.2.min.js"></script>

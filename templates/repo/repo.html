@@ -9,7 +9,7 @@
 
 {% block container %}
 
-	<div class="repo-header">
+	<header class="repo-header">
 
 		<div class="repo-actions-bar">
 
@@ -43,12 +43,10 @@
 		<div class="repo-details-tabs">
 
 			<ul class="nav repo-tabs">
-				<li class="active"><a href="#"><i class="icon-code"></i>Code</a></li>
-				<li><a href="#"><i class="icon-group"></i>Network</a></li>
-				<li><a href="#"><i class="icon-code-fork"></i>Pull Request</a></li>
-				<li><a href="#"><i class="icon-puzzle-piece"></i>Issuse</a></li>
-				<li><a href="#"><i class="icon-book"></i>Wiki</a></li>
-				<li><a href="#"><i class="icon-adjust"></i>Graphs</a></li>
+				<li {% if current == 'tree' or current == 'index' or current == 'commits' or current == 'clone_watch' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/{{ refs }}/"><i class="icon-code"></i>Code</a></li>
+				<li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/network/"><i class="icon-group"></i>Network</a></li>
+				<li {% if current == 'pull' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/pulls/"><i class="icon-code-fork"></i>Pull Request{% if repo_pull_new_count > 0 %} <span class="badge">{{repo_pull_new_count}}</span>{% endif %}</a></li>
+				<li {% if current == 'stats' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/stats/"><i class="icon-adjust"></i>Graphs</a></li>
 			</ul>
 
 				<div class="repo-summary">
@@ -96,45 +94,40 @@
 
 			</div>
 
-	</div>
+	</header>
 
 
 
 
 
 
-		<div class="repo-body">
+		<section class="repo-body">
 
-			<div class="repo-navtab clearfix">
+				<nav class="repo-navtab clearfix">
 
-				<div class="branches dropdown">
-					<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle btn">
-						<span class="branch">Branch:</span>
-						<span class="branch-name">{{ refs }}</span>
-						<i class="caret"></i>
-					</a>
-					<ul class="dropdown-menu">
+					<div class="branches dropdown">
+						<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle btn">
+							<span class="branch">Branch:</span>
+							<span class="branch-name">{{ refs }}</span>
+							<i class="caret"></i>
+						</a>
+						<ul class="dropdown-menu">
+						</ul>
+					</div>
+
+					<ul class="nav nav-tabs">
+						<li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/{{ refs }}/">文件</a></li>
+						<li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/">Commits</a></li>
+						<li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/clone_watch/">衍生和关注</a></li>
 					</ul>
-				</div>
 
-				<ul class="nav nav-tabs">
-					<li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/{{ refs }}/">文件</a></li>
-					<li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/">Commits</a></li>
-					<li {% if current == 'pull' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/pulls/">合并请求{% if repo_pull_new_count > 0 %} <span class="badge">{{repo_pull_new_count}}</span>{% endif %}</a></li>
-					<!--<li {% if current == 'issues' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/issues/">Issues</a></li>-->
-					<li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/network/">协作者</a></li>
-					<li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/clone_watch/">衍生和关注</a></li>
-					<li {% if current == 'stats' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/stats/">统计</a></li>
-				</ul>
-
-
-			</div>
+				</nav>
 
 			{% block subcontainer %}{% endblock %}
 
 
 
-		</div>
+		</section>
 
 
 
@@ -307,6 +300,15 @@
             }
         });
     {% endif %}
+
+		$('.repo-admin-edit').hide();
+		$('.repo-summary > .description').hover(
+			function(){
+				$('.repo-admin-edit').show();
+			},function(){
+				$('.repo-admin-edit').hide();
+			}
+		);
 
     });
     </script>

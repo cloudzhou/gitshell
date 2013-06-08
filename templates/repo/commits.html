@@ -1,15 +1,20 @@
 {% extends "repo/repo.html" %}
 
+{% block css %}
+	<link href="/static/css/app/highlight/github.css" rel="stylesheet">
+	<link href="/static/css/app/highlight/diff.css" rel="stylesheet">
+{% endblock %}
+
 {% block subcontainer %}
-	<div class="repo-file-container">
-		<div class="repo-meta">
+	<div class="repo-main">
+		<header class="repo-meta">
 			<ul class="breadcrumb">
 				<li><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">{{repo_name}}</a><span class="divider">/</span></li>
 				<li class="active">历史</li>
 			</ul>
-		</div>
+		</header>
 
-		<div class="file-container">
+		<section class="repo-content">
 			<table class="table frame">
 				<tbody>
 					{% for commit_attrs in commits %}
@@ -40,16 +45,14 @@
 					{% endif %}
 				</tbody>
 			</table>
-		</div>
+		</section>
 
 	</div>		  
 
 {% endblock %}
 
 {% block subjs %}
-	<script src='/static/js/app/syntaxhighlighter/shCore.js' type='text/javascript'></script>
-	<script src='/static/js/app/syntaxhighlighter/shAutoloader.js' type='text/javascript'></script>
-	<script src='/static/js/app/syntaxhighlighter/shBrushDiff.js' type='text/javascript'></script>
+	<script src='/static/js/app/highlight/highlight.js'></script>
 	<script>
 	$(function(){
 			$('.c_unixtime').each(function(index){ 
@@ -113,7 +116,6 @@
 											$('#i_pre_' + commit_hash).html('<pre class="brush: diff;">' + json.diff + '</pre>');
 											$('#i_label_' + commit_hash).text('-');
 											$('#i_diff_' + commit_hash).show();
-											SyntaxHighlighter.highlight();
 									},
 							});
 					} else {
@@ -123,4 +125,5 @@
 			});
 	});
 	</script>
+	<script>hljs.initHighlightingOnLoad();</script>
 {% endblock %}

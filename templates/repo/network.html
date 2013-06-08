@@ -2,9 +2,9 @@
 
 {% block subcontainer %}
 
-	<div class="repo-file-container">
-    <div class="repo-meta clearfix">
-			<div class="repo-name">仓库成员列表<em>所有成员对仓库有完全的读写权限</em></div>
+	<div class="repo-main">
+    <header class="repo-meta clearfix">
+			<h2 class="title pull-left">仓库成员列表<em>所有成员对仓库有完全的读写权限</em></h2>
 			<div class="commits">
 				<a href="#" id="i_add_member" class="btn btn-mini"><i class="icon-plus-sign"></i> 添加新成员</a>
 				<form id="id_submit_form" class="form-inline" method="post" action="">
@@ -16,15 +16,15 @@
 					</div>
 				</form>
 			</div>
-    </div>
+    </header>
 
-		<div class="file-container">
+		<section class="repo-content">
 			<div id="i_repomembers" class="frame">
 				{%for member_vo in members_vo%}
 					<div class="member clearfix">
-						<div class="avatar">
-							<img src="https://gravatar.com/avatar/{{ member_vo.imgurl }}?s=35">
-						</div>
+						<figure class="avatar">
+							<img src="https://gravatar.com/avatar/{{ member_vo.imgurl }}?s=40">
+						</figure>
 						<div class="user-body">
 							<p class="username">
 								<a href="/{{member_vo.username}}/">{{member_vo.username}}</a>
@@ -45,7 +45,7 @@
 				</div>
 			{%endfor%}
 		</div>
-	</div>
+	</section>
 
 	</div>
 {% endblock %}
