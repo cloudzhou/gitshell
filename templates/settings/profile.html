@@ -9,6 +9,16 @@
             {% csrf_token %}
             <fieldset>
                 <div class="control-group">
+                    <label for="id_github_apply" class="control-label">GitHub 关联账户</label>
+                    <div class="controls">
+                    {% if thirdpartyUser %}
+                        <a target="_blank" href="https://github.com/{{ thirdpartyUser.tp_username }}/"><span class="label label-info" style="padding: 8px">GitHub 账户 ({{ thirdpartyUser.tp_username }})</span></a>
+                    {% else %}
+                        <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/"><button class="btn btn-small btn-success" type="button">进行 GitHub 账户关联</button></a>
+                    {% endif %}
+                    </div>
+                </div>
+                <div class="control-group">
                     <label for="id_tweet" class="control-label">* 一句话介绍自己</label>
                     <div class="controls">
                         {{ userprofileForm.tweet }}

@@ -54,7 +54,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'git424953shell'
+SECRET_KEY = '${secret_key}'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -154,4 +154,11 @@ REDIS_SOCKET_TIMEOUT = 3
 
 BEANSTALK_HOST = '127.0.0.1'
 BEANSTALK_PORT = 11300
+
+GITHUB_CLIENT_ID = '${github_client_id}'
+GITHUB_CLIENT_SECRET = '${github_client_secret}'
+DROPBOX_APP_KEY = '${dropbox_app_key}'
+DROPBOX_APP_SECRET = '${dropbox_app_secret}'
+DROPBOX_ACCESS_TOKEN = '${dropbox_access_token}'
+DROPBOX_ACCESS_TOKEN_SECRET = '${dropbox_access_token_secret}'
 

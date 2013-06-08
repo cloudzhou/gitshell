@@ -9,7 +9,7 @@ class LoginForm(forms.Form):
 
 class JoinForm(forms.Form):
     email = forms.EmailField()
-    username = forms.CharField(max_length=12)
+    username = forms.CharField(max_length=24)
     password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False))
     #captcha = CaptchaField()
 

@@ -105,73 +105,71 @@
 {% endblock %}
 
 {% block subjs %}
-	<script src='/static/js/app/syntaxhighlighter/shCore.js' type='text/javascript'></script>
-	<script src='/static/js/app/syntaxhighlighter/shAutoloader.js' type='text/javascript'></script>
-	<script src='/static/js/app/syntaxhighlighter/shBrushDiff.js' type='text/javascript'></script>
-	<script>
-	$(function(){
-			var global_repo_branch_map = {};
-			$('.c_unixtime').each(function(index){ 
-					$(this).html(moment(new Date($(this).html()*1000)).fromNow());
-					$(this).show();
-			});
-			$('#id_submit').tooltip({
-				selector: "a[rel=tooltip]"
-			});
-			function fullfill_options(repo_select, refs_select) {
-					var repo = repo_select.attr('value');
-					var tmp_global_repo_branch_map = global_repo_branch_map;
-					if(tmp_global_repo_branch_map.hasOwnProperty(repo)) {
-							refs_select.find('option').remove();
-							var branches = tmp_global_repo_branch_map[repo];
-							for(x in branches) {
-									var branch = branches[x];
-									refs_select.append('<option value='+ branch +'>'+ branch +'</option>');
-							}
-							return tmp_global_repo_branch_map[repo];
-					}
-					$.ajax({
-							url: '/ajax/repo/' + repo + '/refs/',
-							type: 'POST',
-							data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-							dataType: 'json',
-							timeout: 10000,
-							error: function(){
-							},
-							success: function(json){
-									refs_select.find('option').remove();
-									var branches = json.branches;
-									for(x in branches) {
-											var branch = branches[x];
-											refs_select.append('<option value='+ branch +'>'+ branch +'</option>');
-									}
-									tmp_global_repo_branch_map[repo] = branches;
-							},
-					});
-					global_repo_branch_map = tmp_global_repo_branch_map;
-			};
-			fullfill_options($('#id_source_repo'), $('#id_source_refs'));
-			fullfill_options($('#id_desc_repo'), $('#id_desc_refs'));
-			$('#id_source_repo').change(function(){
-					fullfill_options($(this), $('#id_source_refs'));
-			});
-			$('#id_desc_repo').change(function(){
-					fullfill_options($(this), $('#id_desc_refs'));
-			});
-			$('#id_pull_form').submit(function() {
-					if($('#id_title').val() == '' || $('#id_source_repo option:selected').val() == '' || $('#id_source_refs option:selected').val() == '' || $('#id_desc_repo option:selected').val() == '' || $('#id_desc_refs option:selected').val() == '') {
-							$('#id_alert').show();
-							return false;
-					}
-					$('#id_source_repo_select').val($('#id_source_repo option:selected').val());
-					$('#id_source_refs_select').val($('#id_source_refs option:selected').val());
-					$('#id_desc_repo_select').val($('#id_desc_repo option:selected').val());
-					$('#id_desc_refs_select').val($('#id_desc_refs option:selected').val());
-					return true;
-			});
-
-			$('.select2').select2();
-
-	});
-	</script>
+<script src='/static/js/app/syntaxhighlighter/shCore.js' type='text/javascript'></script>
+<script src='/static/js/app/syntaxhighlighter/shAutoloader.js' type='text/javascript'></script>
+<script src='/static/js/app/syntaxhighlighter/shBrushDiff.js' type='text/javascript'></script>
+<script>
+$(function(){
+    var global_repo_branch_map = {};
+    $('.c_unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+        $(this).show();
+    });
+    $('#id_submit').tooltip({
+      selector: "a[rel=tooltip]"
+    });
+    function fullfill_options(repo_select, refs_select) {
+        var repo = repo_select.attr('value');
+        var tmp_global_repo_branch_map = global_repo_branch_map;
+        if(tmp_global_repo_branch_map.hasOwnProperty(repo)) {
+            refs_select.find('option').remove();
+            var branches = tmp_global_repo_branch_map[repo];
+            for(x in branches) {
+                var branch = branches[x];
+                refs_select.append('<option value='+ branch +'>'+ branch +'</option>');
+            }
+            return tmp_global_repo_branch_map[repo];
+        }
+        $.ajax({
+            url: '/' + repo + '/refs/',
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 10000,
+            error: function(){
+            },
+            success: function(json){
+                refs_select.find('option').remove();
+                var branches = json.branches;
+                for(x in branches) {
+                    var branch = branches[x];
+                    refs_select.append('<option value='+ branch +'>'+ branch +'</option>');
+                }
+                tmp_global_repo_branch_map[repo] = branches;
+            },
+        });
+        global_repo_branch_map = tmp_global_repo_branch_map;
+    };
+    fullfill_options($('#id_source_repo'), $('#id_source_refs'));
+    fullfill_options($('#id_desc_repo'), $('#id_desc_refs'));
+    $('#id_source_repo').change(function(){
+        fullfill_options($(this), $('#id_source_refs'));
+    });
+    $('#id_desc_repo').change(function(){
+        fullfill_options($(this), $('#id_desc_refs'));
+    });
+    $('#id_pull_form').submit(function() {
+        if($('#id_title').val() == '' || $('#id_source_repo option:selected').val() == '' || $('#id_source_refs option:selected').val() == '' || $('#id_desc_repo option:selected').val() == '' || $('#id_desc_refs option:selected').val() == '') {
+            $('#id_alert').show();
+            return false;
+        }
+        $('#id_source_repo_select').val($('#id_source_repo option:selected').val());
+        $('#id_source_refs_select').val($('#id_source_refs option:selected').val());
+        $('#id_desc_repo_select').val($('#id_desc_repo option:selected').val());
+        $('#id_desc_refs_select').val($('#id_desc_refs option:selected').val());
+        return true;
+    });
+		$('.select2').select2();
+});
+</script>
 {% endblock %}

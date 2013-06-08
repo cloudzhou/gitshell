@@ -1,22 +1,24 @@
 # -*- coding: utf-8 -*-  
 import base64, hashlib
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.core.cache import cache
 from django.template import RequestContext
-from django.shortcuts import render_to_response
 from django.contrib.auth.models import User
+from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
-from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, UserprofileForm, DoSshpubkeyForm
-from gitshell.keyauth.models import UserPubkey, KeyauthManager
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.gsuser.models import Userprofile, GsuserManager
+from gitshell.keyauth.models import UserPubkey, KeyauthManager
+from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, UserprofileForm, DoSshpubkeyForm
 
 @login_required
 def profile(request):
+    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
     userprofileForm = UserprofileForm(instance = request.userprofile)
     if request.method == 'POST':
         userprofileForm = UserprofileForm(request.POST, instance = request.userprofile)
         if userprofileForm.is_valid():
             userprofileForm.save()
-    response_dictionary = {'userprofileForm': userprofileForm}
+    response_dictionary = {'userprofileForm': userprofileForm, 'thirdpartyUser': thirdpartyUser}
     return render_to_response('settings/profile.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -96,16 +98,45 @@ def sshpubkey_remove(request):
     return render_to_response('settings/sshpubkey.html', {}, context_instance=RequestContext(request))
 
 @login_required
-def email(request):
+def notif(request):
     response_dictionary = {'hello_world': 'hello world'}
-    return render_to_response('settings/email.html',
+    return render_to_response('settings/notif.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
-def repo(request):
-    response_dictionary = {'hello_world': 'hello world'}
-    return render_to_response('settings/repo.html',
+def thirdparty(request):
+    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
+    response_dictionary = {'thirdpartyUser': thirdpartyUser}
+    return render_to_response('settings/thirdparty.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
+def change_username_email(request):
+    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
+    response_dictionary = {'thirdpartyUser': thirdpartyUser}
+    return render_to_response('settings/change_username_email.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
+def validate_email(request, token):
+    validate_result = 'success'
+    email = cache.get(token + '_email')
+    if email is not None:
+        user = GsuserManager.get_user_by_email(email)
+        if user is None:
+            request.user.email = email
+            request.userprofile.email = email
+            request.user.save()
+            request.userprofile.save()
+        else:
+            validate_result = 'user_exists'
+    else:
+        validate_result = 'token_expired'
+    response_dictionary = {'validate_result' : validate_result}
+    return render_to_response('settings/validate_email.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 

@@ -4,45 +4,41 @@
 {% endblock %}
 
 {% block container %}
-	<div class="page-header frame">
-		<h2>:-), {{ user_name }}的仓库列表</h2>
-		<div class="btn-group">
-			<button data-toggle="dropdown" class="btn btn-small dropdown-toggle">查看列表 <i class="caret"></i></button>
-			<ul class="dropdown-menu">
-				{% for repo in repo_list %}
-					<li><a href="/{{ user_name }}/{{ repo.name }}/">{{ repo.name }}</a></li>
-				{% endfor %}
-				<li class="divider"></li>
-				<li><a href="/{{ user.username }}/repo/edit/0/">+ 创建新的仓库</a></li>
-				<!--li><a href="/settings/repo/">+ 更多仓库管理</a></li-->
-			</ul>
-		</div>
-	</div>
-
-	{% load humanize %}
-
-	{% for repo in repo_list %}
-		<div class="row frame">
-			<div class="span7">
-				<div class="c_repo">
-					<div>
-						<a href="/{{ user_name }}/{{ repo.name }}/">{{ repo.name }}</a>
-						<a href="/{{ user_name }}/{{ repo.name }}/commits/" style="margin-right: 20px" rel="tooltip" data-original-title="commit 次数">♯ {{ repo.commit }}</a>
-						<a href="/{{ user_name }}/{{ repo.name }}/clone_watch/" style="margin-right: 20px" rel="tooltip" data-original-title="watch 次数">♥ {{ repo.watch }}</a>
-						<a href="/{{ user_name }}/{{ repo.name }}/clone_watch/" style="margin-right: 20px" rel="tooltip" data-original-title="fork 次数">♂ {{ repo.fork }}</a>
-					</div>
-					<div>
-						<h6>创建于{{ repo.create_time|date:"y/m/d" }}，最近更新{{ repo.modify_time|date:"y/m/d H:i" }}</h6> 
-						<p>{{ repo.desc }}</p>
-						<h6 id="i_{{repo.name}}_feed_history">最近</h6> 
-						<ul id="i_{{repo.name}}">
-						</ul>
-					</div>
-				</div>
-			</div>
-		</div>
-	{% endfor %}
-
+<div class="page-header" style="margin-bottom: 18px; height: 52px; padding-bottom: 0px;">
+        <h1 style="float: left; margin-right: 30px">:-), {{ user_name }}的仓库列表</h1><div style="float: left" class="btn-group">
+          <button data-toggle="dropdown" class="btn btn-small dropdown-toggle">查看列表 <span class="caret"></span></button>
+          <ul class="dropdown-menu">
+            {% for repo in repo_list %}
+            <li><a href="/{{ user_name }}/{{ repo.name }}/">{{ repo.name }}</a></li>
+            {% endfor %}
+            <li class="divider"></li>
+            <li><a href="/{{ user.username }}/repo/create/">+ 创建新的仓库</a></li>
+          </ul>
+          <a href="/{{ user.username }}/repo/create/" class="pull-left"><button class="btn btn-success btn-small" style="margin-left: 10px"><strong>+</strong> 创建仓库</button></a>
+</div>
+</div>
+{% load humanize %}
+{% for repo in repo_list %}
+<div class="row" style="margin: 10px;">
+    <div class="span7">
+        <div class="c_repo" style="padding: 10px;">
+            <h3>☺ 
+            <a href="/{{ user_name }}/{{ repo.name }}/">{{ repo.name }}</a>
+            <span style="float: right;">
+            <a href="/{{ user_name }}/{{ repo.name }}/commits/" style="margin-right: 20px" rel="tooltip" data-original-title="commit 次数">♯ {{ repo.commit }}</a>
+            <a href="/{{ user_name }}/{{ repo.name }}/clone_watch/" style="margin-right: 20px" rel="tooltip" data-original-title="watch 次数">♥ {{ repo.watch }}</a>
+            <a href="/{{ user_name }}/{{ repo.name }}/clone_watch/" style="margin-right: 20px" rel="tooltip" data-original-title="fork 次数">♂ {{ repo.fork }}</a></span></h3>
+            <div style="margin-left: 20px;">
+                <h6>创建于{{ repo.create_time|date:"y/m/d" }}，最近更新{{ repo.modify_time|date:"y/m/d H:i" }}</h6> 
+                <p>{{ repo.desc }}</p>
+                <h6 id="i_{{repo.name}}_feed_history" style="display: none">最近</h6> 
+                <ul id="i_{{repo.name}}">
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}
 
 

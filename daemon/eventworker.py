@@ -8,7 +8,7 @@ from subprocess import PIPE
 from datetime import datetime
 from django.core.cache import cache
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from gitshell.gsuser.models import Userprofile, GsuserManager
 from gitshell.repo.models import CommitHistory, Repo, RepoManager
 from gitshell.feed.models import Feed, NotifMessage, FeedManager
@@ -85,7 +85,7 @@ def update_quote(user, gsuser, repo, repopath, parameters):
             diff_size = int(result)
         else:
             diff_size = int(result) - repo.used_quote
-    update_gsuser_repo_quote(gsuser, repo, diff_size)
+    RepoManager.update_user_repo_quote(gsuser, repo, diff_size)
 
 # git log -100 --pretty='%h  %p  %t  %an  %cn  %ct  %ce  %ae  %s'
 def bulk_create_commits(user, gsuser, repo, repopath, oldrev, newrev, refname):
@@ -241,13 +241,6 @@ def get_repopath(user, repo):
         return None
     return repo.get_abs_repopath()
 
-def update_gsuser_repo_quote(gsuser, repo, diff_size):
-    gsuser = GsuserManager.get_userprofile_by_id(gsuser.id)
-    gsuser.used_quote = gsuser.used_quote + diff_size
-    repo.used_quote = repo.used_quote + diff_size
-    gsuser.save()
-    repo.save()
-
 def stop():
     EventManager.send_stop_event(EVENT_TUBE_NAME)
     print 'send stop event message...'
@@ -257,6 +250,7 @@ def __cache_version_update(sender, **kwargs):
 
 if __name__ == '__main__':
     post_save.connect(__cache_version_update)
+    post_delete.connect(__cache_version_update)
     if len(sys.argv) < 2:
         sys.exit(1)
     action = sys.argv[1]

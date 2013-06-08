@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-  
-import time
+import os, time, re
 from django.db import models
 from django.core.cache import cache
 from gitshell.objectscache.models import BaseModel
@@ -9,6 +9,7 @@ from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
 from gitshell.objectscache.models import CacheKey
+from gitshell.gsuser.middleware import KEEP_REPO_NAME
 
 class Repo(BaseModel):
     user_id = models.IntegerField()
@@ -274,7 +275,8 @@ class RepoManager():
 
     @classmethod
     def count_repo_by_userId(self, user_id):
-        pass
+        _count = count(Repo, None, 'repo_c_userId', [user_id])
+        return _count
 
     @classmethod
     def get_commit_by_id(self, id):
@@ -582,6 +584,46 @@ class RepoManager():
     @classmethod
     def delete_repo_commit_version(self, repo):
         cache.delete(CacheKey.REPO_COMMIT_VERSION % repo.id)
+
+    @classmethod
+    def check_export_ok_file(self, repo):
+        if repo is None:
+            return
+        auth_type = repo.auth_type
+        repo_path = repo.get_abs_repopath()
+        git_daemon_export_ok_file_path = '%s/%s' % (repo_path, 'git-daemon-export-ok')
+        if auth_type == 0:
+            if os.path.exists(repo_path) and not os.path.exists(git_daemon_export_ok_file_path):
+                with open(git_daemon_export_ok_file_path, 'w') as _file:
+                    _file.close()
+        else:
+            if os.path.exists(repo_path) and os.path.exists(git_daemon_export_ok_file_path):
+                os.remove(git_daemon_export_ok_file_path)
+
+    @classmethod
+    def update_user_repo_quote(self, user, repo, diff_size):
+        userprofile = GsuserManager.get_userprofile_by_id(user.id)
+        userprofile.used_quote = userprofile.used_quote + diff_size
+        repo.used_quote = repo.used_quote + diff_size
+        if userprofile.used_quote < 0:
+            userprofile.used_quote = 0
+        if repo.used_quote < 0:
+            repo.used_quote = 0
+        userprofile.save()
+        repo.save()
+
+    @classmethod
+    def is_allowed_reponame_pattern(self, name):
+        if name is None or name == '':
+            return False
+        if re.match('^[a-zA-Z0-9_\-]+$', name) and not name.startswith('-') and name not in KEEP_REPO_NAME:
+            return True
+        return False
+
+    def is_allowed_refsname_pattern(self, name):
+        if re.match('^[a-zA-Z0-9_\-\.]+$', name) and not name.startswith('-'):
+            return True
+        return False
 
     # ====================
     @classmethod

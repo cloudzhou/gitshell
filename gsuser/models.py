@@ -2,7 +2,7 @@ import time
 from django.db import models
 from django.contrib.auth.models import User, UserManager
 from gitshell.objectscache.models import BaseModel
-from gitshell.objectscache.da import query, get, get_many, execute, count, countraw
+from gitshell.objectscache.da import query, query_first, get, get_many, execute, count, countraw
 
 class Userprofile(BaseModel):
     username = models.CharField(max_length=30, null=True)
@@ -27,6 +27,19 @@ class Userprofile(BaseModel):
 
     def get_total_repo(self):
         return self.prirepo + self.pubrepo
+
+class ThirdpartyUser(BaseModel):
+    user_type = models.IntegerField(default=0, null=True)
+    tp_id = models.IntegerField(default=0, null=True)
+    tp_username = models.CharField(max_length=30, null=True)
+    tp_email = models.CharField(max_length=75, null=True)
+    identity = models.CharField(max_length=30, null=True)
+    access_token = models.CharField(max_length=40, null=True)
+    init = models.IntegerField(default=0, null=True)
+
+    github_user_info = {}
+    GITHUB = 1
+    GOOGLE = 2
 
 class Recommend(BaseModel):
     user_id = models.IntegerField(null=False, default=0)
@@ -83,6 +96,15 @@ class GsuserManager():
         if user is None:
             return None
         return self.get_userprofile_by_id(user.id)
+
+    @classmethod
+    def get_thirdpartyUser_by_id(self, id):
+        return get(ThirdpartyUser, id)
+
+    @classmethod
+    def get_thirdpartyUser_by_type_tpId(self, user_type, tp_id):
+        thirdpartyUser = query_first(ThirdpartyUser, user_type, 'thirdpartyuser_s_userType_tpId', [user_type, tp_id]) 
+        return thirdpartyUser
 
     @classmethod
     def map_users(self, user_ids):

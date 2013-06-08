@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-  
 import os, re
 import shutil, copy
-import json, time
+import json, time, urllib
 from datetime import datetime
 from datetime import timedelta
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -10,6 +10,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
 from django.shortcuts import render_to_response
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 from django.utils.html import escape
 from gitshell.feed.feed import FeedAction
 from gitshell.feed.models import FeedManager
@@ -25,6 +27,7 @@ from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, P
 from gitshell.daemon.models import EventManager
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.gsuser.middleware import KEEP_REPO_NAME
+from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo
 
 @login_required
 def user_repo(request, user_name):
@@ -196,6 +199,8 @@ def repo_pull_new(request, user_name, repo_name, source_username, source_refs, d
         title = request.POST.get('title', '')
         desc = request.POST.get('desc', '')
         if source_repo == '' or source_refs == '' or desc_repo == '' or desc_refs == '' or title == '' or '/' not in source_repo or '/' not in desc_repo:
+            return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+        if not RepoManager.is_allowed_refsname_pattern(source_refs) or not RepoManager.is_allowed_refsname_pattern(desc_refs):
             return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         (source_username, source_reponame) = source_repo.split('/', 1)
         (desc_username, desc_reponame) = desc_repo.split('/', 1)
@@ -515,7 +520,7 @@ def issues_create(request, user_name, repo_name, issues_id):
             orgi_issue = None
         repoIssuesForm = RepoIssuesForm(instance = issues)
     repoIssuesForm.fill_assigned(repo)
-    error = ''
+    error = u''
     if request.method == 'POST':
         issues.user_id = request.user.id
         issues.repo_id = repo.id
@@ -810,33 +815,126 @@ def repo_unwatch(request, user_name, repo_name):
     return json_httpResponse(response_dictionary)
 
 @login_required
-def edit(request, user_name, rid):
+def find(request):
+    repo = None
+    is_repo_exist = True
+    name = request.POST.get('name')
+    if RepoManager.is_allowed_reponame_pattern(name):
+        repo = RepoManager.get_repo_by_name(request.user.username, name)
+        is_repo_exist = (repo is not None)
+    return json_httpResponse({'is_repo_exist': is_repo_exist, 'name': name})
+
+@login_required
+def create(request, user_name):
     error = u''
     if user_name != request.user.username:
         raise Http404
-    repo = RepoManager.get_repo_by_id(int(rid))
-    if repo is None:
-        repo = Repo()
-    elif repo.user_id != request.user.id:
-        raise Http404
+    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
+    repo = Repo()
     repo.user_id = request.user.id
     repo.username = request.user.username
     repoForm = RepoForm(instance = repo)
+    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error, 'thirdpartyUser': thirdpartyUser, 'apply_error': request.GET.get('apply_error')}
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
-        if repoForm.is_valid():
-            name = repoForm.cleaned_data['name']
-            if re.match("^\w+$", name) and name not in KEEP_REPO_NAME:
-                dest_repo = RepoManager.get_repo_by_userId_name(request.user.id, name)
-                if dest_repo is None or (repo.id is not None and dest_repo.id == repo.id):
-                    fulfill_gitrepo(request.user.username, name, repoForm.cleaned_data['auth_type'])
-                    repoForm.save()
-                    return HttpResponseRedirect('/' + request.user.username + '/repo/')
-        error = u'输入正确的仓库名称[A-Za-z0-9_]，选择好语言和可见度，仓库名字不能重复，active、watch、recommend、repo是保留的名称。'
-    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'rid': rid, 'error': error}
-    return render_to_response('repo/edit.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
+        userprofile = request.userprofile
+        if (userprofile.pubrepo + userprofile.prirepo) >= 100:
+            error = u'您拥有的仓库数量已经达到 100 的限制。'
+            return __response_create_repo_error(request, response_dictionary, error)
+        if not repoForm.is_valid():
+            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，选择好语言和可见度，active、watch、recommend、repo是保留的名称。'
+            return __response_create_repo_error(request, response_dictionary, error)
+        name = repoForm.cleaned_data['name']
+        if not RepoManager.is_allowed_reponame_pattern(name):
+            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，active、watch、recommend、repo是保留的名称。'
+            return __response_create_repo_error(request, response_dictionary, error)
+        dest_repo = RepoManager.get_repo_by_userId_name(request.user.id, name)
+        if dest_repo is not None:
+            error = u'仓库名称已经存在。'
+            return __response_create_repo_error(request, response_dictionary, error)
+        if userprofile.used_quote > userprofile.quote:
+            error = u'您剩余空间不足，总空间 %s kb，剩余 %s kb' % (userprofile.quote, userprofile.used_quote)
+            return __response_create_repo_error(request, response_dictionary, error)
+        remote_git_url = request.POST.get('remote_git_url', '').strip()
+        remote_username = request.POST.get('remote_username', '').strip()
+        remote_password = request.POST.get('remote_password', '').strip()
+        create_repo = repoForm.save()
+        if create_repo.auth_type == 0:
+            userprofile.pubrepo = userprofile.pubrepo + 1
+        else:
+            userprofile.prirepo = userprofile.prirepo + 1
+        userprofile.save()
+        remote_git_url = __validate_get_remote_git_url(remote_git_url, remote_username, remote_password)
+        if remote_git_url is not None and remote_git_url != '':
+            create_repo.status = 2
+            create_repo.save()
+        fulfill_gitrepo(create_repo, remote_git_url)
+        return HttpResponseRedirect('/%s/%s/' % (request.user.username, name))
+    return render_to_response('repo/create.html', response_dictionary, context_instance=RequestContext(request))
+
+def __response_create_repo_error(request, response_dictionary, error):
+    response_dictionary['error'] = error
+    return render_to_response('repo/create.html', response_dictionary, context_instance=RequestContext(request))
+
+def __validate_get_remote_git_url(remote_git_url, remote_username, remote_password):
+    if remote_git_url != '' and not re.match('[a-zA-Z0-9_\.\-\/:]+', remote_git_url):
+        return ''
+    if remote_git_url.startswith('git://'):
+        remote_git_url_as_http = 'http://' + remote_git_url[len('git://'):]
+        if __is_url_valid(remote_git_url_as_http):
+            return remote_git_url
+        return ''
+    if remote_username is None or remote_username == '':
+        remote_username = 'remote_username'
+    if remote_password is None or remote_password == '':
+        remote_password = 'remote_password'
+    remote_username = urllib.quote_plus(remote_username)
+    remote_password = urllib.quote_plus(remote_password)
+    if not __is_url_valid(remote_git_url):
+        return ''
+    protocol = ''
+    remote_git_url_without_protocol = ''
+    for protocol in ['http://', 'https://']:
+        if remote_git_url.startswith(protocol):
+            remote_git_url_without_protocol = remote_git_url[len(protocol):]
+            return '%s%s:%s@%s' % (protocol, remote_username, remote_password, remote_git_url_without_protocol)
+    return ''
+
+def __is_url_valid(url):
+    validator = URLValidator(verify_exists=False)
+    try:
+        validator(url)
+        return True
+    except ValidationError, e:
+        print e
+    return False
+    
+@repo_permission_check
+@login_required
+def edit(request, user_name, repo_name):
+    error = u''
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    repoForm = RepoForm(instance = repo)
+    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error}
+    if request.method == 'POST':
+        repoForm = RepoForm(request.POST, instance = repo)
+        if not repoForm.is_valid():
+            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，选择好语言和可见度，active、watch、recommend、repo是保留的名称。'
+            return __response_edit_repo_error(request, response_dictionary, error)
+        name = repoForm.cleaned_data['name']
+        if not RepoManager.is_allowed_reponame_pattern(name):
+            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，active、watch、recommend、repo是保留的名称。'
+            return __response_edit_repo_error(request, response_dictionary, error)
+        repo = repoForm.save()
+        RepoManager.check_export_ok_file(repo)
+        return HttpResponseRedirect('/%s/%s/' % (repo.username, repo.name))
+    return render_to_response('repo/edit.html', response_dictionary, context_instance=RequestContext(request))
+
+def __response_edit_repo_error(request, response_dictionary, error):
+    response_dictionary['error'] = error
+    return render_to_response('repo/edit.html', response_dictionary, context_instance=RequestContext(request))
 
 @repo_permission_check
 @login_required
@@ -870,22 +968,23 @@ def delete(request, user_name, repo_name):
 def get_commits_by_ids(ids):
     return RepoManager.get_commits_by_ids(ids)
 
-def fulfill_gitrepo(username, reponame, auth_type):
+def fulfill_gitrepo(repo, remote_git_url):
+    gitHandler = GitHandler()
+    username = repo.username
+    reponame = repo.name
     user_repo_path = '%s/%s' % (REPO_PATH, username)
     if not os.path.exists(user_repo_path):
         os.makedirs(user_repo_path)
         os.chmod(user_repo_path, 0755)
     repo_path = ('%s/%s/%s.git' % (REPO_PATH, username, reponame))
     if not os.path.exists(repo_path):
-        shutil.copytree(GIT_BARE_REPO_PATH, repo_path)
-    git_daemon_export_ok_file_path = '%s/%s' % (repo_path, 'git-daemon-export-ok')
-    if auth_type == 0:
-        if not os.path.exists(git_daemon_export_ok_file_path):
-            with open(git_daemon_export_ok_file_path, 'w') as _file:
-                _file.close()
-    else:
-        if os.path.exists(git_daemon_export_ok_file_path):
-            os.remove(git_daemon_export_ok_file_path)
+        if remote_git_url is not None and remote_git_url != '':
+            EventManager.send_import_repo_event(username, reponame, remote_git_url)
+        else:
+            shutil.copytree(GIT_BARE_REPO_PATH, repo_path)
+            gitHandler.update_server_info(repo)
+    repo = RepoManager.get_repo_by_name(username, reponame)
+    RepoManager.check_export_ok_file(repo)
 
 def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)
@@ -899,6 +998,15 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
             has_pull_right = True
     repo_pull_new_count = RepoManager.count_pullRequest_by_descRepoId(repo.id, PULL_STATUS.NEW)
     return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count}
+
+@login_required
+def list_github_repos(request):
+    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
+    if thirdpartyUser is None:
+        return json_httpResponse({'result': 'failed', 'cdoe': 404, 'message': 'GitHub account not found', 'repos': []})
+    access_token = thirdpartyUser.access_token
+    repos_json_str = github_list_repo(access_token)
+    return HttpResponse(repos_json_str, mimetype='application/json')
 
 def __list_pull_repo(request, repo):
     pull_repo_list = RepoManager.list_parent_repo(repo, 10)

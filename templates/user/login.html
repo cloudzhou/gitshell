@@ -8,51 +8,41 @@
 <div class="page-header">
         <h1>:-), 登录 <small>还没有帐号？立即<a href="/join/">注册</a></small></h1>
 </div>
-<div class="row">
+<div class="row" style="margin-left: 10px">
     <div class="span7">
-        <form class="form-horizontal" action="" method="post">
+        <p>* 使用以下网站帐号登录，无需注册</p>
+    </div>
+    <div class="span7">
+        <p>
+            <img id="id_github_logo" src="https://github.com/favicon.ico"/>
+            <div id="id_via_gitshell_first" class="alert hide">
+                <p>如果您已经拥有 Gitshell 帐号，请优先使用 Gitshell 帐号登录然后在“创建仓库页面”进行 GitHub 帐号关联。</p>
+                <p>我没有 Gitshell 帐号，<a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841">使用 GitHub 账户登录</a></p>
+            </div>
+        </p>
+    </div>
+    <div class="span7">
+        <p>* 使用 Gitshell 帐号登录，可以关联 <strong>GitHub</strong></p>
+    </div>
+    <div class="span7" style="">
+        <form class="form-inline" action="" method="post" style="margin-bottom: 8px">
             {% csrf_token %}
-            <fieldset>
-                <div class="control-group">
-                    <label for="id_email" class="control-label">邮箱</label>
-                    <div class="controls">
-                        {{ loginForm.email }}
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label for="id_unencrypt_password" class="control-label">密码</label>
-                    <div class="controls">
-                        <input type="password" maxlength="64" name="unencrypt_password" id="id_unencrypt_password" placeholder="输入密码，注意大小写">
-                    </div>
-                    <span style="display: none">
-                        {{ loginForm.password }}
-                    </span>
-                </div>
-                <!--div class="control-group">
-                    <label for="id_captcha_1" class="control-label">验证码</label>
-                    <div class="controls">
-                        {{ loginForm.captcha }}
-                    </div>
-                </div-->
-                <div class="control-group">
-                    <label for="id_rememberme" class="checkbox">
-                        <div class="controls">
-                            {{ loginForm.rememberme }}
-                            下次自动登录&nbsp;|&nbsp;<a href="/resetpassword/">忘记密码了</a>
-                        </div>
-                    </label>
-                </div>
-                {% if error %}
-                <div class="alert">
-                    <a data-dismiss="alert" class="close">×</a>
-                    <strong>出错了！</strong> {{ error }}
-                </div>
-                {% endif %}
-                <div class="form-actions">
-                    <button id="id_login_submit" class="btn btn-primary" type="submit">登录</button>
-                </div>
-            </fieldset>
+            {{ loginForm.email }}
+            <input type="password" maxlength="64" name="unencrypt_password" id="id_unencrypt_password" placeholder="输入密码，注意大小写">
+            <span style="display: none">
+                {{ loginForm.password }}
+            </span>
+            <button id="id_login_submit" class="btn" type="submit">登录</button>
         </form>
+        <label class="checkbox">
+            {{ loginForm.rememberme }} 下次自动登录&nbsp;|&nbsp;<a href="/resetpassword/">忘记密码了？</a>
+        </label>
+        {% if error %}
+            <div class="alert">
+                <a data-dismiss="alert" class="close">×</a>
+                <strong>出错了！</strong> {{ error }}
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
@@ -65,11 +55,14 @@ $(function(){
         $('#id_password').val(window.md5($('#id_unencrypt_password').val()));
     },
     login_init = function() {
-        $('#id_email').attr('placeholder', '输入邮箱');
+        $('#id_email').attr('placeholder', 'EMAIL 地址');
         $('#id_captcha_1').attr('placeholder', '输入验证码');
     };
     login_init();
     $('#id_login_submit').on('click', md5_user_passwd);
+    $('#id_github_logo').mouseover(function(){
+        $('#id_via_gitshell_first').show();
+    });
 });
 </script>
 {% endblock %}

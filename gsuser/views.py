@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-  
 import random, re, json, time
+import httplib, urllib
 from datetime import datetime
 import base64, hashlib
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -14,7 +15,7 @@ from django.contrib.auth import authenticate as auth_authenticate, login as auth
 from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
 from gitshell.gsuser.Forms import LoginForm, JoinForm, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
-from gitshell.gsuser.models import Recommend, Userprofile, GsuserManager, COMMON_EMAIL_DOMAIN
+from gitshell.gsuser.models import Recommend, Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
 from gitshell.gsuser.middleware import MAIN_NAVS
 from gitshell.repo.models import RepoManager
 from gitshell.stats.models import StatsManager
@@ -22,6 +23,7 @@ from gitshell.feed.feed import FeedAction
 from gitshell.stats import timeutils
 from gitshell.feed.views import get_feeds_as_json
 from gitshell.viewtools.views import json_httpResponse
+from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo
 
 def user(request, user_name):
     gsuser = GsuserManager.get_user_by_name(user_name)
@@ -190,6 +192,50 @@ def find(request):
 
 @login_required
 @require_http_methods(["POST"])
+def change(request):
+    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
+    user = None
+    is_user_exist = True
+    is_exist_repo = False
+    username = request.POST.get('username')
+    if username is not None and re.match("^\w+$", username) and username != request.user.username and username not in MAIN_NAVS:
+        repo_count = RepoManager.count_repo_by_userId(request.user.id)
+        if repo_count > 0:
+            return json_httpResponse({'is_exist_repo': True})
+        user = GsuserManager.get_user_by_name(username)
+        if user is None:
+            request.user.username = username
+            request.userprofile.username = username
+            request.user.save()
+            request.userprofile.save()
+            for repo in RepoManager.list_repo_by_userId(request.user.id, 0, 100):
+                repo.username = username
+                repo.save()
+            is_user_exist = False
+    goto = ''
+    email = request.POST.get('email')
+    if email is not None and email_re.match(email):
+        user = GsuserManager.get_user_by_email(email)
+        if user is None:
+            random_hash = '%032x' % random.getrandbits(128)
+            cache.set(random_hash + '_email', email)
+            active_url = 'https://gitshell.com/settings/validate_email/%s/' % random_hash
+            message = u'尊敬的gitshell用户：\n请点击下面的地址更改您在gitshell的登录邮箱：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
+            send_mail('[gitshell]更改邮件地址', message, 'noreply@gitshell.com', [email], fail_silently=False)
+            email_suffix = email.split('@')[-1]
+            if email_suffix in COMMON_EMAIL_DOMAIN:
+                goto = COMMON_EMAIL_DOMAIN[email_suffix]
+            is_user_exist = False
+    if thirdpartyUser is not None:
+        thirdpartyUser.init = 1
+        thirdpartyUser.save()
+    if username == request.user.username:
+        is_user_exist = False
+    response_dictionary = { 'is_exist_repo': is_exist_repo, 'is_user_exist': is_user_exist, 'goto': goto, 'new_username': username, 'new_email': email }
+    return json_httpResponse(response_dictionary)
+
+@login_required
+@require_http_methods(["POST"])
 def recommend_delete(request, user_name, recommend_id):
     gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
@@ -247,6 +293,9 @@ def login(request):
                 if user is not None and user.is_active:
                     auth_login(request, user)
                     url_next = '/home/'
+                    thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(user.id)
+                    if thirdpartyUser is None:
+                        url_next = '/settings/thirdparty/'
                     if request.GET.get('next') is not None:
                         url_next = request.GET.get('next')
                     return HttpResponseRedirect(url_next)
@@ -260,6 +309,59 @@ def login(request):
     return render_to_response('user/login.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+def login_github(request):
+    code = request.GET.get('code')
+    if request.GET.get('code') is None:
+        return HttpResponseRedirect('/login/')
+    access_token = github_oauth_access_token(code)
+    if access_token == '':
+        return HttpResponseRedirect('/login/')
+    thirdpartyUser = github_get_thirdpartyUser(access_token)
+    if thirdpartyUser is None or thirdpartyUser.tp_id is None or thirdpartyUser.tp_username is None:
+        return HttpResponseRedirect('/login/')
+    user = github_authenticate(thirdpartyUser)
+    if user is not None:
+        request.session.set_expiry(2592000)
+        user.backend='django.contrib.auth.backends.ModelBackend'
+        auth_login(request, user)
+        thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(user.id)
+    if thirdpartyUser.init == 0:
+        return HttpResponseRedirect('/settings/change_username_email/')
+    return HttpResponseRedirect('/home/')
+
+@login_required
+def login_github_apply(request):
+    error = u''
+    code = request.GET.get('code')
+    if code is None:
+        error = u'GitHub 关联失败，没有相关 code'
+    access_token = github_oauth_access_token(code)
+    if access_token == '':
+        error = u'GitHub 关联失败，获取不到 access_token，请再次重试'
+    thirdpartyUser = github_get_thirdpartyUser(access_token)
+    if thirdpartyUser is None or thirdpartyUser.tp_id is None or thirdpartyUser.tp_username is None:
+        error = u'获取不到 GitHub 信息，请再次重试'
+    thirdpartyUser_find = GsuserManager.get_thirdpartyUser_by_type_tpId(ThirdpartyUser.GITHUB, thirdpartyUser.tp_id)
+    if thirdpartyUser_find is not None:
+        error = u'该 GitHub 账户已经关联 Gitshell，请直接使用 GitHub 账户登录'
+    if error != '':
+        return HttpResponseRedirect('/%s/repo/create/?%s#via-github' % (request.user.username, urllib.urlencode({'apply_error': error.encode('utf8')})))
+    thirdpartyUser.user_type = ThirdpartyUser.GITHUB
+    thirdpartyUser.access_token = access_token
+    thirdpartyUser.id = request.user.id
+    thirdpartyUser.init = 1
+    thirdpartyUser.save()
+    return HttpResponseRedirect('/%s/repo/create/#via-github' % request.user.username)
+
+@login_required
+@require_http_methods(["POST"])
+def login_github_relieve(request):
+    thirdpartyUser_find = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
+    if thirdpartyUser_find is not None:
+        thirdpartyUser_find.delete()
+    response_dictionary = {'code': 200, 'result': 'success'}
+    return json_httpResponse(response_dictionary)
 
 def logout(request):
     auth_logout(request)
@@ -283,8 +385,8 @@ def join(request, step):
                 cache.set(random_hash + '_email', email)
                 cache.set(random_hash + '_username', username)
                 cache.set(random_hash + '_password', password)
-                active_url = 'http://www.gitshell.com/join/%s/' % random_hash
-                message = u'尊敬的gitshell用户：\n感谢您选择了gitshell，请点击下面的地址激活你在gitshell的帐号：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
+                active_url = 'https://gitshell.com/join/%s/' % random_hash
+                message = u'尊敬的gitshell用户：\n感谢您选择了gitshell，请点击下面的地址激活您在gitshell的帐号：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
                 send_mail('[gitshell]注册邮件', message, 'noreply@gitshell.com', [email], fail_silently=False)
                 goto = ''
                 email_suffix = email.split('@')[-1]
@@ -342,8 +444,8 @@ def resetpassword(request, step):
                 user = None
             if user is not None and user.is_active:
                 cache.set(random_hash, email)
-                active_url = 'http://www.gitshell.com/resetpassword/%s/' % random_hash
-                message = u'尊敬的gitshell用户：\n如果您没有重置密码的请求，请忽略此邮件。点击下面的地址重置你在gitshell的帐号密码：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
+                active_url = 'https://gitshell.com/resetpassword/%s/' % random_hash
+                message = u'尊敬的gitshell用户：\n如果您没有重置密码的请求，请忽略此邮件。点击下面的地址重置您在gitshell的帐号密码：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
                 send_mail('[gitshell]重置密码邮件', message, 'noreply@gitshell.com', [email], fail_silently=False)
                 return HttpResponseRedirect('/resetpassword/1/')
             error = u'邮箱 %s 还没有注册' % email

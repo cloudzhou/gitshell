@@ -32,7 +32,7 @@
                         <li><a href="/login/">登录</a> gitshell</li>
                         <li><a href="/settings/sshpubkey/">创建公钥</a> 用于 git 权限认证</li>
                         {% if user.is_authenticated %}
-                            <li><a href="/{{ user.username }}/repo/edit/0/">添加</a> 新的初始仓库</li>
+                            <li><a href="/{{ user.username }}/repo/create/">添加</a> 新的初始仓库</li>
                         {% else %}
                             <li><a href="javascript: void(0);">添加</a> 新的初始仓库</li>
                         {% endif %}

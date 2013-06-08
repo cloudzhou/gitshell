@@ -53,15 +53,15 @@
 					<div class="description">
 						<p>{{repo.desc}} — <a href="#README.md">阅读更多</a></p>
 						<p class="repo-admin-edit">
-							<a href="/{{user_name}}/repo/edit/{{repo.id}}/" class="btn"><i class="icon-edit"></i>编辑</a>
+							<a href="/{{user_name}}/{{repo_name}}/edit/" class="btn"><i class="icon-edit"></i>编辑</a>
 							<a href="/{{user_name}}/{{repo_name}}/delete/" class="btn"><i class="icon-trash"></i>删除</a>
 						</p>
 					</div>
 
 					<div class="repo-clone-url">
 
-						{% if repo.status != 0 %}
-							<p class="info">仓库正在初始化中...暂时不能提交，查看源代码，请耐心等候。（这种情况很可能是因为fork一个较大的仓库）。</p>
+						{% if repo.status == 0 %}
+							<p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
 						{% endif %}
 
 						{% if has_fork_right %}
@@ -137,33 +137,39 @@
 
 
 {% block js %}
-    <script src="/static/js/moment.min.js"></script>
-    <script src="/static/js/moment.zh-cn.js"></script>
-    <script>
-    /*global jQuery, window */
-    $(function(){
-        moment.lang('zh-cn');
-        $('#i_git_url').click(function(event) {
-            $('#i_git_url').select();
-        });
-        var current_refs = '{{ refs }}';
-        if(current_refs == '') {
-            current_refs = 'master';
-        }
-        var do_refs = function() {
-            is_refs_mouseover = true;
-            $.ajax({
-                url: '/ajax/repo/{{user_name}}/{{repo_name}}/refs/',
-                type: 'POST',
-                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-                dataType: 'json',
-                timeout: 10000,
-                error: function(){
-                    //alert('');
-                },
-                success: function(json){
-                    if($('#i_refs .dropdown-menu li').size() > 0) {
-                        return;
+<script src="/static/js/moment.min.js"></script>
+<script src="/static/js/moment.zh-cn.js"></script>
+<script>
+/*global jQuery, window */
+$(function(){
+    moment.lang('zh-cn');
+    $('#i_git_url').click(function(event) {
+        $('#i_git_url').select();
+    });
+    var current_refs = '{{ refs }}';
+    if(current_refs == '') {
+        current_refs = 'master';
+    }
+    var do_refs = function() {
+        is_refs_mouseover = true;
+        $.ajax({
+            url: '/{{user_name}}/{{repo_name}}/refs/',
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 10000,
+            error: function(){
+                //alert('');
+            },
+            success: function(json){
+                if($('#i_refs .dropdown-menu li').size() > 0) {
+                    return;
+                }
+                for(x in json.branches) {
+                    var current = ' ';
+                    if(json.branches[x] == current_refs) {
+                        current = '✓';
+                        $('#id_branch_or_tag').text('分支：');
                     }
                     for(x in json.branches) {
                         var current = ' ';
@@ -195,7 +201,7 @@
             }
             disabled_watch = true;
             $.ajax({
-                url: '/ajax/repo/{{user_name}}/{{repo_name}}/watch/',
+                url: '/{{user_name}}/{{repo_name}}/watch/',
                 type: 'POST',
                 data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
                 dataType: 'json',
@@ -221,7 +227,7 @@
             }
             disabled_watch = true;
             $.ajax({
-                url: '/ajax/repo/{{user_name}}/{{repo_name}}/unwatch/',
+                url: '/{{user_name}}/{{repo_name}}/unwatch/',
                 type: 'POST',
                 data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
                 dataType: 'json',
@@ -248,7 +254,7 @@
             }
             disabled_fork = true;
             $.ajax({
-                url: '/ajax/repo/{{user_name}}/{{repo_name}}/fork/',
+                url: '/{{user_name}}/{{repo_name}}/fork/',
                 type: 'POST',
                 data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
                 dataType: 'json',

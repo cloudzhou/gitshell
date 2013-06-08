@@ -26,10 +26,18 @@ if __name__ == '__main__':
 ########### env.ini ###########
 """
 [env]
-debug = False
-template_debug = False
-password = 424953
+debug = True
+template_debug = True
+user = git
+password = gitshell
 host = 127.0.0.1
-template_dirs = /opt/8001/gitshell/templates
+template_dirs = /opt/app/8001/gitshell/templates
 logging_file_path = /opt/run/var/log/gitshell.8001.log
+secret_key = ''
+github_client_id = ''
+github_client_secret = ''
+dropbox_app_key = ''
+dropbox_app_secret = ''
+dropbox_access_token = ''
+dropbox_access_token_secret = ''
 """
