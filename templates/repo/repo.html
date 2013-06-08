@@ -58,7 +58,7 @@
     		</div>
     		<div class="row">
     			<div class="span10">
-                    {% if repo.status == 0 %}
+                    {% if repo.status != 0 %}
                     <div style="margin-bottom: 12px;">
                         <span class="label label-important" style="margin: 15px; padding: 5px; margin-left: 0px">
                             仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）
