@@ -714,6 +714,21 @@ def repo_stats(request, user_name, repo_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@repo_permission_check
+@login_required
+def settings(request, user_name, repo_name):
+    refs = 'master'; path = '.'; current = 'settings'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    if repo.user_id != request.user.id:
+        raise Http404
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/settings.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
 def change_to_vo(raw_fork_repos_tree):
     user_ids = []
     for raw_fork_repos in raw_fork_repos_tree:
