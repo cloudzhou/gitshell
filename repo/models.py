@@ -23,8 +23,13 @@ class Repo(BaseModel):
 
     commit = models.IntegerField(default=0)
     watch = models.IntegerField(default=0)
+    star = models.IntegerField(default=0)
     fork = models.IntegerField(default=0)
     member = models.IntegerField(default=0)
+
+    deploy_url = models.CharField(max_length=40, null=True)
+    dropbox_sync = models.IntegerField(default=0)
+    last_push_time = models.DateTimeField(null=True)
 
     status = models.IntegerField(default=0) 
 
