@@ -1,7 +1,7 @@
-import random, re, json, time
+import random, re, json, time, sys
 import httplib, urllib, hashlib
 from datetime import datetime
-import base64, hashlib
+import base64, hashlib, urlparse
 from django.db import IntegrityError
 from django.contrib.auth import authenticate as auth_authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, UserManager, check_password
@@ -125,6 +125,7 @@ def dropbox_request_token_pair():
         headers = {'Host': 'api.dropbox.com', 'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': USER_AGENT}
         dropbox_connection.request('POST', API_REQUEST_TOKEN_URL, params, headers)
         response = dropbox_connection.getresponse()
+        print response.status
         if response.status == 200:
             result = response.read()
             key_value_dict = urlparse.parse_qs(result)
@@ -144,7 +145,8 @@ def dropbox_authorize_url(oauth_token):
 def dropbox_access_token_pair():
     (request_token, request_token_secret) = dropbox_request_token_pair()
     authorize_url = dropbox_authorize_url(request_token)
-    # 'open authorize url and click allow button: ' + authorize_url
+    print 'open authorize url and click allow button: ' + authorize_url
+    sys.stdin.readline()
     dropbox_connection = None
     try:
         dropbox_connection = httplib.HTTPSConnection('api.dropbox.com', 443, timeout=10)
@@ -175,8 +177,10 @@ def dropbox_share(access_token, access_token_secret, share_path):
         dropbox_connection.request('GET', share_url, {}, headers)
         response = dropbox_connection.getresponse()
         if response.status == 200:
-            result = response.read()
-            print result
+            json_str = response.read()
+            response = json.loads(json_str)
+            dropbox_url = str(response['url'])
+            return dropbox_url
     except Exception, e:
         print 'exception: %s' % e
     finally:

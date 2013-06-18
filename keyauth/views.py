@@ -26,17 +26,26 @@ def http_auth(request):
         if repo is None:
             return unauthorized_httpResponse
     
-        if repo.auth_type != 0:
-            user = _http_authenticate_user(request)
-            if RepoManager.is_repo_member(repo, user):
+        # if deploy key
+        if 'git-receive-pack' not in orgi_request_uri:
+            deploy_key = None
+            username, password = _http_authenticate_name_password(request)
+            if username is not None:
+                deploy_key = username
+            if deploy_key is not None and deploy_key != '' and repo.deploy_url == deploy_key:
                 return HttpResponse(status=200)
-        else:
-            #if orgi_request_uri.endswith('?service=git-receive-pack') or action == 'git-receive-pack':
+
+        if repo.auth_type == 0:
+            # if orgi_request_uri.endswith('?service=git-receive-pack') or action == 'git-receive-pack':
             if 'git-receive-pack' in orgi_request_uri:
                 user = _http_authenticate_user(request)
                 if not RepoManager.is_repo_member(repo, user):
                     return unauthorized_httpResponse
             return HttpResponse(status=200)
+        else:
+            user = _http_authenticate_user(request)
+            if RepoManager.is_repo_member(repo, user):
+                return HttpResponse(status=200)
     except Exception, e:
         print e
     return unauthorized_httpResponse
@@ -104,13 +113,19 @@ def keyauth(request, fingerprint, command):
             return response_full_git_command(quote, pre_command, user, repo)
     return not_git_command()
 
-def _http_authenticate_user(request):
+def _http_authenticate_name_password(request):
     if not request.META.has_key('HTTP_AUTHORIZATION'):
-        return None
+        return (None, None)
     auth = request.META['HTTP_AUTHORIZATION'].split()
     if len(auth) != 2 or auth[0].lower() != 'basic':
-        return None
+        return (None, None)
     username, password = base64.b64decode(auth[1]).split(':', 1)
+    return (username, password)
+
+def _http_authenticate_user(request):
+    (username, password) = _http_authenticate_name_password(request)
+    if username is None or password is None:
+        return None
     password = hashlib.md5(password).hexdigest()
     user = authenticate(username=username, password=password)
     return user

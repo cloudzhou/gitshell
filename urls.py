@@ -131,6 +131,10 @@ urlpatterns = patterns('gitshell',
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/fork/?$', 'repo.views.repo_fork'),
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/watch/?$', 'repo.views.repo_watch'),
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/unwatch/?$', 'repo.views.repo_unwatch'),
+    url(r'^(\w+)/([a-zA-Z0-9_\-]+)/generate_deploy_url/?$', 'repo.views.generate_deploy_url'),
+    url(r'^(\w+)/([a-zA-Z0-9_\-]+)/forbid_dploy_url/?$', 'repo.views.forbid_dploy_url'),
+    url(r'^(\w+)/([a-zA-Z0-9_\-]+)/enable_dropbox_sync/?$', 'repo.views.enable_dropbox_sync'),
+    url(r'^(\w+)/([a-zA-Z0-9_\-]+)/disable_dropbox_sync/?$', 'repo.views.disable_dropbox_sync'),
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/diff/(\w+)/(\w+)/([a-zA-Z0-9_\.\-/]*)$', 'repo.views.repo_diff'),
     
 )

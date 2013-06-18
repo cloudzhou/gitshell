@@ -1,12 +1,12 @@
 {% extends "repo/repo.html" %}
 {% block subcontainer %}
-<div class="span8" style="margin-left: 0px">
+<div class="span10" style="margin-left: 0px">
     <table class="table table-striped">
         <tbody>
             <tr class="span1">
                 <td><strong>Deploy URL</strong>：</td>
                 {% if repo.deploy_url and repo.deploy_url != '' %}
-                <td>{{ repo.deploy_url }}</td>
+                <td>https://{{ repo.deploy_url }}@gitshell.com/{{user_name}}/{{repo_name}}.git</td>
                 <td>
                     <button class="generate_deploy_url btn btn-mini btn-warning">重新生成</button>
                     <button class="forbid_dploy_url btn btn-mini btn-danger">禁止</button>
@@ -21,7 +21,13 @@
             <tr>
                 <td><!--img src="/static/img/dropbox_logo.ico"/--><strong>Dropbox 及时备份</strong>：</td>
                 {% if repo.dropbox_sync == 1 %}
-                <td>{{ repo.dropbox_url }}</td>
+                <td>
+                    {% if repo.dropbox_url == '' %}
+                    <span class="label label-important">Dropbox 正在同步中...</span>
+                    {% else %}
+                    {{ repo.dropbox_url }}
+                    {% endif %}
+                </td>
                 <td>
                     <button class="disable_dropbox_sync btn btn-mini btn-danger">禁止</button>
                 </td>

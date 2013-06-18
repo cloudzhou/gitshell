@@ -757,7 +757,7 @@ def enable_dropbox_sync(request, user_name, repo_name):
     repo.dropbox_sync = 1
     repo.last_push_time = datetime.now()
     if repo.dropbox_url is None or repo.dropbox_url == '':
-        dropbox_url = dropbox_share_direct('%s/%s.git' % (str(repo.id), repo.name))
+        dropbox_url = dropbox_share_direct('repositories/%s/%s.git' % (str(repo.id), repo.name))
         repo.dropbox_url = dropbox_url
     repo.save()
     return json_httpResponse({'result': 'success'})
