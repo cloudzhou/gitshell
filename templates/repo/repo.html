@@ -111,9 +111,6 @@
                 <li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/network/">协同</a></li>
                 <li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/clone_watch/">衍生&amp;关注</a></li>
                 <li {% if current == 'stats' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/stats/">统计</a></li>
-                {% if user.is_authenticated and repo.user_id == user.id %}
-                <li {% if current == 'settings' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/settings/">设置</a></li>
-                {% endif %}
             </ul>
     {% block subcontainer %}{% endblock %}
 		</div>
