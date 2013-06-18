@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-  
 import os, re
-import shutil, copy
 import json, time, urllib
+import shutil, copy, random
 from datetime import datetime
 from datetime import timedelta
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -23,11 +23,11 @@ from gitshell.gsuser.models import GsuserManager
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
-from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, PULLREQUEST_REPO_PATH
+from gitshell.settings import SECRET_KEY, REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, PULLREQUEST_REPO_PATH
 from gitshell.daemon.models import EventManager
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.gsuser.middleware import KEEP_REPO_NAME
-from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo
+from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo, dropbox_share_direct
 
 @login_required
 def user_repo(request, user_name):
@@ -719,15 +719,59 @@ def repo_stats(request, user_name, repo_name):
 def settings(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'settings'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    if repo.user_id != request.user.id:
+    if repo is None or repo.user_id != request.user.id:
         raise Http404
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/settings.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+@repo_permission_check
+@login_required
+def generate_deploy_url(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        return json_httpResponse({'result': 'failed'})
+    random_hash = '%032x' % random.getrandbits(128)
+    repo.deploy_url = random_hash
+    repo.save()
+    return json_httpResponse({'result': 'success'})
+
+@repo_permission_check
+@login_required
+def forbid_dploy_url(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        return json_httpResponse({'result': 'failed'})
+    repo.deploy_url = ''
+    repo.save()
+    return json_httpResponse({'result': 'success'})
+
+@repo_permission_check
+@login_required
+def enable_dropbox_sync(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        return json_httpResponse({'result': 'failed'})
+    repo.dropbox_sync = 1
+    repo.last_push_time = datetime.now()
+    if repo.dropbox_url is None or repo.dropbox_url == '':
+        dropbox_url = dropbox_share_direct('%s/%s.git' % (str(repo.id), repo.name))
+        repo.dropbox_url = dropbox_url
+    repo.save()
+    return json_httpResponse({'result': 'success'})
+
+@repo_permission_check
+@login_required
+def disable_dropbox_sync(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        return json_httpResponse({'result': 'failed'})
+    repo.dropbox_sync = 0
+    repo.last_push_time = datetime.now()
+    repo.save()
+    return json_httpResponse({'result': 'success'})
 
 def change_to_vo(raw_fork_repos_tree):
     user_ids = []

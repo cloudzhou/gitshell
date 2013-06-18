@@ -6,7 +6,7 @@ from django.db import IntegrityError
 from django.contrib.auth import authenticate as auth_authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, UserManager, check_password
 from gitshell.gsuser.models import Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
-from gitshell.settings import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, DROPBOX_APP_KEY, DROPBOX_APP_SECRET
+from gitshell.settings import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, DROPBOX_APP_KEY, DROPBOX_APP_SECRET, DROPBOX_ACCESS_TOKEN, DROPBOX_ACCESS_TOKEN_SECRET
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36'
 
@@ -183,6 +183,9 @@ def dropbox_share(access_token, access_token_secret, share_path):
         if dropbox_connection: dropbox_connection.close()
     return ''
 
+def dropbox_share_direct(share_path):
+    return dropbox_share(DROPBOX_ACCESS_TOKEN, DROPBOX_ACCESS_TOKEN_SECRET, share_path)
+    
 def _timestamp():
     return str(int(time.time()))
 

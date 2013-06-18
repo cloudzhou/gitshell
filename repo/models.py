@@ -29,6 +29,7 @@ class Repo(BaseModel):
 
     deploy_url = models.CharField(max_length=40, null=True)
     dropbox_sync = models.IntegerField(default=0)
+    dropbox_url = models.CharField(max_length=64, null=True)
     last_push_time = models.DateTimeField(null=True)
 
     status = models.IntegerField(default=0) 

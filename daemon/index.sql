@@ -34,4 +34,6 @@ update repo_repo as t1 inner join auth_user as t2 on t1.user_id = t2.id set t1.u
 alter table repo_repo add `star` INT NOT NULL DEFAULT 0 after `watch`;
 alter table repo_repo add `deploy_url` varchar(40) NULL after `member`;
 alter table repo_repo add `dropbox_sync` INT NOT NULL DEFAULT 0 after `deploy_url`;
-alter table repo_repo add `last_push_time` datetime NOT NULL after `dropbox_sync`;
+alter table repo_repo add `dropbox_url` varchar(64) NULL after `dropbox_sync`;
+alter table repo_repo add `last_push_time` datetime NOT NULL after `dropbox_url`;
+
