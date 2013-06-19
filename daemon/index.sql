@@ -37,4 +37,10 @@ alter table repo_repo add `dropbox_sync` INT NOT NULL DEFAULT 0 after `deploy_ur
 alter table repo_repo add `dropbox_url` varchar(64) NULL after `dropbox_sync`;
 alter table repo_repo add `last_push_time` datetime NOT NULL after `dropbox_url`;
 
-create index repo_last_push_time_idx on repo_repo (last_push_time DESC)
+update repo_repo set star = 0;
+update repo_repo set deploy_url = '';
+update repo_repo set dropbox_sync = 0;
+update repo_repo set dropbox_url = '';
+update repo_repo set last_push_time = now();
+
+create index repo_last_push_time_idx on repo_repo (last_push_time DESC);
