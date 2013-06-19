@@ -10,14 +10,14 @@
                     {% if repo.dropbox_url == '' %}
                     <span class="label label-important">Dropbox 正在同步中... 请三分钟之后再来围观</span>
                     {% else %}
-                    {{ repo.dropbox_url }}
+                    <a target="_blank" href="{{ repo.dropbox_url }}">{{ repo.dropbox_url }}</a>
                     {% endif %}
                 </td>
                 <td>
                     <button class="disable_dropbox_sync btn btn-mini btn-danger">禁止</button>
                 </td>
                 {% else %}
-                <td><span>仓库将近乎及时地备份在 Dropbox，可以直接使用 git clone，不能公开该地址</span></td>
+                <td><span>仓库将近乎及时地备份在 Dropbox，加入本地 Dropbox 后可以直接 git clone，不能公开该地址</span></td>
                 <td>
                     <button class="enable_dropbox_sync btn btn-mini btn-primary">启用</button>
                 </td>
@@ -26,7 +26,7 @@
             <tr class="span1">
                 <td><strong>Deploy URL</strong>：</td>
                 {% if repo.deploy_url and repo.deploy_url != '' %}
-                <td>https://{{ repo.deploy_url }}@gitshell.com/{{user_name}}/{{repo_name}}.git</td>
+                <td>https://{{repo.deploy_url}}@gitshell.com/{{user_name}}/{{repo_name}}.git</td>
                 <td>
                     <button class="generate_deploy_url btn btn-mini btn-warning">重新生成</button>
                     <button class="forbid_dploy_url btn btn-mini btn-danger">禁止</button>

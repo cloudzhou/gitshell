@@ -125,7 +125,6 @@ def dropbox_request_token_pair():
         headers = {'Host': 'api.dropbox.com', 'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': USER_AGENT}
         dropbox_connection.request('POST', API_REQUEST_TOKEN_URL, params, headers)
         response = dropbox_connection.getresponse()
-        print response.status
         if response.status == 200:
             result = response.read()
             key_value_dict = urlparse.parse_qs(result)
