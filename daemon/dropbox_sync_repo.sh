@@ -45,7 +45,9 @@ function git_clone_bare {
 }
 
 # 1 sync to local as backup
-git_clone_bare "$local_sync_repo_path"
+if [ "$visibly" == '0' ]; then
+    git_clone_bare "$local_sync_repo_path"
+fi
 
 # 2 sync to dropbox
 if [ "$visibly" == '0' ] && [ "$dropbox_sync" == '1' ]; then
