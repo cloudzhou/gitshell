@@ -38,8 +38,9 @@ function git_clone_bare {
     
     if [ ! -e "$sync_repo_path" ]; then
         git clone --bare "ssh://git@gitshell.com:2222/$remote_raw_repo_path" "$sync_repo_path"
+        cd "$sync_repo_path"; git update-server-info; cd -
     else
-        cd "$sync_repo_path"; git fetch; cd -
+        cd "$sync_repo_path"; git fetch; git update-server-info; cd -
     fi
 }
 
