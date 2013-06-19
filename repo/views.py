@@ -85,6 +85,7 @@ def repo_tree(request, user_name, repo_name, refs, path):
     return repo_ls_tree(request, user_name, repo_name, refs, path, current)
 
 @repo_permission_check
+@repo_source_permission_check
 def repo_raw_tree(request, user_name, repo_name, refs, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path.endswith('/'):
