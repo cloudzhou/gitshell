@@ -82,6 +82,8 @@ urlpatterns = patterns('gitshell',
     url(r'^private/dist/repo/(\w+)/([a-zA-Z0-9_\-]+)/?$', 'dist.views.repo'),
     url(r'^private/dist/refresh/?$', 'dist.views.refresh'),
     url(r'^private/dist/echo/?$', 'dist.views.echo'),
+    # gitshell keep namespace
+    url(r'^gitshell/list_latest_push_repo/(\w+)/?$', 'repo.views.list_latest_push_repo'),
 
     # third part
     url(r'^captcha/', include('captcha.urls')),

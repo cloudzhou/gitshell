@@ -213,6 +213,10 @@ class RepoManager():
         return repoes
 
     @classmethod
+    def list_repo_by_last_push_time(self, last_push_time):
+        return query(Repo, None, 'repo_l_last_push_time', [last_push_time])
+
+    @classmethod
     def list_repo_by_ids(self, ids):
         return get_many(Repo, ids)
 

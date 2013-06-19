@@ -91,6 +91,9 @@ rawsql = {
         'select * from repo_issues where visibly = 0 and repo_id = %s and id = %s limit 0,1',
     'issuescomment_l_issuesId':
         'select * from repo_issuescomment where visibly = 0 and issues_id = %s order by create_time asc limit %s, %s',
+    # repo_repo #
+    'repo_l_last_push_time':
+        'select * from repo_repo where last_push_time >= %s limit 0, 5000',
     # repo_forkhistory #
     'forkhistory_l_repoId':
         'select * from repo_forkhistory where visibly = 0 and repo_id = %s order by modify_time desc limit 0, 50',

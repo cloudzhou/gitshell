@@ -46,6 +46,7 @@ def http_auth(request):
             user = _http_authenticate_user(request)
             if RepoManager.is_repo_member(repo, user):
                 return HttpResponse(status=200)
+
     except Exception, e:
         print e
     return unauthorized_httpResponse

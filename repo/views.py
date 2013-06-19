@@ -2,8 +2,7 @@
 import os, re
 import json, time, urllib
 import shutil, copy, random
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
@@ -729,6 +728,7 @@ def settings(request, user_name, repo_name):
 
 @repo_permission_check
 @login_required
+@require_http_methods(["POST"])
 def generate_deploy_url(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
@@ -740,6 +740,7 @@ def generate_deploy_url(request, user_name, repo_name):
 
 @repo_permission_check
 @login_required
+@require_http_methods(["POST"])
 def forbid_dploy_url(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
@@ -750,6 +751,7 @@ def forbid_dploy_url(request, user_name, repo_name):
 
 @repo_permission_check
 @login_required
+@require_http_methods(["POST"])
 def enable_dropbox_sync(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
@@ -757,13 +759,14 @@ def enable_dropbox_sync(request, user_name, repo_name):
     repo.dropbox_sync = 1
     repo.last_push_time = datetime.now()
     if repo.dropbox_url is None or repo.dropbox_url == '':
-        dropbox_url = dropbox_share_direct('repositories/%s/%s.git' % (str(repo.id), repo.name))
+        dropbox_url = dropbox_share_direct('repositories/%s/%s_%s.git' % (repo.username, repo.id, repo.name))
         repo.dropbox_url = dropbox_url
     repo.save()
     return json_httpResponse({'result': 'success'})
 
 @repo_permission_check
 @login_required
+@require_http_methods(["POST"])
 def disable_dropbox_sync(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
@@ -772,6 +775,38 @@ def disable_dropbox_sync(request, user_name, repo_name):
     repo.last_push_time = datetime.now()
     repo.save()
     return json_httpResponse({'result': 'success'})
+
+def list_latest_push_repo(request, last_push_time_str):
+    secret_key = request.GET.get('secret_key')
+    if secret_key != SECRET_KEY:
+        return json_httpResponse({'result': 'failed'})
+    timedelta_value = 0
+    if re.match('\d+[sMdwmy]', last_push_time_str):
+        timedelta_value = int(last_push_time_str[0:-1])
+    if last_push_time_str.endswith('s'):
+        push_timedelta = timedelta(seconds=-timedelta_value)
+    elif last_push_time_str.endswith('M'):
+        push_timedelta = timedelta(minutes=-timedelta_value)
+    elif last_push_time_str.endswith('d'):
+        push_timedelta = timedelta(days=-timedelta_value)
+    elif last_push_time_str.endswith('w'):
+        push_timedelta = timedelta(weeks=-timedelta_value)
+    elif last_push_time_str.endswith('m'):
+        push_timedelta = timedelta(days=-timedelta_value*30)
+    elif last_push_time_str.endswith('y'):
+        push_timedelta = timedelta(days=-timedelta_value*365)
+    last_push_time = datetime.now() + push_timedelta
+    repos = RepoManager.list_repo_by_last_push_time(last_push_time)
+    repos_as_view = []
+    for repo in repos:
+        repo_as_view = {}
+        repo_as_view['id'] = repo.id
+        repo_as_view['username'] = repo.username
+        repo_as_view['name'] = repo.name
+        repo_as_view['dropbox_sync'] = repo.dropbox_sync
+        repo_as_view['visibly'] = repo.visibly
+        repos_as_view.append(repo_as_view)
+    return json_httpResponse({'result': 'success', 'latest_push_repos': repos_as_view})
 
 def change_to_vo(raw_fork_repos_tree):
     user_ids = []
@@ -1007,6 +1042,7 @@ def delete(request, user_name, repo_name):
     gsuser = GsuserManager.get_userprofile_by_id(request.user.id)
     if request.method == 'POST':
         repo.visibly = 1
+        repo.last_push_time = datetime.now()
         gsuser.used_quote = gsuser.used_quote - repo.used_quote
         if gsuser.used_quote < 0:
             gsuser.used_quote = 0

@@ -71,6 +71,7 @@ def do_event(event):
             if commit_count > MAX_COMMIT_COUNT:
                 break
         repo.commit = repo.commit + commit_count
+        repo.last_push_time = datetime.now()
         update_quote(user, gsuser, repo, repopath, diff_tree_blob_size_params)
         return
 
