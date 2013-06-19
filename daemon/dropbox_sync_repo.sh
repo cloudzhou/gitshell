@@ -43,17 +43,19 @@ function git_clone_bare {
     fi
 }
 
-# 1 rsync to local as backup
+# 1 sync to local as backup
 git_clone_bare "$local_sync_repo_path"
-# 2 delete repo if dropbox_sync == 0 or visibly == 1
-if [ "$dropbox_sync" == '0' ] || [ "$visibly" == '1' ]; then
+
+# 2 sync to dropbox
+if [ "$visibly" == '0' ] && [ "$dropbox_sync" == '1' ]; then
+    # sync repo to dropbox
+    git_clone_bare "$dropbox_sync_repo_path"
+else
+    # delete repo if visibly == 1 or dropbox_sync == 0
     if [ -e "$dropbox_sync_repo_path" ]; then
         rm -rf "$dropbox_sync_repo_path"
-        exit 0
     fi
 fi
-# 3 rsync repo to dropbox
-git_clone_bare "$dropbox_sync_repo_path"
 
 
 
