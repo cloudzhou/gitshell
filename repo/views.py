@@ -721,6 +721,11 @@ def settings(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
         raise Http404
+    if repo.dropbox_sync == 1 and (repo.dropbox_url is None or repo.dropbox_url == ''):
+        dropbox_url = dropbox_share_direct('repositories/%s/%s_%s.git' % (repo.username, repo.id, repo.name))
+        if dropbox_url is not None and dropbox_url != '':
+            repo.dropbox_url = dropbox_url
+            repo.save()
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/settings.html',
