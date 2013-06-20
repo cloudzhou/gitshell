@@ -25,6 +25,9 @@
                         <code id="id_username_alert" class="hide">
                             用户名已经存在
                         </code>
+                        <code id="id_username_format" class="hide">
+                            只允许 [a-zA-Z0-9_]
+                        </code>
                     </div>
                 </div>
                 <div class="control-group">
@@ -154,7 +157,12 @@ $(function(){
     $('#id_join_submit').on('click', md5_user_passwd);
 
     $('#id_username').change(function(){
+        $('#id_username_format').hide();
+        $('#id_username_alert').hide();
         var username = $(this).val();
+        if(!username.match(/^[a-zA-Z0-9_]+$/)) {
+            $('#id_username_format').show();
+        }
         $.post('/ajax/user/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', username: username}, function(json){
             if(json.is_user_exist) {
                 $('#id_username_alert').show();
