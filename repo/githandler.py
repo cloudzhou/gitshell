@@ -46,7 +46,7 @@ class GitHandler():
         stage_file = self._get_stage_file(repo_path, commit_hash, path)
         result = self._read_load_stage_file(stage_file)
         if result is not None:
-            return result
+            return result['blob']
         command = '/usr/bin/git show %s:%s | /usr/bin/head -c 524288' % (commit_hash, path)
         try:
             result = check_output(command, shell=True)
@@ -57,7 +57,7 @@ class GitHandler():
                 encoding = ud.result['encoding']
                 if encoding != 'utf-8' or encoding != 'utf8':
                     result = result.decode(encoding).encode('utf-8')
-            self._dumps_write_stage_file(result, stage_file)
+            self._dumps_write_stage_file({'blob': result}, stage_file)
             return result
         except Exception, e:
             print e
@@ -83,11 +83,11 @@ class GitHandler():
         stage_file = stage_file + '.diff'
         result = self._read_load_stage_file(stage_file)
         if result is not None:
-            return result
+            return result['diff']
         command = '/usr/bin/git diff %s..%s -- %s | /usr/bin/head -c 524288' % (pre_commit_hash, commit_hash, path)
         try:
             result = check_output(command, shell=True)
-            self._dumps_write_stage_file(result, stage_file)
+            self._dumps_write_stage_file({'diff': result}, stage_file)
             return result
         except Exception, e:
             print e

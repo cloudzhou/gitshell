@@ -8,7 +8,7 @@
     <a style="margin-left: 5px" href="/{{user_name}}/{{repo_name}}/raw/tree/{{refs}}/{{path}}" class="pull-right"><span class="label label-info">原始文件</span></a>
     {% endif %}
     </h4>
-    {% if is_tree %}
+{% if is_tree %}
 <style>
     table { table-layout: fixed; }
     table th, table td { overflow: hidden; }
@@ -49,10 +49,12 @@
             {% endfor %}
 			</tbody>
 	</table>
+    {% if readme_md %}
     <div>
         <pre id="id_readme_md" style="margin-top: 12px">{{ readme_md }}</pre>
     </div>
-    {% else %}
+    {% endif %}
+{% else %}
 <style>
 #i_source_code .container:before, #i_source_code .container:after {
     content: "";
@@ -70,7 +72,7 @@
         {% endif %}
     {% endif %}
 </div>
-    {% endif %}
+{% endif %}
 	</div>		  
 {% endblock %}
 {% block subjs %}
