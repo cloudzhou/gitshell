@@ -18,7 +18,7 @@
                         <td>
                             {{watch_repo.desc}}
                         <span class="pull-right">
-                            <span style="display: none" id="id_repo_{{watch_repo.id}}" data-repo-id="{{watch_repo.id}}" class="label-unwatch label label-warning">取消关注 x</span> 
+                            <span style="display: none" id="id_repo_{{watch_repo.id}}" data-repo-id="{{watch_repo.id}}" data-repo-username="{{watch_repo.username}}" data-repo-name="{{watch_repo.name}}" class="button-unwatch btn btn-danger btn-mini">取消关注 </span> 
                             {% if watch_repo.visibly != 0 %}
                             <span class="label label-important">已经删除</span> 
                             {% endif %}
@@ -46,9 +46,10 @@ $(function(){
             $('#id_repo_'+repo_id).hide();
         }
     });
-    $('.label-unwatch').click(function(){
-        var repo_id = $(this).attr('data-repo-id');
-        var action_url = '/ajax/repo/' + repo_id + '/unwatch/';
+    $('.button-unwatch').click(function(){
+        var repo_username = $(this).attr('data-repo-username');
+        var repo_name = $(this).attr('data-repo-name');
+        var action_url = '/' + repo_username + '/' + repo_name + '/unwatch/';
         $.ajax({
             url: action_url,
             type: 'POST',
