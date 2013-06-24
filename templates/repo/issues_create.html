@@ -5,7 +5,7 @@
 #id_merge_content { height: 200px; width: 600px; }
 </style>
     <h3 style="border-bottom:1px solid #EEEEEE; margin-bottom:15px;">
-        创建issues<small>&nbsp;创建issues是一件认真的事情，提交前请检查</small>
+        {% if has_issues_modify %}修改{% else %}创建{% endif %}issue<small>&nbsp;{% if has_issues_modify %}修改{% else %}创建{% endif %}issue是一件认真的事情，提交前请检查</small>
     </h3>
     <div>
         <form class="form-inline" action="" method="post">
