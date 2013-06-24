@@ -8,7 +8,7 @@ fi
 args=("$@")
 # abspath is the repos path
 abspath=${args[0]}
-cd $abspath
+cd "$abspath"
 
 index=1
 size=0
@@ -16,16 +16,16 @@ du_size=0
 tempfile=`mktemp`
 
 while [ $index -lt $# ]; do
-    oldrev=${args[$index]}
+    oldrev="${args[$index]}"
     let index=($index+1)
-    newrev=${args[$index]}
+    newrev="${args[$index]}"
     let index=($index+1)
-    refname=${args[$index]}
+    refname="${args[$index]}"
     let index=($index+1)
     if [ -z "$oldrev" ] || [ -z "$newrev" ] || [ -z "$refname" ]; then
         continue
     fi
-    /usr/bin/git diff-tree --raw -r -c -M -C --no-commit-id $oldrev $newrev |\
+    /usr/bin/git diff-tree --raw -r -c -M -C --no-commit-id "$oldrev" "$newrev" |\
     head -n 100 |\
     awk '{print $4}' > $tempfile
     total_line=`wc -l $tempfile | awk '{print $1}'`
