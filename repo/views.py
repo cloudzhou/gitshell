@@ -122,7 +122,10 @@ def repo_ls_tree(request, user_name, repo_name, refs, path, current):
                     brush = brush_aliases[lang]
             blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
     is_markdown = path.endswith('.markdown') or path.endswith('.md') or path.endswith('.mkd')
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'blob': blob, 'is_tree': is_tree, 'lang': lang, 'brush': brush, 'is_markdown': is_markdown}
+    readme_md = None
+    if 'README.md' in tree:
+        readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, path + '/README.md')
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'blob': blob, 'is_tree': is_tree, 'lang': lang, 'brush': brush, 'is_markdown': is_markdown, 'readme_md': readme_md}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/tree.html',
                           response_dictionary,

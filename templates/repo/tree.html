@@ -49,6 +49,9 @@
             {% endfor %}
 			</tbody>
 	</table>
+    <div>
+        <pre id="id_readme_md" style="margin-top: 12px">{{ readme_md }}</pre>
+    </div>
     {% else %}
 <style>
 #i_source_code .container:before, #i_source_code .container:after {
@@ -76,7 +79,7 @@
 <script src='/static/js/app/syntaxhighlighter/shAutoloader.js' type='text/javascript'></script>
 <script src='/static/js/app/syntaxhighlighter/shBrush{{ lang }}.js' type='text/javascript'></script>
 {% endif %}
-{% if is_markdown %}
+{% if is_markdown or readme_md %}
 <script src="/static/js/Markdown.Converter.js"></script>
 <script src="/static/js/Markdown.Editor.js"></script>
 <script src="/static/js/Markdown.Sanitizer.js"></script>
@@ -126,6 +129,11 @@ $(function(){
     var html = converter.makeHtml($('#id_markdown_content').html());
     $('#id_markdown_content').html(html);
     $('#id_markdown_content').show();
+{% endif %}
+{% if readme_md %}
+    var converter = new Markdown.getSanitizingConverter();
+    var html = converter.makeHtml($('#id_readme_md').html());
+    $('#id_markdown_content').html(html);
 {% endif %}
 });
 </script>

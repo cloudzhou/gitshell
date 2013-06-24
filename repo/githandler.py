@@ -36,6 +36,8 @@ class GitHandler():
         return result
     
     def repo_cat_file(self, repo_path, commit_hash, path):
+        if path.startswith('./'):
+            path = path[2:]
         if not self._path_check_chdir(repo_path, commit_hash, path):
             return None
         file_type = path.split('.')[-1]
