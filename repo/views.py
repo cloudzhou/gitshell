@@ -86,7 +86,7 @@ def repo_tree(request, user_name, repo_name, refs, path):
 
 @repo_permission_check
 @repo_source_permission_check
-def repo_raw_tree(request, user_name, repo_name, refs, path):
+def repo_raw_blob(request, user_name, repo_name, refs, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path.endswith('/'):
         raise Http404
@@ -105,32 +105,47 @@ def repo_ls_tree(request, user_name, repo_name, refs, path, current):
         raise Http404
     if path is None or path == '':
         path = '.'
-    gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
+    gitHandler = GitHandler()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
-    is_tree = True ; tree = {} ; blob = u''; lang = 'Plain'; brush = 'plain'
+    tree = {}
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
         if path == '.' or path.endswith('/'):
             tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
-        else:
-            is_tree = False
-            paths = path.split('.')
-            if len(paths) > 0:
-                suffix = paths[-1]
-                if suffix in lang_suffix and lang_suffix[suffix] in brush_aliases:
-                    lang = lang_suffix[suffix]
-                    brush = brush_aliases[lang]
-            blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
-    is_markdown = path.endswith('.markdown') or path.endswith('.md') or path.endswith('.mkd')
     readme_md = None
     if 'README.md' in tree:
         readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, path + '/README.md')
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'blob': blob, 'is_tree': is_tree, 'lang': lang, 'brush': brush, 'is_markdown': is_markdown, 'readme_md': readme_md}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'readme_md': readme_md}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/tree.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@repo_permission_check
+def repo_blob(request, user_name, repo_name, refs, path):
+    current = 'tree'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or path is None or path == '':
+        raise Http404
+    abs_repopath = repo.get_abs_repopath()
+    gitHandler = GitHandler()
+    commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
+    blob = u''; lang = 'Plain'; brush = 'plain'
+    if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
+        paths = path.split('.')
+        if len(paths) > 0:
+            suffix = paths[-1]
+            if suffix in lang_suffix and lang_suffix[suffix] in brush_aliases:
+                lang = lang_suffix[suffix]
+                brush = brush_aliases[lang]
+        blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
+    is_markdown = path.endswith('.markdown') or path.endswith('.md') or path.endswith('.mkd')
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'blob': blob, 'lang': lang, 'brush': brush, 'is_markdown': is_markdown}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/blob.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+    
 @repo_permission_check
 def repo_default_commits(request, user_name, repo_name):
     refs = 'master'; path = '.'
