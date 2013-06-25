@@ -30,8 +30,8 @@ class GitHandler():
         path = self._get_quote_path(path)
         stage_file = self._get_stage_file(repo_path, commit_hash, path)
         result = self._read_load_stage_file(stage_file)
-        #if result is not None:
-        #    return result
+        if result is not None:
+            return result
         result = self._ls_tree_check_output(commit_hash, path)
         self._dumps_write_stage_file(result, stage_file)
         return result
@@ -230,14 +230,11 @@ class GitHandler():
             quote_relative_paths = []
             for relative_path in result.keys():
                 quote_relative_paths.append(pipes.quote(relative_path))
-            print result
-            print quote_relative_paths
             if len(path.split('/')) < 50:
                 pre_path = path
                 if path == '.':
                     pre_path = ''
                 last_commit_command = 'for i in %s; do echo -n "$i|"; git log %s -1 --pretty="%%ct %%an %%s" -- "%s$i" | /usr/bin/head -c 524288; done' % (' '.join(quote_relative_paths), commit_hash, pre_path)
-                print last_commit_command
                 last_commit_output = check_output(last_commit_command, shell=True)
                 for last_commit in last_commit_output.split('\n'):
                     splits = last_commit.split('|', 1)
