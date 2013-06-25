@@ -1,6 +1,6 @@
 #!/python
 # -*- coding: utf-8 -*-
-import os, re
+import os, re, pipes, sys, traceback
 import time, json, hashlib, shutil
 from django.core.cache import cache
 from subprocess import check_output, Popen, PIPE
@@ -27,19 +27,21 @@ class GitHandler():
     def repo_ls_tree(self, repo_path, commit_hash, path):
         if not self._path_check_chdir(repo_path, commit_hash, path):
             return None
+        path = self._get_quote_path(path)
         stage_file = self._get_stage_file(repo_path, commit_hash, path)
         result = self._read_load_stage_file(stage_file)
-        if result is not None:
-            return result
+        #if result is not None:
+        #    return result
         result = self._ls_tree_check_output(commit_hash, path)
         self._dumps_write_stage_file(result, stage_file)
         return result
     
     def repo_cat_file(self, repo_path, commit_hash, path):
-        if path.startswith('./'):
-            path = path[2:]
         if not self._path_check_chdir(repo_path, commit_hash, path):
             return None
+        path = self._get_quote_path(path)
+        if path.startswith('./'):
+            path = path[2:]
         file_type = path.split('.')[-1]
         if file_type in BINARY_FILE_TYPE:
             return "二进制文件"
@@ -66,6 +68,7 @@ class GitHandler():
     def repo_log_file(self, repo_path, from_commit_hash, commit_hash, path):
         if not self._path_check_chdir(repo_path, commit_hash, path) or not re.match('^\w+$', from_commit_hash):
             return None
+        path = self._get_quote_path(path)
         between_commit_hash = from_commit_hash + '...' + commit_hash
         stage_file = self._get_stage_file(repo_path, between_commit_hash, path)
         stage_file = stage_file + '.log'
@@ -79,6 +82,7 @@ class GitHandler():
     def repo_diff(self, repo_path, pre_commit_hash, commit_hash, path):
         if not self._path_check_chdir(repo_path, commit_hash, path) or not re.match('^\w+$', pre_commit_hash):
             return None
+        path = self._get_quote_path(path)
         stage_file = self._get_diff_stage_file(repo_path, pre_commit_hash, commit_hash, path)
         stage_file = stage_file + '.diff'
         result = self._read_load_stage_file(stage_file)
@@ -203,6 +207,56 @@ class GitHandler():
             print e
             return None
     
+    def _ls_tree_check_output(self, commit_hash, path):
+        command = '/usr/bin/git ls-tree %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
+        result = {}
+        try:
+            raw_result = check_output(command, shell=True)
+            max = 200
+            for line in raw_result.split("\n"):
+                array = self.blank_p.split(line, 3) 
+                if len(array) >= 4:
+                    relative_path = array[3]
+                    if path != '.':
+                        relative_path = relative_path[len(path):]
+                    if array[1] == 'tree':
+                        relative_path = relative_path + '/'
+                    relative_path = self._oct_utf8_decode(relative_path)
+                    if self._repo_file_path_check(relative_path):
+                        result[relative_path] = array[1:3]
+                if(max <= 0):
+                    break
+                max = max - 1
+            quote_relative_paths = []
+            for relative_path in result.keys():
+                quote_relative_paths.append(pipes.quote(relative_path))
+            print result
+            print quote_relative_paths
+            if len(path.split('/')) < 50:
+                pre_path = path
+                if path == '.':
+                    pre_path = ''
+                last_commit_command = 'for i in %s; do echo -n "$i|"; git log %s -1 --pretty="%%ct %%an %%s" -- "%s$i" | /usr/bin/head -c 524288; done' % (' '.join(quote_relative_paths), commit_hash, pre_path)
+                print last_commit_command
+                last_commit_output = check_output(last_commit_command, shell=True)
+                for last_commit in last_commit_output.split('\n'):
+                    splits = last_commit.split('|', 1)
+                    if len(splits) < 2:
+                        continue
+                    relative_path = splits[0]
+                    meta_splits = splits[1].split(' ', 2)
+                    if len(meta_splits) < 3:
+                        continue
+                    (unixtime, author_name, last_commit_message) = meta_splits
+                    result[relative_path].append(unixtime)
+                    result[relative_path].append(author_name)
+                    result[relative_path].append(last_commit_message)
+            return result
+        except Exception, e:
+            traceback.print_exc(file=sys.stdout)
+            print e
+            return None
+
     def _get_diff_stage_file(self, repo_path, pre_commit_hash, commit_hash, path):
         (username, reponame) = repo_path.split('/')[-2:]
         stage_file = '%s/%s/%s/%s' % (self.stage_path, username, reponame, hashlib.md5('%s|%s|%s' % (pre_commit_hash, commit_hash, path)).hexdigest())
@@ -213,7 +267,6 @@ class GitHandler():
         stage_file = '%s/%s/%s/%s' % (self.stage_path, username, reponame, hashlib.md5('%s|%s' % (commit_hash, path)).hexdigest())
         return stage_file
         
-    # TODO load or not ?
     def _read_load_stage_file(self, stage_file):
         if os.path.exists(stage_file):
             try:
@@ -225,43 +278,6 @@ class GitHandler():
                 return None
             finally:
                 json_data.close()
-
-    def _ls_tree_check_output(self, commit_hash, path):
-        command = '/usr/bin/git ls-tree %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
-        result = {}
-        try:
-            raw_result = check_output(command, shell=True)
-            max = 100
-            for line in raw_result.split("\n"):
-                array = self.blank_p.split(line) 
-                if len(array) >= 4:
-                    relative_path = array[3]
-                    if path != '.':
-                        relative_path = relative_path[len(path):]
-                    if array[1] == 'tree':
-                        relative_path = relative_path + '/'
-                    if self._is_allowed_path(relative_path):
-                        result[relative_path] = array[1:3]
-                if(max <= 0):
-                    break
-                max = max - 1
-            if len(path.split('/')) < 30:
-                pre_path = path
-                if path == '.':
-                    pre_path = ''
-                last_commit_command = 'for i in %s; do echo -n "$i "; git log %s -1 --pretty="%%ct %%an %%s" -- %s$i | /usr/bin/head -c 524288; done' % (' '.join(result.keys()), commit_hash, pre_path)
-                last_commit_output = check_output(last_commit_command, shell=True)
-                for last_commit in last_commit_output.split('\n'):
-                    last_commit_array = last_commit.split(' ', 3)
-                    if len(last_commit_array) > 3:
-                        (relative_path, unixtime, author_name, last_commit_message) = last_commit_array
-                        result[relative_path].append(unixtime)
-                        result[relative_path].append(author_name)
-                        result[relative_path].append(last_commit_message)
-            return result
-        except Exception, e:
-            print e
-            return None
 
     def _dumps_write_stage_file(self, result, stage_file):
         if result is None:
@@ -283,12 +299,26 @@ class GitHandler():
                 os.remove(stage_file_tmp)
             stage_file_w.close()
 
+    def _get_quote_path(self, path):
+        path = ''.join(c for c in path if ord(c) >= 32 and ord(c) != 127)
+        path = pipes.quote(path)
+        if isinstance(path, unicode):
+            path = path.encode('utf8')
+        return path
+        
+    def _repo_file_path_check(self, path):
+        if re.match('.*[\@\#\$\&\\\*\"\'\<\>\|\;].*', path) or path.startswith('-') or  len(path) > 512 or len(path.split('/')) > 100:
+            return False
+        return True
+
     def _path_check_chdir(self, repo_path, commit_hash, path):
-        if not os.path.exists(repo_path) or not self._is_allowed_path(repo_path) or not self._is_allowed_path(path) or not re.match('^\w+$', commit_hash):
+        if repo_path is None or commit_hash is None or path is None:
             return False
-        if len(path.split('/')) > 50 or self._chdir(repo_path) is False:
+        if not os.path.exists(repo_path) or not self._is_allowed_path(repo_path) or not re.match('^\w+$', commit_hash):
             return False
-        if len(repo_path) > 256 or len(commit_hash) > 256 or len(path) > 256:
+        if not self._repo_file_path_check(path):
+            return False
+        if len(repo_path) > 512 or self._chdir(repo_path) is False or len(commit_hash) > 512:
             return False
         return True
     
@@ -413,6 +443,26 @@ class GitHandler():
         except Exception, e:
             print e
             return False
+
+    def _oct_utf8_decode(self, oct_utf8_encode):
+        if not oct_utf8_encode.startswith('\"') or not oct_utf8_encode.endswith('\"'):
+            return oct_utf8_encode
+        oct_utf8_encode = oct_utf8_encode[1:len(oct_utf8_encode)-1]
+        oct_utf8_encode_len = len(oct_utf8_encode)
+        raw_chars = []
+        i = 0
+        while i < oct_utf8_encode_len:
+            if oct_utf8_encode[i] == '\\' and i < oct_utf8_encode_len - 3 and oct_utf8_encode[i+1].isdigit() and oct_utf8_encode[i+2].isdigit() and oct_utf8_encode[i+3].isdigit():
+                raw_chars.append(chr(int(oct_utf8_encode[i+1:i+4], 8)))
+                i = i + 4
+                continue
+            if oct_utf8_encode[i] == '\\' and i < oct_utf8_encode_len - 1:
+                raw_chars.append(oct_utf8_encode[i+1])
+                i = i + 2
+                continue
+            raw_chars.append(oct_utf8_encode[i])
+            i = i + 1
+        return ''.join(raw_chars)
 
 if __name__ == '__main__':
     gitHandler = GitHandler()
