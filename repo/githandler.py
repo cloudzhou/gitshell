@@ -25,6 +25,7 @@ class GitHandler():
         self.blank_p = re.compile(r'\s+')
 
     def repo_ls_tree(self, repo_path, commit_hash, path):
+        (commit_hash, path) = self._all_to_utf8(commit_hash, path)
         if not self._path_check_chdir(repo_path, commit_hash, path):
             return None
         path = self._get_quote_path(path)
@@ -37,6 +38,7 @@ class GitHandler():
         return result
     
     def repo_cat_file(self, repo_path, commit_hash, path):
+        (commit_hash, path) = self._all_to_utf8(commit_hash, path)
         if not self._path_check_chdir(repo_path, commit_hash, path):
             return None
         path = self._get_quote_path(path)
@@ -66,6 +68,7 @@ class GitHandler():
             return None
     
     def repo_log_file(self, repo_path, from_commit_hash, commit_hash, path):
+        (from_commit_hash, commit_hash, path) = self._all_to_utf8(from_commit_hash, commit_hash, path)
         if not self._path_check_chdir(repo_path, commit_hash, path) or not re.match('^\w+$', from_commit_hash):
             return None
         path = self._get_quote_path(path)
@@ -80,6 +83,7 @@ class GitHandler():
         return result
 
     def repo_diff(self, repo_path, pre_commit_hash, commit_hash, path):
+        (pre_commit_hash, commit_hash, path) = self._all_to_utf8(pre_commit_hash, commit_hash, path)
         if not self._path_check_chdir(repo_path, commit_hash, path) or not re.match('^\w+$', pre_commit_hash):
             return None
         path = self._get_quote_path(path)
@@ -256,12 +260,14 @@ class GitHandler():
 
     def _get_diff_stage_file(self, repo_path, pre_commit_hash, commit_hash, path):
         (username, reponame) = repo_path.split('/')[-2:]
-        stage_file = '%s/%s/%s/%s' % (self.stage_path, username, reponame, hashlib.md5('%s|%s|%s' % (pre_commit_hash, commit_hash, path)).hexdigest())
+        identity = '%s|%s|%s' % (pre_commit_hash, commit_hash, path)
+        stage_file = '%s/%s/%s/%s' % (self.stage_path, username, reponame, hashlib.md5(identity).hexdigest())
         return stage_file
 
     def _get_stage_file(self, repo_path, commit_hash, path):
         (username, reponame) = repo_path.split('/')[-2:]
-        stage_file = '%s/%s/%s/%s' % (self.stage_path, username, reponame, hashlib.md5('%s|%s' % (commit_hash, path)).hexdigest())
+        identity = '%s|%s' % (commit_hash, path)
+        stage_file = '%s/%s/%s/%s' % (self.stage_path, username, reponame, hashlib.md5(identity).hexdigest())
         return stage_file
         
     def _read_load_stage_file(self, stage_file):
@@ -440,6 +446,9 @@ class GitHandler():
         except Exception, e:
             print e
             return False
+
+    def _all_to_utf8(self, *args):
+        return tuple([x.encode('utf8') if x is not None and isinstance(x, unicode) else x for x in args])
 
     def _oct_utf8_decode(self, oct_utf8_encode):
         if not oct_utf8_encode.startswith('\"') or not oct_utf8_encode.endswith('\"'):
