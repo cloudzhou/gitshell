@@ -390,7 +390,7 @@ def join(request, step):
                 if not client_ip.startswith('192.168.') and client_ip != '127.0.0.1':
                     cache_join_client_ip_count = cache_join_client_ip_count + 1
                     cache.set(CacheKey.JOIN_CLIENT_IP % client_ip, cache_join_client_ip_count)
-                    if cache_join_client_ip_count < 2 and _create_user_and_authenticate(request, username, email, password):
+                    if cache_join_client_ip_count < 6 and _create_user_and_authenticate(request, username, email, password):
                         return HttpResponseRedirect('/join/3/')
                 cache.set(random_hash + '_email', email)
                 cache.set(random_hash + '_username', username)
