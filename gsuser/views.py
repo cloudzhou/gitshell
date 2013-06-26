@@ -14,6 +14,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate as auth_authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
+:from gitshell.objectscache.models import CacheKey
 from gitshell.gsuser.Forms import LoginForm, JoinForm, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
 from gitshell.gsuser.models import Recommend, Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
 from gitshell.gsuser.middleware import MAIN_NAVS
@@ -382,6 +383,15 @@ def join(request, step):
             user_by_email = GsuserManager.get_user_by_email(email)
             user_by_username = GsuserManager.get_user_by_name(username)
             if user_by_email is None and user_by_username is None:
+                client_ip = _get_client_ip(request)
+                cache_join_client_ip_count = cache.get(CacheKey.JOIN_CLIENT_IP % client_ip)
+                if cache_join_client_ip_count is None:
+                    cache_join_client_ip_count = 0
+                if not client_ip.startswith('192.168.') and client_ip != '127.0.0.1':
+                    cache_join_client_ip_count = cache_join_client_ip_count + 1
+                    cache.set(CacheKey.JOIN_CLIENT_IP % client_ip, cache_join_client_ip_count)
+                    if cache_join_client_ip_count < 2 and _create_user_and_authenticate(request, email, username, password)
+                        return HttpResponseRedirect('/join/3/')
                 cache.set(random_hash + '_email', email)
                 cache.set(random_hash + '_username', username)
                 cache.set(random_hash + '_password', password)
@@ -402,25 +412,8 @@ def join(request, step):
         password = cache.get(step + '_password')
         if email is None or username is None or password is None or not email_re.match(email) or not re.match("^\w+$", username) or username in MAIN_NAVS:
             return HttpResponseRedirect('/join/4/')
-        user = None
-        try:
-            user = User.objects.create_user(username, email, password)
-        except IntegrityError:
-            print 'user IntegrityError'
-        if user is not None and user.is_active:
-            user = auth_authenticate(username=user.username, password=password)
-            if user is not None and user.is_active:
-                auth_login(request, user)
-                cache.delete(step + '_email')
-                cache.delete(step + '_username')
-                cache.delete(step + '_password')
-                userprofile = Userprofile()
-                userprofile.id = user.id
-                userprofile.username = user.username
-                userprofile.email = user.email
-                userprofile.imgurl = hashlib.md5(user.email.lower()).hexdigest()
-                userprofile.save()
-                return HttpResponseRedirect('/join/3/')
+        if _create_user_and_authenticate(request, email, username, password):
+            return HttpResponseRedirect('/join/3/')
         else:
             error = u'请检查用户名，密码是否正确，注意大小写和前后空格。'
     response_dictionary = {'step': step, 'error': error, 'joinForm': joinForm}
@@ -493,5 +486,33 @@ def __conver_to_recommends_vo(raw_recommends):
     users_map = GsuserManager.map_users(user_ids)
     recommends_vo = [x.to_recommend_vo(users_map) for x in raw_recommends]
     return recommends_vo
+
+def _create_user_and_authenticate(request, username, email, password):
+    user = None
+    try:
+        user = User.objects.create_user(username, email, password)
+    except IntegrityError:
+        print 'user IntegrityError'
+        return False
+    if user is not None and user.is_active:
+        user = auth_authenticate(username=user.username, password=password)
+        if user is not None and user.is_active:
+            auth_login(request, user)
+            userprofile = Userprofile()
+            userprofile.id = user.id
+            userprofile.username = user.username
+            userprofile.email = user.email
+            userprofile.imgurl = hashlib.md5(user.email.lower()).hexdigest()
+            userprofile.save()
+            return True
+    return False
+
+def _get_client_ip(request):
+    x_forwarded_for = request.META.get('X-Forwarded-For')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 # TODO note: add email unique support ! UNIQUE KEY `email` (`email`) #
