@@ -25,9 +25,11 @@ while [ $index -lt $# ]; do
     if [ -z "$oldrev" ] || [ -z "$newrev" ] || [ -z "$refname" ]; then
         continue
     fi
-    /usr/bin/git diff-tree --raw -r -c -M -C --no-commit-id "$oldrev" "$newrev" |\
-    head -n 100 |\
-    awk '{print $4}' > $tempfile
+    if [ "$oldrev" != '0000000000000000000000000000000000000000' ]; then
+        /usr/bin/git diff-tree --raw -r -c -M -C --no-commit-id "$oldrev" "$newrev" | head -n 100 | awk '{print $4}' > $tempfile
+    else
+        /usr/bin/git diff-tree --raw -r -c -M -C --no-commit-id "$newrev" | head -n 100 | awk '{print $4}' > $tempfile
+    fi
     total_line=`wc -l $tempfile | awk '{print $1}'`
     if [ $total_line -ge 100 ]; then
         du_size=`du -sb .`
