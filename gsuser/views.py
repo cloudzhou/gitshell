@@ -14,7 +14,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate as auth_authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
-:from gitshell.objectscache.models import CacheKey
+from gitshell.objectscache.models import CacheKey
 from gitshell.gsuser.Forms import LoginForm, JoinForm, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
 from gitshell.gsuser.models import Recommend, Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
 from gitshell.gsuser.middleware import MAIN_NAVS
@@ -390,7 +390,7 @@ def join(request, step):
                 if not client_ip.startswith('192.168.') and client_ip != '127.0.0.1':
                     cache_join_client_ip_count = cache_join_client_ip_count + 1
                     cache.set(CacheKey.JOIN_CLIENT_IP % client_ip, cache_join_client_ip_count)
-                    if cache_join_client_ip_count < 2 and _create_user_and_authenticate(request, email, username, password)
+                    if cache_join_client_ip_count < 2 and _create_user_and_authenticate(request, username, email, password):
                         return HttpResponseRedirect('/join/3/')
                 cache.set(random_hash + '_email', email)
                 cache.set(random_hash + '_username', username)
@@ -412,7 +412,7 @@ def join(request, step):
         password = cache.get(step + '_password')
         if email is None or username is None or password is None or not email_re.match(email) or not re.match("^\w+$", username) or username in MAIN_NAVS:
             return HttpResponseRedirect('/join/4/')
-        if _create_user_and_authenticate(request, email, username, password):
+        if _create_user_and_authenticate(request, username, email, password):
             return HttpResponseRedirect('/join/3/')
         else:
             error = u'请检查用户名，密码是否正确，注意大小写和前后空格。'
