@@ -15,6 +15,7 @@ table_ptkey_field = {
     'keyvalue_keyvalue': 'user_id',
     'repo_repo': 'user_id',
     'repo_repomember': 'repo_id',
+    'repo_star': 'user_id',
     'repo_commithistory': 'repo_id',
     'repo_forkhistory': 'repo_id',
     'repo_watchhistory': 'user_id',
@@ -91,6 +92,15 @@ rawsql = {
         'select * from repo_watchhistory where visibly = 0 and user_id = %s and watch_user_id = %s limit 0, 1',
     'watchhistory_s_repo':
         'select * from repo_watchhistory where visibly = 0 and user_id = %s and watch_repo_id = %s limit 0, 1',
+    # repo_star #
+    'star_l_userId':
+        'select * from repo_star where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
+    'star_l_repoId':
+        'select * from repo_star where visibly = 0 and star_repo_id = %s order by modify_time desc limit %s, %s',
+    'star_s_user':
+        'select * from repo_star where visibly = 0 and user_id = %s and star_user_id = %s limit 0, 1',
+    'star_s_repo':
+        'select * from repo_star where visibly = 0 and user_id = %s and star_repo_id = %s limit 0, 1',
     # issue_issue #
     'issue_l_cons_modify':
         'select * from issue_issue where visibly = 0 and repo_id = %s order by modify_time desc limit %s, %s',

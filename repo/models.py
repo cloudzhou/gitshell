@@ -106,6 +106,11 @@ class CommitHistory(BaseModel):
         repo = RepoManager.get_repo_by_id(self.repo_id)
         return repo.username
 
+class Star(BaseModel):
+    user_id = models.IntegerField(default=0)
+    star_repo_id = models.IntegerField(default=0)
+    star_user_id = models.IntegerField(default=0)
+
 class WatchHistory(BaseModel):
     user_id = models.IntegerField(default=0)
     watch_repo_id = models.IntegerField(default=0)
@@ -331,6 +336,63 @@ class RepoManager():
             if repo_id in repo_map:
                 order_repos.append(repo_map[repo_id])
         return order_repos
+
+    @classmethod
+    def list_star_repo(self, user_id, offset, row_count):
+        stars = query(Star, user_id, 'star_l_userId', [user_id, offset, row_count])
+        repos = []
+        for x in stars:
+            repo = RepoManager.get_repo_by_id(x.star_repo_id)
+            if repo is None or repo.visibly == 1:
+                x.visibly = 1
+                x.save()
+                continue
+            repos.append(repo)
+        return repos
+
+    @classmethod
+    def list_star_user(self, repo_id, offset, row_count):
+        stars = query(Star, None, 'star_l_repoId', [repo_id, offset, row_count])
+        userprofiles = []
+        for x in stars:
+            userprofile = GsuserManager.get_userprofile_by_id(x.star_user_id)
+            if userprofile is None or userprofile.visibly == 1:
+                x.visibly = 1
+                x.save()
+                continue
+            userprofiles.append(userprofile)
+        return userprofiles
+
+    @classmethod
+    def star_repo(self, user_id, repo_id):
+        repo = RepoManager.get_repo_by_id(repo_id)
+        if repo is None:
+            return False
+        star = query_first(Star, user_id, 'star_s_repo', [user_id, repo_id])
+        if star is None:
+            star = Star()
+            star.user_id = user_id
+            star.watch_user_id = 0
+            star.watch_repo_id = repo_id
+            star.save()
+            repo.star = repo.star + 1
+            repo.save()
+        return True
+
+    @classmethod
+    def unstar_repo(self, user_id, repo_id):
+        repo = RepoManager.get_repo_by_id(repo_id)
+        if repo is None:
+            return False
+        star = query_first(Star, user_id, 'star_s_repo', [user_id, repo_id])
+        if star is not None:
+            star.visibly = 1
+            star.save()
+            repo.star = repo.star - 1
+            if repo.star < 0:
+                repo.star = 0
+            repo.save()
+        return True
 
     @classmethod
     def list_watch_user(self, repo_id):
