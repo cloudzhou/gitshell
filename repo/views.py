@@ -169,8 +169,7 @@ def commits(request, user_name, repo_name, refs, path):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def eulls(request, user_name, repo_name):
-    url(r'^(\w+)/([a-zA-Z0-9_\-]+)/compare/([a-zA-Z0-9_\.\-]+)\.\.\.([a-zA-Z0-9_\.\-]+)/?$', 'repo.views.compare'),
+def pulls(request, user_name, repo_name):
     refs = 'master'; path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
