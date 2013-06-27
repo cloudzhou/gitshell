@@ -121,17 +121,8 @@ $(function(){
         var comment = $('#id_comment_'+id).val();
         var repo_id = $('#id_repo_id_'+id).val();
         var action = $('#id_action').val();
-        $.ajax({
-            url: '/ajax/home/doissues/',
-            type: 'POST',
-            data: {'issues_id': id, 'repo_id': repo_id, 'comment': comment, 'action': action, csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-            },
-            success: function(json){
-                window.location = window.location
-            },
+        $.post('/ajax/home/do_issue/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'issue_id': id, 'repo_id': repo_id, 'comment': comment, 'action': action}, function(json){
+            window.location = window.location
         });
     });
 });

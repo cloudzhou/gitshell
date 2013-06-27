@@ -13,7 +13,7 @@ pre { border: 0px; background-color: transparent; }
     <div class="span8">
         <div class="c_issue page-header" style="margin-top: 0px; margin-bottom: 10px;padding-bottom: 8px">
             <h3 id="i_issue_subject">
-            <a id="i_issue_edit" style="font-weight: normal; font-size: 12px; display: none" class="muted pull-right" href="/{{user_name}}/{{repo_name}}/issues/create/{{issue.id}}/">修改</a>
+            <a id="i_issue_edit" style="font-weight: normal; font-size: 12px; display: none" class="muted pull-right" href="/{{user_name}}/{{repo_name}}/issues/edit/{{issue.id}}/">修改</a>
             <a href="" style="margin-right: 0px" rel="tooltip" data-original-title="可拖动到上面"><img class="c_drag_setting" value="{{issue.id}}" src="/static/img/glyphicons_019_cogwheel.png"/></a>
             <a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/">#{{issue.id}} {{issue.subject}}</a>
             </h3>
@@ -61,7 +61,7 @@ pre { border: 0px; background-color: transparent; }
         <form id="i_comment" class="form-inline" action="" method="post">
             {% csrf_token %}
             <div id="i_comment_content" style="margin-bottom: 10px; display: none">
-                {{repoIssuesCommentForm.content}}
+                {{issueCommentForm.content}}
             </div>
             <button id="i_submit" style="margin-right: 0px;" class="btn btn-primary" type="submit">发表评论</button>
             <small class="muted">不可修改，严谨发言</small>
@@ -74,7 +74,7 @@ pre { border: 0px; background-color: transparent; }
 <!--script src="http://lib.sinaapp.com/js/jquery-ui/1.8.11/jquery-ui.min.js"></script-->
 <script>
 $(function(){
-    {% if has_issues_modify_right %}
+    {% if has_issue_modify_right %}
     $('#i_issue_subject').live('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             $('#i_issue_edit').show();

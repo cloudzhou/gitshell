@@ -2,13 +2,11 @@
 import os, time, re
 from django.db import models
 from django.core.cache import cache
-from gitshell.objectscache.models import BaseModel
-from gitshell.objectscache.da import query, query_first, queryraw, execute, count, get, get_many, get_version, get_sqlkey
-from gitshell.objectscache.da import get_raw, get_raw_many
+from gitshell.objectscache.models import BaseModel, CacheKey
+from gitshell.objectscache.da import query, query_first, queryraw, execute, count, get, get_many, get_version, get_sqlkey, get_raw, get_raw_many
 from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
-from gitshell.objectscache.models import CacheKey
 from gitshell.gsuser.middleware import KEEP_REPO_NAME
 
 class Repo(BaseModel):
@@ -174,32 +172,6 @@ class PullRequest(BaseModel):
         self.status_view = PULL_STATUS.VIEW_MAP[self.status]
         self.status_label = PULL_STATUS.LABEL_MAP[self.status]
 
-class Issues(BaseModel):
-    repo_id = models.IntegerField()
-    user_id = models.IntegerField()
-    subject = models.CharField(max_length=128, default='')
-    tracker = models.IntegerField(default=0)
-    status = models.IntegerField(default=0) 
-    assigned = models.IntegerField(default=0)
-    priority = models.IntegerField(default=0)
-    category = models.CharField(max_length=16, default='')
-    content = models.CharField(max_length=1024, default='')
-    comment_count = models.IntegerField(default=0)
-
-    # field without database
-    username = ''
-    reponame = ''
-
-class IssuesComment(BaseModel):
-    issues_id = models.IntegerField()
-    user_id = models.IntegerField()
-    vote = models.IntegerField(default=0)
-    content = models.CharField(max_length=512, default='') 
-
-    # field without database
-    username = ''
-    reponame = ''
-
 class RepoManager():
 
     @classmethod
@@ -345,63 +317,6 @@ class RepoManager():
             if member is not None:
                 return True
         return False
-
-    @classmethod
-    def list_issues_cons(self, repo_id, assigned_ids, trackers, statuses, priorities, orderby, offset, row_count):
-        # diff between multi filter and single filter
-        rawsql_id = 'issues.list_issues_cons'
-        parameters = [
-            ','.join(str(x) for x in assigned_ids),
-            ','.join(str(x) for x in trackers),
-            ','.join(str(x) for x in statuses),
-            ','.join(str(x) for x in priorities),
-            orderby, offset, row_count]
-        version = get_version(Issues, repo_id)
-        sqlkey = get_sqlkey(version, rawsql_id, parameters)
-        value = cache.get(sqlkey)
-        if value is not None:
-            return get_many(Issues, value)
-        issues = Issues.objects.filter(visibly=0).filter(repo_id=repo_id).filter(assigned__in=assigned_ids).filter(tracker__in=trackers).filter(status__in=statuses).filter(priority__in=priorities).order_by('-'+orderby)[offset : offset+row_count]
-        issues_ids = [x.id for x in issues]
-        cache.add(sqlkey, issues_ids)
-        return list(issues)
-
-    @classmethod
-    def list_issues(self, repo_id, orderby, offset, row_count):
-        rawsql_id = 'repoissues_l_cons_modify'
-        if orderby == 'create_time':
-            rawsql_id = 'repoissues_l_cons_create'
-        repoissues = query(Issues, repo_id, rawsql_id, [repo_id, offset, row_count]) 
-        return repoissues
-
-    @classmethod
-    def list_assigned_issues(self, assigned, orderby, offset, row_count):
-        rawsql_id = 'repoissues_l_assigned_modify'
-        if orderby == 'create_time':
-            rawsql_id = 'repoissues_l_assigned_create'
-        repoissues = query(Issues, None, rawsql_id, [assigned, offset, row_count]) 
-        return repoissues
-
-    @classmethod
-    def get_issues_by_id(self, issues_id):
-        return get(Issues, issues_id)
-
-    @classmethod
-    def get_issues(self, repo_id, issues_id):
-        issues = query(Issues, repo_id, 'repoissues_s_id', [repo_id, issues_id])
-        if len(issues) > 0:
-            return issues[0]
-        return None
-
-    @classmethod
-    def get_issues_comment(self, comment_id):
-        issues_comment = get(IssuesComment, comment_id)
-        return issues_comment
-
-    @classmethod
-    def list_issues_comment(self, issues_id, offset, row_count):
-        issuesComments = query(IssuesComment, issues_id, 'issuescomment_l_issuesId', [issues_id, offset, row_count]) 
-        return issuesComments
 
     @classmethod
     def list_fork_repo(self, repo_id):
@@ -690,3 +605,5 @@ class PULL_STATUS:
         3 : 'label-important',
         4 : 'label-inverse',
     }
+
+

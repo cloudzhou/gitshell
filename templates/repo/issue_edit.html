@@ -5,17 +5,17 @@
 #id_merge_content { height: 200px; width: 600px; }
 </style>
     <h3 style="border-bottom:1px solid #EEEEEE; margin-bottom:15px;">
-        {% if has_issues_modify %}修改{% else %}创建{% endif %}issue<small>&nbsp;{% if has_issues_modify %}修改{% else %}创建{% endif %}issue是一件认真的事情，提交前请检查</small>
+        修改issue<small>&nbsp;修改issue是一件认真的事情，提交前请检查</small>
     </h3>
     <div>
         <form class="form-inline" action="" method="post">
             {% csrf_token %}
             <div style="margin-bottom: 10px">
-                分配给 {{ repoIssuesForm.assigned }}
-                {{ repoIssuesForm.tracker }}
-                {{ repoIssuesForm.status }}
-                {{ repoIssuesForm.priority }}
-                类别 {{ repoIssuesForm.category }}
+                分配给 {{ issueForm.assigned }}
+                {{ issueForm.tracker }}
+                {{ issueForm.status }}
+                {{ issueForm.priority }}
+                类别 {{ issueForm.category }}
             </div>
             <div style="margin-bottom: 10px;">
                 <textarea maxlength="1024" name="merge_content" cols="40" rows="10" id="id_merge_content" placeholder="第一行自动作为标题，简单明了描述问题，标题之后作为内容"></textarea>
@@ -27,11 +27,9 @@
             </div>
             {% endif %}
             <button id="i_submit" style="margin-right: 0px;" class="btn btn-primary" type="submit">确定</button>
-            {% if has_issues_modify %}
             <button id="i_delete" style="margin-left: 20px;" class="btn btn-primary btn-danger">删除</button>
-            {% endif %}
-            <div class="hidden">{{ repoIssuesForm.content }}</div>
-            <div class="hidden">{{ repoIssuesForm.subject }}</div>
+            <div class="hidden">{{ issueForm.content }}</div>
+            <div class="hidden">{{ issueForm.subject }}</div>
         </form>
     </div>
 {% endblock %}
@@ -52,17 +50,8 @@ $(function(){
             $(this).text('确定删除');
         }
         if(text == '确定删除') {
-            $.ajax({
-                url: '/{{user_name}}/{{repo_name}}/issues/delete/{{issues_id}}/',
-                type: 'POST',
-                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-                dataType: 'json',
-                timeout: 10000,
-                error: function(){
-                },
-                success: function(json){
-                    window.location = '/{{user_name}}/{{repo_name}}/issues/'
-                },
+            $.post('/{{user_name}}/{{repo_name}}/issues/delete/{{issue_id}}/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+                window.location = '/{{user_name}}/{{repo_name}}/issues/'
             });
         }
         return false;

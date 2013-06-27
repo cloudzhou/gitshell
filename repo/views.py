@@ -12,12 +12,12 @@ from django.shortcuts import render_to_response
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from django.utils.html import escape
+from django.forms.models import model_to_dict
 from gitshell.feed.feed import FeedAction
 from gitshell.feed.models import FeedManager
-from gitshell.repo.Forms import RepoForm, RepoIssuesForm, IssuesComment, RepoIssuesCommentForm, RepoMemberForm
+from gitshell.repo.Forms import RepoForm, RepoMemberForm
 from gitshell.repo.githandler import GitHandler
-from gitshell.repo.models import Repo, RepoManager, Issues, PullRequest, PULL_STATUS
-from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, TRACKERS_VAL, STATUSES_VAL, PRIORITIES_VAL, ISSUES_ATTRS, conver_issues, conver_issue_comments, conver_repos
+from gitshell.repo.models import Repo, RepoManager, PullRequest, PULL_STATUS
 from gitshell.gsuser.models import GsuserManager
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.stats import timeutils
@@ -169,7 +169,8 @@ def commits(request, user_name, repo_name, refs, path):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def pulls(request, user_name, repo_name):
+def eulls(request, user_name, repo_name):
+    url(r'^(\w+)/([a-zA-Z0-9_\-]+)/compare/([a-zA-Z0-9_\.\-]+)\.\.\.([a-zA-Z0-9_\.\-]+)/?$', 'repo.views.compare'),
     refs = 'master'; path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -224,7 +225,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         (desc_username, desc_reponame) = desc_repo.split('/', 1)
         source_pull_repo = RepoManager.get_repo_by_name(source_username, source_reponame)
         desc_pull_repo = RepoManager.get_repo_by_name(desc_username, desc_reponame)
-        if not __has_pull_right(request, source_pull_repo, desc_pull_repo):
+        if not _has_pull_right(request, source_pull_repo, desc_pull_repo):
             return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         pullRequest = PullRequest.create(request.user.id, desc_pull_repo.user_id, source_pull_repo.user_id, source_pull_repo.id, source_refs, desc_pull_repo.user_id, desc_pull_repo.id, desc_refs, title, desc, 0, PULL_STATUS.NEW)
         pullRequest.save()
@@ -233,7 +234,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         FeedManager.feed_pull_change(pullRequest, pullRequest.status)
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
 
-    pull_repo_list = __list_pull_repo(request, repo)
+    pull_repo_list = _list_pull_repo(request, repo)
     response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_new.html',
@@ -383,246 +384,6 @@ def diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path):
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
         diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
     return json_httpResponse({'diff': diff})
-
-@repo_permission_check
-def issues(request, user_name, repo_name):
-    return issues_list(request, user_name, repo_name, '0', '0', '0', '0', 'modify_time', 0)
- 
-@repo_permission_check
-def issues_list(request, user_name, repo_name, assigned, tracker, status, priority, orderby, page):
-    refs = 'master'; path = '.'; current = 'issues'
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    user_id = request.user.id
-    member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
-    member_ids.insert(0, repo.user_id)
-    if user_id != repo.user_id and user_id in member_ids:
-        member_ids.remove(user_id)
-        member_ids.insert(0, user_id)
-    members = GsuserManager.list_user_by_ids(member_ids)
-    assigneds = [o.username for o in members]
-    assigneds.insert(0, '0')
-    if assigned is None:
-        assigned = assigneds[0]
-    assigned_id = 0
-    assigned_user = GsuserManager.get_user_by_name(assigned)
-    if assigned_user is not None and assigned in assigneds:
-        assigned_id = assigned_user.id
-    tracker = int(tracker); status = int(status); priority = int(priority); page = int(page)
-    current_attrs = { 'assigned': str(assigned), 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': str(orderby), 'page': page }
-    raw_issues = []
-    page_size = 50
-    offset = page*page_size
-    row_count = page_size + 1
-    if assigned_id == 0 and tracker == 0 and status == 0 and priority == 0:
-        raw_issues = RepoManager.list_issues(repo.id, orderby, offset, row_count)
-    else:
-        assigned_ids = member_ids if assigned_id == 0 else [assigned_id]
-        trackeres = TRACKERS_VAL if tracker == 0 else [tracker]
-        statuses = STATUSES_VAL if status == 0 else [status]
-        priorities = PRIORITIES_VAL if priority == 0 else [priority] 
-        raw_issues = RepoManager.list_issues_cons(repo.id, assigned_ids, trackeres, statuses, priorities, orderby, offset, row_count)
-    reporter_ids = [o.user_id for o in raw_issues]
-    reporters = GsuserManager.list_user_by_ids(list(set(reporter_ids)-set(member_ids)))
-    username_map = {}
-    for member in members:
-        username_map[member.id] = member.username
-    for reporter in reporters:
-        username_map[reporter.id] = reporter.username
-    issues = conver_issues(raw_issues, username_map, {repo.id: repo.name})
-
-    hasPre = False ; hasNext = False
-    if page > 0:
-        hasPre = True 
-    if len(issues) > page_size:
-        hasNext = True
-        issues.pop()
-    
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page, 'current_attrs': current_attrs, 'issues': issues, 'hasPre': hasPre, 'hasNext': hasNext}
-    response_dictionary.update(ISSUES_ATTRS)
-    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/issues.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-@repo_permission_check
-def issues_default_show(request, user_name, repo_name, issues_id):
-    return issues_show(request, user_name, repo_name, issues_id, None)
-
-@repo_permission_check
-def issues_show(request, user_name, repo_name, issues_id, page):
-    refs = 'master'; path = '.'; current = 'issues'
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    raw_issue = RepoManager.get_issues(repo.id, issues_id)
-    if raw_issue is None:
-        raise Http404
-    repoIssuesCommentForm = RepoIssuesCommentForm()
-    if request.method == 'POST' and request.user.is_authenticated():
-        issuesComment = IssuesComment() 
-        issuesComment.issues_id = issues_id
-        issuesComment.user_id = request.user.id
-        repoIssuesCommentForm = RepoIssuesCommentForm(request.POST, instance = issuesComment)
-        if repoIssuesCommentForm.is_valid():
-            cid = repoIssuesCommentForm.save().id
-            FeedManager.notif_issue_comment_at(request.user.id, cid, repoIssuesCommentForm.cleaned_data['content'])
-            raw_issue.comment_count = raw_issue.comment_count + 1
-            raw_issue.save()
-            return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, issues_id))
-    issues_id = int(issues_id)
-    username_map = {}
-    users = GsuserManager.list_user_by_ids([raw_issue.user_id, raw_issue.assigned])
-    for user in users:
-        username_map[user.id] = user.username
-    issue = conver_issues([raw_issue], username_map, {repo.id: repo.name})[0]
-    
-    page_size = 50
-    total_count = issue['comment_count']
-    total_page = issue['comment_count'] / page_size
-    if issue['comment_count'] != 0 and issue['comment_count'] % page_size == 0:
-        total_page = total_page - 1
-    if page is None or int(page) > total_page:
-        page = total_page
-    else:
-        page = int(page)
-    user_img_map = {}
-    issue_comments = []
-    if total_count > 0:
-        offset = page*page_size
-        row_count = page_size
-        raw_issue_comments = RepoManager.list_issues_comment(issues_id, offset, row_count)
-        user_ids = [o.user_id for o in raw_issue_comments]
-        users = GsuserManager.list_user_by_ids(user_ids)
-        userprofiles = GsuserManager.list_userprofile_by_ids(user_ids)
-        for user in users:
-            username_map[user.id] = user.username
-        for userprofile in userprofiles:
-            user_img_map[userprofile.id] = userprofile.imgurl 
-        issue_comments = conver_issue_comments(raw_issue_comments, username_map, user_img_map)
-
-    member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
-    member_ids.insert(0, repo.user_id)
-    if raw_issue.user_id != repo.user_id and request.user.id in member_ids:
-        member_ids.remove(request.user.id)
-        member_ids.insert(0, request.user.id)
-    members = GsuserManager.list_user_by_ids(member_ids)
-    assigneds = [o.username for o in members]
-
-    has_issues_modify_right = __has_issues_modify_right(request, raw_issue, repo)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0, total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority, 'has_issues_modify_right': has_issues_modify_right}
-    response_dictionary.update(ISSUES_ATTRS)
-    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/issues_show.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-@login_required
-@repo_permission_check
-def issues_create(request, user_name, repo_name, issues_id):
-    refs = 'master'; path = '.'; current = 'issues'
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    has_issues_modify = False
-    repoIssuesForm = RepoIssuesForm()
-    issues = Issues()
-    orgi_issue = None
-    if issues_id != 0:
-        issues = RepoManager.get_issues(repo.id, issues_id)
-        orgi_issue = copy.copy(issues)
-        has_issues_modify = __has_issues_modify_right(request, issues, repo)
-        if not has_issues_modify: 
-            issues = Issues()
-            orgi_issue = None
-        repoIssuesForm = RepoIssuesForm(instance = issues)
-    repoIssuesForm.fill_assigned(repo)
-    error = u''
-    if request.method == 'POST':
-        issues.user_id = request.user.id
-        issues.repo_id = repo.id
-        repoIssuesForm = RepoIssuesForm(request.POST, instance = issues)
-        repoIssuesForm.fill_assigned(repo)
-        if repoIssuesForm.is_valid():
-            nid = repoIssuesForm.save().id
-            FeedManager.notif_issue_at(request.user.id, nid, repoIssuesForm.cleaned_data['subject'] + ' ' + repoIssuesForm.cleaned_data['content'])
-            FeedManager.feed_issue_change(request.user, repo, orgi_issue, nid)
-            return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
-        else:
-            error = u'issues 内容不能为空'
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error, 'issues_id': issues_id, 'has_issues_modify': has_issues_modify}
-    response_dictionary.update(ISSUES_ATTRS)
-    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/issues_create.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-@login_required
-@repo_permission_check
-@require_http_methods(["POST"])
-def issues_delete(request, user_name, repo_name, issue_id):
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    issues = RepoManager.get_issues(repo.id, issue_id)
-    if issues is not None:
-        if __has_issues_modify_right(request, issues, repo):
-            issues.visibly = 1
-            issues.save()
-    return json_httpResponse({'result': 'ok'})
-
-@login_required
-@repo_permission_check
-@require_http_methods(["POST"])
-def issues_update(request, user_name, repo_name, issue_id, attr):
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    issues = RepoManager.get_issues(repo.id, issue_id)
-    if issues is None:
-        raise Http404
-    has_issues_modify = __has_issues_modify_right(request, issues, repo)
-    if not has_issues_modify:
-        return json_failed()
-    orgi_issue = copy.copy(issues)
-    (key, value) = attr.split('___', 1)
-    if key == 'assigned':
-        user = GsuserManager.get_user_by_name(value)
-        if user is not None:
-            repoMember = RepoManager.get_repo_member(repo.id, user.id)
-            if repoMember is not None:
-                issues.assigned = repoMember.user_id
-                issues.save()
-                FeedManager.feed_issue_change(request.user, repo, orgi_issue, issues.id)
-        return json_ok()
-    value = int(value)
-    if key == 'tracker':
-        issues.tracker = value
-    elif key == 'status':
-        issues.status = value
-    elif key == 'priority':
-        issues.priority = value
-    issues.save()
-    FeedManager.feed_issue_change(request.user, repo, orgi_issue, issues.id)
-    return json_ok()
-
-@login_required
-@repo_permission_check
-@require_http_methods(["POST"])
-def issues_comment_delete(request, user_name, repo_name, comment_id):
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    issues_comment = RepoManager.get_issues_comment(comment_id)
-    if issues_comment is not None:
-        issues = RepoManager.get_issues(repo.id, issues_comment.issues_id)
-        if issues is not None and __has_issues_comments_modify_right(request, issues_comment, repo):
-            issues_comment.visibly = 1
-            issues_comment.save()
-            issues.comment_count = issues.comment_count - 1
-            issues.save()
-    return json_ok()
 
 @repo_permission_check
 def network(request, user_name, repo_name):
@@ -840,7 +601,7 @@ def change_to_vo(raw_fork_repos_tree):
     fork_repos_tree = []
     user_map = GsuserManager.map_users(user_ids)
     for raw_fork_repos in raw_fork_repos_tree:
-        fork_repos_tree.append(conver_repos(raw_fork_repos, user_map))
+        fork_repos_tree.append(_conver_repos(raw_fork_repos, user_map))
     return fork_repos_tree
 
 @repo_permission_check
@@ -1115,14 +876,14 @@ def list_github_repos(request):
     repos_json_str = github_list_repo(access_token)
     return HttpResponse(repos_json_str, mimetype='application/json')
 
-def __list_pull_repo(request, repo):
+def _list_pull_repo(request, repo):
     pull_repo_list = RepoManager.list_parent_repo(repo, 10)
     child_repo = RepoManager.get_childrepo_by_user_forkrepo(request.user, repo)
     if child_repo is not None:
         pull_repo_list = [child_repo] + pull_repo_list
     return pull_repo_list
 
-def __has_pull_right(request, source_pull_repo, desc_pull_repo):
+def _has_pull_right(request, source_pull_repo, desc_pull_repo):
     if source_pull_repo is None or desc_pull_repo is None:
         return False
     if source_pull_repo.auth_type != 0 and not RepoManager.is_repo_member(source_pull_repo, request.user):
@@ -1131,11 +892,18 @@ def __has_pull_right(request, source_pull_repo, desc_pull_repo):
         return False
     return True
 
-def __has_issues_modify_right(request, issues, repo):
-    return issues is not None and (request.user.id == issues.user_id or request.user.id == repo.user_id)
-
-def __has_issues_comments_modify_right(request, issues_comment, repo):
-    return issues is not None and (request.user.id == issues_comment.user_id or request.user.id == repo.user_id)
+def _conver_repos(raw_repos, map_users):
+    repos_vo = []
+    for raw_repo in raw_repos:
+        repo_dict = model_to_dict(raw_repo, fields=[field.name for field in Repo._meta.fields])
+        repo_dict['id'] = raw_repo.id
+        repo_dict['create_time'] = time.mktime(raw_repo.create_time.timetuple())
+        repo_dict['modify_time'] = time.mktime(raw_repo.modify_time.timetuple())
+        if raw_repo.user_id in map_users:
+            repo_dict['username'] = map_users[raw_repo.user_id]['username']
+            repo_dict['imgurl'] = map_users[raw_repo.user_id]['imgurl']
+        repos_vo.append(repo_dict) 
+    return repos_vo
 
 def json_ok():
     return json_httpResponse({'result': 'ok'})

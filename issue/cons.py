@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
 import time
-from gitshell.repo.models import Repo, Issues
+from gitshell.issue.models import Issue
 from gitshell.gsuser.models import GsuserManager
 from django.forms.models import model_to_dict
 
-class RepoIssuesAttrs():
+class IssueAttrs():
 
     def __init__(self, name, value):
         self.name = name
         self.value = value
 
-TRACKERS = [RepoIssuesAttrs('所有', 0), RepoIssuesAttrs('缺陷', 1), RepoIssuesAttrs('功能', 2), RepoIssuesAttrs('支持', 3)]
-STATUSES = [RepoIssuesAttrs('所有', 0), RepoIssuesAttrs('新建', 1), RepoIssuesAttrs('已指派', 2), RepoIssuesAttrs('进行中', 3), RepoIssuesAttrs('已解决', 4), RepoIssuesAttrs('已关闭', 5), RepoIssuesAttrs('已拒绝', 6)]
-PRIORITIES = [RepoIssuesAttrs('所有', 0), RepoIssuesAttrs('紧急', 1), RepoIssuesAttrs('高', 2), RepoIssuesAttrs('普通', 3), RepoIssuesAttrs('低', 4)]
+TRACKERS = [IssueAttrs('所有', 0), IssueAttrs('缺陷', 1), IssueAttrs('功能', 2), IssueAttrs('支持', 3)]
+STATUSES = [IssueAttrs('所有', 0), IssueAttrs('新建', 1), IssueAttrs('已指派', 2), IssueAttrs('进行中', 3), IssueAttrs('已解决', 4), IssueAttrs('已关闭', 5), IssueAttrs('已拒绝', 6)]
+PRIORITIES = [IssueAttrs('所有', 0), IssueAttrs('紧急', 1), IssueAttrs('高', 2), IssueAttrs('普通', 3), IssueAttrs('低', 4)]
 TRACKERS_VAL = [1, 2, 3]
 STATUSES_VAL = [1, 2, 3, 4, 5, 6]
 PRIORITIES_VAL = [1, 2, 3, 4]
 
-ISSUES_ATTRS = { 'TRACKERS': TRACKERS, 'STATUSES': STATUSES, 'PRIORITIES': PRIORITIES }
+ISSUE_ATTRS = { 'TRACKERS': TRACKERS, 'STATUSES': STATUSES, 'PRIORITIES': PRIORITIES }
 
 REV_TRACKERS = {1: '缺陷', 2: '功能', 3: '支持'}
 REV_STATUSES = {1: '新建', 2: '已指派', 3: '进行中', 4: '已解决', 5: '已关闭', 6: '已拒绝'}
@@ -62,15 +62,3 @@ def conver_issue_comments(raw_issue_comments, user_map, user_img_map):
         issue_comments.append(issue_comment)
     return issue_comments
 
-def conver_repos(raw_repos, map_users):
-    repos_vo = []
-    for raw_repo in raw_repos:
-        repo_dict = model_to_dict(raw_repo, fields=[field.name for field in Repo._meta.fields])
-        repo_dict['id'] = raw_repo.id
-        repo_dict['create_time'] = time.mktime(raw_repo.create_time.timetuple())
-        repo_dict['modify_time'] = time.mktime(raw_repo.modify_time.timetuple())
-        if raw_repo.user_id in map_users:
-            repo_dict['username'] = map_users[raw_repo.user_id]['username']
-            repo_dict['imgurl'] = map_users[raw_repo.user_id]['imgurl']
-        repos_vo.append(repo_dict) 
-    return repos_vo

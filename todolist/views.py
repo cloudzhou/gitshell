@@ -10,8 +10,7 @@ from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.feed.feed import FeedAction, PositionKey, AttrKey
 from gitshell.feed.models import Feed, FeedManager
-from gitshell.repo.models import RepoManager, IssuesComment
-from gitshell.repo.cons import conver_issues
+from gitshell.repo.models import RepoManager
 from gitshell.gsuser.models import GsuserManager
 from gitshell.todolist.models import Scene, ToDoList, ToDoListManager
 from gitshell.viewtools.views import json_httpResponse, obj2dict
