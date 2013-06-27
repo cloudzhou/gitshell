@@ -72,21 +72,21 @@ def user_repo_paging(request, user_name, pagenum):
 @repo_permission_check
 def repo(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'index'
-    return repo_ls_tree(request, user_name, repo_name, refs, path, current)
+    return ls_tree(request, user_name, repo_name, refs, path, current)
 
 @repo_permission_check
-def repo_default_tree(request, user_name, repo_name):
+def default_tree(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'tree'
-    return repo_ls_tree(request, user_name, repo_name, refs, path, current)
+    return ls_tree(request, user_name, repo_name, refs, path, current)
     
 @repo_permission_check
-def repo_tree(request, user_name, repo_name, refs, path):
+def tree(request, user_name, repo_name, refs, path):
     current = 'tree'
-    return repo_ls_tree(request, user_name, repo_name, refs, path, current)
+    return ls_tree(request, user_name, repo_name, refs, path, current)
 
 @repo_permission_check
 @repo_source_permission_check
-def repo_raw_blob(request, user_name, repo_name, refs, path):
+def raw_blob(request, user_name, repo_name, refs, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path.endswith('/'):
         raise Http404
@@ -99,7 +99,7 @@ def repo_raw_blob(request, user_name, repo_name, refs, path):
 lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml', 'go': 'Go'}
 brush_aliases = {'AppleScript': 'applescript', 'AS3': 'actionscript3', 'Bash': 'shell', 'ColdFusion': 'coldfusion', 'Cpp': 'cpp', 'CSharp': 'csharp', 'Css': 'css', 'Delphi': 'delphi', 'Diff': 'diff', 'Erlang': 'erlang', 'Groovy': 'groovy', 'JavaFX': 'javafx', 'Java': 'java', 'JScript': 'javascript', 'Perl': 'perl', 'Php': 'php', 'Plain': 'plain', 'PowerShell': 'powershell', 'Python': 'python', 'Ruby': 'ruby', 'Sass': 'sass', 'Scala': 'scala', 'Sql': 'sql', 'Vb': 'vb', 'Xml': 'xml', 'Go': 'go'}
 @repo_permission_check
-def repo_ls_tree(request, user_name, repo_name, refs, path, current):
+def ls_tree(request, user_name, repo_name, refs, path, current):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -122,7 +122,7 @@ def repo_ls_tree(request, user_name, repo_name, refs, path, current):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def repo_blob(request, user_name, repo_name, refs, path):
+def blob(request, user_name, repo_name, refs, path):
     current = 'tree'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path is None or path == '':
@@ -147,12 +147,12 @@ def repo_blob(request, user_name, repo_name, refs, path):
                           context_instance=RequestContext(request))
     
 @repo_permission_check
-def repo_default_commits(request, user_name, repo_name):
+def default_commits(request, user_name, repo_name):
     refs = 'master'; path = '.'
-    return repo_commits(request, user_name, repo_name, refs, path)
+    return commits(request, user_name, repo_name, refs, path)
     
 @repo_permission_check
-def repo_commits(request, user_name, repo_name, refs, path):
+def commits(request, user_name, repo_name, refs, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -169,7 +169,7 @@ def repo_commits(request, user_name, repo_name, refs, path):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def repo_pulls(request, user_name, repo_name):
+def pulls(request, user_name, repo_name):
     refs = 'master'; path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -183,7 +183,7 @@ def repo_pulls(request, user_name, repo_name):
 
 @login_required
 @repo_permission_check
-def repo_default_pull_new(request, user_name, repo_name):
+def default_pull_new(request, user_name, repo_name):
     source_username = user_name
     source_refs = 'master'
     desc_username = user_name
@@ -196,11 +196,11 @@ def repo_default_pull_new(request, user_name, repo_name):
         if child_repo is not None:
             source_username = child_repo.username
             source_refs = 'master'
-    return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+    return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
 
 @login_required
 @repo_permission_check
-def repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
+def pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
     refs = 'master'; path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
@@ -217,15 +217,15 @@ def repo_pull_new(request, user_name, repo_name, source_username, source_refs, d
         title = request.POST.get('title', '')
         desc = request.POST.get('desc', '')
         if source_repo == '' or source_refs == '' or desc_repo == '' or desc_refs == '' or title == '' or '/' not in source_repo or '/' not in desc_repo:
-            return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+            return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         if not RepoManager.is_allowed_refsname_pattern(source_refs) or not RepoManager.is_allowed_refsname_pattern(desc_refs):
-            return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+            return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         (source_username, source_reponame) = source_repo.split('/', 1)
         (desc_username, desc_reponame) = desc_repo.split('/', 1)
         source_pull_repo = RepoManager.get_repo_by_name(source_username, source_reponame)
         desc_pull_repo = RepoManager.get_repo_by_name(desc_username, desc_reponame)
         if not __has_pull_right(request, source_pull_repo, desc_pull_repo):
-            return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+            return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         pullRequest = PullRequest.create(request.user.id, desc_pull_repo.user_id, source_pull_repo.user_id, source_pull_repo.id, source_refs, desc_pull_repo.user_id, desc_pull_repo.id, desc_refs, title, desc, 0, PULL_STATUS.NEW)
         pullRequest.save()
         pullRequest.fillwith()
@@ -241,7 +241,7 @@ def repo_pull_new(request, user_name, repo_name, source_username, source_refs, d
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def repo_pull_show(request, user_name, repo_name, pullRequest_id):
+def pull_show(request, user_name, repo_name, pullRequest_id):
     refs = 'master'; path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -256,7 +256,7 @@ def repo_pull_show(request, user_name, repo_name, pullRequest_id):
 
 @repo_permission_check
 @require_http_methods(["POST"])
-def repo_pull_commit(request, user_name, repo_name, pullRequest_id):
+def pull_commit(request, user_name, repo_name, pullRequest_id):
     refs = 'master'; path = '.'
     args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
     if args is None:
@@ -274,7 +274,7 @@ def repo_pull_commit(request, user_name, repo_name, pullRequest_id):
     
 @repo_permission_check
 @require_http_methods(["POST"])
-def repo_pull_diff(request, user_name, repo_name, pullRequest_id):
+def pull_diff(request, user_name, repo_name, pullRequest_id):
     refs = 'master'; path = '.'
     args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
     if args is None:
@@ -295,7 +295,7 @@ def repo_pull_diff(request, user_name, repo_name, pullRequest_id):
 @repo_permission_check
 @login_required
 @require_http_methods(["POST"])
-def repo_pull_merge(request, user_name, repo_name, pullRequest_id):
+def pull_merge(request, user_name, repo_name, pullRequest_id):
     refs = 'master'; path = '.'
     args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
     if args is None:
@@ -324,7 +324,7 @@ def repo_pull_merge(request, user_name, repo_name, pullRequest_id):
 @repo_permission_check
 @login_required
 @require_http_methods(["POST"])
-def repo_pull_reject(request, user_name, repo_name, pullRequest_id):
+def pull_reject(request, user_name, repo_name, pullRequest_id):
     refs = 'master'; path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
@@ -341,7 +341,7 @@ def repo_pull_reject(request, user_name, repo_name, pullRequest_id):
 @repo_permission_check
 @login_required
 @require_http_methods(["POST"])
-def repo_pull_close(request, user_name, repo_name, pullRequest_id):
+def pull_close(request, user_name, repo_name, pullRequest_id):
     refs = 'master'; path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
@@ -371,7 +371,7 @@ def _get_repo_pull_args(user_name, repo_name, pullRequest_id):
     
 @repo_permission_check
 @require_http_methods(["POST"])
-def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path):
+def diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -625,7 +625,7 @@ def issues_comment_delete(request, user_name, repo_name, comment_id):
     return json_ok()
 
 @repo_permission_check
-def repo_network(request, user_name, repo_name):
+def network(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'network'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -660,7 +660,7 @@ def repo_network(request, user_name, repo_name):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def repo_clone_watch(request, user_name, repo_name):
+def clone_watch(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'branches'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -685,7 +685,7 @@ def repo_clone_watch(request, user_name, repo_name):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def repo_stats(request, user_name, repo_name):
+def stats(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'stats'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -845,7 +845,7 @@ def change_to_vo(raw_fork_repos_tree):
 
 @repo_permission_check
 @require_http_methods(["POST"])
-def repo_refs(request, user_name, repo_name):
+def refs(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'branches': [], 'tags': []})
@@ -860,7 +860,7 @@ def repo_refs(request, user_name, repo_name):
 @repo_permission_check
 @login_required
 @require_http_methods(["POST"])
-def repo_fork(request, user_name, repo_name):
+def fork(request, user_name, repo_name):
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
     has_error = False
     message = 'success'
@@ -895,7 +895,7 @@ def repo_fork(request, user_name, repo_name):
 @repo_permission_check
 @login_required
 @require_http_methods(["POST"])
-def repo_watch(request, user_name, repo_name):
+def watch(request, user_name, repo_name):
     response_dictionary = {'result': 'success'}
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -906,22 +906,10 @@ def repo_watch(request, user_name, repo_name):
         return json_httpResponse({'result': 'failed', 'message': message})
     return json_httpResponse(response_dictionary)
 
+@repo_permission_check
 @login_required
 @require_http_methods(["POST"])
-def repo_unwatch_by_id(request, repo_id):
-    response_dictionary = {'result': 'success'}
-    repo = RepoManager.get_rawrepo_by_id(repo_id)
-    if repo is None:
-        message = u'仓库不存在'
-        return json_httpResponse({'result': 'failed', 'message': message})
-    if not RepoManager.unwatch_repo(request.userprofile, repo):
-        message = u'取消关注失败，可能仓库未被关注'
-        return json_httpResponse({'result': 'failed', 'message': message})
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def repo_unwatch(request, user_name, repo_name):
+def unwatch(request, user_name, repo_name):
     response_dictionary = {'result': 'success'}
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
