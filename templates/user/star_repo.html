@@ -1,0 +1,69 @@
+{% extends "user/user_base.html" %}
+{% block left_sub_container %}
+        <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
+            <h2>关注仓库</h2>
+        </div>
+        <div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="span2">仓库</th>
+                        <th class="span5">简介</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for star_repo in star_repos %}
+                    <tr class="cl_star_repo_tr" data-repo-id="{{star_repo.id}}">
+                        <td><a href="/{{star_repo.username}}/{{star_repo.name}}/">{{star_repo.name}}</a></td>
+                        <td>
+                            {{star_repo.desc}}
+                        <span class="pull-right">
+                            <span style="display: none" id="id_repo_{{star_repo.id}}" data-repo-id="{{star_repo.id}}" data-repo-username="{{star_repo.username}}" data-repo-name="{{star_repo.name}}" class="button-unstar btn btn-danger btn-mini">取消标星</span> 
+                            {% if star_repo.visibly != 0 %}
+                            <span class="label label-important">已经删除</span> 
+                            {% endif %}
+                            {% if star_repo.auth_type == 2 %}
+                            <span class="label label-inverse">私有仓库</span>
+                            {% endif %}
+                        </span>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+{% endblock %}
+{% block subjs %}
+<script>
+/*global jQuery, window */
+$(function(){
+    $('.cl_star_repo_tr').live('mouseover mouseout', function(event) {
+        if (event.type == 'mouseover') {
+            var repo_id = $(this).attr('data-repo-id');
+            $('#id_repo_'+repo_id).show();
+        } else {
+            var repo_id = $(this).attr('data-repo-id');
+            $('#id_repo_'+repo_id).hide();
+        }
+    });
+    $('.button-unstar').click(function(){
+        var repo_username = $(this).attr('data-repo-username');
+        var repo_name = $(this).attr('data-repo-name');
+        var action_url = '/' + repo_username + '/' + repo_name + '/unstar/';
+        $.ajax({
+            url: action_url,
+            type: 'POST',
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            dataType: 'json',
+            timeout: 10000,
+            error: function(){
+                window.location = window.location
+            },
+            success: function(json){
+                window.location = window.location
+            },
+        })
+    });
+});
+</script>
+{% endblock %}

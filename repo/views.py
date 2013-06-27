@@ -421,7 +421,7 @@ def network(request, user_name, repo_name):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def clone_watch(request, user_name, repo_name):
+def clone_watch_star(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'branches'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -438,10 +438,11 @@ def clone_watch(request, user_name, repo_name):
     fork_me_repos = RepoManager.list_fork_repo(repo.id)
     raw_fork_repos_tree.append(fork_me_repos)
     fork_repos_tree = change_to_vo(raw_fork_repos_tree)
+    star_users = RepoManager.list_star_user(repo.id, 0, 20)
     watch_users = RepoManager.list_watch_user(repo.id)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'fork_repos_tree': fork_repos_tree, 'watch_users': watch_users, 'test': {1, 1}}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'fork_repos_tree': fork_repos_tree, 'star_users': star_users, 'watch_users': watch_users}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/clone_watch.html',
+    return render_to_response('repo/clone_watch_star.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
@@ -681,6 +682,34 @@ def unwatch(request, user_name, repo_name):
         return json_httpResponse({'result': 'failed', 'message': message})
     return json_httpResponse(response_dictionary)
 
+@repo_permission_check
+@login_required
+@require_http_methods(["POST"])
+def star(request, user_name, repo_name):
+    response_dictionary = {'result': 'success'}
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        message = u'仓库不存在'
+        return json_httpResponse({'result': 'failed', 'message': message})
+    if not RepoManager.star_repo(request.user.id, repo.id):
+        message = u'标星失败，标星数量超过限制或者仓库不允许标星'
+        return json_httpResponse({'result': 'failed', 'message': message})
+    return json_httpResponse(response_dictionary)
+
+@repo_permission_check
+@login_required
+@require_http_methods(["POST"])
+def unstar(request, user_name, repo_name):
+    response_dictionary = {'result': 'success'}
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        message = u'仓库不存在'
+        return json_httpResponse({'result': 'failed', 'message': message})
+    if not RepoManager.unstar_repo(request.user.id, repo.id):
+        message = u'取消标星失败，可能仓库未被标星'
+        return json_httpResponse({'result': 'failed', 'message': message})
+    return json_httpResponse(response_dictionary)
+
 @login_required
 def find(request):
     repo = None
@@ -856,6 +885,7 @@ def fulfill_gitrepo(repo, remote_git_url):
 
 def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)
+    is_star_repo = RepoManager.is_star_repo(request.user.id, repo.id)
     is_repo_member = RepoManager.is_repo_member(repo, request.user)
     is_owner = (repo.user_id == request.user.id)
     has_fork_right = (repo.auth_type == 0 or is_repo_member)
@@ -865,7 +895,7 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
         if child_repo is not None:
             has_pull_right = True
     repo_pull_new_count = RepoManager.count_pullRequest_by_descRepoId(repo.id, PULL_STATUS.NEW)
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count}
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_star_repo': is_star_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count}
 
 @login_required
 def list_github_repos(request):

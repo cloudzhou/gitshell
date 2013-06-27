@@ -355,13 +355,21 @@ class RepoManager():
         stars = query(Star, None, 'star_l_repoId', [repo_id, offset, row_count])
         userprofiles = []
         for x in stars:
-            userprofile = GsuserManager.get_userprofile_by_id(x.star_user_id)
+            userprofile = GsuserManager.get_userprofile_by_id(x.user_id)
             if userprofile is None or userprofile.visibly == 1:
                 x.visibly = 1
                 x.save()
                 continue
             userprofiles.append(userprofile)
         return userprofiles
+
+    @classmethod
+    def is_star_repo(self, user_id, repo_id):
+        repo = RepoManager.get_repo_by_id(repo_id)
+        if repo is None:
+            return False
+        star = query_first(Star, user_id, 'star_s_repo', [user_id, repo_id])
+        return star is not None
 
     @classmethod
     def star_repo(self, user_id, repo_id):
@@ -372,8 +380,8 @@ class RepoManager():
         if star is None:
             star = Star()
             star.user_id = user_id
-            star.watch_user_id = 0
-            star.watch_repo_id = repo_id
+            star.star_user_id = 0
+            star.star_repo_id = repo_id
             star.save()
             repo.star = repo.star + 1
             repo.save()

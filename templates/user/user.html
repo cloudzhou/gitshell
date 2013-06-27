@@ -51,6 +51,29 @@
             </table>
         </div>
         <div class="page-header small_page-header">
+            <h2>标星仓库<small><a href="/{{gsuser.username}}/star/repo/" class="more">more</a></small></h2>
+        </div>
+        <div>
+            <table class="table table-striped zero_border_table">
+                <thead>
+                    <tr>
+                        <th class="span1">名称</th>
+                        <th class="">简介</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for star_repo in star_repos %}
+                    <tr>
+                        <td><a href="/{{star_repo.username}}/{{star_repo.name}}/">{{star_repo.name}}</a></td>
+                        <td>{{star_repo.desc}}
+                        <span style="display:none" class="pull-right muted c_unixtime">{{star_repo.modify_time}}</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="page-header small_page-header">
             <h2>关注仓库<small><a href="/{{gsuser.username}}/watch/repo/" class="more">more</a></small></h2>
         </div>
         <div>

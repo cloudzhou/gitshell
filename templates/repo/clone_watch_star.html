@@ -36,6 +36,22 @@
 </div>
 <div class="span5">
     <div class="page-header" style="margin-top: 0px; margin-bottom: 10px;padding-bottom: 8px">
+        <h4>标星此仓库用户</h4>
+    </div>
+    <div>
+        <table class="table table-striped">
+        {%for star_user in star_users%}
+            <tr class="c_tr"><td>
+                <a href="/{{star_user.username}}/"><img class="avatar_left" src="https://gravatar.com/avatar/{{ star_user.imgurl }}?s=32"/></a>
+                <a href="/{{star_user.username}}/">{{star_user.username}}</a>
+                {%if star_user.nickname%}
+                    <span>({{star_user.nickname}})</span>
+                {%endif%}
+            </td></tr>
+        {%endfor%}
+	    </table>
+    </div>
+    <div class="page-header" style="margin-top: 0px; margin-bottom: 10px;padding-bottom: 8px">
         <h4>关注此仓库用户</h4>
     </div>
     <div>

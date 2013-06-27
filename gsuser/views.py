@@ -59,7 +59,9 @@ def user(request, user_name):
     pub_user_feeds = feedAction.get_pub_user_feeds(gsuser.id, 0, 10)
     feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
 
-    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'repos': repos, 'watch_repos': watch_repos, 'watch_users': watch_users, 'bewatch_users': bewatch_users, 'last30days': last30days, 'last30days_commit': last30days_commit, 'feeds_as_json': feeds_as_json, 'recommends': recommends}
+    star_repos = RepoManager.list_star_repo(gsuser.id, 0, 20)
+
+    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'repos': repos, 'watch_repos': watch_repos, 'star_repos': star_repos, 'watch_users': watch_users, 'bewatch_users': bewatch_users, 'last30days': last30days, 'last30days_commit': last30days_commit, 'feeds_as_json': feeds_as_json, 'recommends': recommends}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/user.html',
                           response_dictionary,
@@ -124,6 +126,18 @@ def watch_user(request, user_name):
     response_dictionary = {'mainnav': 'user', 'watch_users': watch_users, 'bewatch_users': bewatch_users}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/watch_user.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def star_repo(request, user_name):
+    gsuser = GsuserManager.get_user_by_name(user_name)
+    if gsuser is None:
+        raise Http404
+    gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
+    star_repos = RepoManager.list_star_repo(gsuser.id, 0, 500)
+    response_dictionary = {'mainnav': 'user', 'star_repos': star_repos}
+    response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
+    return render_to_response('user/star_repo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
