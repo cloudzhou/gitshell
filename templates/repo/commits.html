@@ -111,7 +111,7 @@ $(function(){
                 return
             }
             $.ajax({
-                url: '/{{user_name}}/{{repo_name}}/diff/' + pre_commit_hash + '/' + commit_hash + '/{{path}}',
+                url: '/{{user_name}}/{{repo_name}}/diff/' + pre_commit_hash + '/' + commit_hash + '/3/{{path}}',
                 type: 'POST',
                 data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
                 dataType: 'json',

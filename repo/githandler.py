@@ -82,42 +82,33 @@ class GitHandler():
         self._dumps_write_stage_file(result, stage_file)
         return result
 
-    def repo_diff(self, repo_path, pre_commit_hash, commit_hash, path):
+    def repo_diff(self, repo_path, pre_commit_hash, commit_hash, context, path):
+        if not context:
+            context = 3
         (pre_commit_hash, commit_hash, path) = self._all_to_utf8(pre_commit_hash, commit_hash, path)
         if not self._path_check_chdir(repo_path, commit_hash, path) or not re.match('^\w+$', pre_commit_hash):
             return None
         path = self._get_quote_path(path)
-        stage_file = self._get_diff_stage_file(repo_path, pre_commit_hash, commit_hash, path)
+        stage_file = self._get_diff_stage_file(repo_path, pre_commit_hash, commit_hash, context, path)
         stage_file = stage_file + '.diff'
         result = self._read_load_stage_file(stage_file)
-        if result is not None:
-            return result['diff']
-        command = '/usr/bin/git diff %s..%s -- %s | /usr/bin/head -c 524288' % (pre_commit_hash, commit_hash, path)
+        #if result is not None:
+        #    return result['diff']
+        command = '/usr/bin/git diff --numstat  %s..%s | /usr/bin/head -c 524288 ; /usr/bin/git diff -U%s %s..%s -- %s | /usr/bin/head -c 524288' % (pre_commit_hash, commit_hash, context, pre_commit_hash, commit_hash, path)
         try:
             result = check_output(command, shell=True)
-            self._dumps_write_stage_file({'diff': result}, stage_file)
-            return result
+            diff = self._parse_diff_file_as_json(result)
+            self._dumps_write_stage_file({'diff': diff}, stage_file)
+            return diff
         except Exception, e:
             print e
-            return None
+        return {}
 
-    def repo_ls_tags_branches(self, repo, repo_path):
+    def repo_ls_refs(self, repo, repo_path):
         if repo.status != 0 or not os.path.exists(repo_path):
             return  {'branches': [], 'tags': [], 'commit_hash': {}}
         meta = self._get_repo_meta(repo)
         return meta
-
-    def repo_ls_tags(self, repo, repo_path):
-        if repo.status != 0 or not os.path.exists(repo_path):
-            return []
-        meta = self._get_repo_meta(repo)
-        return meta['tags']
-    
-    def repo_ls_branches(self, repo, repo_path):
-        if repo.status != 0 or not os.path.exists(repo_path):
-            return []
-        meta = self._get_repo_meta(repo)
-        return meta['branches']
 
     """ refs: branch, tag """
     def get_commit_hash(self, repo, repo_path, refs):
@@ -126,6 +117,8 @@ class GitHandler():
         meta = self._get_repo_meta(repo)
         if refs in meta['commit_hash']:
             return meta['commit_hash'][refs]
+        if re.match('a', 'a'):
+            return refs
         return self.empty_commit_hash
 
     def prepare_pull_request(self, pullRequest, source_repo, desc_repo):
@@ -258,9 +251,9 @@ class GitHandler():
             print e
             return None
 
-    def _get_diff_stage_file(self, repo_path, pre_commit_hash, commit_hash, path):
+    def _get_diff_stage_file(self, repo_path, pre_commit_hash, commit_hash, context, path):
         (username, reponame) = repo_path.split('/')[-2:]
-        identity = '%s|%s|%s' % (pre_commit_hash, commit_hash, path)
+        identity = '%s|%s|%s|%s' % (pre_commit_hash, commit_hash, context, path)
         stage_file = '%s/%s/%s/%s' % (self.stage_path, username, reponame, hashlib.md5(identity).hexdigest())
         return stage_file
 
@@ -470,6 +463,89 @@ class GitHandler():
             i = i + 1
         return ''.join(raw_chars)
 
+    def _parse_diff_file_as_json(self, raw_diff):
+        diff = {}
+        lines = raw_diff.split('\n')
+        blank_p = re.compile(r'\s+')
+        lines_len = len(lines)
+        numstat = []
+        i = 0
+        while i < lines_len:
+            line = lines[i]
+            if not re.match('\d+\s+\d+\s+\S', line):
+                break
+            numstat.append(blank_p.split(line, 2))
+            i = i + 1
+        detail = []
+        diff['numstat'] = numstat; diff['detail'] = detail
+        
+        filea = '--- '; fileb = '+++ '
+        filea_len = len(filea); fileb_len = len(fileb)
+        dev_null = '/dev/null'
+        
+        filediff = {}; filename = ''; linediff = []; part_of_linediff = []
+        starta = 0; startb = 0; start_line_stat = False
+        
+        while i < lines_len:
+            line = lines[i]
+            if start_line_stat:
+                if line.startswith(' '):
+                    part_of_linediff.append([starta, startb, line[1:]])
+                    starta = starta + 1; startb = startb + 1
+                    i = i + 1
+                    continue
+                if line.startswith('+'):
+                    part_of_linediff.append([0, startb, line[1:]])
+                    startb = startb + 1
+                    i = i + 1
+                    continue
+                if line.startswith('-'):
+                    part_of_linediff.append([starta, 0, line[1:]])
+                    starta = starta + 1
+                    i = i + 1
+                    continue
+            start_line_stat = False
+            if line.startswith('diff --git'):
+                if filename != '' and filediff and 'mode' in filediff:
+                    if len(part_of_linediff) > 0:
+                        linediff.append(part_of_linediff)
+                    filediff['linediff'] = linediff
+                    detail.append({filename : filediff})
+                filediff = {}
+                filename = ''
+                linediff = []
+                part_of_linediff = []
+            if line.startswith(filea):
+                filediff['from'] = line[filea_len:]
+            if line.startswith(fileb):
+                filediff['to'] = line[fileb_len:]
+            if 'mode' not in filediff and 'from' in filediff and 'to' in filediff:
+                mode = 'edit'
+                filename = line[fileb_len+1:]
+                if filediff['from'] == dev_null and filediff['to'] != dev_null:
+                    mode = 'create'
+                if filediff['from'] != dev_null and filediff['to'] == dev_null:
+                    mode = 'delete'
+                    filename = line[filea_len+1:]
+                filediff['mode'] = mode
+            m = re.match('^@@ \-(\d+),\d+ \+(\d+)', line)
+            if m:
+                if len(part_of_linediff) > 0:
+                    linediff.append(part_of_linediff)
+                part_of_linediff = []
+                starta = int(m.group(1))
+                startb = int(m.group(2))
+                start_line_stat = True
+            i = i + 1
+        
+        if filename != '' and filediff and 'mode' in filediff:
+            if len(part_of_linediff) > 0:
+                linediff.append(part_of_linediff)
+            filediff['linediff'] = linediff
+            detail.append({filename : filediff})
+
+        return diff
+
 if __name__ == '__main__':
     gitHandler = GitHandler()
     #print gitHandler.repo_ls_branches('/opt/8001/gitshell/.git')
@@ -481,4 +557,4 @@ if __name__ == '__main__':
     print gitHandler.repo_ls_tree('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', '.')
     print gitHandler.repo_cat_file('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', 'README.md')
     print gitHandler.repo_log_file('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', '0000000', 'README.md')
-    print gitHandler.repo_diff('/opt/8001/gitshell/.git', '7daf915', '1e25868', 'README.md')
+    print gitHandler.repo_diff('/opt/8001/gitshell/.git', '7daf915', '1e25868', 3, 'README.md')

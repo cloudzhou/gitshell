@@ -106,12 +106,22 @@
 	    <div id="repo_nav" class="span12">
 	        <ul class="nav nav-tabs">
                 <li id="i_refs" class="dropdown">
-                    <a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle"><span id="id_branch_or_tag">分支：</span><b>{{ refs }}</b> <b class="caret"></b></a>
+                    <a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle"><span>{%if is_branch %}分支{%else%}标签{%endif%}：</span><b>{{ refs }}</b> <b class="caret"></b></a>
                     <ul class="dropdown-menu">
+                    {% for branch in refs_meta.branches %}
+                        <li><a href="/{{user_name}}/{{repo_name}}/tree/{{branch}}/">{%if branch == refs %}✓{%endif%}{{branch}}</a></li>
+                    {% endfor %}
+                    {% if refs_meta.tags|length > 0 %}
+                        <li class="divider"></li>
+                    {% endif %}
+                    {% for tag in refs_meta.tags %}
+                        <li><a href="/{{user_name}}/{{repo_name}}/tree/{{tag}}/">{%if branch == refs %}✓{%endif%}{{tag}}</a></li>
+                    {% endfor %}
                     </ul>
                 </li>
                 <li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/{{ refs }}/">文件列表</a></li>
                 <li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/">提交信息</a></li>
+                <li {% if current == 'compare' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/compare/{{ refs }}/">Compare</a></li>
                 <li {% if current == 'pull' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/pulls/">合并请求{% if repo_pull_new_count > 0 %} <span class="badge">{{repo_pull_new_count}}</span>{% endif %}</a></li>
                 <li {% if current == 'issues' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/issues/">Issues</a></li>
                 <li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/network/">协同</a></li>
@@ -139,43 +149,6 @@ $(function(){
     var current_refs = '{{ refs }}';
     if(current_refs == '') {
         current_refs = 'master';
-    }
-    var do_refs = function() {
-        is_refs_mouseover = true;
-        $.ajax({
-            url: '/{{user_name}}/{{repo_name}}/refs/',
-            type: 'POST',
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-                //alert('');
-            },
-            success: function(json){
-                if($('#i_refs .dropdown-menu li').size() > 0) {
-                    return;
-                }
-                for(x in json.branches) {
-                    var current = ' ';
-                    if(json.branches[x] == current_refs) {
-                        current = '✓';
-                        $('#id_branch_or_tag').text('分支：');
-                    }
-                    $('#i_refs .dropdown-menu').append('<li><a href="/{{user_name}}/{{repo_name}}/tree/' + json.branches[x] + '/">' + current + json.branches[x] + '</a></li>');
-                } 
-                if(json.tags.length > 0) {
-                    $('#i_refs .dropdown-menu').append('<li class="divider"></li>');
-                }
-                for(x in json.tags) {
-                    var current = ' ';
-                    if(json.tags[x] == current_refs) {
-                        current = '✓';
-                        $('#id_branch_or_tag').text('标签：');
-                    }
-                    $('#i_refs .dropdown-menu').append('<li><a href="/{{user_name}}/{{repo_name}}/tree/' + json.tags[x] + '/">' + current + json.tags[x] + '</a></li>');
-                } 
-            },
-        })
     }
     $('#i_star').click(function() {
         $.post('/{{user_name}}/{{repo_name}}/star/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
@@ -269,13 +242,7 @@ $(function(){
         })
     })
 {% endif %}
-    do_refs();
     var is_refs_mouseover = false;
-    $('#i_refs').mouseover(function(event) {
-        if($('#i_refs .dropdown-menu li').size() == 0 && !is_refs_mouseover) {
-            do_refs();
-        }
-    });
     $('.c_repo_action').tooltip({
         selector: "a[rel=tooltip]"
     });

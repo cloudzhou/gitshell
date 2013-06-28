@@ -169,6 +169,25 @@ def commits(request, user_name, repo_name, refs, path):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
+def default_compare(request, user_name, repo_name):
+    return compare_master(request, user_name, repo_name, 'master')
+
+@repo_permission_check
+def compare_master(request, user_name, repo_name, refs):
+    return compare_commit(request, user_name, repo_name, 'master', refs)
+
+@repo_permission_check
+def compare_commit(request, user_name, repo_name, from_refs, to_refs):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    gitHandler = GitHandler()
+    abs_repopath = repo.get_abs_repopath()
+    from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_refs)
+    to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_refs)
+     
+
+@repo_permission_check
 def pulls(request, user_name, repo_name):
     refs = 'master'; path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -289,7 +308,7 @@ def pull_diff(request, user_name, repo_name, pullRequest_id):
     desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), pullRequest.desc_refname)
     diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
-        diff = gitHandler.repo_diff(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, path)
+        diff = gitHandler.repo_diff(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, path, 3)
     return json_httpResponse({'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
 
 @repo_permission_check
@@ -371,7 +390,7 @@ def _get_repo_pull_args(user_name, repo_name, pullRequest_id):
     
 @repo_permission_check
 @require_http_methods(["POST"])
-def diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path):
+def diff(request, user_name, repo_name, pre_commit_hash, commit_hash, context, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -381,7 +400,7 @@ def diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path):
     abs_repopath = repo.get_abs_repopath()
     diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
-        diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
+        diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, context, path)
     return json_httpResponse({'diff': diff})
 
 @repo_permission_check
@@ -613,9 +632,8 @@ def refs(request, user_name, repo_name):
     repopath = repo.get_abs_repopath()
 
     gitHandler = GitHandler()
-    branches_refs = gitHandler.repo_ls_branches(repo, repopath)
-    tags_refs = gitHandler.repo_ls_tags(repo, repopath)
-    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'branches': branches_refs, 'tags': tags_refs}
+    refs_meta = gitHandler.repo_ls_refs(repo, repopath)
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'branches': refs_meta['branches'], 'tags': refs_meta['tags']}
     return json_httpResponse(response_dictionary)
 
 @repo_permission_check
@@ -883,10 +901,13 @@ def fulfill_gitrepo(repo, remote_git_url):
     RepoManager.check_export_ok_file(repo)
 
 def get_common_repo_dict(request, repo, user_name, repo_name, refs):
+    gitHandler = GitHandler()
+    refs_meta = gitHandler.repo_ls_refs(repo, repo.get_abs_repopath())
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)
     is_star_repo = RepoManager.is_star_repo(request.user.id, repo.id)
     is_repo_member = RepoManager.is_repo_member(repo, request.user)
     is_owner = (repo.user_id == request.user.id)
+    is_branch = (refs in refs_meta['branches'])
     has_fork_right = (repo.auth_type == 0 or is_repo_member)
     has_pull_right = is_owner
     if not is_owner:
@@ -894,7 +915,7 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
         if child_repo is not None:
             has_pull_right = True
     repo_pull_new_count = RepoManager.count_pullRequest_by_descRepoId(repo.id, PULL_STATUS.NEW)
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_star_repo': is_star_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count}
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_star_repo': is_star_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'is_branch': is_branch, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta}
 
 @login_required
 def list_github_repos(request):
