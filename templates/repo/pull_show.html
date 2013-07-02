@@ -1,20 +1,25 @@
 {% extends "repo/repo.html" %}
+
+{% block css %}
+	<link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet' type='text/css' />
+	<link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet' type='text/css' />
+	<style>
+		.repo-refs { border: 1px solid #D4D4D4; padding: 10px }    
+	</style>
+{% endblock %}
+
 {% block subcontainer %}
-<link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet' type='text/css' />
-<link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet' type='text/css' />
-<style>
-.repo-refs { border: 1px solid #D4D4D4; padding: 10px }    
-</style>
 <div>
-    <h4 style="margin: 10px"><a href="/{{user_name}}/{{repo_name}}/pulls/">{{repo_name}}</a> /
+		<h4>
+			<a href="/{{user_name}}/{{repo_name}}/pulls/">{{repo_name}}</a> /
         <span id="i_repo_path"></span>
         <span>查看 #{{pullRequest.id}} 合并请求</span>
     </h4>
-    <!--create pull request-->
-    <div class="row" style="margin-top: 20px">
+
+    <div class="row">
         <div id="id_merge_process" class="hide span10">
-            <div class="span10" style="margin-left: 30px;">
-                <h4 style="margin-bottom: 10px">
+            <div class="span10">
+                <h4>
                 &gt; merge from {{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}
                 to {{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}} 
                 </h4>

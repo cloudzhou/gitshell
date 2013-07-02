@@ -1,77 +1,71 @@
 {% extends "settings/base.html" %}
+
 {% block container-right %}
-<div class="span9">
-    <h3 style="border-bottom:1px solid #EEEEEE; margin-bottom:15px;">
-        个人资料<small>&nbsp;详细信息能让人更好认识你</small>
-    </h3>
-    <div>
-        <form class="form-horizontal" action="" method="post">
-            {% csrf_token %}
-            <fieldset>
-                <div class="control-group">
-                    <label for="id_github_apply" class="control-label">GitHub 关联账户</label>
-                    <div class="controls">
-                    {% if thirdpartyUser %}
-                        <a target="_blank" href="https://github.com/{{ thirdpartyUser.tp_username }}/"><span class="label label-info" style="padding: 8px">GitHub 账户 ({{ thirdpartyUser.tp_username }})</span></a>
-                    {% else %}
-                        <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/"><button class="btn btn-small btn-success" type="button">进行 GitHub 账户关联</button></a>
-                    {% endif %}
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label for="id_tweet" class="control-label">* 一句话介绍自己</label>
-                    <div class="controls">
-                        {{ userprofileForm.tweet }}
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label for="id_nickname" class="control-label">姓名/昵称</label>
-                    <div class="controls">
-                        {{ userprofileForm.nickname }}
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label for="id_website" class="control-label">网站</label>
-                    <div class="controls">
-                        {{ userprofileForm.website }}
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label for="id_company" class="control-label">公司</label>
-                    <div class="controls">
-                        {{ userprofileForm.company }}
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label for="id_location" class="control-label">所在地</label>
-                    <div class="controls">
-                        {{ userprofileForm.location }}
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label for="id_resume" class="control-label">简历</label>
-                    <div class="controls">
-                        <div class="wmd-panel">
-                            <div id="wmd-button-bar"></div>
-                            {{ userprofileForm.resume }}
-                        </div>
-                        <div id="wmd-preview" class="wmd-panel wmd-preview"></div>
-                    </div>
-                </div>
-                {% if error %}
-                <div class="alert">
-                    <a data-dismiss="alert" class="close">×</a>
-                    <strong>出错了！</strong> {{ error }}
-                </div>
-                {% endif %}
-                <div class="form-actions">
-                    <button id="id_add_submit" class="btn btn-primary" type="submit">设置</button>
-                </div>
-            </fieldset>
-        </form>
-    </div>
-</div>
+		<form class="form-horizontal form" action="" method="post">
+			<legend class="title">个人资料<small>详细信息能让人更好认识你</small></legend>
+			{% csrf_token %}
+			<div class="control-group">
+					<label for="id_github_apply" class="control-label">GitHub 关联账户</label>
+					<div class="controls">
+					{% if thirdpartyUser %}
+						<a target="_blank" href="https://github.com/{{ thirdpartyUser.tp_username }}/" class="btn btn-success"><i class="icon-github"></i>GitHub 账户 ({{ thirdpartyUser.tp_username }})</a>
+					{% else %}
+						<a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/" class="btn btn-success"><i class="icon-github"></i>关联 GitHub 账户</a>
+					{% endif %}
+					</div>
+			</div>
+			<div class="control-group">
+					<label for="id_tweet" class="control-label">签名</label>
+					<div class="controls">
+							{{ userprofileForm.tweet }}
+					</div>
+			</div>
+			<div class="control-group">
+					<label for="id_nickname" class="control-label">姓名/昵称</label>
+					<div class="controls">
+							{{ userprofileForm.nickname }}
+					</div>
+			</div>
+			<div class="control-group">
+					<label for="id_website" class="control-label">网站</label>
+					<div class="controls">
+							{{ userprofileForm.website }}
+					</div>
+			</div>
+			<div class="control-group">
+					<label for="id_company" class="control-label">公司</label>
+					<div class="controls">
+							{{ userprofileForm.company }}
+					</div>
+			</div>
+			<div class="control-group">
+					<label for="id_location" class="control-label">所在地</label>
+					<div class="controls">
+							{{ userprofileForm.location }}
+					</div>
+			</div>
+			<div class="control-group">
+					<label for="id_resume" class="control-label">简历</label>
+					<div class="controls">
+							<div class="wmd-panel">
+									<div id="wmd-button-bar"></div>
+									{{ userprofileForm.resume }}
+							</div>
+							<div id="wmd-preview" class="wmd-panel wmd-preview"></div>
+					</div>
+			</div>
+			{% if error %}
+			<div class="alert">
+					<a data-dismiss="alert" class="close">×</a>
+					<strong>出错了！</strong> {{ error }}
+			</div>
+			{% endif %}
+			<div class="controls">
+					<button id="id_add_submit" class="btn" type="submit">保存</button>
+			</div>
+		</form>
 {% endblock %}
+
 {% block js %}
 <script src="/static/js/Markdown.Converter.js"></script>
 <script src="/static/js/Markdown.Editor.js"></script>

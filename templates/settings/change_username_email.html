@@ -1,6 +1,5 @@
 {% extends "settings/base.html" %}
 {% block container-right %}
-<div class="span9">
     {% if thirdpartyUser and thirdpartyUser.init == 0 %}
     <div class="alert alert-error">
         <p>我们尝试导入您 GitHub 账户的用户名和邮箱信息，</p>
@@ -77,7 +76,6 @@
         <p>&gt; git config --global user.name "yourname"</p>
         <p>&gt; git config --global user.email "youremail"</p>
     </div>
-</div>
 {% endblock %}
 {% block js %}
 <script>

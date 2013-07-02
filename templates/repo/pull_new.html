@@ -1,19 +1,19 @@
 {% extends "repo/repo.html" %}
 
 {% block subcontainer %}
-<div class="repo-main">
+<div class="bubble repo">
 
-	<header class="repo-meta">
+	<header class="bubble-header">
 		<ul class="breadcrumb">
 			<li><a href="/{{user_name}}/{{repo_name}}/pulls/">{{repo_name}}</a><span class="divider">/</span></li>
 			<li class="active">创建一个合并请求</li>
     </ul>
 	</header>
 
-	<section class="repo-content">
+	<section class="bubble-inner">
 			<div class="pull-request-form clearfix">
 
-				<section class="repo-refs span form-horizontal">
+				<section class="repo-refs form-horizontal span">
 					<div class="control-group">
 						<label class="control-label">仓库:</label>
 						<div class="controls">
@@ -39,7 +39,7 @@
 
 				</section>
 
-				<section class="repo-refs span form-horizontal">
+				<section class="repo-refs form-horizontal span">
 					<div class="control-group">
 						<label class="control-label">仓库:</label>
 						<div class="controls">

@@ -2,46 +2,41 @@
 
 {% block css %}
 	<link href="/static/css/app/highlight/github.css" rel="stylesheet">
-	<link href="/static/css/app/highlight/diff.css" rel="stylesheet">
 {% endblock %}
 
 {% block subcontainer %}
-	<div class="repo-main">
-		<header class="repo-meta">
+	<div class="bubble repo">
+		<header class="bubble-header">
 			<ul class="breadcrumb">
-				<li><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">{{repo_name}}</a><span class="divider">/</span></li>
-				<li class="active">历史</li>
+				<li><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">{{repo_name}}</a><span class="divider"></span></li>
+				<li class="active">Commits</li>
 			</ul>
 		</header>
 
-		<section class="repo-content">
-			<table class="table frame">
+		<section class="bubble-inner">
+			<table class="table">
+				<colgroup>
+					<col width="85%">
+					<col width="15%">
+				</colgroup>
 				<tbody>
 					{% for commit_attrs in commits %}
 						<tr>
-							<td>
-								{% if forloop.last %}
-									<span id="i_label_{{ commit_attrs.commit_hash }}" class="c_diff_commit label" value="{{ commit_attrs.commit_hash }}">=</span> 
-								{% else %}
-									<a id="i_commit_{{ commit_attrs.commit_hash }}" class="c_diff_commit" value="{{ commit_attrs.commit_hash }}" href="javascript: void(0)" title="显示和上次提交的diff"><span id="i_label_{{ commit_attrs.commit_hash }}" class="label">+</span></a>
-								{% endif %}
-								<code>{{ commit_attrs.commit_hash }}</code>
-								<span>(<a href="/{{ commit_attrs.author }}/">{{ commit_attrs.author }})</a></span>
+							<td class="commit member">
+								<figure class="avatar"><img src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=28" alt="{{ gsuser.username }}"></figure>
+								<div class="info">
+									<p class="msg"><a href="#">{{ commit_attrs.commit_message|truncatechars:80 }}</a></p>
+									<p class="muted"><a href="/{{ commit_attrs.author }}/" class="name">@{{ commit_attrs.author }}</a> <span class="date unixtime">{{ commit_attrs.committer_date }}</span></p>
+								</div>
 							</td>
-							<td><span class="c_unixtime hide">{{ commit_attrs.committer_date }}</span></td>
-							<td>{{ commit_attrs.commit_message }}</td>
-						</tr>
-						<tr id="i_diff_{{ commit_attrs.commit_hash }}" class="c_diff">
-							<td colspan="3">
-								<div id="i_pre_{{ commit_attrs.commit_hash }}"></div>
-							</td>
+							<td class="hash"><a href="#" class="label label-mini label-info">{{ commit_attrs.commit_hash }}</a></td>
 						</tr>
 					{% endfor %}
 
 					{% if not commits %}
 						<tr>
-							<td colspan="3"><p class="info">没有提交信息，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p><td>
-						<tr>
+							<td colspan="3"><p class="info text-error"><i class="icon-bell"></i>没有提交信息，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p></td>
+						</tr>
 					{% endif %}
 				</tbody>
 			</table>
@@ -52,13 +47,9 @@
 {% endblock %}
 
 {% block subjs %}
-	<script src='/static/js/app/highlight/highlight.js'></script>
+	<script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script>
 	<script>
 	$(function(){
-			$('.c_unixtime').each(function(index){ 
-					$(this).html(moment(new Date($(this).html()*1000)).fromNow());
-					$(this).show();
-			});
 			set_path_href = function() {
 					var base_href_path = '/{{user_name}}/{{repo_name}}/commits/{{refs}}/';
 					var path = '{{path}}';
@@ -113,17 +104,13 @@
 									error: function(){
 									},
 									success: function(json){
-											$('#i_pre_' + commit_hash).html('<pre class="brush: diff;">' + json.diff + '</pre>');
-											$('#i_label_' + commit_hash).text('-');
-											$('#i_diff_' + commit_hash).show();
+											$('#i_pre_' + commit_hash).html('<pre><code class="diff">' + json.diff + '</code></pre>');
+											$('pre code').each(function(i, e) { hljs.highlightBlock(e) });
 									},
 							});
 					} else {
-							$('#i_label_' + commit_hash).text('+')
-							$('#i_diff_' + commit_hash).hide();
 					}
 			});
 	});
 	</script>
-	<script>hljs.initHighlightingOnLoad();</script>
 {% endblock %}

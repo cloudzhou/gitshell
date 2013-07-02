@@ -1,7 +1,7 @@
 {% extends "settings/base.html" %}
 
 {% block container-right %}
-	<h3 class="title">管理SSH Public Key</h3>
+	<h3 class="title">管理</h3>
 	<table class="table ssh">
 		<colgroup>
 			<col width="">
@@ -11,23 +11,23 @@
 		</colgroup>
 			<thead>
 				<tr>
-					<th class="first"><i class="icon-caret-down"></i>公钥标识</th>
-					<th><i class="icon-caret-down"></i>指纹信息</th>
-					<th><i class="icon-caret-down"></i>状态</th>
-					<th><i class="icon-caret-down"></i>操作</th>
+					<th class="first"><i class="icon-caret-down"></i>公開鍵識別子</th>
+					<th><i class="icon-caret-down"></i>指紋情報</th>
+					<th><i class="icon-caret-down"></i>ステータス</th>
+					<th><i class="icon-caret-down"></i>オペレーティング</th>
 				</tr>
 			</thead>
 			<tbody>
-				{% for userPubkey in userPubkey_all %}
-				<tr>
-					<td class="name">{{ userPubkey.name }}</td>
-					<td class="md5">{{ userPubkey.fingerprint }}</td>
-					<td class="status">正常</td>
-					<td class="action">
-						<button id="i_remove_{{ userPubkey.id }}" value="{{ userPubkey.id }}" class="c_remove_sshpubkey btn btn-mini btn-warning">删除</button>
-					</td>
-				</tr>
-				{% endfor %}
+					{% for userPubkey in userPubkey_all %}
+					<tr>
+							<td class="name">{{ userPubkey.name }}</td>
+							<td class="md5">{{ userPubkey.fingerprint }}</td>
+							<td class="status">ノーマル</td>
+							<td class="action">
+								<button id="i_remove_{{ userPubkey.id }}" value="{{ userPubkey.id }}" class="c_remove_sshpubkey btn btn-mini btn-warning">削除</button>
+							</td>
+					</tr>
+					{% endfor %}
 			</tbody>
 	</table>
 	<form id="i_do_sshpubkey_form" class="form-horizontal ssh" action="/settings/sshpubkey/remove/" method="post">
@@ -37,16 +37,16 @@
 	</form>
 
 	<form class="form-horizontal ssh" action="" method="post">
-			<legend class="title">添加SSH Public Key</legend>
+			<legend class="title">加える</legend>
 			{% csrf_token %}
 					<div class="control-group">
-							<label for="id_pubkey_name" class="control-label">公钥标识</label>
+							<label for="id_pubkey_name" class="control-label">PKIアイデンティティ</label>
 							<div class="controls">
 									{{ sshpubkeyForm.pubkey_name }}
 							</div>
 					</div>
 					<div class="control-group">
-							<label for="id_pubkey" class="control-label">公钥</label>
+							<label for="id_pubkey" class="control-label">側位</label>
 							<div class="controls">
 									{{ sshpubkeyForm.pubkey }}
 							</div>
@@ -58,7 +58,7 @@
 					</div>
 					{% endif %}
 					<div class="controls">
-							<button id="id_add_submit" class="btn btn-large btn-success" type="submit">创建</button>
+							<button id="id_add_submit" class="btn btn-large btn-success" type="submit">加える</button>
 					</div>
 	</form>
 {% endblock %}
@@ -69,7 +69,7 @@
 $(function(){
 		$('#i_do_sshpubkey_form').hide()
     var pubkey_init = function() {
-        $('#id_pubkey_name').attr('placeholder', '例如: 公司,笔记本,开发环境');
+        $('#id_pubkey_name').attr('placeholder', 'たとえば、次のように会社、ノート、開発環境');
         $('#id_pubkey').attr('placeholder', 'id_rsa.pub文本内容, 最多10个key');
         $('#id_pubkey_name').addClass('input-xlarge');
         $('#id_pubkey').addClass('input-xlarge');

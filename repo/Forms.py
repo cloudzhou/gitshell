@@ -13,7 +13,7 @@ class RepoForm(forms.ModelForm):
         model = Repo
         fields = ('name', 'desc', 'lang', 'auth_type',)
         widgets = {
-            'desc': forms.Textarea(attrs={'cols': 50, 'rows': 5, 'maxlength': 512}),
+            'desc': forms.Textarea(attrs={'cols': 60, 'rows': 5, 'maxlength': 512}),
             'lang': forms.Select(choices=LANG_CHOICES),
             'auth_type': forms.RadioSelect(choices=AUTH_TYPE_CHOICES),
         }

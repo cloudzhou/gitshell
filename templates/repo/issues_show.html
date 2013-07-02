@@ -1,73 +1,73 @@
 {% extends "repo/repo.html" %}
+
 {% block subcontainer %}
-<style type="text/css">
-#id_content { height: 200px; width: 600px; }
-#i_issue_comments td { border-top: 0px; }
-.issues_attr { margin: 3px }
-.issues_attr_hovered { border: dashed 2px #cccccc ; padding: 2px}
-pre { border: 0px; background-color: transparent; }
-</style>
-    <div id="id_issues_condition" style="display:none" class="span8">
-        {%include "repo/condition.html"%}
-    </div>
-    <div class="span8">
-        <div class="c_issue page-header" style="margin-top: 0px; margin-bottom: 10px;padding-bottom: 8px">
-            <h3 id="i_issue_subject">
-            <a id="i_issue_edit" style="font-weight: normal; font-size: 12px; display: none" class="muted pull-right" href="/{{user_name}}/{{repo_name}}/issues/create/{{issue.id}}/">修改</a>
-            <a href="" style="margin-right: 0px" rel="tooltip" data-original-title="可拖动到上面"><img class="c_drag_setting" value="{{issue.id}}" src="/static/img/glyphicons_019_cogwheel.png"/></a>
-            <a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/">#{{issue.id}} {{issue.subject}}</a>
-            </h3>
+<div class="bubble issues">
+
+	<div id="id_issues_condition" class="bubble-header issues-header clearfix">{%include "repo/condition.html"%}</div>
+
+    <div class="bubble-inner">
+
+        <div class="c_issue issue">
+					<div class="actions">
+						<a href="" rel="tooltip" data-original-title="可拖动到上面"><i class="icon-bell"></i></a>
+						<a id="i_issue_edit" href="/{{user_name}}/{{repo_name}}/issues/create/{{issue.id}}/">修改</a>
+					</div>
+					<h3 id="i_issue_subject"><span class="label">#{{issue.id}}</span>{{issue.subject}}</h3>
+					<blockquote>{{issue.content}}</blockquote>
+					<p class="meta">
+						创建:<a href="/{{issue.user_id}}/">{{issue.user_id}}</a>
+						指派:<a href="/{{issue.assigned}}/">{{issue.assigned}}</a>
+						<span class="">{{issue.tracker}}</span>
+						<span class="">{{issue.status}}</span>
+						<span class="">{{issue.priority}}</span>
+						<span class="">{{issue.category}}</span>
+						<span class="unixtime">{{issue.modify_time}}</span>
+					</p>
         </div>
-        <div style="margin-bottom: 10px;"><pre>{{issue.content}}</pre></div>
-        <div class="pull-right" style="margin-bottom: 10px">
-            <span class="muted" style="margin-right: 20px">分配给 <a href="/{{issue.assigned}}/">{{issue.assigned}}</a> {{issue.tracker}} {{issue.status}} {{issue.priority}}</span>
-            by <a href="/{{issue.user_id}}/">{{issue.user_id}}</a>
-            <span class="c_unixtime">{{issue.modify_time}}</span>
-            <span>类别：{{issue.category}}</span>
-        </div>
-        <br/>
+
+
         {%if issue_comments%}
-	    <table id="i_issue_comments" class="table table-striped">
-            {%for issue_comment in issue_comments%}
-			    <tr data-user-name="{{issue_comment.user_id}}" class="c_td_comment">
-                    <td>
-                        <img class="avatar" style="float:left;display:block" src="https://gravatar.com/avatar/{{ issue_comment.user_img }}?s=32"/>
-                        <div style="margin-left:40px">
-                            <div class="pull-right">
-                                <a style="display: none" class="c_rm_comment" value="{{issue_comment.id}}" href="javascript:void(0)"> x </a>
-                                <button style="display: none" value="{{issue_comment.id}}" class="c_rm_rf_comment btn btn-mini btn-danger">确定删除该评论？</button>
-                            </div>
-                            <a href="/{{issue_comment.user_id}}/">{{issue_comment.user_id}}</a> - <span class="c_unixtime muted">{{issue_comment.create_time}}</span> - <a class="c_ref_comment muted" href="javascript:void(0)" value="{{issue_comment.user_id}}">回复</a></a>
-                            <pre>{{issue_comment.content}}</pre>
-                        </div>
-                    </td>
-                </tr>
-            {%endfor%}
-        </table>
+					<ul id="i_issue_comments" class="list">
+						{%for issue_comment in issue_comments%}
+							<li data-user-name="{{issue_comment.user_id}}" class="c_td_comment">
+								<figure class="avatar">
+									<img src="https://gravatar.com/avatar/{{ issue_comment.user_img }}?s=32" alt="{{issue.comment}}">
+								</figure>
+								<div class="issue-body">
+									<a class="c_rm_comment" value="{{issue_comment.id}}" href="javascript:void(0)"><i class="icon-close"></i></a>
+									<button value="{{issue_comment.id}}" class="c_rm_rf_comment btn btn-mini btn-primary">确定删除该评论？</button>
+									<p class="meta"><a href="/{{issue_comment.user_id}}/">{{issue_comment.user_id}}</a><span class="unixtime">{{issue_comment.create_time}}</span><a class="c_ref_comment" href="javascript:void(0)" value="{{issue_comment.user_id}}">回复</a></p>
+									<blockquote>{{issue_comment.content}}</blockquote>
+								</div>
+							</li>
+						{%endfor%}
+					</ul>
         {%endif%}
+
         {%if total_page|length > 1%}
-        <div class="pagination pagination-right">
-            <ul>
-                {%for i in total_page%}
-                    {%if i == page%}
-                        <li class="active"><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
-                    {%else%}
-                        <li><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
-                    {%endif%}
-                {%endfor%}
-            </ul>
-        </div>
+					<div class="pagination">
+						<ul>
+							{%for i in total_page%}
+								{%if i == page%}
+									<li class="active"><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
+								{%else%}
+									<li><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
+								{%endif%}
+							{%endfor%}
+						</ul>
+					</div>
         {%endif%}
+
         <form id="i_comment" class="form-inline" action="" method="post">
-            {% csrf_token %}
-            <div id="i_comment_content" style="margin-bottom: 10px; display: none">
-                {{repoIssuesCommentForm.content}}
-            </div>
-            <button id="i_submit" style="margin-right: 0px;" class="btn btn-primary" type="submit">发表评论</button>
-            <small class="muted">不可修改，严谨发言</small>
+					{% csrf_token %}
+					<div id="i_comment_content">{{repoIssuesCommentForm.content}}</div>
+					<button id="i_submit" class="btn" type="submit">发表评论</button>
+					<small class="muted">不可修改，严谨发言</small>
         </form>
     </div>
+	</div>
 {% endblock %}
+
 {% block subjs %}
 <!--script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script-->
 <script src="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.21/jquery-ui.min.js"></script>

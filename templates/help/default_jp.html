@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block container %}
+<div class="bubble">
+	<div class="bubble-header">
+		<h2 class="title"><i class="icon-info-sign"></i>帮助</h2>
+	</div>
+	<div class="bubble-inner clearfix">
+		<nav class="sidebar" id="sidebar">
+				<ul class="nav nav-list">
+						<li class="leader"><i class="icon-caret-down"></i>Gitshellについて</li>
+						<li><a href="#about">Gitshellについて</a></li>
+						<li><a href="#mission">ビジョン</a></li>
+						<li><a href="#faq">FAQ</a></li>
+						<li><a href="#service">利用規約</a></li>
+						<li><a href="#contact">連絡</a></li>
+						<li class="leader"><i class="icon-caret-down"></i>はじめに</li>
+						<li><a href="#join_login">登録·ログイン</a></li>
+						<li><a href="#sshkey">管理ssh key</a></li>
+						<li><a href="#repo">管理仓库</a></li>
+						<li><a href="#code">clone·push·pullコード</a></li>
+						<li><a href="#group">共同開発</a></li>
+						<li><a href="#error">エラーコード</a></li>
+						<li class="leader"><i class="icon-caret-down"></i>git 学習</li>
+						<li><a href="#learn">実践から学ぶ</a></li>
+						<li><a href="#resource">git外部の学習リソース</a></li>
+				</ul>
+		</nav>
+		<section id="id_help" class="sidebody">
+			<article class="helps inner">
+				<section>
+					<h2 id="about">Gitshellについて</h2>
+					<p class="text-warning">www.gitshell.comその後、技術志向の社会、2012年3月9日で、ドメイン名の登録、2012年3月17日午後09時17分30秒で書かれたコードの最初の行、コードを追加し、週の毎日であることは第6回です。ほとんどの主要な開発時間。開発者として、私はオープンソース、オープンソースの知識を徐々に学習からインストールredhat9.0スタート（私はまだ興奮を覚えている）、からなしグラフィックドライバについて非常に情熱的で、私はオープンソースの世界をお返ししたいと思っています。我々は他の人に有用な製品を作ることであり、gitshellはそのうちの一つであると思いますので、プログラマは、偉大なタイトルでなければなりません。説明最初に、<mark>説明書のすべての種類が使用できない回避するために、gitshellは、Google Chromeの、Mozilla Firefoxの、AppleのSafari、オペラや他の近代的なブラウザをサポートしています。</mark></p>
+				</section>
+				<section>
+					<h2 id="mission">ビジョン</h2>
+					<p>安全で、安定したコミュニティを提供するために、卓越した開発者向けgitshellは、ここでのショーからコードを取得するアイデアを共有し、お互いから学び、開発のレベルを向上させます。</p>
+				</section>
+				<section>
+					<h2 id="faq">よくある質問</h2>
+					<dl class="faq">
+						<dt>gitshell何？</dt>
+						<dd class="well">gitshellクローンを提供し、githubのと同様のGitバージョン管理システムを使用して、1つ、（言語と速度はあなたのために何の問題がない場合、それはgithubのを使用することをお勧めします）ですが、プッシュ、プル、支店管理。 "シェル"を意味し、このサイトでgitshellとのgit - シェルコマンドのように、Linuxのシェルは名前の由来である"シェル"のgitのを提供することです。</dd>
+						<dt>なぜgitshell？</dt>
+						<dd class="well">プログラマーとして、1日、私は突然、そのコードは、必ずしも多くの価値を持っていませんが、常に失われた変更の様に多くのコードを書くために使用され、実現したが、作家のように、一人一人を残してすることは原稿がある意味のあるもの。 githubの、ビットバケット·プロセスを使用する場合は、速度が（特に一度githubのは、もちろん、githubのではない独自の理由を訪れていない）理想的ではないと感じているので、ローカル環境で構築されたgitのを理解する、自分でgitリポジトリを使用して1つを構築したかったゆっくり考え、なぜ公共gitのホスティング、サービス開発者なので、gitshellた。</dd>
+						<dt>gitshellはできますか？</dt>
+						<dd class="well">gitのホスティング上gitshellフォーカスは、独創性を奨励するために、特に、軽快なオープンソースコードを歓迎します。良好な開発者コミュニティを作成し、コードは、引数を獲得すること、KISSの原則を信じている。私はもっと面白いことを楽しみにしています。</dd>
+						<dt>将来的にはgitshell？</dt>
+						<dd class="well">私はgitshellが長い浮かんことを願って、ステップによって、堅牢でふっくらアップステップ。</dd>
+						<dt>gitshellアーキテクチャ？</dt>
+						<dd class="well">ここhaproxyの、のopenssh-gitshell-パッチ、nginxの、uwsgi、Redisは、memcachedの、beanstalkd、ジャンゴは、mysql、アーキテクチャが絶えず変化している使用してgitの、しかし、必ずしも最新の状態に保たれていない、私は今後の記事で詳しく説明しますアーキテクチャについて説明します。</dd>
+						<dt>gitshell限界？</dt>
+						<dd class="well">ほとんどの開発者は通常使用することができますするために、技術的な要件と普通のウェブサイトより高いリソース消費をホスティングのgitを提供することにより、gitの操作上のいくつかの制限がありますが、現在gitshellは大規模なプロジェクトをサポートしていません、これはおそらく最も簡単な混乱していますすべてgitshellユーザーはこのことを理解する必要があります。</dd>
+					</dl>
+					<p>何ができるのか導入に加えて、それはについて話をすると行うことができないことが必要である。</p>
+					<p>良好なコミュニティの雰囲気、gitshell明確なルールを維持するために：</p>
+					<ul class="list unstyled">
+						<li>質問は、グーグルのスキルの問題に注意を払う、"のように、上、招待コード、私にメールを送信"することができます聞かないでください...これらの言葉は表示できません。</li>
+						<li>低炭素環境ではなく、ネットワークディスクとして、バックアップとして任意のファイルgitshellを入れてはいけません。ここでの唯一のコード関連の可能、バイナリファイルの多数を歓迎しない。印刷され、削除される可能性が高い文書の不適切なコンテンツがある場合。</li>
+						<li>人、ない個人攻撃、汚い言葉、ロマンチックな、政治的トピック、テクスチャとの良好な、無意味な情報は、これらのトピックの議論の範囲内ではありません対応する場所を持っていなく、ここ、ここ、そして唯一の開発者に関連した。</li>
+						<li>上記の規則に違反した場合、アカウントを無効にするのに十分深刻対応する制裁措置がありますが、私はこのような状況を持ってしたくない。</li>
+					</ul>
+				</section>
+				<section>
+					<h2 id="contact">連絡</h2>
+					<p>Mailはどんな質問が<a href="#">support@gitshell.com</a>を介して通信するために歓迎されていた古代と効果的な接触である。また、公式マイクロボー<a href="#">http://weibo.com/gitshell</a>も良い方法です。あなたはgitshell開発者と通信する必要がある場合は、<a href="#">azhoulinux@gmail.com</a>連絡。</p>
+				</section>
+				<section>
+					<h2 id="join_login">ログインサインアップ</h2>
+					<p>gitshellは古代と効果的なツールとして、我々は高度に電子メールを介して通信することをお勧め、電子メールを介して·ログインサインアップので、メールボックスは独自のアカウントIDである、また、ユーザの安定性と一貫性と通信するために、ユーザー名を選択する必要が注意深く見れば名前が固定されており、SSL暗号化プロトコルを使用して、ステーションを変更することはできません、あなたが私たちのクライアントの暗号化通信のパスワード、サーバは不可逆的に暗号化され、再び見ることができるので、それは絶対に、ユーザを得ることができ、元のパスワードを保存しない元のパスワード、そして決して要求ユーザパスワード。セキュリティは、ユーザーのパスワードを保護するために一定の複雑さを維持するために、定期的に変更し、効果的に防ぐことができます意識から来ている"悪者を。"</p>
+				</section>
+				<section>
+					<h2 id="sshkey">SSHキーの管理</h2>
+					<p>SSH公開鍵のペアは、単に最初のセキュリティドアのように、すべての安全の基礎である。 ssh経由でデータを交換するための任意の合意は、SSHキー保護は良いプログラマであることをセキュリティ上の理由からgitshellは、安全意識を持っている必要があり、あなたはほかに、それは定期的にキーを更新するのが最善ですが、1Passwordの適切に保存を通じてツールのように願っています。</p>
+					<p class="text-warning">マルチプレイ共有キーは厳密にはサポートされていません！</p>
+					<p>には、最初に以下のconfigure sshのパスワードに基づいて、使用している場合：</p>
+					<h4>クイックスタート:</h4>
+					<p>あなたが任意のUnixライクなシステムを使用する場合は、最初に、SSH公開鍵を設定して黒い背景の文字をコピーするための手順に従ってください、ターミナルでコマンドを実行し、ファイルを編集</p>
+					<ol>
+						<li>
+							<p>に保存されているSSH鍵を生成するには、次のコマンドを実行<span class="label text-bold">~/.ssh/gitshell.com_rsa</span></p>
+							<pre class="well"><code>ssh-keygen -t rsa  -N '' -f ~/.ssh/gitshell.com_rsa;</code></pre>
+						</li>
+						<li>
+							<p>編集sshクライアントの設定ファイル〜/。のssh/ configには、使い慣れたエディタを使用して、APPEND</p>
+							<pre class="well">
+								<code>
+Host gitshell.com
+	User {{ user.username }}
+	IdentityFile ~/.ssh/gitshell.com_rsa
+	PreferredAuthentications publickey</code>
+							</pre>
+						</li>
+						<li>
+							<p>SSH公開鍵を表示し、catコマンドを使用するか、または開くためにエディタを使用し</p>
+							<pre class="well"><code>cat ~/.ssh/gitshell.com_rsa.pub</code></pre>
+						</li>
+						<li><p>テキストSSH公開鍵をコピーしてください、<a href="#">SSH公開鍵管理</a>、アイデンティティ保全公共の入力をクリック</p></li>
+						<li><p>sshの公開鍵は、長期使用後に設定することができ、<span class="label">〜/.SSH / gitshell.com_rsa</span>鍵を保護してください。<a href="#">促進するために倉庫</a>、倉庫詳細な説明の作成]をクリックします</p></li>
+						<li>
+							<p>すでにマネージコードにgitshellを使用することができ、次の操作のデモですが、詳細は<a href="#">gitのを学習し始めた</a></p>
+							<pre class="well">
+								<code>
+$ git clone git@gitshell.com:your_name/repo_name
+$ cd repo_name;
+$ vim README.md
+$ git add README.md
+$ git commit -m "init README.md" .
+$ git push -u origin master</code>
+							</pre>
+						</li>
+						<li>
+							<p>情報プッシュが重要な役割を持っているコンフィギュuser.name、user.mail、背景の統計上の両方では、次のコンフィギュレーションに登録されたユーザー名とメールアドレスを選択</p>
+								{% if user.is_authenticated %}
+								<pre class="well">
+									<code>
+$ git config --global user.name "{{ user.username }}"
+$ git config --global user.email "{{ user.email }}"</code>
+								</pre>
+								{% else %}
+									<pre class="well">
+										<code>
+$ git config --global user.name "your_name"
+$ git config --global user.email "your_email"</code>
+									</pre>
+								{% endif %}
+								<p class="text-warning">グローバルパラメータ - あなたがグローバルでない場合は、その中の各倉庫には、削除、configのgitの実行</p>
+								<li><p>全体の構成プロセスを完了していただきありがとうございます、何か問題が発生した場合、<a href="#">support@gitshell.com</a>、または公式マイクロブログ<a href="#">http://weibo.com/gitshell</a>にお問い合わせ</p></li>
+							</ol>
+						</section>
+						<section>
+							<h2 id="repo">管理倉庫</h2>
+							<dl>
+								<dt>倉庫、コンテナの基礎を開発することである、すべての活動は、倉庫から派生しています。あなたは人々があなたの倉庫をお知りになりたい場合は、それが最善の方法です</dt>
+								<dd>
+									<ol>
+										<li>グッドネーミング、シンプル輪郭。</li>
+										<li>人々はすべての問題を解決するためにあなたの倉庫に何をすべきか知っているように適切なコメントを、。</li>
+										<li>もちろん、最も重要なのは、常に優れたアイテムになって開発しています。</li>
+									</ol>
+								</dd>
+							</dl>
+							<p class="text-error">コードへの倉庫のほかに、他のデータが厳しく制限されて、あなたはこれを理解する必要があります。</p>
+						</section>
+						<section>
+							<h2 id="code">clone·push·pullコード</h2>
+							<pre class="well">
+								<code>
+$ git clone git@gitshell.com:your/repo
+$ cd repo; vim README.md
+$ git add README.md
+$ git commit -m "init README.md"
+$ git push -u origin master
+$ git pull</code>
+							</pre>
+						</section>
+						<section>
+							<h2 id="group">共同開発</h2>
+							<dl>
+								<dt>gitshellは、エンタープライズレベルの開発とは異なる倉庫相乗的、の共同開発のメンバーの数を提供し、現在の権威は、それぞれの所有者の倉庫そう厳密に定義されていない最高の経営権、注意することは残りのメンバーと同等の権限があることのすべてのメンバー倉庫フルアクセス許可を読み書きします。グループとしての開発は、あなたが知っている必要があります：</dt>
+								<dd>
+									<ol>
+										<li>できるだけ他の人に迷惑を起こさない。</li>
+										<li>良いコミットレコードを持つ。</li>
+										<li>コード構造は、清潔な澄んだ、との良好なコミュニケーションのすべてのメンバーに保つために。</li>
+									</ol>
+								</dd>
+							</dl>
+						</section>
+						<section>
+							<h2 id="learn">実践から学ぶ</h2>
+							<p>あなたが水の中に独自のプッシュそれを置くために、泳ぐことを学ぶ必要があります。</p>
+						</section>
+						<section>
+							<h2 id="error">エラーコード</h2>
+							<dl>
+								<dt>残念ながら、あなたはここを参照してください、次は、一般的なエラーコードです：</dt>
+								<dd class="http-error">
+									<h3 id="404">404リソースが見つかりません：</h3>
+									<p>あなたは、私が見つからない404を見つける何かをしたい</p>
+									<h3 id="500">500内部エラーコード:</h3>
+									<p>それが動作を再現することが可能である場合500内部システムエラーが発生しました、、support@gitshell.com、宜しくご連絡ください！</p>
+								</dd>
+							</dl>
+						</section>
+						<section>
+							<h2 id="resource">外部学習リソースをgitの</h2>
+							<ul class="list unstyled">
+								<li><span class="leader">Git Official Site</span><a target="_blank" href="http://book.git-scm.com/">http://book.git-scm.com/</a></li>
+								<li><span class="leader">Git Community Book 中国語バージョン</span><a target="_blank" href="http://gitbook.liuhui998.com/index.html">http://gitbook.liuhui998.com/index.html</a></li>
+								<li><span class="leader">Pro Git 簡体字中国語版</span><a target="_blank" href="http://github.danmarner.com/">http://github.danmarner.com/</a></li>
+								<li><span class="leader">Definitive Guideの関連ブログをgitの</span><a target="_blank" href="http://www.worldhello.net/">http://www.worldhello.net/</a></li>
+								<li><span class="leader">Markdownの構文</span><a target="_blank" href="http://qingbo.net/picky/502-markdown-syntax.html">http://qingbo.net/picky/502-markdown-syntax.html</a></li>
+								<li><span class="leader">あなたは何を持っていない場合、あなたがすることができるものは、あなたも見ることができる</span><a target="_blank" href="http://cloudzhou.org">http://cloudzhou.org</a></li>
+							</ul>
+						</section>
+						<section class="privacy">
+							<h2 id="service">利用規約</h2></h2>
+							<dl>
+								<dt>中国ではなく、使用生成、複製、公開は、次の情報を広めるには、関連法規を遵守しなければならない使用gitshellでのサービスのユーザー：</dt>
+								<dd>
+									<ol>
+										<li>憲法の基本原則に違反;</li>
+										<li>国家の統一を損なう、政府を打倒、国家機密を漏洩、国家安全保障を危険にさらす;</li>
+										<li>国家の名誉と利益を害する;</li>
+										<li>民族的憎悪や民族差別に扇動、国家の団結を損なう;</li>
+										<li>カルトと封建的な迷信を推進し、国家の宗教政策を損なう;</li>
+										<li>スプレッド噂は、社会秩序を乱すか、社会の安定を損なう;</li>
+										<li>拡散わいせつ、ポルノ、ギャンブル、暴力、テロや扇動罪;</li>
+										<li>侮辱や中傷他の人は、正当な権利と利益を侵害;</li>
+										<li>行列のとデモの関連の不法集会を、扇動、暴徒は社会秩序を乱すこと;</li>
+										<li>市民社会組織の名の下に違法行為;</li>
+										<li>他のコンテンツを禁止する法律や行政法規が含まれています。</li>
+									</ol>
+								</dd>
+								<dt>契約の条件:</dt>
+								<dd class="text-warning">ユーザーは、このサービスは、インターネットやモバイル通信サービスに関連するサービスを提供するために提示、現在の状況に応じただけで不安定な要因のすべての側面を受ける可能性があることを理解する必要があります。したがって、コンピュータウイルスやハッカーの攻撃、システムの不安定性、ユーザーの場所、ユーザーのシャットダウン、GSMネットワーク、インターネットを不可抗力のサービスのために存在して、通信回線やサービスの中断やリスクに起因する他の理由は、ユーザー要件を満たしていない。オープニングサービス利用者は、サービスの適時性に関するより多くのリスク、当社とパートナー企業を負担する必要があり、セキュリティ、正確さはこのように、ユーザーが送受信したメッセージ、または配信エラー、老化の個人設定ではなく、読むことができますさせるため、保証されていません私が保存したり、他の問題は一切の責任を受け入れない。 （ほとんどの人が真剣にここに:)が表示されていないので、なぜ、最後に置かれています）</dd>
+							</dl>
+						</section>
+					</article>
+			</section>
+		</div>
+	</div>
+{% endblock %}
+
+{% block js %}
+	<script src="/static/js/bootstrap/bootstrap-affix.js"></script>
+	<script>
+		$(function(){
+			if(window.location.hash) {
+				$(window).scrollTop($(window).scrollTop() - 50);
+			}
+			$(document.body).delegate("a","click",function(){
+				var hrefStr = $(this).attr("href");
+				var reg = /.*#[a-z_A-Z]+$/;
+				var isHash= reg.test(hrefStr);
+				if(isHash){
+					var hashStr =$(this).attr('href'); 
+					var hashIds = hashStr.match(/#[a-z_A-Z]+$/);
+					var pos = $(hashIds[0]).offset();
+					$(window).scrollTop(pos.top - 50);
+					return false;
+				}
+			});
+		});
+	</script>
+{% endblock %}

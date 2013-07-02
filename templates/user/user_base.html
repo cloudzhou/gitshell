@@ -1,86 +1,104 @@
 {% extends "base.html" %}
 
-{% block css %}
+{% block container %}
+	<div class="bubble">
+		<header class="bubble-header member clearfix">
+
+			<a href="https://gravatar.com/" class="avatar">
+				<figure>
+					<img src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=40" alt="{{ gsuser.username }}">
+				</figure>
+			</a>
+
+			<div class="info">
+				<p class="name">{{ gsuser.username }}
+				{% if gsuserprofile.nickname %}
+					({{ gsuserprofile.nickname }})
+				{% endif %}
+				{% if user.username != gsuser.username %}
+					{% if not is_watched_user %}
+						<a id="id_watch_user" href="javascript: void(0)">+</a>
+					{% else %}
+						<a id="id_unwatch_user" href="javascript: void(0)">-</a>
+					{% endif %}
+				{% endif %}
+				</p>
+				<p id="id_user_alert" class="alert alert-error hide">
+					<strong>失败!</strong><span id="id_alert_message"></span>
+				</p>
+				<p class="muted">{{ gsuserprofile.tweet }}</p>
+			</div>
+
+			<dl class="dl-horizontal pull-left" id="id_user_detail">
+				{% if gsuserprofile.website %}
+					<dt>网站</dt>
+					<dd><a href="{{ gsuserprofile.website }}" target="_blank">{{ gsuserprofile.website }}</a></dd>
+				{% endif %}
+				{% if gsuserprofile.company %}
+					<dt>公司</dt>
+					<dd>{{ gsuserprofile.company }}</dd>
+				{% endif %}
+				{% if gsuserprofile.location %}
+					<dt>所在地</dt>
+					<dd>{{ gsuserprofile.location }}</dd>
+				{% endif %}
+				<dt>加入gitshell</dt>
+				<dd>{{ gsuserprofile.create_time|date:"Y-m-d" }}</dd>
+			</dl>
+
+			<ul class="actions btn-group horizontal-list">
+				<li class="first">
+					{% if user.username == gsuser.username %}
+						<a href="/{{ gsuser.username }}/repo/" class="btn">
+							<span class="link">{{ gsuserprofile.pubrepo|add:gsuserprofile.prirepo }}</span>
+					{% else %}
+						<a href="/{{ gsuser.username }}/repo/" class="btn">
+							<span class="link">{{ gsuserprofile.pubrepo }}</span>
+					{% endif %}
+						<span class="muted">仓库</span>
+					</a>
+				</li>
+				<li class="middle">
+					<a href="/{{ gsuser.username }}/watch/repo/" class="btn">
+						<span class="link">{{ gsuserprofile.watchrepo }}</span>
+						<span class="muted">关注仓库</span>
+					</a>
+				</li>
+				<li class="middle">
+					<a href="/{{ gsuser.username }}/watch/user/" class="btn">
+						<span class="link">{{ gsuserprofile.watch }}</span>
+						<span class="muted">关注</span>
+					</a>
+				</li>
+				<li class="last">
+					<a href="/{{ gsuser.username }}/watch/user/" class="btn">
+						<span class="link">{{ gsuserprofile.be_watched }}</span>
+						<span class="muted">被关注</span>
+					</a>
+				</li>
+			</ul>
+
+			</header>
+
+			<div class="bubble-inner clearfix">
+
+					<div class="bubble-col">
+							<div>
+								{% block left_sub_container %}{% endblock %}
+							</div>
+					</div>
+
+					<div class="bubble-col">
+						{% block right_sub_container %}{% endblock %}
+					</div>
+
+			</div>
+
+	</div>
+	{% block row_sub_container %}{% endblock %}
+
 {% endblock %}
 
-{% block container %}
-<div class="page-header">
-    <div class="row">
-        <div class="span1">
-            <a href="https://gravatar.com/"><img class="avatar" src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=20"/></a>
-        </div>
-        <div class="span6">
-            <div style="margin-bottom: 5px">
-                <span class="big_font">{{ gsuser.username }}
-                {% if gsuserprofile.nickname %}
-                    ({{ gsuserprofile.nickname }})
-                {% endif %}
-            {% if user.username != gsuser.username %}
-                {% if not is_watched_user %}
-                    <a id="id_watch_user" href="javascript: void(0)">+</a>
-                {% else %}
-                    <a id="id_unwatch_user" href="javascript: void(0)">-</a>
-                {% endif %}
-            {% endif %}
-                </span>
-                <span id="id_user_alert" class="alert alert-error" style="display: none">
-                    <strong>失败!</strong> <span id="id_alert_message"></span>
-                </span>
-            </div>
-            <span class="muted">{{ gsuserprofile.tweet }}</span>
-        </div>
-        <div class="span">
-            {% if user.username == gsuser.username %}
-                <a href="/{{ gsuser.username }}/repo/"><span class="big_font">{{ gsuserprofile.pubrepo|add:gsuserprofile.prirepo }}</span></a>
-            {% else %}
-                <a href="/{{ gsuser.username }}/repo/"><span class="big_font">{{ gsuserprofile.pubrepo }}</span></a>
-            {% endif %}
-            <br/><span class="muted">仓库</span>
-        </div>
-        <div class="span">
-            <a href="/{{ gsuser.username }}/watch/repo/"><span class="big_font">{{ gsuserprofile.watchrepo }}</span></a>
-            <br/><span class="muted">关注仓库</span>
-        </div>
-        <div class="span">
-            <a href="/{{ gsuser.username }}/watch/user/"><span class="big_font">{{ gsuserprofile.watch }}</span></a>
-            <br/><span class="muted">关注</span>
-        </div>
-        <div class="span">
-            <a href="/{{ gsuser.username }}/watch/user/"><span class="big_font">{{ gsuserprofile.be_watched }}</span></a>
-            <br/><span class="muted">被关注</span>
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="span7">
-        <div id="id_user_detail">
-            <dl class="dl-horizontal">
-                {% if gsuserprofile.website %}
-                    <dt>网站</dt>
-                    <dd><a href="{{ gsuserprofile.website }}">{{ gsuserprofile.website }}</a></dd>
-                {% endif %}
-                {% if gsuserprofile.company %}
-                    <dt>公司</dt>
-                    <dd>{{ gsuserprofile.company }}</dd>
-                {% endif %}
-                {% if gsuserprofile.location %}
-                    <dt>所在地</dt>
-                    <dd>{{ gsuserprofile.location }}</dd>
-                {% endif %}
-                <dt>加入gitshell</dt>
-                <dd>{{ gsuserprofile.create_time|date:"Y-m-d" }}</dd>
-            </dl>
-        </div>
-        <div>
-            {% block left_sub_container %}{% endblock %}
-        </div>
-    </div>
-    <div class="span5">
-        {% block right_sub_container %}{% endblock %}
-    </div>
-</div>
-{% block row_sub_container %}{% endblock %}
-{% endblock %}
 {% block js %}
 <script src="/static/js/moment.min.js"></script>
 <script src="/static/js/moment.zh-cn.js"></script>

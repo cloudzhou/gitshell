@@ -1,41 +1,44 @@
 {% extends "base.html" %}
-{% block css %}
-<style>
-.progress {margin-bottom: 3px; height: 10px;}
-</style>
-{% endblock %}
+
 {% block container %}
-<div class="page-header">
-        <h1>:-), 设置 <small>个人资料，ssh pub key，密码，仓库配额...</small></h1>
-</div>
-<div class="row">
-<div class="span3">
-    <div style="padding: 8px 0;" class="well">
-        <ul class="nav nav-list">
-            <li class="nav-header">:-) {{ user }}</li>
-            <li><a href="/settings/profile/">个人资料</a></li>
-            <li><a href="/settings/sshpubkey/">SSH公钥</a></li>
-            <li><a href="/settings/notif/">消息通知</a></li>
-            <li><a href="/settings/changepassword/">修改密码</a></li>
-            <li><a href="/settings/thirdparty/">GitHub 账户关联</a></li>
-        {% if userprofile.prirepo == 0 and userprofile.pubrepo == 0 %}
-            <li><a href="/settings/change_username_email/">修改用户名·登录邮箱</a></li>
-        {% endif %}
-            <li><a href="/settings/destroy/">刪除帐号</a></li>
-            <li class="divider"></li>
-            <li>仓库数目 {{userprofile.get_total_repo}}/100</li>
-            <li><div class="progress">
-                <div id="id_repo_count" class="bar" style="width: 0%;"></div>
-            </div></li>
-            <li>仓库配额 {{userprofile.used_quote}}/{{userprofile.quote}}</li>
-            <li><div class="progress progress-danger">
-                <div id="id_quote_used" class="bar" style="width: 0%;"></div>
-            </div></li>
-        </ul>
-    </div>
-</div>
-{% block container-right %}
+<div class="bubble">
+	<div class="bubble-header">
+		<h2 class="title"><i class="icon-cog"></i>设置</h2>
+	</div>
+	<div class="bubble-inner clearfix">
+		<div class="sidebar">
+			<ul class="nav nav-list">
+				<li class="leader"><i class="icon-caret-down"></i>{{ user }}</li>
+				<li><a href="/settings/profile/">个人资料</a></li>
+				<li class="active"><a href="/settings/sshpubkey/">SSH公钥</a></li>
+				<li><a href="/settings/notif/">消息通知</a></li>
+				<li><a href="/settings/changepassword/">修改密码</a></li>
+				<li><a href="/settings/thirdparty/">GitHub 账户关联</a></li>
+				{% if userprofile.prirepo == 0 and userprofile.pubrepo == 0 %}
+					<li><a href="/settings/change_username_email/">修改用户名·登录邮箱</a></li>
+				{% endif %}
+				<li><a href="/settings/destroy/">刪除帐号</a></li>
+			</ul>
+			<hr class="hr">
+			<div class="repo-count">
+				<h4>仓库数目<span class="used text-warning">{{userprofile.get_total_repo}}</span><span class="divider">/</span><span class="capacity text-success">100</span></h4>
+				<div class="progress">
+					<div id="id_repo_count" class="bar" style="width: 0%;"></div>
+				</div>
+				<h4>仓库配额<span class="used text-warning">{{userprofile.used_quote}}</span><span class="divider">/</span><span class="capacity text-success">{{userprofile.quote}}</span></h4>
+				<div class="progress progress-danger">
+					<div id="id_quote_used" class="bar" style="width: 0%;"></div>
+				</div>
+			</div>
+		</div>
+		<div class="sidebody">
+			<div class="inner">
+				{% block container-right %}
+				{% endblock %}
+			</div>
+		</div>
+	</div>
+
+	</div>
 {% endblock %}
-</div>
-</script>
-{% endblock %}
+

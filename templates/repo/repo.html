@@ -8,144 +8,135 @@
 {% endblock %}
 
 {% block container %}
+<div class="repo-container bubble-flat clearfix">
 
 	<header class="repo-header">
-
-		<div class="repo-actions-bar">
-
-			<span class="repo-icon {% if repo.auth_type == 0 %}unlock{% else %}lock{% endif %}"></span>
-
-				<ul class="repocrumb">
-					<li class="user"><a href="/{{ user_name }}/">{{ user_name }}</a><span class="divider">/</span></li>
-					<li><a href="/{{ user_name }}/{{ repo_name }}/">{{ repo_name }}</a></li>
-				</ul>
-
-				<ul class="repo-actions">
-					{% if has_pull_right %}
-						<li><a href="/{{ user_name }}/{{ repo_name }}/pull/new/"><button class="btn" type="button"><i class="octicon octicon-git-pull-request"></i>合并请求</button></a></li>
+		<div class="repo-actions-bar clearfix">
+			<ul class="repocrumb clearfix">
+				<li class="user"><a href="/{{ user_name }}/"><i class="icon-meh"></i>{{ user_name }}</a><span class="divider">&rarr;</span></li>
+				<li><a href="/{{ user_name }}/{{ repo_name }}/">{{ repo_name }}</a><sup><i class="icon-dropbox"></i></sup></li>
+			</ul>
+			<ul class="repo-actions btn-group">
+				<li><a href="#" class="btn">Star</a>
+				<li class="btn-group">
+					{% if not is_watched_repo %}
+						<a class="btn watch first" data-original-title="Watch" rel="tooltip" href="javascript: void(0)">Watch</a>
+					{% else %}
+						<a class="btn unwatch first" data-original-title="Unwatch" rel="tooltip" href="javascript: void(0)">Unwatch</a>
 					{% endif %}
-					<li>
-						{% if not is_watched_repo %}
-							<a class="btn watch" data-original-title="关注该项目" rel="tooltip" href="javascript: void(0)"><i class="icon-star"></i>关注</a>
-						{% else %}
-							<a class="btn unwatch" data-original-title="取消关注该项目" rel="tooltip" href="javascript: void(0)"><i class="icon-star-empty"></i>取消关注</a>
-						{% endif %}
-						<span class="count" title="关注次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</span>
-					</li>
-					<li>
-						<a class="btn fork" data-original-title="衍生作为本地仓库" rel="tooltip" href="javascript: void(0)"><i class="icon-code-fork"></i>Fork</a>
-						<span class="count" title="衍生次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.fork}}</span>
-					</li>
+					<span class="btn count last" title="关注次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</span>
+				</li>
+				<li class="btn-group">
+					<a class="btn fork first" data-original-title="衍生作为本地仓库" rel="tooltip" href="javascript: void(0)">Pull Request</a>
+					<span class="btn count last" title="衍生次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.fork}}</span>
+				</li>
+				<li><a href="#" class="btn"><i class="icon-random"></i>Compare</a>
+			</ul>
+		</div>
+		<div class="description clearfix">
+			<p>{{repo.desc|truncatechars:140}} <a href="#README.md">阅读更多</a></p>
+			<p class="repo-admin-edit btn-group">
+				<a href="/{{user_name}}/{{repo_name}}/edit/" class="first btn btn-mini"><i class="icon-edit"></i>编辑</a>
+				<a href="/{{user_name}}/{{repo_name}}/delete/" class="last btn btn-mini"><i class="icon-trash"></i>删除</a>
+			</p>
+		</div>
+	</header>
+
+	<div class="clearfix">
+		<nav class="sidenav">
+			<ul class="nav nav-list">
+				<li {% if current == 'index' or current == 'tree' %}class="active"{% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/"><span><i class="icon-code"></i></span></a></li>
+				<li {% if current == 'issues' %}class="active"{% endif %}><a href="/{{ user_name }}/{{ repo_name }}/issues/"><span><i class="icon-bug"></i></span></a></li>
+				<li {% if current == 'pulls' %}class="active"{% endif %}><a href="/{{ user_name }}/{{ repo_name }}/pulls/"><span><i class="icon-code-fork"></i></span></a></li>
+				<li><a href="#"><span><i class="icon-desktop"></i></span></a></li>
+				<li><a href="#"><span><i class="icon-th"></i></span></a></li>
+				<li {% if current == 'edit' %}class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/edit/"><span><i class="icon-wrench"></i></span></a></li>
+			</ul>
+		</nav>
+
+		<div class="repo-main">
+
+		{% if current == 'index' or current == 'tree' or current == 'commits' %}
+			<div class="repo-clone-url clearfix{% if current == 'index' or current == 'tree' %} visible{%else%} hide{%endif%}">
+				<a href="#" id="toggle-arrow"><i class="icon-chevron-down"></i></a>
+				{% if repo.status != 0 %}
+					<p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
+				{% endif %}
+				{% if has_fork_right %}
+					<dl class="clone-url clearfix">
+						<dt class="clearfix">
+							{% if is_repo_member %}
+								<a id="id_ssh_fork" class="url-select first">SSH</a>
+							{% endif %}
+								<a id="id_http_fork" class="active url-select">HTTP</a>
+							{% if repo.auth_type == 0 %}
+								<a id="id_git_fork" class="url-select">GIT</a>
+							{% endif %}
+						</dt>
+						<dd class="url-holder clearfix">
+							{% if is_repo_member %}
+								<span class="url" id="url"><span class="url-git">git</span>@<span class="url-gitshell">gitshell.com</span>:<span class="url-username">{{ user_name }}</span>/<span class="url-repo-name">{{ repo_name }}</span>.git</span>
+							{% elif repo.auth_type == 0 %}
+								<span class="url"><span class="url-git">https://</span><span class="url-gitshell">gitshell.com</span>/<span class="url-username">{{ user_name }}</span>/<span class="url-repo-name">{{ repo_name }}</span>.git</span>
+							{% endif %}
+							<span class="clipboard url-select last"><a class="url-js-copy"><i class="icon-copy"></i>复制</a></span>
+								<span class="muted url-info">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>
+						</dd>
+					</dl>
+				{% endif %}
+			</div>
+
+			<nav class="repo-tabs">
+				<ul class="nav clearfix">
+					<li class="first{% if current == 'index' or current == 'tree' %} active{% endif %}"><a href="/{{ user_name }}/{{ repo_name }}/tree/"><i class="icon-code"></i>Code</a></li>
+					<li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/"><i class="icon-time"></i>Commit<span class="label label-mini{% if current == 'commits' %} label-success{% endif %}">58</span></a></li>
+					<li><a href="#"><i class="icon-code-fork"></i>Branch<span class="label label-mini">4</span></a></li>
+					<li><a href="#"><i class="icon-tag"></i>Tag<span class="label label-mini">2</span></a></li>
+					<li class="last"><a href="#"><i class="icon-adjust"></i>Graph</a></li>
 				</ul>
+			</nav>
+
+			{% endif %}
+			<section class="repo-body">
+				{% block subcontainer %}{% endblock %}
+			</section>
 
 		</div>
 
-		<div class="repo-details-tabs">
+	</div>
 
-			<ul class="nav repo-tabs">
-				<li {% if current == 'tree' or current == 'index' or current == 'commits' or current == 'clone_watch' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/{{ refs }}/"><i class="icon-code"></i>Code</a></li>
-				<li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/network/"><i class="icon-group"></i>Network</a></li>
-				<li {% if current == 'pull' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/pulls/"><i class="icon-code-fork"></i>Pull Request{% if repo_pull_new_count > 0 %} <span class="badge">{{repo_pull_new_count}}</span>{% endif %}</a></li>
-				<li {% if current == 'stats' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/stats/"><i class="icon-adjust"></i>Graphs</a></li>
-			</ul>
-
-				<div class="repo-summary">
-					<div class="description">
-						<p>{{repo.desc}} — <a href="#README.md">阅读更多</a></p>
-						<p class="repo-admin-edit">
-							<a href="/{{user_name}}/{{repo_name}}/edit/" class="btn"><i class="icon-edit"></i>编辑</a>
-							<a href="/{{user_name}}/{{repo_name}}/delete/" class="btn"><i class="icon-trash"></i>删除</a>
-						</p>
-					</div>
-
-					<div class="repo-clone-url">
-
-						{% if repo.status == 0 %}
-							<p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
-						{% endif %}
-
-						{% if has_fork_right %}
-							<dl class="clone-url clearfix">
-								<dt class="url-tab clearfix">
-									{% if is_repo_member %}
-										<span class="btn-holder first"><a id="id_ssh_fork" class="btn">SSH</a></span>
-									{% endif %}
-										<span class="btn-holder"><a id="id_http_fork" class="btn">HTTP</a></span>
-									{% if repo.auth_type == 0 %}
-										<span class="btn-holder active last"><a id="id_git_fork" class="btn">GIT</a></span>
-									{% endif %}
-								</dt>
-								<dd class="url-holder clearfix">
-									{% if is_repo_member %}
-										<span class="btn btn-holder url"><input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git" readonly></span>
-									{% elif repo.auth_type == 0 %}
-										<span class="btn btn-holder url"><input class="input-xlarge focused" value="https://gitshell.com/{{ user_name }}/{{ repo_name }}.git" readonly></span>
-									{% endif %}
-									<span class="btn btn-holder clipboard"><a class="url-js-copy"><i class="octicon octicon-clippy"></i>复制</a></span>
-										<span class="muted url-info">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>
-								</dd>
-							</dl>
-						{% endif %}
-
-					</div>
-			</div>
-
-
-
-			</div>
-
-	</header>
-
-
-
-
-
-
-		<section class="repo-body">
-
-				<nav class="repo-navtab clearfix">
-
-					<div class="branches dropdown">
-						<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle btn">
-							<span class="branch">Branch:</span>
-							<span class="branch-name">{{ refs }}</span>
-							<i class="caret"></i>
-						</a>
-						<ul class="dropdown-menu">
-						</ul>
-					</div>
-
-					<ul class="nav nav-tabs">
-						<li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/{{ refs }}/">文件</a></li>
-						<li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/">Commits</a></li>
-						<li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/clone_watch/">衍生和关注</a></li>
-					</ul>
-
-				</nav>
-
-			{% block subcontainer %}{% endblock %}
-
-
-
-		</section>
-
-
-
+</div>
 {% endblock %}
 
 
 
 
 {% block js %}
+<script>
+	$(function(){
+		$('#toggle-arrow').click(
+			function(){
+				$(this).next('.clone-url').slideToggle('fast');
+			}
+		);
+		$('#url').click(
+			function(){
+				$(this).toggleClass('active');
+			}
+		);
+	});
+</script>
 <script src="/static/js/moment.min.js"></script>
 <script src="/static/js/moment.zh-cn.js"></script>
 <script>
 /*global jQuery, window */
 $(function(){
     moment.lang('zh-cn');
-    $('#i_git_url').click(function(event) {
+
+    $('.branches .dropdown-toggle').click(function(event) {
         $('#i_git_url').select();
     });
+
     var current_refs = '{{ refs }}';
     if(current_refs == '') {
         current_refs = 'master';
@@ -162,7 +153,7 @@ $(function(){
                 //alert('');
             },
             success: function(json){
-                if($('#i_refs .dropdown-menu li').size() > 0) {
+                if($('.branches .dropdown-menu li').size() > 0) {
                     return;
                 }
                 for(x in json.branches) {
@@ -177,18 +168,18 @@ $(function(){
                             current = '✓';
                             $('#id_branch_or_tag').text('分支：');
                         }
-                        $('#i_refs .dropdown-menu').append('<li><a href="/{{user_name}}/{{repo_name}}/tree/' + json.branches[x] + '/">' + current + json.branches[x] + '</a></li>');
+                        $('.branches .dropdown-menu').append('<li><a href="/{{user_name}}/{{repo_name}}/tree/' + json.branches[x] + '/">' + current + json.branches[x] + '</a></li>');
                     } 
                     if(json.tags.length > 0) {
-                        $('#i_refs .dropdown-menu').append('<li class="divider"></li>');
+                        $('.branches .dropdown-menu').append('<li class="divider"></li>');
                     }
                     for(x in json.tags) {
-                        var current = ' ';
+                        va current = ' ';
                         if(json.tags[x] == current_refs) {
                             current = '✓';
                             $('#id_branch_or_tag').text('标签：');
                         }
-                        $('#i_refs .dropdown-menu').append('<li><a href="/{{user_name}}/{{repo_name}}/tree/' + json.tags[x] + '/">' + current + json.tags[x] + '</a></li>');
+                        $('.branches .dropdown-menu').append('<li><a href="/{{user_name}}/{{repo_name}}/tree/' + json.tags[x] + '/">' + current + json.tags[x] + '</a></li>');
                     } 
                 },
             })
@@ -307,14 +298,14 @@ $(function(){
         });
     {% endif %}
 
-		$('.repo-admin-edit').hide();
-		$('.repo-summary > .description').hover(
-			function(){
-				$('.repo-admin-edit').show();
-			},function(){
-				$('.repo-admin-edit').hide();
-			}
-		);
+			$('.repo-admin-edit').hide();
+			$('.repo-summary > .description').hover(
+				function(){
+					$('.repo-admin-edit').show();
+				},function(){
+					$('.repo-admin-edit').hide();
+				}
+			);
 
     });
     </script>

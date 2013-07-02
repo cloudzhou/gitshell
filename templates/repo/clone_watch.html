@@ -1,39 +1,29 @@
 {% extends "repo/repo.html" %}
 
-{% block css %}
-<style>
-	.repo-1 {
-		border-left: 2px solid #0074cc; }
-	.repo-2 {
-		border-left: 2px solid #5bb75b;
-		border-bottom-color: #bbb; }
-	.repo-3 {
-		border-left: 2px solid #da4f49; }
-</style>
-{% endblock %}
 
 {% block subcontainer %}
 
-<div class="repo-main">
-	<header class="repo-meta clearfix">
-		<h2 class="title pull-left">衍生仓库树</h2>
-	</header>
+<div class="bubble repo clearfix">
 
-	<section class="repo-content">
-		<div class="frame">
+	<div class="bubble-col">
+		<header class="bubble-header">
+			<h1 class="title">衍生仓库树</h1>
+		</header>
+
+		<section class="bubble-inner">
 			{%for fork_repos in fork_repos_tree%}
 				{%for fork_repo in fork_repos%}
 					<div class="member repo-{{forloop.parentloop.counter}} clearfix">
-						<div class="avatar">
-							<img src="https://gravatar.com/avatar/{{fork_repo.imgurl}}?s=36">
-						</div>
-						<div class="user-body">
-							<p class="username">
+						<figure class="avatar">
+							<img src="https://gravatar.com/avatar/{{fork_repo.imgurl}}?s=40" alt="{{ gsuser.username }}">
+						</figure>
+						<div class="info">
+							<p class="name">
 								<a class="c_img_{{forloop.parentloop.counter}}" href="/{{fork_repo.username}}/">{{fork_repo.username}}</a>
 							</p>
-							<p class="repo-description">{{fork_repo.desc}}</p>
+							<p class="muted extra-info" title="{{fork_repo.desc}}">{{fork_repo.desc|truncatechars:40}}</p>
 						</div>
-						<ul class="details unstyled clearfix">
+						<ul class="actions horizontal-list">
 							<li><a href="javascript:void(0)" rel="tooltip" data-original-title="commit {{ fork_repo.commit }}次数" class="label"><i class="icon-time"></i><span>{{ fork_repo.commit }}</span></a></li>
 							<li><a href="javascript:void(0)" rel="tooltip" data-original-title="watch {{ fork_repo.watch }}次数" class="label"><i class="icon-star"></i><span>{{ fork_repo.watch }}</span></a></li>
 							<li><a href="javascript:void(0)" rel="tooltip" data-original-title="fork {{ fork_repo.fork }}次数" class="label"><i class="icon-code-fork"></i><span>{{ fork_repo.fork }}</span></a></li>
@@ -41,35 +31,44 @@
 					</div>
 				{%endfor%}
 			{%endfor%}
-		</div>
-	</section>
-
-	<header class="repo-meta">
-		<h2 class="title">关注用户</h2>
-	</header>
-	<section class="repo-content">
-		<div class="frame">
-			{%for watch_user in watch_users%}
-				<div class="member clearfix">
-					<div class="avatar">
-						<img class="avatar_left" src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=36">
-					</div>
-					<div class="user-body">
-						<p class="username">
-							<a href="/{{watch_user.username}}/">{{watch_user.username}}</a>
-							{%if watch_user.nickname%}
-								<span>({{watch_user.nickname}})</span>
-							{%endif%}
-							{%if watch_user.tweet%}
-								<span class="tweet">{{watch_user.tweet}}</span>
-							{%endif%}
-						</p>
-						<p class="muted"><i class="icon-time"></i>加入: <span class="c_unixtime">{{watch_user.date_joined}}</span><span class="divider">/</span><i class="icon-map-marker"></i>最近登录: <span class="c_unixtime">{{watch_user.last_login}}</span></p>
-					</div>
-				</div>
-			{%endfor%}
+		</section>
 	</div>
-</section>
+
+	<div class="bubble-col">
+		<header class="bubble-header">
+			<h1 class="title">关注用户</h1>
+		</header>
+
+		<section class="bubble-inner clearfix">
+			{% if watch_users %}
+				{%for watch_user in watch_users%}
+					<div class="member clearfix">
+						<figure class="avatar">
+							<img src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=40" alt="{{ gsuser.username }}">
+						</figure>
+						<div class="info">
+							<p class="name">
+								<a href="/{{watch_user.username}}/">{{watch_user.username}}</a>
+								{%if watch_user.nickname%}
+									<span>({{watch_user.nickname}})</span>
+								{%endif%}
+								{%if watch_user.tweet%}
+									<span class="tweet">{{watch_user.tweet}}</span>
+								{%endif%}
+							</p>
+							<p class="muted">
+								<span><i class="icon-time"></i>加入: <span class="unixtime">{{watch_user.date_joined}}</span></span>
+								<span class="divider">/</span>
+								<span><i class="icon-map-marker"></i>最近登录: <span class="unixtime">{{watch_user.last_login}}</span></span>
+							</p>
+						</div>
+					</div>
+				{%endfor%}
+			{% else %}
+				<p class="info text-error">还没有任何关注用户.</p>
+			{% endif %}
+		</section>
+	</div>
 
 </div>
 
@@ -78,13 +77,16 @@
 {% block subjs %}
 	<script>
 		$(function(){
-				$('.c_unixtime').each(function(index){ 
-						$(this).html(moment(new Date($(this).html()*1000)).fromNow());
-						$(this).show();
-				});
-				$('.table').tooltip({
-					selector: "a[rel=tooltip]"
-				})
+
+			$('.actions').tooltip({
+				selector: "a[rel=tooltip]"
+			});
+
+			var bubbleLeftColHeight = $('.bubble-col:eq(0)').height(), bubbleRightColHeight = $('.bubble-col:eq(1)').height();
+			var bubbleInnerHeight = (bubbleLeftColHeight < bubbleRightColHeight) ? bubbleRightColHeight : bubbleLeftColHeight;
+
+			$('.bubble-col > .bubble-inner').height(bubbleInnerHeight);
+
 		});
 	</script>
 {% endblock %}

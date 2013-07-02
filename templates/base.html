@@ -6,9 +6,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta name="description" content="GitShell 专注git代码托管, 项目开发, 个人技能">
 		<meta name="author" content="gitshell">
-		<link href="/static/css/bootstrap.css" rel="stylesheet">
-		<link href="/static/css/todc-bootstrap.css" rel="stylesheet">
-		<link href="//netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css" rel="stylesheet">
+		<link href="/static/css/normalize.css" rel="stylesheet">
+		<link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
 		<link href="/static/css/gitshell.css" rel="stylesheet">
 		<link href="/static/css/select2.css" rel="stylesheet">
 		{% block css %}{% endblock %}
@@ -20,32 +19,39 @@
 			<nav class="navbar-inner">
 				<div class="container">
 
-					<a class="brand" href="/">Gitshell</a>
+					<a class="brand" href="/">GitShell</a>
 
-					<ul class="nav">
+					<ul class="nav btn-group">
 						{% if user.is_authenticated %}
-							<li {%if mainnav == 'user'%} class="active" {%endif%}>
-								<a href="/{{ user.username }}/" class="user">
-									<i class="user-avatar"><img class="avatar" src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=40" alt=""></i>
-									<span>{{ user.username }}</span>
-								</a>
-							</li>
-							<li><a href="#" class="btn new-repo"><i class="icon-chevron-sign-down"></i><span>创建仓库</span></a></li>
+						<li class="first"><a href="#"><i class="icon-tasks"></i>工作台</a></li>
 						{% else %}
-							<li><a href="/join/">我的仓库</a></li>
+						<li class="first"><a href="/join/"><i class="icon-tasks"></i>工作台</a></li>
 						{% endif %}
-						<li {%if mainnav == 'explore'%} class="active" {%endif%}><a href="/explore/"><i class="icon-search"></i><span>浏览仓库</span></a></li>
+						<li class="middle{%if mainnav == 'explore'%} active{%endif%}"><a href="/explore/"><i class="icon-table"></i>浏览仓库</a></li>
+						<li class="last{%if mainnav == 'help'%} active{%endif%}"><a href="/help/">帮助</a></li>
 					</ul>
 
 					<ul class="nav account">
 						{% if user.is_authenticated %}
-							<li {%if mainnav == 'help'%} class="active" {%endif%}><a href="/help/"><i class="icon-info-sign"></i><span>帮助</span></a></li>
-							<li {%if mainnav == 'settings'%} class="active" {%endif%}><a href="/settings/"><i class="icon-wrench"></i><span>设置</span></a></li>
-							<li {%if mainnav == 'logout'%} class="active" {%endif%}><a href="/logout/"><span>登出</span></a></li>
+							<li><a href="#" class="btn btn-notice">6</a></li>
+							<li class="dropdown{%if mainnav == 'user'%} active{%endif%}">
+								<a href="/{{ user.username }}/" class="user btn dropdown-toggle" data-toggle="dropdown" data-target="#">
+									<i class="icon-caret-down"></i>
+									<img class="avatar" src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=35" alt="{{ user.username }}">
+									<span class="hide">{{ user.username }}</span>
+								</a>
+								<div class="dropdown-menu" role="menu" aria-labelladby="dLable">
+									<h2>{{ user.username }}</h2>
+									<p class="email">{{ user.email }}</p>
+									<ul class="nav-list">
+										<li {%if mainnav == 'settings'%} class="active" {%endif%}><a href="/settings/"><span><i class="icon-cog"></i>设置</span></a></li>
+										<li {%if mainnav == 'logout'%} class="active" {%endif%}><a href="/logout/"><span><i class="icon-off"></i>登出</span></a></li>
+									</ul>
+								</div>
+							</li>
 						{% else %}
-							<li {%if mainnav == 'help'%} class="active" {%endif%}><a href="/help/"><i class="icon-info-sign"></i><span>帮助</span></a></li>
-							<li {%if mainnav == 'login'%} class="active" {%endif%}><a href="/login/"><span>登录</span></a></li>
-							<li {%if mainnav == 'eoin'%} class="active" {%endif%}><a href="/join/0/"><span>注册</span></a></li>
+							<li {%if mainnav == 'eoin'%}class="active"{%endif%}><a href="/join/0/">注册</a></li>
+							<li {%if mainnav == 'login'%}class="active"{%endif%}><a href="/login/" class="btn">登录</a></li>
 						{% endif %}
 					</ul>
 
@@ -54,7 +60,7 @@
 		</header>
 
 
-		<div class="container main">
+		<div class="container main clearfix">
 
 			{% block container %}{% endblock %}
 
@@ -81,6 +87,15 @@
 		<script src="/static/js/jquery-1.7.2.min.js"></script>
 		<script src="/static/js/bootstrap.min.js"></script>
 		<script src="/static/js/select2.min.js"></script>
+		<script>
+			$(function(){
+				$('.unixtime').each(function(index){ 
+					$(this).html(moment(new Date($(this).html()*1000)).fromNow());
+					$(this).show();
+				});
+				$('.dropdown-toggle').dropdown();
+			});
+		</script>
 		{% block js %}{% endblock %}
 		<script>
 			var _gaq = _gaq || [];
