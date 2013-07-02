@@ -118,7 +118,7 @@ $(function(){
             },
             success: function(json){
                 refs_select.find('option').remove();
-                var branches = json.branches;
+                var branches = json.refs_meta.branches;
                 for(x in branches) {
                     var branch = branches[x];
                     refs_select.append('<option value='+ branch +'>'+ branch +'</option>');

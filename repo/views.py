@@ -195,8 +195,11 @@ def branch_graph(request, user_name, repo_name, refs):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def branches(request, user_name, repo_name):
-    refs = 'master'
+def branches_default(request, user_name, repo_name):
+    return branches(request, user_name, repo_name, 'master')
+
+@repo_permission_check
+def branches(request, user_name, repo_name, refs):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -207,8 +210,11 @@ def branches(request, user_name, repo_name):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def tags(request, user_name, repo_name):
-    refs = 'master'
+def tags_default(request, user_name, repo_name):
+    return tags(request, user_name, repo_name, 'master')
+
+@repo_permission_check
+def tags(request, user_name, repo_name, refs):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -696,7 +702,7 @@ def refs(request, user_name, repo_name):
 
     gitHandler = GitHandler()
     refs_meta = gitHandler.repo_ls_refs(repo, repopath)
-    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'branches': refs_meta['branches'], 'tags': refs_meta['tags']}
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'refs_meta': refs_meta}
     return json_httpResponse(response_dictionary)
 
 @repo_permission_check

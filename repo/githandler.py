@@ -370,6 +370,7 @@ class GitHandler():
                 if refs_f != None:
                     refs_f.close()
         self._repo_meta_sort_refs(branches, tags)
+        self._repo_meta_refs_detail_commit(repo, meta, commit_hash_dict)
         self._cache_repo_meta(repo, meta)
         return meta
 
@@ -380,6 +381,37 @@ class GitHandler():
             branches.insert(0, 'master')
         tags.sort()
         tags.reverse()
+
+    def _repo_meta_refs_detail_commit(self, repo, meta, commit_hash_dict):
+        if not self._chdir(repo.get_abs_repopath()):
+            return
+        refs_detail_commit = {}
+        refses = commit_hash_dict.keys()
+        try:
+            last_commit_command = 'for i in %s; do echo -n "$i|"; git log "$i" -1 --pretty="%%h______%%p______%%t______%%an______%%cn______%%ct|%%s" | /usr/bin/head -c 524288; done' % (' '.join(refses))
+            last_commit_output = check_output(last_commit_command, shell=True)
+            for line in last_commit_output.split('\n'):
+                ars = line.split('|', 2)
+                if len(ars) != 3:
+                    continue
+                refs, attr, commit_message = ars
+                attrs = attr.split('______', 6)
+                if len(attrs) != 6:
+                    continue
+                (commit_hash, parent_commit_hash, tree_hash, author, committer, committer_date) = (attrs)
+                refs_detail_commit[refs] = {
+                    'commit_hash': commit_hash,
+                    'parent_commit_hash': parent_commit_hash,
+                    'tree_hash': tree_hash,
+                    'author': author,
+                    'committer': committer,
+                    'committer_date': committer_date,
+                    'commit_message': commit_message,
+                }
+        except Exception, e:
+            traceback.print_exc(file=sys.stdout)
+            print e
+        meta['detail_commit'] = refs_detail_commit
 
     def _get_repo_meta_by_cache(self, repo):
         cacheKey = CacheKey.REPO_COMMIT_VERSION % repo.id

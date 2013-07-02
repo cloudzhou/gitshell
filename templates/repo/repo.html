@@ -122,8 +122,8 @@
                 <li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/{{ refs }}/">文件列表</a></li>
                 <li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/">提交信息</a></li>
                 <li {% if current == 'branch_graph' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/branch/graph/{{ refs }}/">分支图</a></li>
-                <li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/branches/">分支</a></li>
-                <li {% if current == 'tags' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tags/">标签</a></li>
+                <li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/branches/{{ refs }}/">分支</a></li>
+                <li {% if current == 'tags' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tags/{{ refs }}/">标签</a></li>
                 <li {% if current == 'compare' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/compare/{{ refs }}/">Compare</a></li>
                 <li {% if current == 'pull' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/pulls/">合并请求{% if repo_pull_new_count > 0 %} <span class="badge">{{repo_pull_new_count}}</span>{% endif %}</a></li>
                 <li {% if current == 'issues' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/issues/">Issues</a></li>
