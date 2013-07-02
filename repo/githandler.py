@@ -92,8 +92,8 @@ class GitHandler():
         stage_file = self._get_diff_stage_file(repo_path, pre_commit_hash, commit_hash, context, path)
         stage_file = stage_file + '.diff'
         result = self._read_load_stage_file(stage_file)
-        #if result is not None:
-        #    return result['diff']
+        if result is not None:
+            return result['diff']
         command = '/usr/bin/git diff --numstat  %s..%s | /usr/bin/head -c 524288 ; /usr/bin/git diff -U%s %s..%s -- %s | /usr/bin/head -c 524288' % (pre_commit_hash, commit_hash, context, pre_commit_hash, commit_hash, path)
         try:
             result = check_output(command, shell=True)
@@ -117,7 +117,7 @@ class GitHandler():
         meta = self._get_repo_meta(repo)
         if refs in meta['commit_hash']:
             return meta['commit_hash'][refs]
-        if re.match('a', 'a'):
+        if re.match('^\w+$', refs):
             return refs
         return self.empty_commit_hash
 
@@ -175,8 +175,8 @@ class GitHandler():
 
     def _repo_load_log_file(self, from_commit_hash, commit_hash, path):
         commits = []
-        between_commit_hash = from_commit_hash
-        if commit_hash is not None and not commit_hash.startswith('0000000'):
+        between_commit_hash = commit_hash
+        if from_commit_hash is not None and not from_commit_hash.startswith('0000000'):
             between_commit_hash = from_commit_hash + '...' + commit_hash
         command = '/usr/bin/git log -50 --pretty="%%h______%%p______%%t______%%an______%%cn______%%ct|%%s" %s -- %s | /usr/bin/head -c 524288' % (between_commit_hash, path)
         try:
@@ -303,7 +303,7 @@ class GitHandler():
         return path
         
     def _repo_file_path_check(self, path):
-        if re.match('.*[\@\#\$\&\\\*\"\'\<\>\|\;].*', path) or path.startswith('-') or  len(path) > 512 or len(path.split('/')) > 100:
+        if re.match('.*[\@\#\$\&\\\*\"\'\<\>\|\;].*', path) or path.startswith('-') or len(path) > 512 or len(path.split('/')) > 100:
             return False
         return True
 
@@ -510,7 +510,8 @@ class GitHandler():
                     if len(part_of_linediff) > 0:
                         linediff.append(part_of_linediff)
                     filediff['linediff'] = linediff
-                    detail.append({filename : filediff})
+                    filediff['filename'] = filename
+                    detail.append(filediff)
                 filediff = {}
                 filename = ''
                 linediff = []
@@ -521,12 +522,12 @@ class GitHandler():
                 filediff['to'] = line[fileb_len:]
             if 'mode' not in filediff and 'from' in filediff and 'to' in filediff:
                 mode = 'edit'
-                filename = line[fileb_len+1:]
+                filename = filediff['to'][2:]
                 if filediff['from'] == dev_null and filediff['to'] != dev_null:
                     mode = 'create'
                 if filediff['from'] != dev_null and filediff['to'] == dev_null:
                     mode = 'delete'
-                    filename = line[filea_len+1:]
+                    filename = filediff['from'][2:]
                 filediff['mode'] = mode
             m = re.match('^@@ \-(\d+),\d+ \+(\d+)', line)
             if m:
@@ -542,7 +543,8 @@ class GitHandler():
             if len(part_of_linediff) > 0:
                 linediff.append(part_of_linediff)
             filediff['linediff'] = linediff
-            detail.append({filename : filediff})
+            filediff['filename'] = filename
+            detail.append(filediff)
 
         return diff
 

@@ -75,7 +75,7 @@ def repo(request, user_name, repo_name):
     return ls_tree(request, user_name, repo_name, refs, path, current)
 
 @repo_permission_check
-def default_tree(request, user_name, repo_name):
+def tree_default(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'tree'
     return ls_tree(request, user_name, repo_name, refs, path, current)
     
@@ -147,7 +147,7 @@ def blob(request, user_name, repo_name, refs, path):
                           context_instance=RequestContext(request))
     
 @repo_permission_check
-def default_commits(request, user_name, repo_name):
+def commits_default(request, user_name, repo_name):
     refs = 'master'; path = '.'
     return commits(request, user_name, repo_name, refs, path)
     
@@ -161,7 +161,7 @@ def commits(request, user_name, repo_name, refs, path):
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
-    commits = gitHandler.repo_log_file(abs_repopath, commit_hash, '0000000', path)
+    commits = gitHandler.repo_log_file(abs_repopath, '0000000', commit_hash, path)
     response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'path': path, 'commits': commits}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/commits.html',
@@ -169,15 +169,66 @@ def commits(request, user_name, repo_name, refs, path):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def default_compare(request, user_name, repo_name):
+def commits_log(request, user_name, repo_name, from_commit_hash, to_commit_hash):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    gitHandler = GitHandler()
+    abs_repopath = repo.get_abs_repopath()
+    orgi_from_commit_hash = from_commit_hash
+    orgi_to_commit_hash = to_commit_hash
+    from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_commit_hash)
+    to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_commit_hash)
+    commits = gitHandler.repo_log_file(abs_repopath, from_commit_hash, to_commit_hash, '.')
+    response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'orgi_from_commit_hash': orgi_from_commit_hash, 'orgi_to_commit_hash': orgi_to_commit_hash, 'from_commit_hash': from_commit_hash, 'to_commit_hash': to_commit_hash, 'commits': commits}
+    return json_httpResponse(response_dictionary)
+
+@repo_permission_check
+def branch_graph(request, user_name, repo_name, refs):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    response_dictionary = {'mainnav': 'repo', 'current': 'branch_graph'}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/branch_graph.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
+def branches(request, user_name, repo_name):
+    refs = 'master'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    response_dictionary = {'mainnav': 'repo', 'current': 'branches'}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/branches.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
+def tags(request, user_name, repo_name):
+    refs = 'master'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    response_dictionary = {'mainnav': 'repo', 'current': 'tags'}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/tags.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
+def compare_default(request, user_name, repo_name):
     return compare_master(request, user_name, repo_name, 'master')
 
 @repo_permission_check
 def compare_master(request, user_name, repo_name, refs):
-    return compare_commit(request, user_name, repo_name, 'master', refs)
+    return compare_commit(request, user_name, repo_name, refs, 'master')
 
 @repo_permission_check
 def compare_commit(request, user_name, repo_name, from_refs, to_refs):
+    refs = from_refs
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -185,7 +236,14 @@ def compare_commit(request, user_name, repo_name, from_refs, to_refs):
     abs_repopath = repo.get_abs_repopath()
     from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_refs)
     to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_refs)
-     
+    refs_meta = gitHandler.repo_ls_refs(repo, abs_repopath)
+    response_dictionary = {'mainnav': 'repo', 'current': 'compare', 'from_refs': from_refs, 'to_refs': to_refs, 'refs_meta': refs_meta}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/compare.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
 
 @repo_permission_check
 def pulls(request, user_name, repo_name):
@@ -202,7 +260,7 @@ def pulls(request, user_name, repo_name):
 
 @login_required
 @repo_permission_check
-def default_pull_new(request, user_name, repo_name):
+def pull_new_default(request, user_name, repo_name):
     source_username = user_name
     source_refs = 'master'
     desc_username = user_name
@@ -308,7 +366,7 @@ def pull_diff(request, user_name, repo_name, pullRequest_id):
     desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), pullRequest.desc_refname)
     diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
-        diff = gitHandler.repo_diff(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, path, 3)
+        diff = gitHandler.repo_diff(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, 3, path)
     return json_httpResponse({'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
 
 @repo_permission_check
@@ -390,6 +448,11 @@ def _get_repo_pull_args(user_name, repo_name, pullRequest_id):
     
 @repo_permission_check
 @require_http_methods(["POST"])
+def diff_default(request, user_name, repo_name, pre_commit_hash, commit_hash, context):
+    return diff(request, user_name, repo_name, pre_commit_hash, commit_hash, context, '.')
+
+@repo_permission_check
+@require_http_methods(["POST"])
 def diff(request, user_name, repo_name, pre_commit_hash, commit_hash, context, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -440,7 +503,7 @@ def network(request, user_name, repo_name):
 
 @repo_permission_check
 def clone_watch_star(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'branches'
+    refs = 'master'; path = '.'; current = 'clone'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404

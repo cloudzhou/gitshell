@@ -85,7 +85,7 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def default_show(request, user_name, repo_name, issue_id):
+def show_default(request, user_name, repo_name, issue_id):
     return show(request, user_name, repo_name, issue_id, None)
 
 @repo_permission_check

@@ -615,7 +615,10 @@ class RepoManager():
             return True
         return False
 
+    @classmethod
     def is_allowed_refsname_pattern(self, name):
+        if name is None or name == '':
+            return False
         if re.match('^[a-zA-Z0-9_\-\.]+$', name) and not name.startswith('-'):
             return True
         return False
