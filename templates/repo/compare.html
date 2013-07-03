@@ -26,6 +26,9 @@
                     {% for branch in refs_meta.branches %}
                     <option value="{{ branch }}" {%if branch == from_refs %} selected="selected" {%endif%}>{{ branch }}</option>
                     {% endfor %}
+                    {% if from_refs not in refs_meta.branches%}
+                    <option value="{{ from_refs }}" selected="selected">{{ from_refs }}</option>
+                    {% endif %}
                 </select>
             </div>
             <div class="span0">
@@ -37,6 +40,9 @@
                     {% for branch in refs_meta.branches %}
                     <option value="{{ branch }}" {%if branch == to_refs %} selected="selected" {%endif%}>{{ branch }}</option>
                     {% endfor %}
+                    {% if to_refs not in refs_meta.branches%}
+                    <option value="{{ to_refs }}" selected="selected">{{ to_refs }}</option>
+                    {% endif %}
                 </select>
             </div>
         </div>

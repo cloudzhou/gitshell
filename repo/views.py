@@ -184,17 +184,6 @@ def commits_log(request, user_name, repo_name, from_commit_hash, to_commit_hash)
     return json_httpResponse(response_dictionary)
 
 @repo_permission_check
-def branch_graph(request, user_name, repo_name, refs):
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    response_dictionary = {'mainnav': 'repo', 'current': 'branch_graph'}
-    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/branch_graph.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-@repo_permission_check
 def branches_default(request, user_name, repo_name):
     return branches(request, user_name, repo_name, 'master')
 
@@ -459,17 +448,25 @@ def diff_default(request, user_name, repo_name, pre_commit_hash, commit_hash, co
 
 @repo_permission_check
 @require_http_methods(["POST"])
-def diff(request, user_name, repo_name, pre_commit_hash, commit_hash, context, path):
+def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, context, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
     if path is None or path == '':
         path = '.'
+    diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
-    diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
+    orgi_from_commit_hash = from_commit_hash
+    orgi_to_commit_hash = to_commit_hash
+    from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_commit_hash)
+    to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_commit_hash)
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
-        diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, context, path)
+        diff = gitHandler.repo_diff(abs_repopath, from_commit_hash, to_commit_hash, context, path)
+    diff['orgi_from_commit_hash'] = orgi_from_commit_hash
+    diff['orgi_to_commit_hash'] = orgi_to_commit_hash
+    diff['from_commit_hash'] = from_commit_hash
+    diff['to_commit_hash'] = to_commit_hash
     return json_httpResponse({'diff': diff})
 
 @repo_permission_check
@@ -691,6 +688,17 @@ def change_to_vo(raw_fork_repos_tree):
     for raw_fork_repos in raw_fork_repos_tree:
         fork_repos_tree.append(_conver_repos(raw_fork_repos, user_map))
     return fork_repos_tree
+
+@repo_permission_check
+def refs_graph(request, user_name, repo_name, refs):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    response_dictionary = {'mainnav': 'repo', 'current': 'refs_graph'}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/refs_graph.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
 
 @repo_permission_check
 @require_http_methods(["POST"])
