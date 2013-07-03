@@ -104,6 +104,24 @@ class GitHandler():
             print e
         return {}
 
+    def repo_log_graph(self, repo_path, commit_hash):
+        if not self._path_check_chdir(repo_path, commit_hash, '.') or not re.match('^\w+$', commit_hash):
+            return {}
+        stage_file = self._get_stage_file(repo_path, commit_hash, '.')
+        stage_file = stage_file + '.lg'
+        log_graph = self._read_load_stage_file(stage_file)
+        if log_graph is not None:
+            return log_graph
+        command = '/usr/bin/git log -100 --graph --abbrev-commit --date=relative --format=format:"%%h - (%%ar) %%s - %%an%%d" %s | /usr/bin/head -c 524288' % (commit_hash)
+        try:
+            log_graph = check_output(command, shell=True)
+            log_graph_json = {'log_graph': log_graph}
+            self._dumps_write_stage_file(log_graph_json, stage_file)
+            return log_graph_json
+        except Exception, e:
+            print e
+        return {'log_graph': ''}
+        
     def repo_ls_refs(self, repo, repo_path):
         if repo.status != 0 or not os.path.exists(repo_path):
             return  {'branches': [], 'tags': [], 'commit_hash': {}}

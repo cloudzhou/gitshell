@@ -690,6 +690,23 @@ def change_to_vo(raw_fork_repos_tree):
     return fork_repos_tree
 
 @repo_permission_check
+@require_http_methods(["POST"])
+def log_graph(request, user_name, repo_name, refs):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    abs_repopath = repo.get_abs_repopath()
+    gitHandler = GitHandler()
+    orgi_commit_hash = refs
+    commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
+    log_graph = gitHandler.repo_log_graph(abs_repopath, commit_hash)
+    log_graph['orgi_commit_hash'] = orgi_commit_hash
+    log_graph['commit_hash'] = commit_hash
+    response_dictionary = {'user_name': user_name, 'repo_name': repo_name}
+    response_dictionary.update(log_graph)
+    return json_httpResponse(response_dictionary)
+    
+@repo_permission_check
 def refs_graph(request, user_name, repo_name, refs):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
