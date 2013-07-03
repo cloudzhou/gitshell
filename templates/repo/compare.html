@@ -85,13 +85,13 @@ $(function(){
         window.location.href = '/{{ user_name }}/{{ repo_name }}/compare/' + source_refs + '...' + desc_refs + '/';
     });
     var load_commit_meta = function() {
-        $.post('/{{user_name}}/{{repo_name}}/commits/{{from_refs}}...{{to_refs}}/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        $.post('/{{user_name}}/{{repo_name}}/commits/{{to_refs}}...{{from_refs}}/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             var html = [];
             var is_up_to_date = false;
             var source_commit_hash = json.from_commit_hash.substr(0, 7);
             var desc_commit_hash = json.to_commit_hash.substr(0, 7);
             var exists_commit_hash_map = {};
-            exists_commit_hash_map[desc_commit_hash] = 1
+            exists_commit_hash_map[source_commit_hash] = 1
             var up_to_date = '<p>Already up-to-date. 你并不需要进行合并操作</p>';
             if(json.commits.length > 0) {
                 html.push('<table class="table table-striped"><thead class="fixed"><tr><th width="20%">提交HASH (作者)</th><th width="10%">时间</th><th>日志</th></tr></thead><tbody>');
@@ -113,7 +113,7 @@ $(function(){
             } else {
                 html.push(up_to_date);
             }
-            if(source_commit_hash in exists_commit_hash_map) {
+            if(desc_commit_hash in exists_commit_hash_map) {
                 is_up_to_date = true;
             }
             $('.c_pull_request_content').each(function(index){
@@ -129,7 +129,7 @@ $(function(){
     }
     var load_diff_meta = function() {
         var line_context = $('#i_line_context').text();
-        $.post('/{{user_name}}/{{repo_name}}/diff/{{from_refs}}..{{to_refs}}/' + line_context + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        $.post('/{{user_name}}/{{repo_name}}/diff/{{to_refs}}..{{from_refs}}/' + line_context + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             var diff = json.diff;
             var numstat = diff.numstat;
             var detail = diff.detail;

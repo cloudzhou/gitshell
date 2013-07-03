@@ -149,10 +149,6 @@ $(function(){
     $('#i_git_url').click(function(event) {
         $('#i_git_url').select();
     });
-    var current_refs = '{{ refs }}';
-    if(current_refs == '') {
-        current_refs = 'master';
-    }
     $('#i_star').click(function() {
         $.post('/{{user_name}}/{{repo_name}}/star/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             window.location = window.location
