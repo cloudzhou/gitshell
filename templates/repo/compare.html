@@ -12,7 +12,7 @@
     <h4 style="margin: 10px"><a href="/{{user_name}}/{{repo_name}}/compare/master/">{{repo_name}}</a> /
         <span id="i_repo_path"></span>
         <span>分支比较</span>
-        <div id="id_merge_pullrequest" class="pull-right">
+        <div id="id_merge_pullrequest" class="pull-right hide">
             <a class="muted" data-original-title=" 直接合并分支代码" rel="tooltip" href="javascript: void(0)"><button type="button" class="btn btn-success">合并分支代码</button></a>
             <a class="muted" data-original-title=" 出于礼貌，提前合并目标分支代码，减少对方合并时出现冲突的可能性" rel="tooltip" href="/{{user_name}}/{{repo_name}}/pull/new/{{user_name}}:{{from_refs}}...{{user_name}}:{{to_refs}}/"><button type="button" class="btn btn-primary">创建合并请求</button></a>
         </div>
@@ -94,6 +94,7 @@ $(function(){
         $.post('/{{user_name}}/{{repo_name}}/commits/{{to_refs}}...{{from_refs}}/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             var html = [];
             var is_up_to_date = false;
+            var refs_meta = json.refs_meta;
             var source_commit_hash = json.from_commit_hash.substr(0, 7);
             var desc_commit_hash = json.to_commit_hash.substr(0, 7);
             var exists_commit_hash_map = {};
@@ -131,6 +132,9 @@ $(function(){
                 $('#id_pull_request_commit').html(html.join(''));
             }
             $('#id_pull_request_commit').show();
+            if(!is_up_to_date && refs_meta.branches.indexOf('{{from_refs}}') >= 0 && refs_meta.branches.indexOf('{{to_refs}}') >= 0) {
+                $('#id_merge_pullrequest').show();
+            }
         });
     }
     var load_diff_meta = function() {

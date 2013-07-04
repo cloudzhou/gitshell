@@ -175,12 +175,14 @@ def commits_log(request, user_name, repo_name, from_commit_hash, to_commit_hash)
         raise Http404
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
+    refs_meta = gitHandler.repo_ls_refs(repo, abs_repopath)
+
     orgi_from_commit_hash = from_commit_hash
     orgi_to_commit_hash = to_commit_hash
     from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_commit_hash)
     to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_commit_hash)
     commits = gitHandler.repo_log_file(abs_repopath, from_commit_hash, to_commit_hash, '.')
-    response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'orgi_from_commit_hash': orgi_from_commit_hash, 'orgi_to_commit_hash': orgi_to_commit_hash, 'from_commit_hash': from_commit_hash, 'to_commit_hash': to_commit_hash, 'commits': commits}
+    response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'orgi_from_commit_hash': orgi_from_commit_hash, 'orgi_to_commit_hash': orgi_to_commit_hash, 'from_commit_hash': from_commit_hash, 'to_commit_hash': to_commit_hash, 'commits': commits, 'refs_meta': refs_meta}
     return json_httpResponse(response_dictionary)
 
 @repo_permission_check
@@ -232,7 +234,7 @@ def compare_commit(request, user_name, repo_name, from_refs, to_refs):
     from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_refs)
     to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_refs)
     refs_meta = gitHandler.repo_ls_refs(repo, abs_repopath)
-    response_dictionary = {'mainnav': 'repo', 'current': 'compare', 'from_refs': from_refs, 'to_refs': to_refs, 'refs_meta': refs_meta}
+    response_dictionary = {'mainnav': 'repo', 'current': 'compare', 'from_refs': from_refs, 'to_refs': to_refs, 'from_commit_hash': from_commit_hash, 'to_commit_hash': to_commit_hash, 'refs_meta': refs_meta}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/compare.html',
                           response_dictionary,
@@ -457,6 +459,8 @@ def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, contex
     diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
+    refs_meta = gitHandler.repo_ls_refs(repo, abs_repopath)
+
     orgi_from_commit_hash = from_commit_hash
     orgi_to_commit_hash = to_commit_hash
     from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_commit_hash)
@@ -467,6 +471,7 @@ def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, contex
     diff['orgi_to_commit_hash'] = orgi_to_commit_hash
     diff['from_commit_hash'] = from_commit_hash
     diff['to_commit_hash'] = to_commit_hash
+    diff['refs_meta'] = refs_meta
     return json_httpResponse({'diff': diff})
 
 @repo_permission_check
