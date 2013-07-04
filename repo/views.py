@@ -306,7 +306,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
 
     pull_repo_list = _list_pull_repo(request, repo)
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list}
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_new.html',
                           response_dictionary,
@@ -697,11 +697,14 @@ def log_graph(request, user_name, repo_name, refs):
         raise Http404
     abs_repopath = repo.get_abs_repopath()
     gitHandler = GitHandler()
+    refs_meta = gitHandler.repo_ls_refs(repo, abs_repopath)
+
     orgi_commit_hash = refs
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     log_graph = gitHandler.repo_log_graph(abs_repopath, commit_hash)
     log_graph['orgi_commit_hash'] = orgi_commit_hash
     log_graph['commit_hash'] = commit_hash
+    log_graph['refs_meta'] = refs_meta
     response_dictionary = {'user_name': user_name, 'repo_name': repo_name}
     response_dictionary.update(log_graph)
     return json_httpResponse(response_dictionary)

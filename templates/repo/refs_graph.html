@@ -62,7 +62,12 @@ $(function(){
                 new_log_graph_splits.push(log_graph_line.substring(indexOfs[4]+1, indexOfs[5]));
                 if(indexOfs[6] > indexOfs[5] && indexOfs[7] > indexOfs[6]) {
                     author = log_graph_line.substring(indexOfs[5], indexOfs[6]);
-                    new_log_graph_splits.push('<span class="c_author">' + author + '</span>');
+                    if(author.lastIndexOf(' ') == author.length-1) {
+                        author = author.substring(0, author.length-1);
+                    }
+                    lastBlank = author.lastIndexOf(' ') + 1;
+                    real_author = author.substring(lastBlank);
+                    new_log_graph_splits.push(author.substring(0, lastBlank) + '<a href="/' + real_author + '/"><span class="c_author">' + real_author + '</span></a> ');
                     refs = log_graph_line.substring(indexOfs[6], indexOfs[7]+1);
                     if(refs[0] == '(' && refs[refs.length-1] == ')') {
                         var refs_splits = [];
@@ -70,7 +75,7 @@ $(function(){
                         for(x in refs_array) {
                             var split = refs_array[x].replace(/^\s+|\s+$/g,'');
                             var label_class = 'label-info';
-                            if(split.match(/^v\d/)) {
+                            if(json.refs_meta.tags.indexOf(split) >= 0) {
                                 label_class = 'label-warning';
                             }
                             if(split != 'HEAD') {
@@ -84,7 +89,9 @@ $(function(){
                     new_log_graph_splits.push('<span class="c_refs">' + refs + '</span>');
                 } else {
                     author = log_graph_line.substring(indexOfs[5]);
-                    new_log_graph_splits.push('<span class="c_author">' + author + '</span>');
+                    lastBlank = author.lastIndexOf(' ') + 1;
+                    real_author = author.substring(lastBlank);
+                    new_log_graph_splits.push(author.substring(0, lastBlank) + '<a href="/' + real_author + '/"><span class="c_author">' + real_author + '</span></a>');
                 }
                 log_graph_line = new_log_graph_splits.join('')
             }

@@ -96,7 +96,7 @@ $(function(){
     $('#id_submit').tooltip({
       selector: "a[rel=tooltip]"
     });
-    function fullfill_options(repo_select, refs_select) {
+    function fullfill_options(repo_select, refs_select, default_refs) {
         var repo = repo_select.attr('value');
         var tmp_global_repo_branch_map = global_repo_branch_map;
         if(tmp_global_repo_branch_map.hasOwnProperty(repo)) {
@@ -104,32 +104,31 @@ $(function(){
             var branches = tmp_global_repo_branch_map[repo];
             for(x in branches) {
                 var branch = branches[x];
-                refs_select.append('<option value='+ branch +'>'+ branch +'</option>');
+                if(branch == default_refs) {
+                    refs_select.append('<option selected="selected" value='+ branch +'>'+ branch +'</option>');
+                } else {
+                    refs_select.append('<option value='+ branch +'>'+ branch +'</option>');
+                }
             }
             return tmp_global_repo_branch_map[repo];
         }
-        $.ajax({
-            url: '/' + repo + '/refs/',
-            type: 'POST',
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-            },
-            success: function(json){
-                refs_select.find('option').remove();
-                var branches = json.refs_meta.branches;
-                for(x in branches) {
-                    var branch = branches[x];
+        $.post('/' + repo + '/refs/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            refs_select.find('option').remove();
+            var branches = json.refs_meta.branches;
+            for(x in branches) {
+                var branch = branches[x];
+                if(branch == default_refs) {
+                    refs_select.append('<option selected="selected" value='+ branch +'>'+ branch +'</option>');
+                } else {
                     refs_select.append('<option value='+ branch +'>'+ branch +'</option>');
                 }
-                tmp_global_repo_branch_map[repo] = branches;
-            },
+            }
+            tmp_global_repo_branch_map[repo] = branches;
         });
         global_repo_branch_map = tmp_global_repo_branch_map;
     };
-    fullfill_options($('#id_source_repo'), $('#id_source_refs'));
-    fullfill_options($('#id_desc_repo'), $('#id_desc_refs'));
+    fullfill_options($('#id_source_repo'), $('#id_source_refs'), '{{source_refs}}');
+    fullfill_options($('#id_desc_repo'), $('#id_desc_refs'), '{{desc_refs}}');
     $('#id_source_repo').change(function(){
         fullfill_options($(this), $('#id_source_refs'));
     });
