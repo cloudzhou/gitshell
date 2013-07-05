@@ -28,6 +28,9 @@ from gitshell.viewtools.views import json_httpResponse
 from gitshell.gsuser.middleware import KEEP_REPO_NAME
 from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo, dropbox_share_direct
 
+lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml', 'go': 'Go'}
+brush_aliases = {'AppleScript': 'applescript', 'AS3': 'actionscript3', 'Bash': 'shell', 'ColdFusion': 'coldfusion', 'Cpp': 'cpp', 'CSharp': 'csharp', 'Css': 'css', 'Delphi': 'delphi', 'Diff': 'diff', 'Erlang': 'erlang', 'Groovy': 'groovy', 'JavaFX': 'javafx', 'Java': 'java', 'JScript': 'javascript', 'Perl': 'perl', 'Php': 'php', 'Plain': 'plain', 'PowerShell': 'powershell', 'Python': 'python', 'Ruby': 'ruby', 'Sass': 'sass', 'Scala': 'scala', 'Sql': 'sql', 'Vb': 'vb', 'Xml': 'xml', 'Go': 'go'}
+PULLREQUEST_COMMIT_MESSAGE_TMPL = 'Merge branch %s of https://gitshell.com/%s/%s/ into %s, see https://gitshell.com/%s/%s/pull/%s/, %s'
 @login_required
 def user_repo(request, user_name):
     return user_repo_paging(request, user_name, 0)
@@ -96,8 +99,6 @@ def raw_blob(request, user_name, repo_name, refs, path):
     blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
     return HttpResponse(blob, content_type="text/plain")
 
-lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml', 'go': 'Go'}
-brush_aliases = {'AppleScript': 'applescript', 'AS3': 'actionscript3', 'Bash': 'shell', 'ColdFusion': 'coldfusion', 'Cpp': 'cpp', 'CSharp': 'csharp', 'Css': 'css', 'Delphi': 'delphi', 'Diff': 'diff', 'Erlang': 'erlang', 'Groovy': 'groovy', 'JavaFX': 'javafx', 'Java': 'java', 'JScript': 'javascript', 'Perl': 'perl', 'Php': 'php', 'Plain': 'plain', 'PowerShell': 'powershell', 'Python': 'python', 'Ruby': 'ruby', 'Sass': 'sass', 'Scala': 'scala', 'Sql': 'sql', 'Vb': 'vb', 'Xml': 'xml', 'Go': 'go'}
 @repo_permission_check
 def ls_tree(request, user_name, repo_name, refs, path, current):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -241,6 +242,22 @@ def compare_commit(request, user_name, repo_name, from_refs, to_refs):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
+@login_required
+@require_http_methods(["POST"])
+def merge(request, user_name, repo_name, source_refs, desc_refs):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or not RepoManager.is_repo_member(repo, request.user):
+        raise Http404
+    merge_commit_message = 'Merge branch %s into %s, by %s' % (source_refs, desc_refs, '@' + str(request.user.username))
+    if request.user.id != repo.user_id:
+        merge_commit_message = merge_commit_message + ', @' + repo.username
+    gitHandler = GitHandler()
+    (returncode, output) = gitHandler.merge_pull_request(repo, repo, source_refs, desc_refs, merge_commit_message)
+    merge_output_split = '----------- starting merge -----------'
+    if merge_output_split in output:
+        output = output.split(merge_output_split)[1].strip()
+    RepoManager.delete_repo_commit_version(repo)
+    return json_httpResponse({'source_refs': source_refs, 'desc_refs': desc_refs, 'returncode': returncode, 'output': output, 'result': 'success'})
 
 @repo_permission_check
 def pulls(request, user_name, repo_name):
@@ -334,12 +351,12 @@ def pull_commit(request, user_name, repo_name, pullRequest_id):
     refs = 'master'; path = '.'
     args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
     if args is None:
-        return json_httpResponse({'commits': commits, 'result': 'failed'})
+        return json_httpResponse({'commits': {}, 'result': 'failed'})
     (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
 
     gitHandler = GitHandler()
     # prepare pullrequest
-    gitHandler.prepare_pull_request(pullRequest, source_repo, desc_repo)
+    gitHandler.prepare_pull_request(source_repo, desc_repo)
 
     source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), pullRequest.source_refname)
     desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), pullRequest.desc_refname)
@@ -352,12 +369,12 @@ def pull_diff(request, user_name, repo_name, pullRequest_id):
     refs = 'master'; path = '.'
     args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
     if args is None:
-        return json_httpResponse({'commits': commits, 'result': 'failed'})
+        return json_httpResponse({'diff': {}, 'result': 'failed'})
     (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
 
     gitHandler = GitHandler()
     # prepare pullrequest
-    gitHandler.prepare_pull_request(pullRequest, source_repo, desc_repo)
+    gitHandler.prepare_pull_request(source_repo, desc_repo)
 
     source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), pullRequest.source_refname)
     desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), pullRequest.desc_refname)
@@ -373,7 +390,7 @@ def pull_merge(request, user_name, repo_name, pullRequest_id):
     refs = 'master'; path = '.'
     args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
     if args is None:
-        return json_httpResponse({'commits': commits, 'result': 'failed'})
+        return json_httpResponse({'returncode': 128, 'output': 'merge failed', 'result': 'failed'})
     (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
@@ -382,7 +399,8 @@ def pull_merge(request, user_name, repo_name, pullRequest_id):
     desc_refs = pullRequest.desc_refname
     gitHandler = GitHandler()
     pullrequest_user = GsuserManager.get_user_by_id(pullRequest.pull_user_id)
-    (returncode, output) = gitHandler.merge_pull_request(pullRequest, source_repo, desc_repo, source_refs, desc_refs, pullrequest_user)
+    merge_commit_message = PULLREQUEST_COMMIT_MESSAGE_TMPL % (source_refs, source_repo.username, source_repo.name, desc_refs, desc_repo.username, desc_repo.name, pullRequest.id, '@' + str(pullrequest_user.username))
+    (returncode, output) = gitHandler.merge_pull_request(source_repo, desc_repo, source_refs, desc_refs, merge_commit_message)
     pullRequest.status = PULL_STATUS.MERGED
     if returncode != 0:
         pullRequest.status = PULL_STATUS.MERGED_FAILED
@@ -706,7 +724,7 @@ def log_graph(request, user_name, repo_name, refs):
 
     orgi_commit_hash = refs
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
-    log_graph = gitHandler.repo_log_graph(abs_repopath, commit_hash)
+    log_graph = gitHandler.repo_log_graph(repo, abs_repopath, commit_hash)
     log_graph['orgi_commit_hash'] = orgi_commit_hash
     log_graph['commit_hash'] = commit_hash
     log_graph['refs_meta'] = refs_meta

@@ -16,7 +16,6 @@ git diff 2497dbb67cb29c0448a3c658ed50255cb4de6419 a2f5ec702e58eb5053fc199c590eac
 path: . means is root of the repo path
 """
 BINARY_FILE_TYPE = set(['doc', 'docx', 'msg', 'odt', 'pages', 'rtf', 'wpd', 'wps', 'azw', 'dat', 'efx', 'epub', 'gbr', 'ged', 'ibooks', 'key', 'keychain', 'pps', 'ppt', 'pptx', 'sdf', 'tar', 'vcf', 'aif', 'iff', 'm3u', 'm4a', 'mid', 'mp3', 'mpa', 'ra', 'wav', 'wma', '3g2', '3gp', 'asf', 'asx', 'avi', 'flv', 'mov', 'mp4', 'mpg', 'rm', 'srt', 'swf', 'vob', 'wmv', '3dm', '3ds', 'max', 'obj', 'bmp', 'dds', 'dng', 'gif', 'jpeg', 'jpg', 'png', 'webp', 'tiff', 'psd', 'pspimage', 'tga', 'thm', 'tif', 'yuv', 'ai', 'eps', 'ps', 'indd', 'pct', 'pdf', 'xlr', 'xls', 'xlsx', 'accdb', 'db', 'dbf', 'mdb', 'pdb', 'apk', 'app', 'com', 'exe', 'gadget', 'jar', 'pif', 'wsf', 'dem', 'gam', 'nes', 'rom', 'sav', 'dwg', 'dxf', 'gpx', 'cfm', 'crx', 'plugin', 'fnt', 'fon', 'otf', 'ttf', 'cab', 'cpl', 'cur', 'dll', 'dmp', 'drv', 'icns', 'ico', 'lnk', 'sys', 'prf', 'hqx', 'mim', 'uue', '7z', 'cbr', 'deb', 'gz', 'pkg', 'rar', 'rpm', 'sit', 'sitx', 'tar.gz', 'zip', 'zipx', 'bin', 'cue', 'dmg', 'iso', 'mdf', 'toast', 'vcd', 'class', 'fla', 'tmp', 'crdownload', 'ics', 'msi', 'part', 'torrent'])
-PULLREQUEST_COMMIT_MESSAGE_TMPL = 'Merge branch %s of https://gitshell.com/%s/%s/ into %s, see https://gitshell.com/%s/%s/pull/%s/, %s'
 class GitHandler():
 
     def __init__(self):
@@ -104,10 +103,10 @@ class GitHandler():
             print e
         return {}
 
-    def repo_log_graph(self, repo_path, commit_hash):
+    def repo_log_graph(self, repo, repo_path, commit_hash):
         if not self._path_check_chdir(repo_path, commit_hash, '.') or not re.match('^\w+$', commit_hash):
             return {}
-        stage_file = self._get_stage_file(repo_path, commit_hash, '.')
+        stage_file = self._get_stage_file(repo_path, commit_hash, repo.last_push_time)
         stage_file = stage_file + '.lg'
         log_graph = self._read_load_stage_file(stage_file)
         if log_graph is not None:
@@ -139,7 +138,7 @@ class GitHandler():
             return refs
         return self.empty_commit_hash
 
-    def prepare_pull_request(self, pullRequest, source_repo, desc_repo):
+    def prepare_pull_request(self, source_repo, desc_repo):
         pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.username, desc_repo.name)
         source_abs_repopath = source_repo.get_abs_repopath()
         source_remote_name = '%s-%s' % (source_repo.username, source_repo.name)
@@ -158,18 +157,17 @@ class GitHandler():
             print e
         return False
 
-    def merge_pull_request(self, pullRequest, source_repo, desc_repo, source_refs, desc_refs, pullrequest_user):
+    def merge_pull_request(self, source_repo, desc_repo, source_refs, desc_refs, merge_commit_message):
         pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.username, desc_repo.name)
         source_abs_repopath = source_repo.get_abs_repopath()
         source_remote_name = '%s-%s' % (source_repo.username, source_repo.name)
         dest_abs_repopath = desc_repo.get_abs_repopath()
         desc_remote_name = '%s-%s' % (desc_repo.username, desc_repo.name)
         action = 'merge'
-        pullrequest_commit_message = PULLREQUEST_COMMIT_MESSAGE_TMPL % (source_refs, source_repo.username, source_repo.name, desc_refs, desc_repo.username, desc_repo.name, pullRequest.id, '@' + str(pullrequest_user.username))
         args = [pullrequest_repo_path, source_abs_repopath, source_remote_name, dest_abs_repopath, desc_remote_name, action, source_refs, desc_refs]
         if not self._is_allowed_paths(args):
             return (128, '合并失败，请检查是否存在冲突 或者 non-fast-forward')
-        args = ['/bin/bash', '/opt/bin/git-pullrequest.sh'] + args + [pullrequest_commit_message]
+        args = ['/bin/bash', '/opt/bin/git-pullrequest.sh'] + args + [merge_commit_message]
         try:
             popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
             output = popen.communicate()[0].strip()

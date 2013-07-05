@@ -12,10 +12,12 @@
     <h4 style="margin: 10px"><a href="/{{user_name}}/{{repo_name}}/compare/master/">{{repo_name}}</a> /
         <span id="i_repo_path"></span>
         <span>分支比较</span>
+        {% if is_repo_member %}
         <div id="id_merge_pullrequest" class="pull-right hide">
-            <a class="muted" data-original-title=" 直接合并分支代码" rel="tooltip" href="javascript: void(0)"><button type="button" class="btn btn-success">合并分支代码</button></a>
+            <a id="id_merge" class="muted" data-original-title=" 直接合并分支代码" rel="tooltip" href="javascript: void(0)"><button type="button" class="btn btn-success">合并分支代码</button></a>
             <a class="muted" data-original-title=" 出于礼貌，提前合并目标分支代码，减少对方合并时出现冲突的可能性" rel="tooltip" href="/{{user_name}}/{{repo_name}}/pull/new/{{user_name}}:{{from_refs}}...{{user_name}}:{{to_refs}}/"><button type="button" class="btn btn-primary">创建合并请求</button></a>
         </div>
+        {% endif %}
     </h4>
     <!--compare-->
     <div class="row" style="margin-top: 20px">
@@ -48,7 +50,7 @@
         </div>
     </div>
 </div>		  
-<div class="span10" style="margin-top: 20px">
+<div id="id_commits_diff" class="span10" style="margin-top: 20px">
     <ul class="nav nav-tabs" style="margin-bottom: 10px">
         <li class="c_pull_request_action active" data-action="commit"><a href="javascript:void(0)">Commits</a></li>
         <li class="c_pull_request_action" data-action="diff">
@@ -69,6 +71,10 @@
         <div id="id_pull_request_commit" class="c_pull_request_content hide"></div>
         <div id="id_pull_request_diff" class="c_pull_request_content hide"></div>
     </div>
+</div>
+<div id="id_merge_result" class="span10 hide" style="margin-top: 20px">
+    <pre id="id_merge_output" class="shell" style="margin-bottom: 15px"></pre>
+    <a id="id_merge_after" href="/{{user_name}}/{{repo_name}}/refs/graph/{{to_refs}}/"><button class="btn btn-primary pull-right">确定</button></a>
 </div>
 {% endblock %}
 {% block subjs %}
@@ -223,6 +229,34 @@ $(function(){
     $('.c_line_context').click(function(){
         $('#i_line_context').text($(this).text());
         load_diff_meta();
+    });
+    $('#id_merge').click(function(){
+        $('#id_commits_diff').hide();
+        $('#id_merge_result').show();
+        $('#id_merge_output').show();
+        var i = 0;
+        var interval = setInterval(function() {
+            i = i + 1;
+            var j = i % 4;
+            var html = '&gt; 正在进行 Merge，请耐心等候'
+            for (var k = 0; k < j; k++) {
+                html = html + '.'
+            }
+            $('#id_merge_output').html(html);
+        }, 500);
+        $('html, body').animate({ scrollTop: 0 }, 'fast');
+        $.post('/{{user_name}}/{{repo_name}}/merge/{{from_refs}}...{{to_refs}}/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            if(json.result == 'success') {
+                clearInterval(interval);
+                $('#id_merge_output').html(json.output);
+                if(json.returncode != 0) {
+                    $('#id_merge_after').attr('href', '/{{user_name}}/{{repo_name}}/compare/{{from_refs}}...{{to_refs}}/');
+                    $('#id_merge_after > button').removeClass('btn-primary').addClass('btn-danger').text('合并失败，请检查是否 存在冲突 或者 non-fast-forward');
+                }
+                $('#id_merge_after').show();
+            }
+        });
+        return false;
     });
 })
 </script>
