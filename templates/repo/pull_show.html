@@ -98,7 +98,7 @@ $(function(){
       selector: "a[rel=tooltip]"
     });
     var load_commit_meta = function() {
-        $.post('/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/commit/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        $.post('/{{user_name}}/{{repo_name}}/pull/commits/{{pullRequest.source_repo.username}}:{{pullRequest.source_refname}}...{{pullRequest.desc_repo.username}}:{{pullRequest.desc_refname}}/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             var html = [];
             var is_up_to_date = false;
             var source_commit_hash = json.source_repo_refs_commit_hash.substr(0, 7);
@@ -141,7 +141,7 @@ $(function(){
         });
     }
     var load_diff_meta = function() {
-        $.post('/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/diff/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        $.post('/{{user_name}}/{{repo_name}}/pull/diff/{{pullRequest.source_repo.username}}:{{pullRequest.source_refname}}..{{pullRequest.desc_repo.username}}:{{pullRequest.desc_refname}}/3/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             var diff = json.diff;
             $('.c_pull_request_content').each(function(index){
                 $(this).hide();

@@ -15,7 +15,7 @@
                 <span>仓库：</span>
                 <select id="id_source_repo" class="span3">
                     {% for repo in pull_repo_list %}
-                        {% if repo.username == source_repo.username and repo.name == source_repo.name %}
+                        {% if repo.id == source_repo.id %}
                             <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
                         {% else %}
                             <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
@@ -25,7 +25,6 @@
                 <br/>
                 <span>分支：</span>
                 <select id="id_source_refs" class="span3">
-                    <option value="master">master</option>
                 </select>
             </div>
             <div class="span0">
@@ -45,11 +44,10 @@
                 <br/>
                 <span>分支：</span>
                 <select id="id_desc_refs" class="span3">
-                    <option value="master">master</option>
                 </select>
             </div>
         </div>
-        <div class="span9" style="margin-top: 20px">
+        <div id="id_pull_div" class="span9" style="margin-top: 20px; margin-bottom: 0px">
             <form id="id_pull_form" method="post" action="" class="form-horizontal">
                 <div style="display:none"><input id="id_source_repo_select" type="hidden" value="" name="source_repo"></div>
                 <div style="display:none"><input id="id_source_refs_select" type="hidden" value="" name="source_refs"></div>
@@ -80,6 +78,17 @@
             </form>
         </div>
     </div>
+    <div style="margin-top: 20px">
+        <ul class="nav nav-tabs" style="margin-bottom: 10px">
+            <li id="id_commits_nav" class="c_pull_request_action active" data-action="commit"><a href="javascript:void(0)">Commits</a></li>
+            <li id="id_diff_nav" class="c_pull_request_action" data-action="diff"><a href="javascript:void(0)">Diff</a></li>
+        </ul>
+        <div id="id_pull_meta_data">
+            <div id="id_ajax_loading" class="c_pull_request_content"><img style="margin-left: 50px" src='/static/img/loading.gif'></div>
+            <div id="id_pull_request_commit" class="c_pull_request_content hide"></div>
+            <div id="id_pull_request_diff" class="c_pull_request_content hide"></div>
+        </div>
+    </div>
 </div>		  
 {% endblock %}
 {% block subjs %}
@@ -96,6 +105,109 @@ $(function(){
     $('#id_submit').tooltip({
       selector: "a[rel=tooltip]"
     });
+    var load_commit_meta = function() {
+        $('.c_pull_request_action').each(function(index){
+            $(this).removeClass('active');
+        });
+        $('#id_commits_nav').show();
+        $('#id_commits_nav').addClass('active');
+        var source_repo = $('#id_source_repo option:selected').val();
+        var source_refs = $('#id_source_refs option:selected').val();
+        var desc_repo = $('#id_desc_repo option:selected').val();
+        var desc_refs  = $('#id_desc_refs option:selected').val();
+        var source_username = source_repo.split('/')[0];
+        var desc_username = desc_repo.split('/')[0];
+        $.post('/{{user_name}}/{{repo_name}}/pull/commits/'+source_username+':'+source_refs+'...'+desc_username+':'+desc_refs+'/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            var html = [];
+            var is_up_to_date = false;
+            var source_commit_hash = json.source_repo_refs_commit_hash.substr(0, 7);
+            var desc_commit_hash = json.desc_repo_refs_commit_hash.substr(0, 7);
+            var exists_commit_hash_map = {};
+            exists_commit_hash_map[desc_commit_hash] = 1
+            var up_to_date = '<p>Already up-to-date. 你并不需要进行合并操作</p>';
+            if(json.commits.length > 0) {
+                html.push('<table class="table table-striped"><thead class="fixed"><tr><th width="20%">提交HASH (作者)</th><th width="10%">时间</th><th>日志</th></tr></thead><tbody>');
+                for(x in json.commits) {
+                    var commit_hash = json.commits[x].commit_hash;
+                    if(commit_hash in exists_commit_hash_map) {
+                        var tmp_parent_commit_hashs = json.commits[x].parent_commit_hash.split(' ')
+                        for(y in tmp_parent_commit_hashs) {
+                            exists_commit_hash_map[tmp_parent_commit_hashs[y]] = 1;
+                        }
+                    }
+                    var committer = json.commits[x].committer;
+                    var committer_date = json.commits[x].committer_date;
+                    var committer_moment = moment(new Date(committer_date*1000)).fromNow();
+                    var commit_message = json.commits[x].commit_message;
+                    html.push('<tr><td><code>' + commit_hash + '</code><span>(' + committer + ')</span></td><td><span style="display: inline;">' + committer_moment + '</span></td><td>' + commit_message + '</td></tr>');
+                }
+                html.push('</tbody></table>');
+            } else {
+                html.push(up_to_date);
+            }
+            if(source_commit_hash in exists_commit_hash_map) {
+                is_up_to_date = true;
+            }
+            $('.c_pull_request_content').each(function(index){
+                $(this).hide();
+             });
+            if(is_up_to_date) {
+                $('#id_pull_request_commit').html(up_to_date);
+                $('#id_pull_div').hide();
+            } else {
+                $('#id_pull_request_commit').html(html.join(''));
+                $('#id_pull_div').show();
+            }
+            $('#id_pull_request_commit').show();
+        });
+    }
+    var load_diff_meta = function() {
+        $('.c_pull_request_action').each(function(index){
+            $(this).removeClass('active');
+        });
+        $('#id_diff_nav').show();
+        $('#id_diff_nav').addClass('active');
+        var source_repo = $('#id_source_repo option:selected').val();
+        var source_refs = $('#id_source_refs option:selected').val();
+        var desc_repo = $('#id_desc_repo option:selected').val();
+        var desc_refs  = $('#id_desc_refs option:selected').val();
+        var source_username = source_repo.split('/')[0];
+        var desc_username = desc_repo.split('/')[0];
+        $.post('/{{user_name}}/{{repo_name}}/pull/diff/'+source_username+':'+source_refs+'..'+desc_username+':'+desc_refs+'/3/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            var diff = json.diff;
+            $('.c_pull_request_content').each(function(index){
+                $(this).hide();
+            });
+            $('#id_pull_request_diff').html('<pre class="brush: diff;">' + diff + '</pre>');
+            SyntaxHighlighter.highlight();
+            $('#id_pull_request_diff').show();
+        });
+    }
+    $('.c_pull_request_action').click(function(){
+        var action = $(this).data('action');
+        $('.c_pull_request_action').each(function(index){
+            $(this).removeClass('active');
+        });
+        $(this).addClass('active');
+        $('.c_pull_request_content').each(function(index){
+            $(this).hide();
+        });
+        $('#id_ajax_loading').show();
+        if(action == 'commit') {
+            load_commit_meta();
+        } else if(action == 'diff') {
+            load_diff_meta();
+        }
+    });
+    function compare() {
+        var source_refs = $('#id_source_refs option:selected').val();
+        var desc_refs  = $('#id_desc_refs option:selected').val();
+        if(source_refs === undefined || desc_refs === undefined) {
+            return;
+        }
+        $('#id_pull_div').hide();
+        load_commit_meta();
+    }
     function fullfill_options(repo_select, refs_select, default_refs) {
         var repo = repo_select.attr('value');
         var tmp_global_repo_branch_map = global_repo_branch_map;
@@ -124,6 +236,7 @@ $(function(){
                 }
             }
             tmp_global_repo_branch_map[repo] = branches;
+            compare();
         });
         global_repo_branch_map = tmp_global_repo_branch_map;
     };
@@ -134,6 +247,12 @@ $(function(){
     });
     $('#id_desc_repo').change(function(){
         fullfill_options($(this), $('#id_desc_refs'));
+    });
+    $('#id_source_refs').change(function(){
+        compare();
+    });
+    $('#id_desc_refs').change(function(){
+        compare();
     });
     $('#id_pull_form').submit(function() {
         if($('#id_title').val() == '' || $('#id_source_repo option:selected').val() == '' || $('#id_source_refs option:selected').val() == '' || $('#id_desc_repo option:selected').val() == '' || $('#id_desc_refs option:selected').val() == '') {

@@ -275,14 +275,14 @@ def pulls(request, user_name, repo_name):
 @login_required
 @repo_permission_check
 def pull_new_default(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
     source_username = user_name
     source_refs = 'master'
     desc_username = user_name
     desc_refs = 'master'
     if user_name != request.user.username:
-        repo = RepoManager.get_repo_by_name(user_name, repo_name)
-        if repo is None:
-            raise Http404
         child_repo = RepoManager.get_childrepo_by_user_forkrepo(request.user, repo)
         if child_repo is not None:
             source_username = child_repo.username
@@ -347,41 +347,48 @@ def pull_show(request, user_name, repo_name, pullRequest_id):
 
 @repo_permission_check
 @require_http_methods(["POST"])
-def pull_commit(request, user_name, repo_name, pullRequest_id):
+def pull_commits(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
     refs = 'master'; path = '.'
-    args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
-    if args is None:
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
+    desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
+    if repo is None or source_repo is None or desc_repo is None:
         return json_httpResponse({'commits': {}, 'result': 'failed'})
-    (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
+    if not _has_pull_right(request, source_repo, desc_repo):
+        return json_httpResponse({'commits': {}, 'result': 'failed'})
 
     gitHandler = GitHandler()
     # prepare pullrequest
     gitHandler.prepare_pull_request(source_repo, desc_repo)
+    pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.username, desc_repo.name)
 
-    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), pullRequest.source_refname)
-    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), pullRequest.desc_refname)
+    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), source_refs)
+    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), desc_refs)
     commits = gitHandler.repo_log_file(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, path)
     return json_httpResponse({'commits': commits, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
     
 @repo_permission_check
 @require_http_methods(["POST"])
-def pull_diff(request, user_name, repo_name, pullRequest_id):
+def pull_diff(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs, context):
     refs = 'master'; path = '.'
-    args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
-    if args is None:
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
+    desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
+    if repo is None or source_repo is None or desc_repo is None:
         return json_httpResponse({'diff': {}, 'result': 'failed'})
-    (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
+    pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.username, desc_repo.name)
+    if not _has_pull_right(request, source_repo, desc_repo):
+        return json_httpResponse({'diff': {}, 'result': 'failed'})
 
     gitHandler = GitHandler()
     # prepare pullrequest
     gitHandler.prepare_pull_request(source_repo, desc_repo)
+    pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.username, desc_repo.name)
 
-    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), pullRequest.source_refname)
-    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), pullRequest.desc_refname)
-    diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
-    if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
-        diff = gitHandler.repo_diff(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, 3, path)
-    return json_httpResponse({'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
+    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), source_refs)
+    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), desc_refs)
+    diff = gitHandler.repo_diff(pullrequest_repo_path, source_repo_refs_commit_hash, desc_repo_refs_commit_hash, context, '.')
+    return json_httpResponse({'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success', 'context': context})
 
 @repo_permission_check
 @login_required
@@ -392,8 +399,7 @@ def pull_merge(request, user_name, repo_name, pullRequest_id):
     if args is None:
         return json_httpResponse({'returncode': 128, 'output': 'merge failed', 'result': 'failed'})
     (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
+    if desc_repo is None or desc_repo.user_id != request.user.id:
         return json_httpResponse({'result': 'failed'})
     source_refs = pullRequest.source_refname
     desc_refs = pullRequest.desc_refname
@@ -1047,11 +1053,19 @@ def list_github_repos(request):
     return HttpResponse(repos_json_str, mimetype='application/json')
 
 def _list_pull_repo(request, repo):
-    pull_repo_list = RepoManager.list_parent_repo(repo, 10)
+    raw_pull_repo_list = RepoManager.list_parent_repo(repo, 10)
     child_repo = RepoManager.get_childrepo_by_user_forkrepo(request.user, repo)
     if child_repo is not None:
-        pull_repo_list = [child_repo] + pull_repo_list
+        raw_pull_repo_list = [child_repo] + pull_repo_list
+    pull_repo_list = [x for x in raw_pull_repo_list if _has_repo_pull_right(request, x)]
     return pull_repo_list
+
+def _has_repo_pull_right(request, repo):
+    if repo is None:
+        return False
+    if repo.auth_type != 0 and not RepoManager.is_repo_member(repo, request.user):
+        return False
+    return True
 
 def _has_pull_right(request, source_pull_repo, desc_pull_repo):
     if source_pull_repo is None or desc_pull_repo is None:
