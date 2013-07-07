@@ -82,6 +82,15 @@
         <ul class="nav nav-tabs" style="margin-bottom: 10px">
             <li id="id_commits_nav" class="c_pull_request_action active" data-action="commit"><a href="javascript:void(0)">Commits</a></li>
             <li id="id_diff_nav" class="c_pull_request_action" data-action="diff"><a href="javascript:void(0)">Diff</a></li>
+            <li id="i_select_line_context" class="dropdown hide">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">上下行数(<span id="i_line_context">3</span>) <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li><a class="c_line_context" href="#">3</a></li>
+                    <li><a class="c_line_context" href="#">5</a></li>
+                    <li><a class="c_line_context" href="#">10</a></li>
+                    <li><a class="c_line_context" href="#">20</a></li>
+                </ul>
+            </li>
         </ul>
         <div id="id_pull_meta_data">
             <div id="id_ajax_loading" class="c_pull_request_content"><img style="margin-left: 50px" src='/static/img/loading.gif'></div>
@@ -106,6 +115,7 @@ $(function(){
       selector: "a[rel=tooltip]"
     });
     var load_commit_meta = function() {
+        $('#i_select_line_context').hide();
         $('.c_pull_request_action').each(function(index){
             $(this).removeClass('active');
         });
@@ -162,6 +172,7 @@ $(function(){
         });
     }
     var load_diff_meta = function() {
+        $('#i_select_line_context').show();
         $('.c_pull_request_action').each(function(index){
             $(this).removeClass('active');
         });
@@ -173,7 +184,8 @@ $(function(){
         var desc_refs  = $('#id_desc_refs option:selected').val();
         var source_username = source_repo.split('/')[0];
         var desc_username = desc_repo.split('/')[0];
-        $.post('/{{user_name}}/{{repo_name}}/pull/diff/'+source_username+':'+source_refs+'..'+desc_username+':'+desc_refs+'/3/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        var line_context = $('#i_line_context').text();
+        $.post('/{{user_name}}/{{repo_name}}/pull/diff/'+source_username+':'+source_refs+'..'+desc_username+':'+desc_refs+'/'+line_context+'/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             var diff = json.diff;
             $('.c_pull_request_content').each(function(index){
                 $(this).hide();
@@ -183,6 +195,10 @@ $(function(){
             $('#id_pull_request_diff').show();
         });
     }
+    $('.c_line_context').click(function(){
+        $('#i_line_context').text($(this).text());
+        load_diff_meta();
+    });
     $('.c_pull_request_action').click(function(){
         var action = $(this).data('action');
         $('.c_pull_request_action').each(function(index){
@@ -236,6 +252,7 @@ $(function(){
                 }
             }
             tmp_global_repo_branch_map[repo] = branches;
+            // FIX BUG, multi compare() call
             compare();
         });
         global_repo_branch_map = tmp_global_repo_branch_map;
