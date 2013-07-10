@@ -79,6 +79,12 @@
         <!-- Placed at the end of the document so the pages load faster -->
         <script src="/static/js/jquery-1.7.2.min.js"></script>
         <script src="/static/js/bootstrap.min.js"></script>
+        <script src='/static/js/app/underscore/underscore-min.js'></script>
+        <script src='/static/js/app/underscore/underscore.string.min.js'></script>
+        <script type="text/javascript"> _.mixin(_.str.exports()) </script>
+        <script src='/static/js/app/handlebars/handlebars.js'></script>
+        <script src='/static/js/gitshell-template.js' type='text/javascript'></script>
+        <script src='/static/js/gitshell.js' type='text/javascript'></script>
         {% block js %}{% endblock %}
         <script type="text/javascript">
         var _gaq = _gaq || [];

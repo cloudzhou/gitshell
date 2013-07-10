@@ -96,6 +96,7 @@ $(function(){
         $('#i_repo_path').html(path_href_html);
     };
     set_path_href();
+    var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
     $('.c_diff_commit').click(function() {
         commit_hash = $(this).attr('value');
         pre_commit_hash = $(this).closest('tr').next().next().find('.c_diff_commit').attr('value')
@@ -110,20 +111,12 @@ $(function(){
                 $('#i_diff_' + commit_hash).show();
                 return
             }
-            $.ajax({
-                url: '/{{user_name}}/{{repo_name}}/diff/' + pre_commit_hash + '..' + commit_hash + '/3/{{path}}',
-                type: 'POST',
-                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-                dataType: 'json',
-                timeout: 10000,
-                error: function(){
-                },
-                success: function(json){
-                    $('#i_pre_' + commit_hash).html('<pre class="brush: diff;">' + json.diff + '</pre>');
-                    $('#i_label_' + commit_hash).text('-');
-                    $('#i_diff_' + commit_hash).show();
-                    SyntaxHighlighter.highlight();
-                },
+            repoComparer.from_refs = pre_commit_hash;
+            repoComparer.to_refs = commit_hash;
+            repoComparer.path = '{{path}}';
+            repoComparer.loadDiff($('#i_pre_' + commit_hash), null, function() {
+                $('#i_label_' + commit_hash).text('-');
+                $('#i_diff_' + commit_hash).show();
             });
         } else {
             $('#i_label_' + commit_hash).text('+')

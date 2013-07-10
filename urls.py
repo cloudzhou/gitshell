@@ -143,8 +143,8 @@ urlpatterns = patterns('gitshell',
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/forbid_dploy_url/?$', 'repo.views.forbid_dploy_url'),
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/enable_dropbox_sync/?$', 'repo.views.enable_dropbox_sync'),
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/disable_dropbox_sync/?$', 'repo.views.disable_dropbox_sync'),
-    url(r'^(\w+)/([a-zA-Z0-9_\-]+)/diff/([a-zA-Z0-9_\.\-]+)\.\.([a-zA-Z0-9_\.\-]+)/(\d+)/?', 'repo.views.diff_default'),
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/diff/([a-zA-Z0-9_\.\-]+)\.\.([a-zA-Z0-9_\.\-]+)/(\d+)/([^\@\#\$\&\\\*\"\'\<\>\|\;]*)$', 'repo.views.diff'),
+    url(r'^(\w+)/([a-zA-Z0-9_\-]+)/diff/([a-zA-Z0-9_\.\-]+)\.\.([a-zA-Z0-9_\.\-]+)/(\d+)/?', 'repo.views.diff_default'),
     
     # issue
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/issues/?$', 'issue.views.issues'),

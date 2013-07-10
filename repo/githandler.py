@@ -93,7 +93,7 @@ class GitHandler():
         result = self._read_load_stage_file(stage_file)
         if result is not None:
             return result['diff']
-        command = '/usr/bin/git diff --numstat  %s..%s | /usr/bin/head -c 524288 ; /usr/bin/git diff -U%s %s..%s -- %s | /usr/bin/head -c 524288' % (pre_commit_hash, commit_hash, context, pre_commit_hash, commit_hash, path)
+        command = '/usr/bin/git diff --numstat  %s..%s -- %s | /usr/bin/head -c 524288 ; /usr/bin/git diff -U%s %s..%s -- %s | /usr/bin/head -c 524288' % (pre_commit_hash, commit_hash, path, context, pre_commit_hash, commit_hash, path)
         try:
             result = check_output(command, shell=True)
             diff = self._parse_diff_file_as_json(result)
