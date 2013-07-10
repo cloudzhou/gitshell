@@ -1,41 +1,34 @@
 {% extends "base.html" %}
-{% block css %}
-<style>
-pre { border: 0px; }
-</style>
-{% endblock %}
+
 {% block container %}
-<div class="page-header">
-        <h1>:-(, 错误代码</h1>
-</div>
-<div class="row">
-        <pre>很不幸让你看到这里，以下是常见的错误代码
-            <h3 id="404">404 资源找不到：</h3>
-            你想要的东西我找了404次都没有找到！
-            <h3 id="500">500 内部错误：</h3>
-            系统内部出现了500个错误，如果是能重现的行为，请联系 support@gitshell.com，此致敬礼！
-        </pre>
-<iframe scrolling='no' frameborder='0' src='http://yibo.iyiyun.com/js/yibo404' width='735' height='700' style="display:block;"></iframe>
+	<header class="header">
+		<h1>:-(, 错误代码</h1>
+	</header>
+	<p style="font-size: 14px;">很不幸让你看到这里，以下是常见的错误代码<br>
+		<span id="404" style="font-size: 16px; font-weight: bold;">404 资源找不到:</span>你想要的东西我找了404次都没有找到！<br>
+		<span id="500" style="font-size: 16px; font-weight: bold;">500 内部错误:</span>系统内部出现了500个错误，如果是能重现的行为，请联系 support@gitshell.com，此致敬礼！</p>
+	<iframe scrolling="no" frameborder="0" src="http://yibo.iyiyun.com/js/yibo404" width="735" height="700"></iframe>
 </div>
 {% endblock %}
+
 {% block js %}
-<script>
-$(function(){
-    if(window.location.hash) {
-        $(window).scrollTop($(window).scrollTop() - 50);
-    }
-    $(document.body).delegate("a","click",function(){
-        var hrefStr = $(this).attr("href");
-        var reg = /.*#[a-z_A-Z]+$/;
-        var isHash= reg.test(hrefStr);
-        if(isHash){
-            var hashStr =$(this).attr('href'); 
-            var hashIds = hashStr.match(/#[a-z_A-Z]+$/);
-            var pos = $(hashIds[0]).offset();
-            $(window).scrollTop(pos.top - 50);
-            return false;
-        }
-    });
-});
-</script>
+	<script>
+	$(function(){
+			if(window.location.hash) {
+					$(window).scrollTop($(window).scrollTop() - 50);
+			}
+			$(document.body).delegate("a","click",function(){
+					var hrefStr = $(this).attr("href");
+					var reg = /.*#[a-z_A-Z]+$/;
+					var isHash= reg.test(hrefStr);
+					if(isHash){
+							var hashStr =$(this).attr('href'); 
+							var hashIds = hashStr.match(/#[a-z_A-Z]+$/);
+							var pos = $(hashIds[0]).offset();
+							$(window).scrollTop(pos.top - 50);
+							return false;
+					}
+			});
+	});
+	</script>
 {% endblock %}

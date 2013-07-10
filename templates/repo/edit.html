@@ -1,59 +1,54 @@
 {% extends "repo/repo.html" %}
 
+{% block bubble_inner_class_name %} edit{% endblock %}
+
 {% block subcontainer %}
 
-<div class="bubble repo">
 	<header class="bubble-header clearfix">
 		<h1 class="title pull-left">编辑仓库</h1>
 		<p class="em summary pull-left">提交代码需要<a href="/settings/sshpubkey/">设置SSH公钥</a></p>
 	</header>
 
-	<div class="bubble-inner setting">
-		<div class="inner">
-
-		<form class="form-horizontal" action="" method="post">
-			{% csrf_token %}
-			<div class="control-group">
-				<label for="id_name" class="control-label">仓库名称</label>
-				<div class="controls">{{ repoForm.name }}</div>
-			</div>
-			<div class="control-group">
-				<label for="id_desc" class="control-label">简介</label>
-				<div class="controls">{{ repoForm.desc }}</div>
-			</div>
-			<div class="control-group">
-				<label for="id_lang" class="control-label">语言选择</label>
-				<div class="controls select2">{{ repoForm.lang }}</div>
-			</div>
-			<div id="id_other_lang_group" class="control-group" class="hide">
-				<label for="id_other_lang" class="control-label">其他语言</label>
-				<div class="controls">
-					<input type="text" maxlength="16" value="" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder="哇！难道你发明了新的语言:-)">
-				</div>
-			</div>
-			<div class="control-group">
-				<label for="id_auth_type" class="control-label">可见度</label>
-				<div class="controls">
-					{% for radio in repoForm.auth_type %}
-						<label class="auth-type">
-							{{ radio.tag }}
-							{{ radio.choice_label }}
-						</label>
-					{% endfor %}
-				</div>
-			</div>
-			<div id="id_error" class="alert {% if not error %}hide{% endif %}">
-				<a data-dismiss="alert" class="close"><i class="icon-close"></i></a>
-				<p class="text-error"><strong>出错了!</strong><span id="id_error_message">{{ error }}</span></p>
-			</div>
+	<form class="form-horizontal" action="" method="post">
+		{% csrf_token %}
+		<div class="control-group">
+			<label for="id_name" class="control-label">仓库名称</label>
+			<div class="controls">{{ repoForm.name }}</div>
+		</div>
+		<div class="control-group">
+			<label for="id_desc" class="control-label">简介</label>
+			<div class="controls">{{ repoForm.desc }}</div>
+		</div>
+		<div class="control-group">
+			<label for="id_lang" class="control-label">语言选择</label>
+			<div class="controls select2">{{ repoForm.lang }}</div>
+		</div>
+		<div id="id_other_lang_group" class="control-group" class="hide">
+			<label for="id_other_lang" class="control-label">其他语言</label>
 			<div class="controls">
-				<button id="id_edit_submit" class="btn btn-success" type="submit">确定</button>
+				<input type="text" maxlength="16" value="" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder="哇！难道你发明了新的语言:-)">
 			</div>
-		</form>
-		<p class="info text-warning">公开：包括源代码公开；半公开：除了源代码之外公开；私有：对外不公开</p>
-	</div>
-</div>
-</div>
+		</div>
+		<div class="control-group">
+			<label for="id_auth_type" class="control-label">可见度</label>
+			<div class="controls">
+				{% for radio in repoForm.auth_type %}
+					<label class="auth-type">
+						{{ radio.tag }}
+						{{ radio.choice_label }}
+					</label>
+				{% endfor %}
+			</div>
+		</div>
+		<div id="id_error" class="alert {% if not error %}hide{% endif %}">
+			<a data-dismiss="alert" class="close"><i class="icon-close"></i></a>
+			<p class="text-error"><strong>出错了!</strong><span id="id_error_message">{{ error }}</span></p>
+		</div>
+		<div class="controls">
+			<button id="id_edit_submit" class="btn btn-success" type="submit">确定</button>
+		</div>
+	</form>
+	<p class="info text-warning">公开：包括源代码公开；半公开：除了源代码之外公开；私有：对外不公开</p>
 
 {% endblock %}
 

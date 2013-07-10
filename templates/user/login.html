@@ -1,29 +1,24 @@
 {% extends "base.html" %}
 
 {% block container %}
-<div class="bubble login">
+<div class="bubble authorize">
 
-	<div class="bubble-header clearfix">
-		<h2 class="title pull-left">登录</h2>
-	</div>
+	<header class="header clearfix">
+		<h1 class="heading">登录</h1>
+	</header>
 
 	<div class="bubble-inner">
 		<div class="form">
 			<p class="title">使用以下网站帐号登录，无需注册</p>
-			<div class="well">
-				<p class="em text-warning">如果您已经拥有 Gitshell 帐号，请优先使用 Gitshell 帐号登录然后在“创建仓库页面”进行 GitHub 帐号关联。</p>
-				<a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn btn-success"><i class="icon-github"></i>使用 GitHub 账户登录</a>
-			</div>
+			<p class="text-warning">如果您已经拥有 Gitshell 帐号，请优先使用 Gitshell 帐号登录然后在“创建仓库页面”进行 GitHub 帐号关联。<a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn btn-success"><i class="icon-github"></i>使用 GitHub 账户登录</a></p>
 
 			<hr class="hr">
-			<form class="form-inline" action="" method="post">
+			<form action="" method="post">
 				{% csrf_token %}
-				<div class="controls">{{ loginForm.email }}</div>
-				<div class="controls">
-					<input type="password" maxlength="64" name="unencrypt_password" id="id_unencrypt_password" placeholder="密码">
-					<span class="hide">{{ loginForm.password }}</span>
-				</div>
-				<div class="controls"><button id="id_login_submit" class="btn btn-primary" type="submit">登录</button></div>
+				{{ loginForm.email }}
+				<input type="password" maxlength="64" name="unencrypt_password" id="id_unencrypt_password" placeholder="密码">
+				<span class="hide">{{ loginForm.password }}</span>
+				<button id="id_login_submit" class="btn btn-primary" type="submit">登录</button>
 				<label class="checkbox">{{ loginForm.rememberme }} 下次自动登录</label>
 					<a href="/resetpassword/">忘记密码了?</a>
 				</form>

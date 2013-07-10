@@ -1,13 +1,10 @@
-{% extends "base.html" %}
-{% block css %}
-<style>
-pre { border: 0px; }
-</style>
-{% endblock %}
+{% extends "repo/repo.html" %}
+
+{% block bubble_inner_class_name %} delete{% endblock %}
 {% block container %}
-<div class="page-header">
-        <h1>:-(, 删除仓库</h1>
-</div>
+<header class="header">
+	<h1>:-(, 删除仓库</h1>
+</header>
 <div class="row">
     <div class="alert alert-error">
         你正在删除仓库 <strong>{{repo_name}}</strong>, 这是<strong>不可恢复</strong>的操作

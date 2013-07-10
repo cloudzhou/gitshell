@@ -1,7 +1,7 @@
 {% extends "settings/base.html" %}
 
 {% block container-right %}
-	<h3 class="title">管理SSH Public Key</h3>
+	<h2 class="heading">管理SSH Public Key</h2>
 	<table class="table ssh">
 		<colgroup>
 			<col width="">
@@ -11,10 +11,10 @@
 		</colgroup>
 			<thead>
 				<tr>
-					<th class="first"><i class="icon-caret-down"></i>公钥标识</th>
-					<th><i class="icon-caret-down"></i>指纹信息</th>
-					<th><i class="icon-caret-down"></i>状态</th>
-					<th><i class="icon-caret-down"></i>操作</th>
+					<th class="first">公钥标识</th>
+					<th>指纹信息</th>
+					<th>状态</th>
+					<th>操作</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -24,20 +24,20 @@
 					<td class="md5">{{ userPubkey.fingerprint }}</td>
 					<td class="status">正常</td>
 					<td class="action">
-						<button id="i_remove_{{ userPubkey.id }}" value="{{ userPubkey.id }}" class="c_remove_sshpubkey btn btn-mini btn-warning">删除</button>
+						<button id="i_remove_{{ userPubkey.id }}" value="{{ userPubkey.id }}" class="c_remove_sshpubkey btn btn-mini">删除</button>
 					</td>
 				</tr>
 				{% endfor %}
 			</tbody>
 	</table>
 	<form id="i_do_sshpubkey_form" class="form-horizontal ssh" action="/settings/sshpubkey/remove/" method="post">
-			{% csrf_token %}
-			{{ doSshpubkeyForm.pubkey_id }}
-			{{ doSshpubkeyForm.action }}
+		{% csrf_token %}
+		{{ doSshpubkeyForm.pubkey_id }}
+		{{ doSshpubkeyForm.action }}
 	</form>
 
 	<form class="form-horizontal ssh" action="" method="post">
-			<legend class="title">添加SSH Public Key</legend>
+			<legend class="heading">添加SSH Public Key</legend>
 			{% csrf_token %}
 					<div class="control-group">
 							<label for="id_pubkey_name" class="control-label">公钥标识</label>
@@ -57,8 +57,10 @@
 							<strong>出错了！</strong> {{ error }}
 					</div>
 					{% endif %}
-					<div class="controls">
-							<button id="id_add_submit" class="btn btn-large btn-success" type="submit">创建</button>
+					<div class="control-group">
+						<div class="controls">
+								<button id="id_add_submit" class="btn btn-large" type="submit">创建</button>
+						</div>
 					</div>
 	</form>
 {% endblock %}

@@ -2,15 +2,15 @@
 
 {% block container-right %}
 		<form class="form-horizontal form" action="" method="post">
-			<legend class="title">个人资料<small>详细信息能让人更好认识你</small></legend>
+			<legend class="title">个人信息<small>详细的个人信息可以让他人更好了解你</small></legend>
 			{% csrf_token %}
 			<div class="control-group">
-					<label for="id_github_apply" class="control-label">GitHub 关联账户</label>
+					<label for="id_github_apply" class="control-label">GitHub账户关联</label>
 					<div class="controls">
 					{% if thirdpartyUser %}
-						<a target="_blank" href="https://github.com/{{ thirdpartyUser.tp_username }}/" class="btn btn-success"><i class="icon-github"></i>GitHub 账户 ({{ thirdpartyUser.tp_username }})</a>
+						<a target="_blank" href="https://github.com/{{ thirdpartyUser.tp_username }}/" class="btn btn-success"><i class="icon-github"></i>关联GitHub ({{ thirdpartyUser.tp_username }})</a>
 					{% else %}
-						<a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/" class="btn btn-success"><i class="icon-github"></i>关联 GitHub 账户</a>
+						<a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/" class="btn btn-primary"><i class="icon-github"></i>关联 GitHub 账户</a>
 					{% endif %}
 					</div>
 			</div>
@@ -21,7 +21,7 @@
 					</div>
 			</div>
 			<div class="control-group">
-					<label for="id_nickname" class="control-label">姓名/昵称</label>
+					<label for="id_nickname" class="control-label">昵称</label>
 					<div class="controls">
 							{{ userprofileForm.nickname }}
 					</div>
@@ -39,7 +39,7 @@
 					</div>
 			</div>
 			<div class="control-group">
-					<label for="id_location" class="control-label">所在地</label>
+					<label for="id_location" class="control-label">位置</label>
 					<div class="controls">
 							{{ userprofileForm.location }}
 					</div>
@@ -60,8 +60,10 @@
 					<strong>出错了！</strong> {{ error }}
 			</div>
 			{% endif %}
-			<div class="controls">
-					<button id="id_add_submit" class="btn" type="submit">保存</button>
+			<div class="control-group">
+				<div class="controls">
+						<button id="id_add_submit" class="btn" type="submit">保存</button>
+				</div>
 			</div>
 		</form>
 {% endblock %}

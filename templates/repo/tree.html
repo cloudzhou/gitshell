@@ -4,14 +4,55 @@
 	<link href="/static/css/app/highlight/github.css" rel="stylesheet">
 {% endblock %}
 
+{% block bubble_inner_class_name %} files{% endblock %}
+
+{% block cloneurl %}
+
+		<div class="description well">
+			<p>{{repo.desc|truncatechars:80}} <a href="#README.md">Read More</a></p>
+		</div>
+
+		<div class="url-container clearfix{% if current == 'index' or current == 'tree' %} visible{%else%} hide{%endif%}">
+			{% if repo.status != 0 %}
+				<p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
+			{% endif %}
+			{% if has_fork_right %}
+				<dl class="url colspan">
+					<dt class="btn-group span">
+						{% if is_repo_member %}
+							<span class="first"><a id="id_ssh_fork" class="url-select btn">SSH</a></span>
+						{% endif %}
+							<span class="middle"><a id="id_http_fork" class="active url-select btn">HTTP</a></span>
+						{% if repo.auth_type == 0 %}
+							<span class="middle"><a id="id_git_fork" class="url-select btn">GIT</a></span>
+						{% endif %}
+					</dt>
+					<dd class="url-holder btn-group span">
+						{% if is_repo_member %}
+						<span class="middle">
+							<span class="url-data btn" id="url"><span class="url-git">git</span>@<span class="url-gitshell">gitshell.com</span>:<span class="url-username">{{ user_name }}</span>/<span class="url-repo-name">{{ repo_name }}</span>.git</span>
+						</span>
+						{% elif repo.auth_type == 0 %}
+						<span class="middle">
+							<span class="url-data btn"><span class="url-git">https://</span><span class="url-gitshell">gitshell.com</span>/<span class="url-username">{{ user_name }}</span>/<span class="url-repo-name">{{ repo_name }}</span>.git</span>
+						</span>
+						{% endif %}
+						<span class="last">
+							<span class="clipboard url-select btn"><a class="url-js-copy"><i class="icon-copy"></i>复制</a></span>
+						</span>
+						<span class="meta url-info">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>
+					</dd>
+				</dl>
+			{% endif %}
+		</div>
+
+{% endblock %}
+
 {% block subcontainer %}
-
-	<div class="bubble repo">
-
-		<header class="bubble-header clearfix">
+		<header class="header clearfix">
 			<div class="clearfix pull-left">
 				<div class="branches dropdown">
-					<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle">
+					<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle btn btn-mini">
 						<span class="dropdown-toggle-inner">
 							<span class="branch">Branch:</span>
 							<span class="branch-name">{{ refs }}</span>
@@ -19,7 +60,7 @@
 						</span>
 					</a>
 					<nav class="dropdown-menu">
-						<ul class="nav-list">
+						<ul class="nav nav-list flat-nav-list">
 							<li class="master"><a href="/repo/{{branch}}/"><span>master</span></a></li>
 							<li><a href="/repo/{{branch}}/"><span>template_yuwen_0522</span></a></li>
 							<li><a href="/repo/{{branch}}/"><span>blueStyle</span></a></li>
@@ -27,20 +68,19 @@
 						</ul>
 					</nav>
 				</div>
-				<h1 class="repo-name"><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">{{repo_name}}</a></h1>
+				<span class="current-branch-name"><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">{{repo_name}}</a></span>
 			</div>
-			<p class="extra label label-mini label-info">
+			<span class="label label-mini label-info pull-right">
 				<i class="icon-time"></i>
 				<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}">Commits</a>
 				{% if not is_tree %}
 					<a href="/{{user_name}}/{{repo_name}}/raw/tree/{{refs}}/{{path}}">原始文件</a>
 				{% endif %}
-			</p>
+			</span>
     </header>
 
     {% if is_tree %}
 
-			<section class="bubble-inner">
 				<table class="table">
 					<tbody>
 						{% if not tree %}
@@ -53,9 +93,9 @@
 							<tr>
 								<td class="icon">
 									{% if attrs.0 == 'tree' %}
-										<i class="icon-list"></i>
+										<i class=""><img src="/static/img/file_dir.png" alt="dir"></i>
 									{% else %}
-										<i class="icon-file-alt"></i> 
+										<i class=""><img src="/static/img/file_txt.png" alt="txt"></i> 
 									{% endif %}
 								</td>
 								<td class="file-name">
@@ -79,7 +119,6 @@
 						{% endfor %}
 					</tbody>
 				</table>
-			</section>
 
     {% else %}
 
@@ -96,8 +135,6 @@
 			</section>
 
     {% endif %}
-
-	</div>		  
 
 {% endblock %}
 

@@ -1,7 +1,7 @@
 {% extends "settings/base.html" %}
 
 {% block container-right %}
-	<h2 class="title">GitHub账户关联</h2>
+	<h2 class="heading">GitHub账户关联</h2>
 	{% if thirdpartyUser %}
 	<button class="btn" type="button"><i class="icon-github"></i>GitHub 账户 ({{ thirdpartyUser.tp_username }})</button><button id="id_github_relieve" class="btn btn-danger" type="button">解除绑定</button>
 	{% else %}

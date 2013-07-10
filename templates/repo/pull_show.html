@@ -1,93 +1,65 @@
 {% extends "repo/repo.html" %}
 
 {% block css %}
-	<link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet' type='text/css' />
-	<link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet' type='text/css' />
-	<style>
-		.repo-refs { border: 1px solid #D4D4D4; padding: 10px }    
-	</style>
+	<link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet'>
+	<link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet'>
 {% endblock %}
+
+{% block bubble_inner_class_name %} pulls{% endblock %}
 
 {% block subcontainer %}
-<div>
-		<h4>
-			<a href="/{{user_name}}/{{repo_name}}/pulls/">{{repo_name}}</a> /
-        <span id="i_repo_path"></span>
-        <span>查看 #{{pullRequest.id}} 合并请求</span>
-    </h4>
+	<header class="header">
+		<ul class="breadcrumb">
+			<li><a href="/{{user_name}}/{{repo_name}}/pulls/">{{repo_name}}</a><span class="divider"></span></li>
+			<li class="active">查看 #{{pullRequest.id}} 合并请求</li>
+		</ul>
+	</header>
 
-    <div class="row">
-        <div id="id_merge_process" class="hide span10">
-            <div class="span10">
-                <h4>
-                &gt; merge from {{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}
-                to {{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}} 
-                </h4>
-            </div>
-            <div class="span10">
-                <pre id="id_merge_output" class="shell" style="margin-bottom: 15px"></pre>
-            </div>
-            <div class="span10">
-                <a id="id_merge_after" class="hide" href="/{{user_name}}/{{repo_name}}/pulls/"><button class="btn btn-primary pull-right">确定</button></a>
-            </div>
-        </div>
-        <div id="id_merge_action" class="span10">
-            <div>
-                <div class="span4 repo-refs">
-                    <span>
-                        仓库-&gt;分支：{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}
-                    </span>
-                </div>
-                <div class="span0">
-                    <i class="icon-chevron-right"></i>
-                </div>
-                <div class="span4 repo-refs">
-                    <span>
-                        仓库-&gt;分支：{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}}
-                    </span>
-                </div>
-            </div>
-            <div class="span9" style="margin-top: 20px">
-                <form id="id_pull_form" method="post" action="" class="form-horizontal">
-                    <div style="display:none"><input id="id_pullRequest_id" type="hidden" value="{{pullRequest.id}}" name="pullRequest_id"></div>
-                    <div style="display:none"><input id="id_pull_action" type="hidden" value="" name="pull_action"></div>
-                    <fieldset>
-                        <div class="control-group">
-                            <label class="control-label" for="id_title">* 标题</label>
-                            <div class="controls">
-                                <input id="id_title" name="title" style="width: 500px;" type="text" maxlength="64" value="{{pullRequest.title}}" readonly="readonly">
-                            </div>
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label" for="id_desc">描述</label>
-                            <div class="controls">
-                                <textarea id="id_desc" name="desc" style="height: 200px; width: 500px;" rows="10" cols="40" maxlength="2048" readonly="readonly">{{pullRequest.desc}}</textarea>
-                            </div>
-                        </div>
-                        {% if is_owner %}
-                        <div id="id_merge" style="margin-left: 160px">
-                            <a style="margin-right: 10px" class="muted" data-original-title=" 将尝试合并该请求，进行分支合并" rel="tooltip" href="javascript: void(0)"><button class="btn btn-primary" id="id_pull_merge">开始合并</button></a>
-                            <a style="margin-right: 10px" class="muted" data-original-title=" 由于各种原因，你可能不同意此次合并请求，请和发起者做好沟通" rel="tooltip" href="javascript: void(0)"><button class="btn btn-danger" id="id_pull_reject">拒绝</button></a>
-                            <a style="margin-right: 10px" class="muted" data-original-title=" 由于各种原因，不再需要此次合并分支，将进行关闭" rel="tooltip" href="javascript: void(0)"><button class="btn btn-inverse" id="id_pull_close">关闭</button></a>
-                        </div>
-                        {% endif %}
-                    </fieldset>
-                    <div style="display:none"><input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken"></div>
-                </form>
-                <ul class="nav nav-tabs" style="margin-bottom: 10px">
-                    <li class="c_pull_request_action active" data-action="commit"><a href="javascript:void(0)">Commits</a></li>
-                    <li class="c_pull_request_action" data-action="diff"><a href="javascript:void(0)">Diff</a></li>
-                </ul>
-                <div id="id_pull_meta_data">
-                    <div id="id_ajax_loading" class="c_pull_request_content"><img style="margin-left: 50px" src='/static/img/loading.gif'></div>
-                    <div id="id_pull_request_commit" class="c_pull_request_content hide"></div>
-                    <div id="id_pull_request_diff" class="c_pull_request_content hide"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>		  
+	<div id="id_merge_process" class="well hide">
+		<p>merge from {{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}to{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}}</p>
+		<pre id="id_merge_output"></pre>
+		<a id="id_merge_after" class="hide" href="/{{user_name}}/{{repo_name}}/pulls/" class="btn">确定</a>
+	</div>
+
+	<div id="id_merge_action" class="pull rowspan">
+
+		<div class="row">
+			<ul class="horizontal-list pull-branch">
+				<li class="first label repo-refs">{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}</li>
+				<li class="last label repo-refs">{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}}</li>
+			</ul>
+			<div class="data">
+				<h2 class="title">{{pullRequest.title}}</h2>
+				<p>{{pullRequest.desc}}</p>
+			</div>
+			{% if is_owner %}
+				<div id="id_merge">
+					<a class="muted" data-original-title=" 将尝试合并该请求，进行分支合并" rel="tooltip" href="javascript: void(0)"><button class="btn btn-primary" id="id_pull_merge">开始合并</button></a>
+					<a class="muted" data-original-title=" 由于各种原因，你可能不同意此次合并请求，请和发起者做好沟通" rel="tooltip" href="javascript: void(0)"><button class="btn btn-danger" id="id_pull_reject">拒绝</button></a>
+					<a class="muted" data-original-title=" 由于各种原因，不再需要此次合并分支，将进行关闭" rel="tooltip" href="javascript: void(0)"><button class="btn btn-inverse" id="id_pull_close">关闭</button></a>
+				</div>
+			{% endif %}
+			<input id="id_pullRequest_id" type="hidden" value="{{pullRequest.id}}" name="pullRequest_id" class="hide">
+			<input id="id_pull_action" type="hidden" value="" name="pull_action" class="hide">
+			<input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken" class="hide">
+		</div>
+
+		<div class="row">
+			<ul class="nav nav-tabs">
+				<li class="c_pull_request_action active" data-action="commit"><a href="javascript:void(0)">Commits</a></li>
+				<li class="c_pull_request_action" data-action="diff"><a href="javascript:void(0)">Diff</a></li>
+			</ul>
+			<div id="id_pull_meta_data">
+				<figure id="id_ajax_loading" class="c_pull_request_content hide"><img src='/static/img/loading.gif' alt="loading"></figure>
+				<p id="id_pull_request_commit" class="c_pull_request_content hide info"></p>
+				<div id="id_pull_request_diff" class="c_pull_request_content hide"></div>
+			</div>
+		</div>
+
+	</div>
+
 {% endblock %}
+
 {% block subjs %}
 <script src='/static/js/app/syntaxhighlighter/shCore.js' type='text/javascript'></script>
 <script src='/static/js/app/syntaxhighlighter/shAutoloader.js' type='text/javascript'></script>
@@ -95,10 +67,6 @@
 <script>
 $(function(){
     var global_repo_branch_map = {};
-    $('.c_unixtime').each(function(index){ 
-        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-        $(this).show();
-    });
     $('#id_merge').tooltip({
       selector: "a[rel=tooltip]"
     });
@@ -110,7 +78,7 @@ $(function(){
             var desc_commit_hash = json.desc_repo_refs_commit_hash.substr(0, 7);
             var exists_commit_hash_map = {};
             exists_commit_hash_map[desc_commit_hash] = 1
-            var up_to_date = '<p>Already up-to-date. 你并不需要进行合并操作</p>';
+            var up_to_date = 'Already up-to-date. 你并不需要进行合并操作';
             if(json.commits.length > 0) {
                 html.push('<table class="table table-striped"><thead class="fixed"><tr><th width="20%">提交HASH (作者)</th><th width="10%">时间</th><th>日志</th></tr></thead><tbody>');
                 for(x in json.commits) {

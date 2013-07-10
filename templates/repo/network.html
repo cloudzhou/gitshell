@@ -1,56 +1,54 @@
 {% extends "repo/repo.html" %}
 
+{% block bubble_inner_class_name %} network{% endblock %}
+
 {% block subcontainer %}
 
-	<div class="bubble repo">
-    <header class="bubble-header clearfix">
-			<h1 class="title pull-left">仓库成员列表</h1>
-			<p class="em summary pull-left">所有成员对仓库有完全的读写权限</p>
-			<div class="extra">
-				<a href="#" id="i_add_member" class="btn btn-mini"><i class="icon-plus-sign"></i> 添加新成员</a>
-				<form id="id_submit_form" class="form-inline" method="post" action="">
-					{% csrf_token %}
-					<div id="i_name_input" class="fiels">
-						{{repoMemberForm.username}}
-						{{repoMemberForm.action}}
-						<button type="submit" class="btn btn-success" id="id_submit">添加</button>
-					</div>
-				</form>
-			</div>
-    </header>
+	<header class="header clearfix">
+		<h1 class="title pull-left">仓库成员列表</h1>
+		<p class="em summary pull-left">所有成员对仓库有完全的读写权限</p>
+		<div class="extra">
+			<a href="#" id="i_add_member" class="btn btn-mini"><i class="icon-plus-sign"></i> 添加新成员</a>
+			<form id="id_submit_form" class="form-inline" method="post" action="">
+				{% csrf_token %}
+				<div id="i_name_input" class="fiels">
+					{{repoMemberForm.username}}
+					{{repoMemberForm.action}}
+					<button type="submit" class="btn btn-success" id="id_submit">添加</button>
+				</div>
+			</form>
+		</div>
+	</header>
 
-		<section class="bubble-inner">
-			{%for member_vo in members_vo%}
-				<div class="member clearfix">
-					<figure class="avatar">
-						<img src="https://gravatar.com/avatar/{{ member_vo.imgurl }}?s=40" alt="{{ gsuser.username }}">
-					</figure>
-					<div class="info">
-						<p class="name">
-							<a href="/{{member_vo.username}}/">{{member_vo.username}}</a>
-							{%if member_vo.nickname%}
-								<span>({{member_vo.nickname}})</span>
-							{%endif%}
-							{%if member_vo.tweet%}
-								<span class="tweet">{{member_vo.tweet}}</span>
-							{%endif%}
-						</p>
-						<p class="muted">
-							<span><i class="icon-time"></i>加入:<span class="unixtime">{{member_vo.date_joined}}</span></span>
-							<span class="divider">/</span>
-							<span><i class="icon-map-marker"></i>最近登录:<span class="unixtime">{{member_vo.last_login}}</span></span>
-						</p>
-					</div>
-					{% if member_vo.username != user_name %}
-					<div class="actions">
-						<a href="javascript:void(0)" class="c_rm_member c_rm_rf_member btn btn-danger"><i class="icon-trash"></i>移除</a>
-					</div>
-				{% endif %}
+	{%for member_vo in members_vo%}
+		<div class="user-plugin">
+			<figure class="avatar">
+				<img src="https://gravatar.com/avatar/{{ member_vo.imgurl }}?s=40" alt="{{ gsuser.username }}">
+			</figure>
+			<div class="info">
+				<p class="name">
+					<a href="/{{member_vo.username}}/">{{member_vo.username}}</a>
+					{%if member_vo.nickname%}
+						<span>({{member_vo.nickname}})</span>
+					{%endif%}
+					{%if member_vo.tweet%}
+						<span class="tweet">{{member_vo.tweet}}</span>
+					{%endif%}
+				</p>
+				<p class="meta">
+					<span><i class="icon-time"></i>加入:<span class="unixtime">{{member_vo.date_joined}}</span></span>
+					<span class="divider">/</span>
+					<span><i class="icon-map-marker"></i>最近登录:<span class="unixtime">{{member_vo.last_login}}</span></span>
+				</p>
 			</div>
-		{%endfor%}
-	</section>
+			{% if member_vo.username != user_name %}
+				<div class="actions">
+					<a href="javascript:void(0)" class="c_rm_member c_rm_rf_member btn btn-danger"><i class="icon-trash"></i>移除</a>
+				</div>
+			{% endif %}
+		</div>
+	{%endfor%}
 
-	</div>
 {% endblock %}
 
 {% block subjs %}

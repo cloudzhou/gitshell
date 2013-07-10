@@ -1,19 +1,18 @@
 {% extends "repo/repo.html" %}
 
+{% block bubble_inner_class_name %} cloner{% endblock %}
+
+{% block bubbleheader %}
+	<header class="header">
+		<h1 class="title">衍生仓库树</h1>
+	</header>
+{% endblock %}
 
 {% block subcontainer %}
 
-<div class="bubble repo clearfix">
-
-	<div class="bubble-col">
-		<header class="bubble-header">
-			<h1 class="title">衍生仓库树</h1>
-		</header>
-
-		<section class="bubble-inner">
 			{%for fork_repos in fork_repos_tree%}
 				{%for fork_repo in fork_repos%}
-					<div class="member repo-{{forloop.parentloop.counter}} clearfix">
+					<div class="user-plugin repo-{{forloop.parentloop.counter}}">
 						<figure class="avatar">
 							<img src="https://gravatar.com/avatar/{{fork_repo.imgurl}}?s=40" alt="{{ gsuser.username }}">
 						</figure>
@@ -21,7 +20,7 @@
 							<p class="name">
 								<a class="c_img_{{forloop.parentloop.counter}}" href="/{{fork_repo.username}}/">{{fork_repo.username}}</a>
 							</p>
-							<p class="muted extra-info" title="{{fork_repo.desc}}">{{fork_repo.desc|truncatechars:40}}</p>
+							<p class="meta extra-info" title="{{fork_repo.desc}}">{{fork_repo.desc|truncatechars:40}}</p>
 						</div>
 						<ul class="actions horizontal-list">
 							<li><a href="javascript:void(0)" rel="tooltip" data-original-title="commit {{ fork_repo.commit }}次数" class="label"><i class="icon-time"></i><span>{{ fork_repo.commit }}</span></a></li>
@@ -31,18 +30,14 @@
 					</div>
 				{%endfor%}
 			{%endfor%}
-		</section>
-	</div>
 
-	<div class="bubble-col">
-		<header class="bubble-header">
-			<h1 class="title">关注用户</h1>
-		</header>
+			<header class="header">
+				<h1 class="title">关注用户</h1>
+			</header>
 
-		<section class="bubble-inner clearfix">
 			{% if watch_users %}
 				{%for watch_user in watch_users%}
-					<div class="member clearfix">
+					<div class="user-plugin">
 						<figure class="avatar">
 							<img src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=40" alt="{{ gsuser.username }}">
 						</figure>
@@ -56,7 +51,7 @@
 									<span class="tweet">{{watch_user.tweet}}</span>
 								{%endif%}
 							</p>
-							<p class="muted">
+							<p class="meta">
 								<span><i class="icon-time"></i>加入: <span class="unixtime">{{watch_user.date_joined}}</span></span>
 								<span class="divider">/</span>
 								<span><i class="icon-map-marker"></i>最近登录: <span class="unixtime">{{watch_user.last_login}}</span></span>
@@ -67,10 +62,6 @@
 			{% else %}
 				<p class="info text-error">还没有任何关注用户.</p>
 			{% endif %}
-		</section>
-	</div>
-
-</div>
 
 {% endblock %}
 

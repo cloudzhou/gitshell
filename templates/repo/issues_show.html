@@ -1,71 +1,77 @@
 {% extends "repo/repo.html" %}
 
+{% block bubble_inner_class_name %} issues{% endblock %}
+
 {% block subcontainer %}
-<div class="bubble issues">
 
-	<div id="id_issues_condition" class="bubble-header issues-header clearfix">{%include "repo/condition.html"%}</div>
+	<header id="id_issues_condition" class="header issues-header clearfix">{%include "repo/condition.html"%}</header>
 
-    <div class="bubble-inner">
-
-        <div class="c_issue issue">
-					<div class="actions">
-						<a href="" rel="tooltip" data-original-title="可拖动到上面"><i class="icon-bell"></i></a>
-						<a id="i_issue_edit" href="/{{user_name}}/{{repo_name}}/issues/create/{{issue.id}}/">修改</a>
-					</div>
-					<h3 id="i_issue_subject"><span class="label">#{{issue.id}}</span>{{issue.subject}}</h3>
-					<blockquote>{{issue.content}}</blockquote>
-					<p class="meta">
-						创建:<a href="/{{issue.user_id}}/">{{issue.user_id}}</a>
-						指派:<a href="/{{issue.assigned}}/">{{issue.assigned}}</a>
-						<span class="">{{issue.tracker}}</span>
-						<span class="">{{issue.status}}</span>
-						<span class="">{{issue.priority}}</span>
-						<span class="">{{issue.category}}</span>
-						<span class="unixtime">{{issue.modify_time}}</span>
-					</p>
-        </div>
-
-
-        {%if issue_comments%}
-					<ul id="i_issue_comments" class="list">
-						{%for issue_comment in issue_comments%}
-							<li data-user-name="{{issue_comment.user_id}}" class="c_td_comment">
-								<figure class="avatar">
-									<img src="https://gravatar.com/avatar/{{ issue_comment.user_img }}?s=32" alt="{{issue.comment}}">
-								</figure>
-								<div class="issue-body">
-									<a class="c_rm_comment" value="{{issue_comment.id}}" href="javascript:void(0)"><i class="icon-close"></i></a>
-									<button value="{{issue_comment.id}}" class="c_rm_rf_comment btn btn-mini btn-primary">确定删除该评论？</button>
-									<p class="meta"><a href="/{{issue_comment.user_id}}/">{{issue_comment.user_id}}</a><span class="unixtime">{{issue_comment.create_time}}</span><a class="c_ref_comment" href="javascript:void(0)" value="{{issue_comment.user_id}}">回复</a></p>
-									<blockquote>{{issue_comment.content}}</blockquote>
-								</div>
-							</li>
-						{%endfor%}
-					</ul>
-        {%endif%}
-
-        {%if total_page|length > 1%}
-					<div class="pagination">
-						<ul>
-							{%for i in total_page%}
-								{%if i == page%}
-									<li class="active"><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
-								{%else%}
-									<li><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
-								{%endif%}
-							{%endfor%}
-						</ul>
-					</div>
-        {%endif%}
-
-        <form id="i_comment" class="form-inline" action="" method="post">
-					{% csrf_token %}
-					<div id="i_comment_content">{{repoIssuesCommentForm.content}}</div>
-					<button id="i_submit" class="btn" type="submit">发表评论</button>
-					<small class="muted">不可修改，严谨发言</small>
-        </form>
-    </div>
+	<div class="c_issue issue cell">
+		<h3 id="i_issue_subject" class="title"><span class="label">#{{issue.id}}</span>{{issue.subject}}</h3>
+		<div class="data">
+			<p>{{issue.content}}</p>
+			<p class="meta clearfix">
+				<span class="creater">创建:<a href="/{{issue.user_id}}/">{{issue.user_id}}</a></span>
+				<span class="assigner">指派:<a href="/{{issue.assigned}}/">{{issue.assigned}}</a></span>
+				<span class="label">{{issue.tracker}}</span>
+				<span class="label">{{issue.status}}</span>
+				<span class="label">{{issue.priority}}</span>
+				<span class="label">{{issue.category}}</span>
+				<span class="unixtime">{{issue.modify_time}}</span>
+				<span class="actions">
+					<a href="" rel="tooltip" data-original-title="可拖动到上面"><i class="icon-bell"></i></a>
+					<a id="i_issue_edit" href="/{{user_name}}/{{repo_name}}/issues/create/{{issue.id}}/">修改</a>
+				</span>
+			</p>
+		</div>
 	</div>
+
+	{%if issue_comments%}
+		{%for issue_comment in issue_comments%}
+			<div data-user-name="{{issue_comment.user_id}}" class="comment user-plugin">
+				<figure class="avatar">
+					<img src="https://gravatar.com/avatar/{{ issue_comment.user_img }}?s=32" alt="{{issue.comment}}">
+				</figure>
+				<div class="info">
+					<p class="comment-data">{{issue_comment.content}}</p>
+					<p class="meta">
+						<a href="/{{issue_comment.user_id}}/">{{issue_comment.user_id}}</a>
+						<span class="unixtime">{{issue_comment.create_time}}</span>
+						<a class="c_ref_comment" href="javascript:void(0)" value="{{issue_comment.user_id}}"><i class="icon-reply"></i>回复</a>
+						<a class="c_rm_comment" value="{{issue_comment.id}}" href="javascript:void(0)"><i class="icon-trash"></i>删除</a>
+					</p>
+				</div>
+			</div>
+		{%endfor%}
+	{%endif%}
+
+	{%if total_page|length > 1%}
+		<footer class="footer">
+			<nav class="pagination">
+				<ul>
+					{%for i in total_page%}
+						{%if i == page%}
+							<li class="active"><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
+						{%else%}
+							<li><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
+						{%endif%}
+					{%endfor%}
+				</ul>
+			</nav>
+		</footer>
+	{%endif%}
+
+	<form id="i_comment" class="comment user-plugin form-inline" action="" method="post">
+		{% csrf_token %}
+		<figure class="avatar">
+			<img src="https://gravatar.com/avatar/{{user_name}}?s=32" alt="{{user_name}}">
+		</figure>
+		<div class="info">
+			{{repoIssuesCommentForm.content}}
+			<button id="i_submit" class="btn btn-primary" type="submit">发表评论</button>
+			<p class="meta">不可修改，严谨发言</p>
+		</div>
+	</form>
 {% endblock %}
 
 {% block subjs %}
@@ -83,7 +89,7 @@ $(function(){
         }
     });
     {% endif %}
-    $('.c_td_comment').live('mouseover mouseout', function(event) {
+    $('.issue').live('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             var issues_user_name = $(this).attr('data-user-name');
             if('{{user.username}}' == '{{user_name}}' || issues_user_name == '{{user.username}}') {

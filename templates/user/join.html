@@ -2,29 +2,23 @@
 
 {% block container %}
 
-<div class="bubble join">
+<div class="bubble authorize">
 	{% ifequal step '3'  %}
-		<div class="bubble-header">
-			<h2 class="title">:-), {{ user.username }}，欢迎您</h2>
-		</div>
+		<header class="bubble-header">
+			<h1 class="heading">:-), {{ user.username }}，欢迎您</h1>
+		</header>
 		{% else %}
-		<div class="bubble-header clearfix">
-			<h2 class="title pull-left">注册</h2>
-		</div>
+		<header class="header">
+			<h1 class="heading">注册</h1>
+		</header>
 	{% endifequal %}
 
 	<div class="bubble-inner clearfix">
 		<div class="form">
 		{% ifequal step '0' %}
-			<p class="title">使用以下网站帐号登录，无需注册</p>
-			<div class="well">
-				<p class="em text-warning">如果您拥有GitHub帐号,可以直接用GitHub的账户登陆。</p>
-				<a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn btn-success"><i class="icon-github"></i>使用 GitHub 账户登录</a>
-			</div>
-
+			<a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn"><i class="icon-github"></i>用 GitHub 账户直接登录</a>
 			<hr class="hr">
-			<form class="form-horizontal" action="" method="post">
-				<fieldset>
+			<form action="" method="post">
 				{% csrf_token %}
 				{{ joinForm.username }}
 				<span id="id_username_alert" class="label label-warning hide">用户名已经存在</span>
@@ -39,7 +33,6 @@
 					</div>
 				{% endif %}
 				<button id="id_join_submit" class="btn btn-primary" type="submit">注册</button>
-				</fieldset>
 				<p>当你点击注册的时候表示你接受GitShell的<a href="#">服务条款</a>和<a href="#">隐私政策</a>.</p>
 			</form>
 		</div>

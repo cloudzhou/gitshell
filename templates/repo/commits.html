@@ -4,45 +4,42 @@
 	<link href="/static/css/app/highlight/github.css" rel="stylesheet">
 {% endblock %}
 
+{% block bubble_inner_class_name %} commits{% endblock %}
+
 {% block subcontainer %}
-	<div class="bubble repo">
-		<header class="bubble-header">
+		<header class="header">
 			<ul class="breadcrumb">
 				<li><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">{{repo_name}}</a><span class="divider"></span></li>
 				<li class="active">Commits</li>
 			</ul>
 		</header>
 
-		<section class="bubble-inner">
-			<table class="table">
-				<colgroup>
-					<col width="85%">
-					<col width="15%">
-				</colgroup>
-				<tbody>
-					{% for commit_attrs in commits %}
-						<tr>
-							<td class="commit member">
-								<figure class="avatar"><img src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=28" alt="{{ gsuser.username }}"></figure>
-								<div class="info">
-									<p class="msg"><a href="#">{{ commit_attrs.commit_message|truncatechars:80 }}</a></p>
-									<p class="muted"><a href="/{{ commit_attrs.author }}/" class="name">@{{ commit_attrs.author }}</a> <span class="date unixtime">{{ commit_attrs.committer_date }}</span></p>
-								</div>
-							</td>
-							<td class="hash"><a href="#" class="label label-mini label-info">{{ commit_attrs.commit_hash }}</a></td>
-						</tr>
-					{% endfor %}
+		{% for commit_attrs in commits %}
+			<div class="commit colspan">
+				<div class="commiter user-plugin span">
+					<figure class="avatar"><img src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=30" alt="{{ gsuser.username }}"></figure>
+					<div class="info">
+						<p class="msg"><a href="#">{{ commit_attrs.commit_message|truncatechars:80 }}</a></p>
+						<p class="meta"><a href="/{{ commit_attrs.author }}/">{{ commit_attrs.author }}</a> <span class="date unixtime">{{ commit_attrs.committer_date }}</span></p>
+					</div>
+				</div>
+				<div class="hash span"><a href="#" class="label label-mini label-info">{{ commit_attrs.commit_hash }}</a></div>
+			</div>
+		{% endfor %}
 
-					{% if not commits %}
-						<tr>
-							<td colspan="3"><p class="info text-error"><i class="icon-bell"></i>没有提交信息，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p></td>
-						</tr>
-					{% endif %}
-				</tbody>
-			</table>
-		</section>
+		{% if not commits %}
+			<div class="commit">
+				<p class="info text-error"><i class="icon-bell"></i>没有提交信息，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
+			</div>
+		{% endif %}
 
-	</div>		  
+		<footer class="footer">
+			<nav class="pagination">
+				<h2>Pagination</h2>
+				<ul class="nav">
+				</ul>
+			</nav>
+		</footer>
 
 {% endblock %}
 
