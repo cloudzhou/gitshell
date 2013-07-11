@@ -388,7 +388,7 @@ def pull_diff(request, user_name, repo_name, source_username, source_refs, desc_
     source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), source_refs)
     desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), desc_refs)
     diff = gitHandler.repo_diff(pullrequest_repo_path, source_repo_refs_commit_hash, desc_repo_refs_commit_hash, context, '.')
-    return json_httpResponse({'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success', 'context': context})
+    return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': '', 'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success', 'context': context})
 
 @repo_permission_check
 @login_required
@@ -496,7 +496,7 @@ def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, contex
     diff['from_commit_hash'] = from_commit_hash
     diff['to_commit_hash'] = to_commit_hash
     diff['refs_meta'] = refs_meta
-    return json_httpResponse({'diff': diff})
+    return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': path, 'diff': diff})
 
 @repo_permission_check
 def network(request, user_name, repo_name):
@@ -1056,7 +1056,7 @@ def _list_pull_repo(request, repo):
     raw_pull_repo_list = RepoManager.list_parent_repo(repo, 10)
     child_repo = RepoManager.get_childrepo_by_user_forkrepo(request.user, repo)
     if child_repo is not None:
-        raw_pull_repo_list = [child_repo] + pull_repo_list
+        raw_pull_repo_list = [child_repo] + raw_pull_repo_list
     pull_repo_list = [x for x in raw_pull_repo_list if _has_repo_pull_right(request, x)]
     return pull_repo_list
 
