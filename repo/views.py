@@ -388,7 +388,21 @@ def pull_diff(request, user_name, repo_name, source_username, source_refs, desc_
     source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), source_refs)
     desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), desc_refs)
     diff = gitHandler.repo_diff(pullrequest_repo_path, source_repo_refs_commit_hash, desc_repo_refs_commit_hash, context, '.')
-    return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': '', 'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success', 'context': context})
+    for x in diff['detail']:
+        mode = x['mode']
+        filename = x['filename']
+        filetype = 'tree' if filename.endswith('/') else 'blob'
+        fileusername = desc_repo.username
+        filereponame = desc_repo.name
+        filerefs = desc_refs
+        if mode == 'delete':
+            fileusername = source_repo.username
+            filereponame = source_repo.name
+            filerefs = source_refs
+        full_filepath = filename if path == '.' else ('%s/%s' % (path, filename))
+        filepath = '/%s/%s/%s/%s/%s' % (fileusername, filereponame, filetype, filerefs, full_filepath)
+        x['filepath'] = filepath
+    return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': '', 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success', 'context': context})
 
 @repo_permission_check
 @login_required
@@ -491,6 +505,16 @@ def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, contex
     to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_commit_hash)
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
         diff = gitHandler.repo_diff(abs_repopath, from_commit_hash, to_commit_hash, context, path)
+        for x in diff['detail']:
+            mode = x['mode']
+            filename = x['filename']
+            filetype = 'tree' if filename.endswith('/') else 'blob'
+            filerefs = orgi_to_commit_hash
+            if mode == 'delete':
+                filerefs = orgi_from_commit_hash
+            full_filepath = filename if path == '.' else ('%s/%s' % (path, filename))
+            filepath = '/%s/%s/%s/%s/%s' % (user_name, repo_name, filetype, filerefs, full_filepath)
+            x['filepath'] = filepath
     diff['orgi_from_commit_hash'] = orgi_from_commit_hash
     diff['orgi_to_commit_hash'] = orgi_to_commit_hash
     diff['from_commit_hash'] = from_commit_hash
