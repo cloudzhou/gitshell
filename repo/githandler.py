@@ -96,7 +96,7 @@ class GitHandler():
         command = '/usr/bin/git diff --numstat  %s..%s -- %s | /usr/bin/head -c 524288 ; /usr/bin/git diff -U%s %s..%s -- %s | /usr/bin/head -c 524288' % (pre_commit_hash, commit_hash, path, context, pre_commit_hash, commit_hash, path)
         try:
             result = check_output(command, shell=True)
-            diff = self._parse_diff_file_as_json(result, path)
+            diff = self._parse_diff_file_as_json(result)
             self._dumps_write_stage_file({'diff': diff}, stage_file)
             return diff
         except Exception, e:
@@ -511,7 +511,7 @@ class GitHandler():
             i = i + 1
         return ''.join(raw_chars)
 
-    def _parse_diff_file_as_json(self, raw_diff, path):
+    def _parse_diff_file_as_json(self, raw_diff):
         diff = {}
         lines = raw_diff.split('\n')
         blank_p = re.compile(r'\s+')
@@ -534,9 +534,6 @@ class GitHandler():
         filediff = {}; filename = ''; linediff = []; part_of_linediff = []
         starta = 0; startb = 0; start_line_stat = False
         
-        if path == '.':
-            path = '';
-
         while i < lines_len:
             line = lines[i]
             if start_line_stat:

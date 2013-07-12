@@ -399,8 +399,7 @@ def pull_diff(request, user_name, repo_name, source_username, source_refs, desc_
             fileusername = source_repo.username
             filereponame = source_repo.name
             filerefs = source_refs
-        full_filepath = filename if path == '.' else ('%s/%s' % (path, filename))
-        filepath = '/%s/%s/%s/%s/%s' % (fileusername, filereponame, filetype, filerefs, full_filepath)
+        filepath = '/%s/%s/%s/%s/%s' % (fileusername, filereponame, filetype, filerefs, filename)
         x['filepath'] = filepath
     return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': '', 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success', 'context': context})
 
@@ -413,6 +412,8 @@ def pull_merge(request, user_name, repo_name, pullRequest_id):
     if args is None:
         return json_httpResponse({'returncode': 128, 'output': 'merge failed', 'result': 'failed'})
     (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
+    if not _has_pull_right(request, source_repo, desc_repo):
+        return json_httpResponse({'result': 'failed'})
     if desc_repo is None or desc_repo.user_id != request.user.id:
         return json_httpResponse({'result': 'failed'})
     source_refs = pullRequest.source_refname
@@ -512,8 +513,7 @@ def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, contex
             filerefs = orgi_to_commit_hash
             if mode == 'delete':
                 filerefs = orgi_from_commit_hash
-            full_filepath = filename if path == '.' else ('%s/%s' % (path, filename))
-            filepath = '/%s/%s/%s/%s/%s' % (user_name, repo_name, filetype, filerefs, full_filepath)
+            filepath = '/%s/%s/%s/%s/%s' % (user_name, repo_name, filetype, filerefs, filename)
             x['filepath'] = filepath
     diff['orgi_from_commit_hash'] = orgi_from_commit_hash
     diff['orgi_to_commit_hash'] = orgi_to_commit_hash
