@@ -41,7 +41,7 @@ done
     
 rm $tempfile
 
-if [ $du_size -eq 0 ]; then
+if [ "$du_size" -eq 0 ]; then
     echo "+$size"
 else
     echo "$du_size"
