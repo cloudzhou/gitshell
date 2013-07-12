@@ -110,7 +110,7 @@ def ls_tree(request, user_name, repo_name, refs, path, current):
     gitHandler = GitHandler()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     tree = {}
-    if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
+    if repo.status == 0 and (repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user)):
         if path == '.' or path.endswith('/'):
             tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
     readme_md = None

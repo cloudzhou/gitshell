@@ -20,7 +20,7 @@ class Userprofile(BaseModel):
     watchrepo = models.IntegerField(null=False, default=0)
     watch = models.IntegerField(null=False, default=0)
     be_watched = models.IntegerField(null=False, default=0)
-    quote = models.BigIntegerField(null=False, default=268435456)
+    quote = models.BigIntegerField(null=False, default=631242752)
     used_quote = models.BigIntegerField(null=False, default=0)
 
     unread_message = models.IntegerField(null=False, default=0)

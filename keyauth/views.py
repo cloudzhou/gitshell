@@ -141,8 +141,8 @@ def _get_desc_name(orgi_request_uri):
         return splits[0:3]
     return ('', '', '')
 
-blocks_quote = {67108864: 327680, 268435456: 327680}
-kbytes_quote = {67108864: 1048576, 268435456: 1048576}
+blocks_quote = {67108864: 327680, 268435456: 327680, 631242752: 327680}
+kbytes_quote = {67108864: 1048576, 268435456: 1048576, 631242752: 1048576}
 def response_full_git_command(quote, pre_command, user, repo):
     blocks = 327680
     kbytes = 1048576
