@@ -3,8 +3,9 @@
 {% block bubble_inner_class_name %} issues{% endblock %}
 
 {% block subcontainer %}
-	<header class="header issues-header gtn-group">{% include "repo/condition.html" %}</header>
-
+	<header class="header">
+		<h1 class="heading">Issues</h1>
+	</header>
 	<div class="hide btn-group clearfix">
 		{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn first">更新</a>{%else%}<span class="btn btn-disable">更新</span>{%endif%}
 		{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn last">创建</a>{%else%}<span class="btn btn-disable">创建</span>{%endif%}
@@ -12,18 +13,18 @@
 	{% for issue in issues %}
 	<div class="issue colspan">
 		<figure class="avatar span">
-			<img src="https://gravatar.com/avatar/{{ issue.user_id }}/?s=20" alt="{{issue.user_id}}">
+			<img src="https://gravatar.com/avatar/{{ issue.user_id }}/?s=35" alt="{{issue.user_id}}">
 		</figure>
 		<div class="data span clearfix">
+			<h4 class="heading">
+				<span class="issue-id">#{{issue.id}}</span>
+				<a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/" class="txt">{{issue.subject|truncatechars:100}}</a>
+			</h4>
 			{% if user.id == repo.user_id %}
 				<a href="javascript: void(0)" rel="tooltip" data-original-title="拖动到上面做属性更改"><i class="icon-ellipsis-vertical"></i></a>
 			{% else %}
 				<a href="javascript: void(0)" rel="tooltip"><i class="icon-ellipsis-vertical"></i></a>
 			{% endif %}
-			<h4 class="title">
-				<span class="issue-id">#{{issue.id}}</span>
-				<a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/" class="txt">{{issue.subject|truncatechars:100}}</a>
-			</h4>
 			<span class="unixtime date">{%if orderby == 'modify_time'%}{{issue.modify_time}}{%else%}{{issue.create_time}}{%endif%}</span>
 		</div>
 	</div>

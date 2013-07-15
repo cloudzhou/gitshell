@@ -4,19 +4,18 @@
 
 {% block subcontainer %}
 
-	<header id="id_issues_condition" class="header issues-header clearfix">{%include "repo/condition.html"%}</header>
-
 	<div class="c_issue issue cell">
-		<h3 id="i_issue_subject" class="title"><span class="label">#{{issue.id}}</span>{{issue.subject}}</h3>
+		<header class="header">
+			<h1 id="i_issue_subject" class="heading"><span class="label">#{{issue.id}}</span>{{issue.subject}}</h1>
+		</header>
 		<div class="data">
-			<p>{{issue.content}}</p>
+			<p class="content">{{issue.content}}</p>
 			<p class="meta clearfix">
-				<span class="creater">创建:<a href="/{{issue.user_id}}/">{{issue.user_id}}</a></span>
-				<span class="assigner">指派:<a href="/{{issue.assigned}}/">{{issue.assigned}}</a></span>
-				<span class="label">{{issue.tracker}}</span>
-				<span class="label">{{issue.status}}</span>
-				<span class="label">{{issue.priority}}</span>
-				<span class="label">{{issue.category}}</span>
+				<span class="assiged">
+					<a href="/{{issue.user_id}}/">{{issue.user_id}}</a>
+					<span>&rarr;</span>
+					<a href="/{{issue.assigned}}/">{{issue.assigned}}</a>
+				</span>
 				<span class="unixtime">{{issue.modify_time}}</span>
 				<span class="actions">
 					<a href="" rel="tooltip" data-original-title="可拖动到上面"><i class="icon-bell"></i></a>
@@ -37,8 +36,8 @@
 					<p class="meta">
 						<a href="/{{issue_comment.user_id}}/">{{issue_comment.user_id}}</a>
 						<span class="unixtime">{{issue_comment.create_time}}</span>
-						<a class="c_ref_comment" href="javascript:void(0)" value="{{issue_comment.user_id}}"><i class="icon-reply"></i>回复</a>
-						<a class="c_rm_comment" value="{{issue_comment.id}}" href="javascript:void(0)"><i class="icon-trash"></i>删除</a>
+						<a class="c_ref_comment" href="javascript:void(0)" value="{{issue_comment.user_id}}">回复</a>
+						<a class="c_rm_comment" value="{{issue_comment.id}}" href="javascript:void(0)">删除</a>
 					</p>
 				</div>
 			</div>

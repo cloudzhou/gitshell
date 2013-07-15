@@ -5,8 +5,8 @@
 {% block subcontainer %}
 
 	<header class="header clearfix">
-		<h1 class="title pull-left">仓库成员列表</h1>
-		<p class="em summary pull-left">所有成员对仓库有完全的读写权限</p>
+		<h1 class="heading">仓库成员列表</h1>
+		<p class="em summary">所有成员对仓库有完全的读写权限</p>
 		<div class="extra">
 			<a href="#" id="i_add_member" class="btn btn-mini"><i class="icon-plus-sign"></i> 添加新成员</a>
 			<form id="id_submit_form" class="form-inline" method="post" action="">
@@ -20,34 +20,36 @@
 		</div>
 	</header>
 
-	{%for member_vo in members_vo%}
-		<div class="user-plugin">
-			<figure class="avatar">
-				<img src="https://gravatar.com/avatar/{{ member_vo.imgurl }}?s=40" alt="{{ gsuser.username }}">
-			</figure>
-			<div class="info">
-				<p class="name">
-					<a href="/{{member_vo.username}}/">{{member_vo.username}}</a>
-					{%if member_vo.nickname%}
-						<span>({{member_vo.nickname}})</span>
-					{%endif%}
-					{%if member_vo.tweet%}
-						<span class="tweet">{{member_vo.tweet}}</span>
-					{%endif%}
-				</p>
-				<p class="meta">
-					<span><i class="icon-time"></i>加入:<span class="unixtime">{{member_vo.date_joined}}</span></span>
-					<span class="divider">/</span>
-					<span><i class="icon-map-marker"></i>最近登录:<span class="unixtime">{{member_vo.last_login}}</span></span>
-				</p>
-			</div>
-			{% if member_vo.username != user_name %}
-				<div class="actions">
-					<a href="javascript:void(0)" class="c_rm_member c_rm_rf_member btn btn-danger"><i class="icon-trash"></i>移除</a>
+	<div class="members">
+		{%for member_vo in members_vo%}
+			<div class="member">
+				<div class="user-plugin">
+					<figure class="avatar">
+						<img src="https://gravatar.com/avatar/{{ member_vo.imgurl }}?s=40" alt="{{ gsuser.username }}">
+					</figure>
+					<div class="info">
+						<p class="name">
+							<a href="/{{member_vo.username}}/">{{member_vo.username}}</a>
+							{%if member_vo.nickname%}
+								<span>({{member_vo.nickname}})</span>
+							{%endif%}
+							{%if member_vo.tweet%}
+								<span class="tweet">{{member_vo.tweet}}</span>
+							{%endif%}
+						</p>
+						<p class="meta">
+							<span><i class="icon-time"></i>加入:<span class="unixtime">{{member_vo.date_joined}}</span></span>
+							<span class="divider">/</span>
+							<span><i class="icon-map-marker"></i>最近登录:<span class="unixtime">{{member_vo.last_login}}</span></span>
+						</p>
+					</div>
+					{% if member_vo.username != user_name %}
+						<a href="javascript:void(0)" class="c_rm_member c_rm_rf_member delete-member"><i class="icon-trash"></i></a>
+					{% endif %}
 				</div>
-			{% endif %}
-		</div>
-	{%endfor%}
+			</div>
+		{%endfor%}
+	</div>
 
 {% endblock %}
 

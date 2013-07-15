@@ -54,6 +54,8 @@
 			</nav>
 		</header>
 
+		{% block repo_header %}{% endblock %}
+
 		<section class="container{% block container_class_name %}{% endblock %}">
 			{% block container %}{% endblock %}
 		</section>
@@ -61,35 +63,43 @@
 		<footer class="footer">
 			<div class="container">
 				<nav class="colspan">
-					<ul class="nav nav-list span">
-						<li><a href="/help/#about">关于GitShell</a></li>
-						<li><a href="/help/#mission">我们的愿景</a></li>
-						<li><a href="/help/#faq">FAQ</a></li>
-						<li><a href="/help/#join_login">注册<sup>免费</sup></a></li>
-						<li><a href="/help/">帮助</a></li>
-						<li><a target="_blank" href="http://blog.gitshell.com">官方博客</a></li>
-						<li><a href="/help/#contact">联系GitShell</a></li>
-					</ul>
-					<ul class="nav nav-list span">
-						<li><a href="/help/#about">关于</a></li>
-						<li><a href="/help/#mission">愿景</a></li>
-						<li><a href="/help/#faq">FAQ</a></li>
-						<li><a href="/help/#join_login">注册<sup>免费</sup></a></li>
-					</ul>
-					<ul class="nav nav-list span">
-						<li><a href="/help/#about">关于</a></li>
-						<li><a href="/help/#mission">愿景</a></li>
-						<li><a href="/help/#faq">FAQ</a></li>
-						<li><a href="/help/#join_login">注册<sup>免费</sup></a></li>
-						<li><a href="/help/">帮助</a></li>
-						<li><a target="_blank" href="http://blog.gitshell.com">官方博客</a></li>
-						<li><a href="/help/#contact">联系</a></li>
-					</ul>
+					<dl class="nav nav-list span">
+						<dt class="leader">关于我们</dt>
+						<dd>
+							<a href="/help/#about">关于GitShell</a><br>
+							<a href="/help/#mission">我们的愿景</a><br>
+							<a href="/help/#faq">FAQ</a><br>
+							<a href="/help/#join_login">注册<sup>免费</sup></a><br>
+							<a href="/help/">帮助</a><br>
+							<a target="_blank" href="http://blog.gitshell.com">官方博客</a><br>
+							<a href="/help/#contact">联系GitShell</a>
+						</dd>
+					</dl>
+					<dl class="nav nav-list span">
+						<dt class="leader">开发日志</dt>
+						<dd>
+							<a href="/help/#about">关于</a><br>
+							<a href="/help/#mission">愿景</a><br>
+							<a href="/help/#faq">FAQ</a><br>
+							<a href="/help/#join_login">注册<sup>免费</sup></a>
+						</dd>
+					</dl>
+					<dl class="nav nav-list span">
+						<dt class="leader">联络</dt>
+						<dd>
+							<a href="/help/#about">新浪微博</a><br>
+							<a href="/help/#mission">腾讯微博</a><br>
+							<a href="/help/#faq">Twitter</a><br>
+							<a href="/help/#join_login">Google+</a><br>
+							<a target="_blank" href="http://blog.gitshell.com">RSS订阅</a><br>
+							<a href="/help/#contact">人人网</a>
+						</dd>
+					</dl>
 				</nav>
 				<p class="copyright">&copy; <strong>Gitshell</strong> 2013 专注<a target="_blank" href="http://git-scm.com/">Git</a>代码托管<a class="muted" href="http://www.miitbeian.gov.cn">苏ICP备12042031号</a></p>
+				<a href="#" class="btn pull-right">返回顶部</a>
 			</div>
 		</footer>
-		<a href="#" class="btn">返回顶部</a>
 
 
 		<script src="/static/js/jquery-1.7.2.min.js"></script>

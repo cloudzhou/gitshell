@@ -4,7 +4,7 @@
 
 {% block bubbleheader %}
 	<header class="header">
-		<h1 class="title">衍生仓库树</h1>
+		<h1 class="heading">衍生仓库树</h1>
 	</header>
 {% endblock %}
 
@@ -32,33 +32,37 @@
 			{%endfor%}
 
 			<header class="header">
-				<h1 class="title">关注用户</h1>
+				<h1 class="heading">关注用户</h1>
 			</header>
 
 			{% if watch_users %}
+				<div class="watchers">
 				{%for watch_user in watch_users%}
-					<div class="user-plugin">
-						<figure class="avatar">
-							<img src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=40" alt="{{ gsuser.username }}">
-						</figure>
-						<div class="info">
-							<p class="name">
-								<a href="/{{watch_user.username}}/">{{watch_user.username}}</a>
-								{%if watch_user.nickname%}
-									<span>({{watch_user.nickname}})</span>
-								{%endif%}
-								{%if watch_user.tweet%}
-									<span class="tweet">{{watch_user.tweet}}</span>
-								{%endif%}
-							</p>
-							<p class="meta">
-								<span><i class="icon-time"></i>加入: <span class="unixtime">{{watch_user.date_joined}}</span></span>
-								<span class="divider">/</span>
-								<span><i class="icon-map-marker"></i>最近登录: <span class="unixtime">{{watch_user.last_login}}</span></span>
-							</p>
+					<div class="member">
+						<div class="user-plugin">
+							<figure class="avatar">
+								<img src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=40" alt="{{ gsuser.username }}">
+							</figure>
+							<div class="info">
+								<p class="name">
+									<a href="/{{watch_user.username}}/">{{watch_user.username}}</a>
+									{%if watch_user.nickname%}
+										<span>({{watch_user.nickname}})</span>
+									{%endif%}
+									{%if watch_user.tweet%}
+										<span class="tweet" title="{{watch_user.tweet}}">{{watch_user.tweet|truncatechars:20}}</span>
+									{%endif%}
+								</p>
+								<p class="meta">
+									<span><i class="icon-time"></i><span class="unixtime">{{watch_user.date_joined}}</span>加入</span>
+									<span class="divider"></span>
+									<span><i class="icon-map-marker"></i><span class="unixtime">{{watch_user.last_login}}</span>登录</span>
+								</p>
+							</div>
 						</div>
 					</div>
 				{%endfor%}
+				</div>
 			{% else %}
 				<p class="info text-error">还没有任何关注用户.</p>
 			{% endif %}

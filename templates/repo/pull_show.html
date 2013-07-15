@@ -1,18 +1,14 @@
 {% extends "repo/repo.html" %}
 
 {% block css %}
-	<link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet'>
-	<link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet'>
+	<link href="/static/css/app/highlight/github.css" rel="stylesheet">
 {% endblock %}
 
 {% block bubble_inner_class_name %} pulls{% endblock %}
 
 {% block subcontainer %}
 	<header class="header">
-		<ul class="breadcrumb">
-			<li><a href="/{{user_name}}/{{repo_name}}/pulls/">{{repo_name}}</a><span class="divider"></span></li>
-			<li class="active">查看 #{{pullRequest.id}} 合并请求</li>
-		</ul>
+		<h1 class="heading">#{{pullRequest.id}} 合并请求</h1>
 	</header>
 
 	<div id="id_merge_process" class="well hide">
@@ -25,11 +21,11 @@
 
 		<div class="row">
 			<ul class="horizontal-list pull-branch">
-				<li class="first label repo-refs">{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}</li>
-				<li class="last label repo-refs">{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}}</li>
+				<li class="first repo-refs"><p>{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}</p></li>
+				<li class="last repo-refs"><p>{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}}</p></li>
 			</ul>
 			<div class="data">
-				<h2 class="title">{{pullRequest.title}}</h2>
+				<h2 class="heading">{{pullRequest.title}}</h2>
 				<p>{{pullRequest.desc}}</p>
 			</div>
 			{% if is_owner %}
@@ -50,8 +46,8 @@
 				<li class="c_pull_request_action" data-action="diff"><a href="javascript:void(0)">Diff</a></li>
 			</ul>
 			<div id="id_pull_meta_data">
-				<figure id="id_ajax_loading" class="c_pull_request_content hide"><img src='/static/img/loading.gif' alt="loading"></figure>
-				<p id="id_pull_request_commit" class="c_pull_request_content hide info"></p>
+				<figure id="id_ajax_loading" class="c_pull_request_content hide loader"><img src='/static/img/loading.gif' alt="loading"></figure>
+				<p id="id_pull_request_commit" class="c_pull_request_content hide alert alert-info"></p>
 				<div id="id_pull_request_diff" class="c_pull_request_content hide"></div>
 			</div>
 		</div>
@@ -61,9 +57,7 @@
 {% endblock %}
 
 {% block subjs %}
-<script src='/static/js/app/syntaxhighlighter/shCore.js' type='text/javascript'></script>
-<script src='/static/js/app/syntaxhighlighter/shAutoloader.js' type='text/javascript'></script>
-<script src='/static/js/app/syntaxhighlighter/shBrushDiff.js' type='text/javascript'></script>
+<script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script>
 <script>
 $(function(){
     var global_repo_branch_map = {};
@@ -119,8 +113,9 @@ $(function(){
             $('.c_pull_request_content').each(function(index){
                 $(this).hide();
             });
-            $('#id_pull_request_diff').html('<pre class="brush: diff;">' + diff + '</pre>');
-            SyntaxHighlighter.highlight();
+						$('#id_pull_request_diff').html('<pre><code class="diff">' + diff + '</code></pre>');
+            //SyntaxHighlighter.highlight();
+						$('pre code').each(function(i, e) {hljs.highlightBlock(e)});
             $('#id_pull_request_diff').show();
         });
     }

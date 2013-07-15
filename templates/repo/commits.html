@@ -23,7 +23,7 @@
 						<p class="meta"><a href="/{{ commit_attrs.author }}/">{{ commit_attrs.author }}</a> <span class="date unixtime">{{ commit_attrs.committer_date }}</span></p>
 					</div>
 				</div>
-				<div class="hash span"><a href="#" class="label label-mini label-info">{{ commit_attrs.commit_hash }}</a></div>
+				<span class="hash span"><a href="#" class="btn label-mini btn-info">{{ commit_attrs.commit_hash }}</a></span>
 			</div>
 		{% endfor %}
 

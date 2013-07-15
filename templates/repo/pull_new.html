@@ -5,10 +5,8 @@
 {% block subcontainer %}
 
 	<header class="header">
-		<ul class="breadcrumb">
-			<li><a href="/{{user_name}}/{{repo_name}}/pulls/">{{repo_name}}</a><span class="divider"></span></li>
-			<li class="active">创建一个合并请求</li>
-    </ul>
+		<h1 class="heading">创建一个合并请求</h1>
+		<a href="/{{user_name}}/{{repo_name}}/pulls/">{{repo_name}}</a>
 	</header>
 
 
@@ -18,8 +16,7 @@
 		<input id="id_source_refs_select" class="hide" type="hidden" value="" name="source_refs">
 		<input id="id_desc_repo_select" class="hide" type="hidden" value="" name="desc_repo">
 		<input id="id_desc_refs_select" class="hide" type="hidden" value="" name="desc_refs">
-		<ul class="horizontal-list">
-			<li class="repo-refs">
+		<div class="fields">
 				<label>仓库:</label>
 				<select id="id_source_repo">
 					{% for repo in pull_repo_list %}
@@ -30,14 +27,11 @@
 						{% endif %}
 					{% endfor %}
 				</select>
-			</li>
-			<li class="repo-refs">
 				<label>分支:</label>
 				<select id="id_source_refs">
 					<option value="master">master</option>
 				</select>
-			</li>
-		</ul>
+			</div>
 		<div class="control-group">
 			<label class="control-label" for="id_title">* 标题</label>
 			<div class="controls">

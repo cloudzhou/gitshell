@@ -9,6 +9,7 @@
 
 {% block container_class_name %} bubble bubble-flat repo{% endblock %}
 
+
 {% block container %}
 
 	<header class="header">
@@ -36,7 +37,7 @@
 		</div>
 	</header>
 
-	<section class="colgroup">
+	<section class="colspan">
 		<nav class="sidenav">
 			<ul class="nav nav-list">
 				<li class="first{% if current == 'index' or current == 'tree' %} active{% endif %}"><a href="/{{ user_name }}/{{ repo_name }}/tree/" data-original-title="Code" rel="tooltip"><span><i class="icon-code"></i></span></a></li>

@@ -5,10 +5,10 @@
 {% block subcontainer %}
 
 	<header class="header">
-		<h1>创建issues</h1>
+		<h1 class="heading">创建issue</h1>
 		<p>创建issues是一件认真的事情，提交前请检查</small></p>
 	</header>
-	<form class="issue form-inline" action="" method="post">
+	<form class="create-issue form-inline" action="" method="post">
 		{% csrf_token %}
 		<div class="fields">
 			<span class="label-assign">分配给</span>
@@ -21,17 +21,16 @@
 		</div>
 		<textarea maxlength="1024" name="merge_content" id="id_merge_content" placeholder="第一行自动作为标题，简单明了描述问题，标题之后作为内容"></textarea>
 
-		{% if error %}
-			<div class="alert">
-				<a data-dismiss="alert" class="close"><i class="icon-close"></i></a>
-				<p class="alert text-error"><strong>出错了!</strong> {{ error }}</p>
-			</div>
+		{% if errors %}
+			<p class="alert"><strong>出错了!</strong> {{ error }}</p>
 		{% endif %}
 
-		<button id="i_submit" class="btn btn-primary" type="submit">确定</button>
-		{% if has_issues_modify %}
-			<button id="i_delete" class="btn btn-primary btn-danger">删除</button>
-		{% endif %}
+		<div class="actions">
+			<button id="i_submit" class="btn btn-primary" type="submit">确定</button>
+			{% if has_issues_modify %}
+				<button id="i_delete" class="btn btn-primary btn-danger">删除</button>
+			{% endif %}
+		</div>
 		<div class="hide">
 			{{ repoIssuesForm.content }}
 			{{ repoIssuesForm.subject }}

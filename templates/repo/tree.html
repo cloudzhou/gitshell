@@ -60,7 +60,7 @@
 						</span>
 					</a>
 					<nav class="dropdown-menu">
-						<ul class="nav nav-list flat-nav-list">
+						<ul class="nav nav-list">
 							<li class="master"><a href="/repo/{{branch}}/"><span>master</span></a></li>
 							<li><a href="/repo/{{branch}}/"><span>template_yuwen_0522</span></a></li>
 							<li><a href="/repo/{{branch}}/"><span>blueStyle</span></a></li>
@@ -70,11 +70,10 @@
 				</div>
 				<span class="current-branch-name"><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">{{repo_name}}</a></span>
 			</div>
-			<span class="label label-mini label-info pull-right">
-				<i class="icon-time"></i>
-				<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}">Commits</a>
+			<span class="pull-right">
+				<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="btn btn-mini">Commits</a>
 				{% if not is_tree %}
-					<a href="/{{user_name}}/{{repo_name}}/raw/tree/{{refs}}/{{path}}">原始文件</a>
+					<a href="/{{user_name}}/{{repo_name}}/raw/tree/{{refs}}/{{path}}" class="btn btn-mini">原始文件</a>
 				{% endif %}
 			</span>
     </header>
