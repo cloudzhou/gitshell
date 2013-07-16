@@ -2,48 +2,43 @@
 
 {% load gstools %}
 
-{% block css %}
-    <style>
-    .user_chart {min-width: 400px; height: 200px; margin: 0 auto}
-    .c_repo_attr {margin-right: 10px}
-    </style>
-{% endblock %}
+{% block container_class_name %} explore{% endblock %}
 
 {% block container %}
-    <div class="row">
-        <div class="span5">
-            <div class="page-header" style="padding-bottom: 0px">
-                <div style="margin-bottom: 10px">
-                    <h3>活跃仓库列表</h3>
-                </div>
-            </div>
-            {%for repo in repos%}
-            <div class="c_repo">
-                <h3>{{forloop.counter}}. <img class="avatar" style="margin: 10px;" src="https://gravatar.com/avatar/{{userimgurl_dict|keyvalue:repo.user_id}}?s=25"><a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
-                <a href="/{{username_dict|keyvalue:repo.user_id}}/{{repo.name}}/">{{repo.name}}</a>
-                <span style="float: right;">
-                <a data-original-title="提交次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♯ {{repo.commit}}</a>
-                <a data-original-title="关注数量" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♥ {{repo.watch}}</a>
-                <a data-original-title="衍生次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♂ {{repo.fork}}</a></span></h3>
-                <div style="margin-left: 30px;">
-                    <h6 style="margin-bottom: 3px">
-                    创建于 {{repo.create_time|date:'y/m/d'}}，最近更新 {{repo.modify_time|date:'y/m/d'}}</h6> 
-                    <p>{{repo.desc}}</p>
-                </div>
-            </div>
-            {%endfor%}
-        </div>
-        <div class="span5">
-            <div class="page-header" style="padding-bottom: 0px">
-                <div style="margin-bottom: 10px">
-                    <h3>最新提交信息</h3>
-                </div>
-            </div>
-            <div id='feeds_container' class="span7" style="margin: 0px">
-                <img id='feeds_loading' style="margin-left: 50px" src='/static/img/loading.gif'>
-            </div>
-        </div>
-    </div>
+	<section class="colspan">
+			<section class="activity span">
+				<header class="header">
+					<h1 class="heading">活跃仓库列表</h1>
+				</header>
+				{%for repo in repos%}
+					<div class="c_repo user-plugin">
+						<figure class="avatar">
+							<img class="avatar" src="https://gravatar.com/avatar/{{userimgurl_dict|keyvalue:repo.user_id}}?s=25">
+						</figure>
+						<h3>{{forloop.counter}}. <a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
+						<a href="/{{username_dict|keyvalue:repo.user_id}}/{{repo.name}}/">{{repo.name}}</a>
+						<div class="actions">
+							<a data-original-title="提交次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♯ {{repo.commit}}</a>
+							<a data-original-title="关注数量" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♥ {{repo.watch}}</a>
+							<a data-original-title="衍生次数" rel="tooltip" class="c_repo_attr" href="javascript:void(0)">♂ {{repo.fork}}</a>
+						</div>
+						<div>
+							<h6>
+							创建于 {{repo.create_time|date:'y/m/d'}}，最近更新 {{repo.modify_time|date:'y/m/d'}}</h6> 
+							<p>{{repo.desc}}</p>
+						</div>
+					</div>
+				{%endfor%}
+			</section>
+			<section class="recently span">
+				<header class="header">
+					<h1 class="heading">最新提交信息</h1>
+				</header>
+				<div id='feeds_container'>
+					<img id='feeds_loading' src='/static/img/loading.gif'>
+				</div>
+			</section>
+	</section>
 {% endblock %}
 
 {% block js %}
@@ -102,9 +97,13 @@
                             }
                             if(feed.feed_type == 0) {
                                 commit = feed.relative_obj
-                                html.push('<div style="margin: 0px" class="event_feed span5">');
-                                html.push('<img class="avatar_left" src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=35"><strong><a href="/' + commit.author + '/">' + commit.author + '</a></strong>')
-                                html.push(' commit at <strong><a href="/'+ commit.user_name + '/' + commit.repo_name +'/">' + commit.repo_name + '</a></strong><div>' + commit.subject + ' <span class="muted">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></div>')
+																subject = commit.subject;
+																if(subject.length >= 20) {
+																	subject = subject.substring(0, 20) + '...';
+																}
+                                html.push('<div class="event_feed span5 user-plugin">');
+																html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=35"></figure>')
+																html.push('<div class="info"><p class="name">' + '<a href="/'+ commit.user_name + '/' + commit.repo_name +'/">' + commit.repo_name + '</a><span class="subject">#' + subject + '<span></p><p class="meta">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</p></div>')
                                 html.push('</div>');
                             } else if(feed.feed_type == 1) {
                             }
