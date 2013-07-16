@@ -1,36 +1,37 @@
+<ul class="nav nav-list">
 {% for iter_assigned in assigneds %}
 	{%if assigned == iter_assigned %}
-		<span class="untrack_issues_attr label label-mini label-success">{%if assigned == '0' %}所有{%else%}{{iter_assigned}}{%endif%}</span>
+	<li><a class="untrack_issues_attr label label-mini label-success">{%if assigned == '0' %}所有{%else%}{{iter_assigned}}{%endif%}</span></li>
 	{%else%}
 		{%if iter_assigned == '0' %}
-			<a class="issues_attr btn btn-mini" href="javascript:void(0)" value="assigned___0">所有</a>
+		<li><a class="issues_attr btn btn-mini" href="javascript:void(0)" value="assigned___0">所有</a></li>
 		{%else%}
-			<a class="issues_attr btn btn-mini" href="javascript:void(0)" value="assigned___{{iter_assigned}}">{{iter_assigned}}</a>
+		<li><a class="issues_attr btn btn-mini" href="javascript:void(0)" value="assigned___{{iter_assigned}}">{{iter_assigned}}</a></li>
 		{%endif%}
 	{%endif%}
 {% endfor %}
-<br>
+
 {%for iter_tracker in TRACKERS%}
 	{%if tracker == iter_tracker.value%}
-		<span class="untrack_issues_attr label label-mini label-success">{{iter_tracker.name}}</span>
+	<li><a class="untrack_issues_attr label label-mini label-success">{{iter_tracker.name}}</span></li>
 	{%else%}
-		<a class="issues_attr btn btn-mini" href="javascript:void(0)" value="tracker___{{iter_tracker.value}}">{{iter_tracker.name}}</a>
+	<li><a class="issues_attr btn btn-mini" href="javascript:void(0)" value="tracker___{{iter_tracker.value}}">{{iter_tracker.name}}</a></li>
 	{%endif%}
 {%endfor%}
-<br>
+
 {%for iter_status in STATUSES%}
 	{%if status == iter_status.value%}
-		<span class="untrack_issues_attr label label-mini label-success">{{iter_status.name}}</span>
+	<li><a class="untrack_issues_attr label label-mini label-success">{{iter_status.name}}</span></li>
 	{%else%}
-		<a class="issues_attr btn btn-mini" href="javascript:void(0)" value="status___{{iter_status.value}}">{{iter_status.name}}</a>
+	<li><a class="issues_attr btn btn-mini" href="javascript:void(0)" value="status___{{iter_status.value}}">{{iter_status.name}}</a></li>
 	{%endif%}
 {%endfor%}
-<br>
+
 {%for iter_priority in PRIORITIES%}
 	{%if priority == iter_priority.value%}
-		<span class="untrack_issues_attr label label-mini label-success">{{iter_priority.name}}</span>
+	<li><a class="untrack_issues_attr label label-mini label-success">{{iter_priority.name}}</span></li>
 	{%else%}
-		<a class="issues_attr btn btn-mini" href="javascript:void(0)" value="priority___{{iter_priority.value}}">{{iter_priority.name}}</a>
+	<li><a class="issues_attr btn btn-mini" href="javascript:void(0)" value="priority___{{iter_priority.value}}">{{iter_priority.name}}</a></li>
 	{%endif%}
 {%endfor%}
 <a href="/{{user_name}}/{{repo_name}}/issues/create/0/" class="new-issue-btn btn btn-primary">创建 issues</a>

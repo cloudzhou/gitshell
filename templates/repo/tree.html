@@ -79,7 +79,26 @@
     </header>
 
     {% if is_tree %}
+		<div class="tree">
+			<ul class="nav nav-list">
+				{% for file, attrs in tree.items %}
+					{% if attrs.0 == 'tree' %}
+					<li>
+						<i class=""><img src="/static/img/file_dir.png" alt="dir"></i><a href="{{ file }}">{{ file }}</a>
+						<ul class="nav nav-list">
+							<li><a href="#">dir 1</a></li>
+							<li><a href="#">dir 2</a></li>
+							<li><a href="#">file 1</a></li>
+						</ul>
+					</li>
+					{% else %}
+					<li><i class=""><img src="/static/img/file_txt.png" alt="txt"></i><a href="#">{{ file }}</a></li>
+					{% endif %}
+				{% endfor %}
+			</ul>
 
+			<div class="table-container">
+				<a href="#">Toggle Color Scheme</a>
 				<table class="table">
 					<tbody>
 						{% if not tree %}
@@ -91,11 +110,6 @@
 						{% for file, attrs in tree.items %}
 							<tr>
 								<td class="icon">
-									{% if attrs.0 == 'tree' %}
-										<i class=""><img src="/static/img/file_dir.png" alt="dir"></i>
-									{% else %}
-										<i class=""><img src="/static/img/file_txt.png" alt="txt"></i> 
-									{% endif %}
 								</td>
 								<td class="file-name">
 									{% if current == 'index' %}
@@ -118,6 +132,7 @@
 						{% endfor %}
 					</tbody>
 				</table>
+			</div>
 
     {% else %}
 
@@ -133,6 +148,7 @@
 				{% endif %}
 			</section>
 
+		</div>
     {% endif %}
 
 {% endblock %}

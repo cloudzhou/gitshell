@@ -2,10 +2,14 @@
 
 {% block bubble_inner_class_name %} issues{% endblock %}
 
+
 {% block subcontainer %}
-	<header class="header">
+	<nav class="sidebar pull-left">
 		<h1 class="heading">Issues</h1>
-	</header>
+		{% include "repo/condition.html" %}
+	</nav>
+
+	<div class="issue-list pull-right">
 	<div class="hide btn-group clearfix">
 		{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn first">更新</a>{%else%}<span class="btn btn-disable">更新</span>{%endif%}
 		{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn last">创建</a>{%else%}<span class="btn btn-disable">创建</span>{%endif%}
@@ -32,6 +36,7 @@
 	{% if not issues %}
 		<div class="issue"><p class="info text-warning">没有Issues，或者没有查看Issues权限，半公开和私有项目需要申请成为成员才能查看Issues</p></div>
 	{% endif %}
+</div>
 
 	<footer class="footer">
 		<nav class="pagination">
