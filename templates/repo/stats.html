@@ -1,55 +1,41 @@
 {% extends "repo/repo.html" %}
+
+{% block bubble_inner_class_name %} stats{% endblock %}
+
 {% block subcontainer %}
-<style>
-#i_repomembers td { border-top: 0px; font-size: 16px}
-.small-header {margin-top: 0px; margin-bottom: 10px;padding-bottom: 8px}
-.repo_chart {min-width: 400px; height: 200px; margin: 0 auto}
-</style>
-<div class="span6">
-    <div id="id_paraent_day_container" style="display: none">
-        <div class="page-header small-header">
-            <h4>最近一天提交<small>
-            </small></h4>
-        </div>
-        <div><div id="id_day_container" class="repo_chart"></div></div>
-    </div>
-    <div id="id_paraent_week_container" style="display: none">
-            <div class="page-header small-header">
-                <h4>最近一周提交<small>
-                </small></h4>
-            </div>
-            <div><div id="id_week_container" class="repo_chart"></div></div>
-    </div>
-    <div id="id_paraent_month_container" style="display: none">
-        <div class="page-header small-header">
-            <h4>最近一月提交<small>
-            </small></h4>
-        </div>
-        <div><div id="id_month_container" class="repo_chart"></div></div>
-    </div>
-    <div id="id_paraent_year_container" style="display: none">
-        <div class="page-header small-header">
-            <h4>最近一年提交<small>
-            </small></h4>
-        </div>
-        <div><div id="id_year_container" class="repo_chart"></div></div>
-    </div>
-</div>
-<div class="span5">
-    <div class="page-header small-header">
-        <h4>贡献者<small>
-    </div>
-    <div><div id="id_contributor_week_container" style="display: none" class="repo_chart"></div></div>
-    <div><div id="id_contributor_month_container" style="display: none" class="repo_chart"></div></div>
-    <div><div id="id_contributor_year_container" style="display: none" class="repo_chart"></div></div>
-    <div class="page-header small-header">
-        <h4>空间使用情况<small>
-    </div>
-    <div><div id="id_space_container" class="repo_chart"></div></div>
-</div>
+	<div class="span6">
+		<div id="id_paraent_day_container" class="hide">
+			<h4>最近一天提交</h4>
+			<div id="id_day_container" class="repo_chart"></div>
+		</div>
+		<div id="id_paraent_week_container" class="hide">
+			<h4>最近一周提交</h4>
+			<div id="id_week_container" class="repo_chart"></div>
+		</div>
+		<div id="id_paraent_month_container" class="hide">
+			<h4>最近一月提交</h4>
+			<div id="id_month_container" class="repo_chart"></div>
+		</div>
+		<div id="id_paraent_year_container" class="hide">
+			<h4>最近一年提交</h4>
+			<div id="id_year_container" class="repo_chart"></div>
+		</div>
+	</div>
+
+	<div class="span5">
+		<h4>贡献者</h4>
+		<div id="id_contributor_week_container" class="repo_chart"></div>
+		<div id="id_contributor_month_container" class="repo_chart"></div>
+		<div id="id_contributor_year_container" class="repo_chart"></div>
+		<h4>空间使用情况</h4>
+		<div id="id_space_container" class="repo_chart"></div>
+	</div>
+
 {% endblock %}
+
 {% block subjs %}
 <script src="/static/js/app/highcharts/highcharts.js"></script>
+<script src="/static/js/app/highcharts/themes/gitshell.js"></script>
 <script>
 $(function(){
     $('.c_unixtime').each(function(index){ 
@@ -127,40 +113,40 @@ $(function(){
 if(Object.keys(last12hours_commit).length > 0) {
     $('#id_paraent_day_container').show();
     var day_chart = new Highcharts.Chart({
-        chart: { renderTo: 'id_day_container', type: 'line'},title: {text: ''},
+        chart: { renderTo: 'id_day_container', type: 'area'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
-        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
         xAxis: { categories: last12hoursAsCat },
+        plotOptions: { area: { dataLabels: { enabled: true }, enableMouseTracking: false } },
         series: [{ name: '1 天提交', data: last12hoursAsData }]
     });
 }
 if(Object.keys(last7days_commit).length > 0) {
     $('#id_paraent_week_container').show();
     var week_chart = new Highcharts.Chart({
-        chart: { renderTo: 'id_week_container', type: 'line'},title: {text: ''},
+        chart: { renderTo: 'id_week_container', type: 'area'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
-        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
         xAxis: { categories: last7daysAsCat },
+        plotOptions: { area: { dataLabels: { enabled: true }, enableMouseTracking: false } },
         series: [{ name: '1 周提交', data: last7daysAsData }]
     });
 }
 if(Object.keys(last30days_commit).length > 0) {
     $('#id_paraent_month_container').show();
     var month_chart = new Highcharts.Chart({
-        chart: { renderTo: 'id_month_container', type: 'line'},title: {text: ''},
+        chart: { renderTo: 'id_month_container', type: 'area'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
-        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
         xAxis: { categories: last30daysAsCat },
+        plotOptions: { area: { dataLabels: { enabled: true }, enableMouseTracking: false } },
         series: [{ name: '1 月提交', data: last30daysAsData }]
     });
 }
 if(Object.keys(last12months_commit).length > 0) {
     $('#id_paraent_year_container').show();
     var year_chart = new Highcharts.Chart({
-        chart: { renderTo: 'id_year_container', type: 'line'},title: {text: ''},
+        chart: { renderTo: 'id_year_container', type: 'area'},title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
-        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
         xAxis: { categories: last12monthsAsCat },
+        plotOptions: { area: { dataLabels: { enabled: true }, enableMouseTracking: false } },
         series: [{ name: '1 年提交', data: last12monthsAsData }]
     });
 }
@@ -174,38 +160,38 @@ if(Object.keys(last12months_commit).length > 0) {
 if(per_user_week_commit.length > 0) {
     $('#id_contributor_week_container').show();
     var contributor_week_chart = new Highcharts.Chart({
-        chart: { renderTo: 'id_contributor_week_container', type: 'bar'},title: {text: ''},
+        chart: { renderTo: 'id_contributor_week_container', type: 'area'},title: {text: ''},
         yAxis: { title: { text: '前十位活跃开发者' } },
-        plotOptions: { bar: { dataLabels: { enabled: true } } },
         xAxis: { categories: per_user_week_commit },
+        plotOptions: { area: { dataLabels: { enabled: true } } },
         series: [{ name: '本周（{{round_week|date:"y/m/d"}}以来）开发者提交统计', data: per_last_week_commit }]
     });
 }
 if(per_user_month_commit.length > 0) {
     $('#id_contributor_month_container').show();
     var contributor_month_chart = new Highcharts.Chart({
-        chart: { renderTo: 'id_contributor_month_container', type: 'bar'},title: {text: ''},
+        chart: { renderTo: 'id_contributor_month_container', type: 'area'},title: {text: ''},
         yAxis: { title: { text: '前十位活跃开发者' } },
-        plotOptions: { bar: { dataLabels: { enabled: true } } },
         xAxis: { categories: per_user_month_commit },
+        plotOptions: { area: { dataLabels: { enabled: true } } },
         series: [{ name: '本月（{{round_month|date:"y/m/d"}}以来）开发者提交统计', data: per_last_month_commit }]
     });
 }
 if(per_user_year_commit.length > 0) {
     $('#id_contributor_year_container').show();
     var contributor_year_chart = new Highcharts.Chart({
-        chart: { renderTo: 'id_contributor_year_container', type: 'bar'},title: {text: ''},
+        chart: { renderTo: 'id_contributor_year_container', type: 'area'},title: {text: ''},
         yAxis: { title: { text: '前十位活跃开发者' } },
-        plotOptions: { bar: { dataLabels: { enabled: true } } },
         xAxis: { categories: per_user_year_commit },
+        plotOptions: { area: { dataLabels: { enabled: true } } },
         series: [{ name: '今年（{{round_year|date:"y/m/d"}}以来）开发者提交统计', data: per_last_year_commit }]
     });
 }
     var space_chart = new Highcharts.Chart({
-        chart: { renderTo: 'id_space_container', type: 'bar'},title: {text: ''},
+        chart: { renderTo: 'id_space_container', type: 'area'},title: {text: ''},
         yAxis: { title: { text: '空间使用情况' } },
-        plotOptions: { bar: { dataLabels: { enabled: true } } },
         xAxis: { categories: ['使用空间', '全部空间'] },
+        plotOptions: { area: { dataLabels: { enabled: true } } },
         series: [{ name: '单位 kb', data: [quotes.used_quote, quotes.total_quote] }]
     });
 });

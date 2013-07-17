@@ -1,15 +1,17 @@
 {% extends "repo/repo.html" %}
+
+{% block css %}
+	<link href="/static/css/app/highlight/github.css" rel="stylesheet">
+{% endblock %}
+
+{% block bubble_inner_class_name %} pulls{% endblock %}
+
 {% block subcontainer %}
-<link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet' type='text/css' />
-<link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet' type='text/css' />
-<style>
-.repo-refs { border: 1px solid #D4D4D4; padding: 10px }    
-</style>
 <div>
-    <h4 style="margin: 10px"><a href="/{{user_name}}/{{repo_name}}/pulls/">{{repo_name}}</a> /
-        <span id="i_repo_path"></span>
-        <span>查看 #{{pullRequest.id}} 合并请求</span>
-    </h4>
+	<header class="header">
+		<h1 class="heading">#{{pullRequest.id}} 合并请求</h1>
+	</header>
+
     <!--create pull request-->
     <div class="row" style="margin-top: 20px">
         <div id="id_merge_process" class="hide span10">
@@ -75,17 +77,12 @@
     </div>
 </div>		  
 {% endblock %}
+
 {% block subjs %}
-<script src='/static/js/app/syntaxhighlighter/shCore.js' type='text/javascript'></script>
-<script src='/static/js/app/syntaxhighlighter/shAutoloader.js' type='text/javascript'></script>
-<script src='/static/js/app/syntaxhighlighter/shBrushDiff.js' type='text/javascript'></script>
+<script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script>
 <script>
 $(function(){
     var global_repo_branch_map = {};
-    $('.c_unixtime').each(function(index){ 
-        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-        $(this).show();
-    });
     $('#id_merge').tooltip({
       selector: "a[rel=tooltip]"
     });
@@ -94,6 +91,22 @@ $(function(){
     repoComparer.from_refs = '{{pullRequest.desc_refname}}';
     repoComparer.to_refs = '{{pullRequest.source_refname}}';
     repoComparer.renderCompare($('#i_commits_diff'), null);
+    $('.c_pull_request_action').click(function(){
+        var action = $(this).data('action');
+        $('.c_pull_request_action').each(function(index){
+            $(this).removeClass('active');
+        });
+        $(this).addClass('active');
+        $('.c_pull_request_content').each(function(index){
+            $(this).hide();
+        });
+        $('#id_ajax_loading').show();
+        if(action == 'commit') {
+            load_commit_meta();
+        } else if(action == 'diff') {
+            load_diff_meta();
+        }
+    });
     $('#id_pull_merge').click(function(){
         $('#id_merge_output').show();
         var i = 0;

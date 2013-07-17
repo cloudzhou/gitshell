@@ -1,139 +1,114 @@
 {% extends "base.html" %}
-<style>
-.command { padding: 5px; margin-left: 20px; margin-bottom: 5px; font-size: 16px }
-</style>
+
 {% block container %}
-{% ifequal step '3'  %}
-<div class="page-header">
-        <h1>:-), {{ user.username }}，欢迎您</h1>
-</div>
-{% else %}
-<div class="page-header">
-        <h1>:-), 注册 <small>已经拥有帐号？直接<a href="/login/">登录</a></small></h1>
-</div>
-{% endifequal %}
-<div class="row">
-{% ifequal step '0' %}
-    <div class="span7">
-        <form class="form-horizontal" action="" method="post">
-            {% csrf_token %}
-            <fieldset>
-                <div class="control-group">
-                    <label for="id_username" class="control-label">用户名</label>
-                    <div class="controls">
-                        {{ joinForm.username }}
-                        <code id="id_username_alert" class="hide">
-                            用户名已经存在
-                        </code>
-                        <code id="id_username_format" class="hide">
-                            只允许 [a-zA-Z0-9_]
-                        </code>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label for="id_email" class="control-label">邮箱</label>
-                    <div class="controls">
-                        {{ joinForm.email }}
-                        <code id="id_email_alert" class="hide">
-                            邮箱已经存在
-                        </code>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label for="id_unencrypt_password" class="control-label">密码</label>
-                    <div class="controls">
-                        <input type="password" maxlength="64" name="unencrypt_password" id="id_unencrypt_password" placeholder="输入密码，注意大小写">
-                    </div>
-                    <span style="display: none">
-                        {{ joinForm.password }}
-                    </span>
-                </div>
-                {% if error %}
-                <div class="alert">
-                    <a data-dismiss="alert" class="close">×</a>
-                    <strong>出错了！</strong> {{ error }}
-                </div>
-                {% endif %}
-                <div class="form-actions">
-                    <button id="id_join_submit" class="btn btn-primary" type="submit">注册</button>
-                    <p>
-                    您还可以 <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841">使用 GitHub 账户登录</a> <img id="id_github_logo" src="https://github.com/favicon.ico">
-                    </p>
-                </div>
-            </fieldset>
-        </form>
-    </div>
-{% endifequal %}
-{% ifequal step '1' %}
-    <div class="span12">
-    <p class="lead">谢谢你，已经发送注册邮件，请在半小时内激活，注意查收。 <a id="id_goto_a" target="_blank" class="hide"><button class="btn btn-success">点击到<span id="id_goto_domain"></span></button></a></p>
-    <p class="lead">（部分运营商会拦截邮件，您有可能需要查看一下垃圾邮件）</p>
-    <small>如果发送邮件失败，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="/static/img/sina_logo.png"/>&nbsp;gitshell</a></small>
-    </div>
-{% endifequal %}
-{% ifequal step '3' %}
-    <div class="span12">
-    <p class="lead">为了gitshell能更好的为您服务，你有必要看一下：</p>
-    <p>快速入门：</p>
-    <p style="margin-left: 10px">如果您使用任何类unix系统，第一次配置 ssh 公钥密钥，请按照步骤，复制黑色背景字符，在终端执行命令，和编辑文件</p>
-    <p style="margin-left: 20px">1) 执行以下命令，生成 ssh 密钥, 保存在 ~/.ssh/gitshell.com_rsa</p>
-        <textarea rows="1" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
-ssh-keygen -t rsa  -N '' -f ~/.ssh/gitshell.com_rsa;
-        </textarea>
-    <p style="margin-left: 20px">2) 编辑 ssh 客户端配置文件 ~/.ssh/config，使用您熟悉的编辑器，在后面添加</p>
-        <textarea rows="4" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
-Host gitshell.com
- User {{ user.username }}
- IdentityFile ~/.ssh/gitshell.com_rsa
- PreferredAuthentications publickey
-</textarea>
-    <p style="margin-left: 20px">3) 查看 ssh 公钥，使用 cat 命令，或者用编辑器打开</p>
-        <textarea rows="1" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
-cat ~/.ssh/gitshell.com_rsa.pub
-        </textarea>
-    <p style="margin-left: 20px">4) 请复制 ssh 公钥的文本内容，点击<a target="_blank" href="/settings/sshpubkey/">ssh public key 管理</a>，输入标识保存公钥</p>
-    <p style="margin-left: 20px">5) ssh 公钥配置之后就可以长期使用了，请保护好 ~/.ssh/gitshell.com_rsa 密钥。点击<a target="_blank" href="/{{ user.username }}/repo/create/">创建仓库</a>，详细仓库说明有助于推广</p>
-    <p style="margin-left: 20px">6) 你已经可以使用 gitshell 来托管代码了，以下是示范的操作，详细信息请<a href="/help/#learn">开始git的学习</a></p>
-        <textarea rows="7" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
-&gt; git clone git@gitshell.com:your_name/repo_name
-&gt; cd repo_name;
-&gt; vim README.md
-&gt; git add README.md
-&gt; git commit -m "init README.md" .
-&gt; git push -u origin master
-        </textarea>
-    <p style="margin-left: 20px">7) 配置 user.name, user.mail ，两者对后台统计，信息push有重要的作用，选择您注册的用户名和email按照下面配置</p>
-{% if user.is_authenticated %}
-        <textarea rows="2" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
-&gt; git config --global user.name "{{ user.username }}"
-&gt; git config --global user.email "{{ user.email }}"
-        </textarea>
-{% else %}
-        <textarea rows="2" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
-&gt; git config --global user.name "your_name"
-&gt; git config --global user.email "your_email"
-        </textarea>
-{% endif %}
-        </textarea>
-    <p style="margin-left: 20px">如果不想 global，在每个仓库里面执行 git config ，去掉 --global 参数</p>
-    <p style="margin-left: 20px">8) 感谢您走完整个配置流程，如果遇到任何问题，直接联系 support@gitshell.com，或者官方微博 <a target="_blank" href="http://weibo.com/gitshell">http://weibo.com/gitshell</a></p>
-    </div>
-    <div class="span12">
-        <p>更多帮助：</p>
-        <ul>
-            <li><a href="/help/#sshkey">设置ssh pub key</a></li>
-            <li><a href="/help/#repo">创建仓库</a></li>
-            <li><a href="/help/#group">协同开发</a></li>
-            <li><a href="/help/#faq">gitshell 能做什么？</a></li>
-            <li><a href="/help/#faq">gitshell 不能做什么？</a></li>
-        </ul>
-    </div>
-{% endifequal %}
-{% ifequal step '4' %}
-    <div class="span12">
-    <small>注册失败，可能是激活url Token过期，请重新通过<a href="/join/0/">注册</a>获取激活url，如果这种情况持续出现，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="/static/img/sina_logo.png"/>&nbsp;gitshell</a></small>
-    </div>
-{% endifequal %}
+<div class="bubble authorize">
+	{% ifequal step '3'  %}
+		<header class="bubble-header">
+			<h1 class="heading">:-), {{ user.username }}，欢迎您</h1>
+		</header>
+		{% else %}
+		<header class="header">
+			<h1 class="heading">注册</h1>
+		</header>
+	{% endifequal %}
+
+	<div class="bubble-inner clearfix">
+		<div class="form">
+		{% ifequal step '0' %}
+			<a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn"><i class="icon-github"></i>用 GitHub 账户直接登录</a>
+			<hr class="hr">
+			<form action="" method="post">
+				{% csrf_token %}
+				{{ joinForm.username }}
+				<span id="id_username_alert" class="label label-warning hide">用户名已经存在</span>
+				{{ joinForm.email }}
+				<code id="id_email_alert" class="label label-warning hide">邮箱已经存在</code>
+				<input type="password" maxlength="64" name="unencrypt_password" id="id_unencrypt_password" placeholder="密码区分大小写">
+				<span class="hide">{{ joinForm.password }}</span>
+				{% if error %}
+					<div class="alert">
+						<a data-dismiss="alert" class="close"><i class="icon-close"></i></a>
+						<strong>出错了！</strong> {{ error }}
+					</div>
+				{% endif %}
+				<button id="id_join_submit" class="btn btn-primary" type="submit">注册</button>
+				<p>当你点击注册的时候表示你接受GitShell的<a href="#">服务条款</a>和<a href="#">隐私政策</a>.</p>
+                <p>您还可以 <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841">使用 GitHub 账户登录</a> <img id="id_github_logo" src="https://github.com/favicon.ico"></p>
+			</form>
+		</div>
+	{% endifequal %}
+
+	{% ifequal step '1' %}
+			<div class="">
+			<p class="lead">谢谢你，已经发送注册邮件，请在半小时内激活，注意查收。 <a id="id_goto_a" target="_blank" class="hide"><button class="btn btn-success">点击到<span id="id_goto_domain"></span></button></a></p>
+			<p class="lead">（部分运营商会拦截邮件，您有可能需要查看一下垃圾邮件）</p>
+			<small>如果发送邮件失败，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="/static/img/sina_logo.png"/>&nbsp;gitshell</a></small>
+			</div>
+	{% endifequal %}
+	{% ifequal step '3' %}
+			<div class="">
+			<p class="lead">为了gitshell能更好的为您服务，你有必要看一下：</p>
+			<p>快速入门：</p>
+			<p style="margin-left: 10px">如果您使用任何类unix系统，第一次配置 ssh 公钥密钥，请按照步骤，复制黑色背景字符，在终端执行命令，和编辑文件</p>
+			<p style="margin-left: 20px">1) 执行以下命令，生成 ssh 密钥, 保存在 ~/.ssh/gitshell.com_rsa</p>
+					<textarea rows="1" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
+	ssh-keygen -t rsa  -N '' -f ~/.ssh/gitshell.com_rsa;
+					</textarea>
+			<p style="margin-left: 20px">2) 编辑 ssh 客户端配置文件 ~/.ssh/config，使用您熟悉的编辑器，在后面添加</p>
+					<textarea rows="4" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
+	Host gitshell.com
+	 User {{ user.username }}
+	 IdentityFile ~/.ssh/gitshell.com_rsa
+	 PreferredAuthentications publickey
+	</textarea>
+			<p style="margin-left: 20px">3) 查看 ssh 公钥，使用 cat 命令，或者用编辑器打开</p>
+					<textarea rows="1" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
+	cat ~/.ssh/gitshell.com_rsa.pub
+					</textarea>
+			<p style="margin-left: 20px">4) 请复制 ssh 公钥的文本内容，点击<a target="_blank" href="/settings/sshpubkey/">ssh public key 管理</a>，输入标识保存公钥</p>
+			<p style="margin-left: 20px">5) ssh 公钥配置之后就可以长期使用了，请保护好 ~/.ssh/gitshell.com_rsa 密钥。点击<a target="_blank" href="/{{ user.username }}/repo/create/">创建仓库</a>，详细仓库说明有助于推广</p>
+			<p style="margin-left: 20px">6) 你已经可以使用 gitshell 来托管代码了，以下是示范的操作，详细信息请<a href="/help/#learn">开始git的学习</a></p>
+					<textarea rows="7" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
+	&gt; git clone git@gitshell.com:your_name/repo_name
+	&gt; cd repo_name;
+	&gt; vim README.md
+	&gt; git add README.md
+	&gt; git commit -m "init README.md" .
+	&gt; git push -u origin master
+					</textarea>
+			<p style="margin-left: 20px">7) 配置 user.name, user.mail ，两者对后台统计，信息push有重要的作用，选择您注册的用户名和email按照下面配置</p>
+	{% if user.is_authenticated %}
+					<textarea rows="2" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
+	&gt; git config --global user.name "{{ user.username }}"
+	&gt; git config --global user.email "{{ user.email }}"
+					</textarea>
+	{% else %}
+					<textarea rows="2" cols="100" style="width: 500px; margin-left: 20px;" class="pull-left shell span4 command">
+	&gt; git config --global user.name "your_name"
+	&gt; git config --global user.email "your_email"
+					</textarea>
+	{% endif %}
+					</textarea>
+			<p style="margin-left: 20px">如果不想 global，在每个仓库里面执行 git config ，去掉 --global 参数</p>
+			<p style="margin-left: 20px">8) 感谢您走完整个配置流程，如果遇到任何问题，直接联系 support@gitshell.com，或者官方微博 <a target="_blank" href="http://weibo.com/gitshell">http://weibo.com/gitshell</a></p>
+			</div>
+			<div class="span12">
+					<p>更多帮助：</p>
+					<ul>
+							<li><a href="/help/#sshkey">设置ssh pub key</a></li>
+							<li><a href="/help/#repo">创建仓库</a></li>
+							<li><a href="/help/#group">协同开发</a></li>
+							<li><a href="/help/#faq">gitshell 能做什么？</a></li>
+							<li><a href="/help/#faq">gitshell 不能做什么？</a></li>
+					</ul>
+			</div>
+	{% endifequal %}
+	{% ifequal step '4' %}
+		<div class="span12">
+		<small>注册失败，可能是激活url Token过期，请重新通过<a href="/join/0/">注册</a>获取激活url，如果这种情况持续出现，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="/static/img/sina_logo.png"/>&nbsp;gitshell</a></small>
+		</div>
+	{% endifequal %}
+	</div>
 </div>
 {% endblock %}
 {% block js %}
@@ -142,9 +117,9 @@ cat ~/.ssh/gitshell.com_rsa.pub
 /*global jQuery, window */
 $(function(){
     var join_init = function() {
-        $('#id_username').attr('placeholder', '用户名，[A-Za-z0-9_]，唯一');
-        $('#id_email').attr('placeholder', '输入邮箱，唯一');
-        $('#id_password').attr('placeholder', '密码，包含数字和字母');
+        $('#id_username').attr('placeholder', '用户名');
+        $('#id_email').attr('placeholder', '邮箱');
+        $('#id_password').attr('placeholder', '密码,包含数字和字母');
     };
 
 {% ifequal step '0' %}

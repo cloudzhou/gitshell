@@ -1,50 +1,65 @@
 {% extends "repo/repo.html" %}
+
+{% block bubble_inner_class_name %} network{% endblock %}
+
 {% block subcontainer %}
-<style>
-#i_repomembers td { border-top: 0px; font-size: 16px}
-</style>
-    <div style="margin-top: 0px; margin-bottom: 10px;padding-bottom: 8px" class="page-header">
-            <form style="margin-bottom: 0px" id="id_submit_form" class="form-inline" method="post" action="">
-                {% csrf_token %}
-                <h3>仓库成员列表<small> 所有成员对仓库有完全的读写权限 <button id="i_add_member"class="btn btn-mini">添加新成员</button></small>
-                <span id="i_name_input" style="display: none">
-                    {{repoMemberForm.username}}
-                    {{repoMemberForm.action}}
-                    <button type="submit" class="btn btn-primary" id="id_submit">添加</button>
-                </span>
-                </h3>
-            </form>
-    </div>
-	<table id="i_repomembers" class="table table-striped">
-    {%for member_vo in members_vo%}
-        <tr class="c_tr"><td>
-        <a href="/{{member_vo.username}}/"><img class="avatar" src="https://gravatar.com/avatar/{{ member_vo.imgurl }}?s=40"/></a>
-        <a style="margin-left: 5px" href="/{{member_vo.username}}/">{{member_vo.username}}</a>
-        {%if member_vo.nickname%}
-            <span>({{member_vo.nickname}})</span>
-        {%endif%}
-        <span style="margin-left: 10px">{{member_vo.tweet}}</span>
-        <span style="font-size: 12px" class="muted">
-            加入：<span class="c_unixtime">{{member_vo.date_joined}}</span>
-            最近登录：<span class="c_unixtime">{{member_vo.last_login}}</span>
-        </span>
-        {% if member_vo.username != user_name %}
-        <span class="pull-right">
-            <a href="javascript:void(0)" style="display: none; font-size: 16px; font-weight: 700;" class="c_rm_member muted"> x </a>
-            <button style="display: none" value="{{member_vo.username}}" class="c_rm_rf_member btn btn-mini btn-danger">确定移除该成员？</button>
-        </span>
-        {% endif %}
-        </td></tr>
-    {%endfor%}
-	</table>
+	<header class="header clearfix">
+		<h1 class="heading">仓库成员列表</h1>
+		<p class="em summary">所有成员对仓库有完全的读写权限</p>
+		<div class="extra">
+			<a href="#" id="i_add_member" class="btn btn-mini"><i class="icon-plus-sign"></i> 添加新成员</a>
+			<form id="id_submit_form" class="form-inline" method="post" action="">
+				{% csrf_token %}
+				<div id="i_name_input" class="fiels">
+					{{repoMemberForm.username}}
+					{{repoMemberForm.action}}
+					<button type="submit" class="btn btn-success" id="id_submit">添加</button>
+				</div>
+			</form>
+		</div>
+	</header>
+
+	<div class="members">
+		{%for member_vo in members_vo%}
+			<div class="member">
+				<div class="user-plugin">
+					<figure class="avatar">
+						<img src="https://gravatar.com/avatar/{{ member_vo.imgurl }}?s=40" alt="{{ gsuser.username }}">
+					</figure>
+					<div class="info">
+						<p class="name">
+							<a href="/{{member_vo.username}}/">{{member_vo.username}}</a>
+							{%if member_vo.nickname%}
+								<span>({{member_vo.nickname}})</span>
+							{%endif%}
+							{%if member_vo.tweet%}
+								<span class="tweet">{{member_vo.tweet}}</span>
+							{%endif%}
+						</p>
+						<p class="meta">
+							<span><i class="icon-time"></i>加入:<span class="unixtime">{{member_vo.date_joined}}</span></span>
+							<span class="divider">/</span>
+							<span><i class="icon-map-marker"></i>最近登录:<span class="unixtime">{{member_vo.last_login}}</span></span>
+						</p>
+					</div>
+					{% if member_vo.username != user_name %}
+						<a href="javascript:void(0)" class="c_rm_member c_rm_rf_member delete-member"><i class="icon-trash"></i></a>
+					{% endif %}
+				</div>
+			</div>
+		{%endfor%}
+	</div>
 {% endblock %}
+
 {% block subjs %}
+
 <script>
 $(function(){
-    $('#id_action').hide()
-    $('#i_add_member').mouseover(function(event) {
+    $('#id_action').hide();
+		$('#id_submit_form').hide();
+    $('#i_add_member').on('click',function(event) {
         $(this).hide();
-        $('#i_name_input').show();
+        $('#id_submit_form').show();
         $('#id_action').val('add_member');
         $('#id_username').focus();
     });
@@ -63,7 +78,7 @@ $(function(){
     $('#id_username').blur(function(event) {
         setTimeout(
             function(event) {
-                $('#i_name_input').hide();
+                $('#id_submit_form').hide();
                 $('#i_add_member').show();
             }
         , 300);
@@ -74,10 +89,6 @@ $(function(){
         } else {
             $(this).find('.c_rm_member').hide();
         }
-    });
-    $('.c_unixtime').each(function(index){ 
-        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-        $(this).show();
     });
 });
 </script>

@@ -1,54 +1,47 @@
 {% extends "repo/repo.html" %}
+
+{% block bubble_inner_class_name %} pulls{% endblock %}
+
 {% block subcontainer %}
-	<div class="file-list">
-    <h4><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">{{repo_name}}</a> /
-    <span id="i_repo_path"></span>
-    <span>合并请求</span>
-    </h4>
-<style>
-    table { table-layout: fixed; }
-    table th, table td { overflow: hidden; }
-</style>
-	<table class="table table-striped">
-	    <thead class="fixed">
-		<tr>
-		    <th width="30%">标题</th>
-		    <th width="30%">合并分支</th>
-		    <th width="30%">描述</th>
-		    <th width="10%">状态</th>
-		</tr>
-	    </thead>
-	    <tbody>
-            {% if pullRequests %}
-                {% for pullRequest in pullRequests %}
-		    <tr>
-	                <td><a href="/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/">#{{pullRequest.id}} {{pullRequest.short_title}}</a>&nbsp;<a class="muted" href="/{{pullRequest.pull_user.username}}/">[{{pullRequest.pull_user.username}}]</a></td>
-	                <td><a href="/{{pullRequest.source_repo.username}}/">{{pullRequest.source_repo.username}}</a>/<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/">{{pullRequest.source_refname}}</a> -&gt; <a href="/{{pullRequest.desc_repo.username}}/">{{pullRequest.desc_repo.username}}</a>/<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/">{{pullRequest.desc_refname}}</a></td>
-	                <td>{{pullRequest.short_desc}}</td>
-	                <td><span class="label {{pullRequest.status_label}}">{{pullRequest.status_view}}</span></td>
-		    </tr>
-                {% endfor %}
-            {% else %}
-		    <tr>
-			<td colspan="4">当前仓库还没有 Pull Request</td>
-		    </tr>
-            {% endif %}
-	    </tbody>
-	</table>
-<style>
-</style>
-    </div>		  
-{% endblock %}
-{% block subjs %}
-<script src='/static/js/app/syntaxhighlighter/shCore.js' type='text/javascript'></script>
-<script src='/static/js/app/syntaxhighlighter/shAutoloader.js' type='text/javascript'></script>
-<script src='/static/js/app/syntaxhighlighter/shBrushDiff.js' type='text/javascript'></script>
-<script>
-$(function(){
-    $('.c_unixtime').each(function(index){ 
-        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-        $(this).show();
-    });
-});
-</script>
+	<header class="header">
+		<h1 class="heading">合并请求</h1>
+	</header>
+
+	{% if pullRequests %}
+		<table class="table">
+			<colgroup>
+				<col width="16%">
+				<col width="49%">
+				<col width="10%">
+				<col width="15%">
+				<col width="10%">
+			</colgroup>
+			<tbody>
+				{% for pullRequest in pullRequests %}
+					<tr>
+						<td class="title">
+							<a href="/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/">#{{pullRequest.id}} {{pullRequest.short_title}}</a>
+						</td>
+						<td class="branch">
+							<span class="master">
+								<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/">{{pullRequest.desc_refname}}</a>
+							</span>
+							<i class="icon-long-arrow-left"></i>
+							<span class="sub-branch">
+								<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/">{{pullRequest.source_refname}}</a>
+							</span>
+						</td>
+						<td class="description">{{pullRequest.short_desc}}</td>
+						<td class="puller">
+							<img src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=16" alt="{{ gsuser.username }}"><a class="meta" href="/{{pullRequest.pull_user.username}}/">{{pullRequest.pull_user.username}}</a>
+						</td>
+						<td class="status"><span class="label label-mini {{pullRequest.status_label}}">{{pullRequest.status_view}}</span></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% else %}
+		<p class="text-error">当前仓库还没有 Pull Request。<a href="/{{ user_name }}/{{ repo_name }}/pull/new/" class="btn btn-success"><i class="octicon octicon-git-pull-request"></i>合并请求</a></p>
+	{% endif %}
+
 {% endblock %}

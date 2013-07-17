@@ -1,152 +1,108 @@
 {% extends "base.html" %}
-{% block css %}
-{% if current == 'index' or current == 'tree' or current == 'commits' %}
-<link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet' type='text/css' />
-<link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet' type='text/css' />
-{% endif %}
-<style>
-#eye-box span,#eye-box a{display:inline-block;height:18px;line-height:18px}
-#eye-box a.count {top:4px;position:relative}
-</style>
-{% endblock %}
-{% block container %}
-<div class="code">
-    <div class="page-header" style="padding-bottom: 0px; margin-top: 0px;">
-	    <ul class="breadcrumb" style="margin-bottom: 0px">
-            <li style="margin-right: 5px">
-            {% if repo.auth_type == 0 %}
-                <img src="/static/img/glyphicons_204_unlock.png"/>
-            {% else %}
-                <img src="/static/img/glyphicons_203_lock.png"/>
-            {% endif %}
-            </li>
-            <li><h4><a href="/{{ user_name }}/">{{ user_name }}</a> <span class="divider">/</span></h4></li>
-            <li><h4><a href="/{{ user_name }}/{{ repo_name }}/">{{ repo_name }}</a></h4></li>
-            <li id="id_repo_alert" style="display: none">
-                <span class="alert alert-error">
-                    <strong>失败!</strong> <span id="id_alert_message"></span>
-                </span>
-            </li>
-            <li class="pull-right" id="eye-box">
-                {% if has_pull_right %}
-                <a href="/{{ user_name }}/{{ repo_name }}/pull/new/"><button class="btn" type="button" style="margin-right: 20px">合并请求</button></a>
-                {% endif %}
-                <span style="margin-right: 5px" class="c_repo_action">
-                    {% if is_watched_repo %}
-                        <a id="i_unwatch" data-original-title="取消关注" rel="tooltip" href="javascript: void(0)" style="display:inline-block"><img src="/static/img/glyphicons_052_eye_close.png" align="absmiddle"/></a>
-                    {% else %}
-                        <a id="i_watch" data-original-title="关注" rel="tooltip" href="javascript: void(0)" style="display:inline-block"><img src="/static/img/glyphicons_051_eye_open.png" align="absmiddle"/></a>
-                    {% endif %}
-                    <a class="count" title="关注次数" style="font-size: 20px; font-weight: bold" href="/{{ user_name }}/{{ repo_name }}/clone_watch_star/">{{repo.watch}}</a>
-                    {% if is_star_repo %}
-                        <a id="i_unstar" data-original-title="取消标星" rel="tooltip" href="javascript: void(0)" style="display:inline-block"><img src="/static/img/glyphicons_048_dislikes.png" align="absmiddle"/></a>
-                    {% else %}
-                        <a id="i_star" data-original-title="标星" rel="tooltip" href="javascript: void(0)" style="display:inline-block"><img src="/static/img/glyphicons_049_star.png" align="absmiddle"/></a>
-                    {% endif %}
-                    <a class="count" title="标星次数" style="font-size: 20px; font-weight: bold" href="/{{ user_name }}/{{ repo_name }}/clone_watch_star/">{{repo.star}}</a>
-                </span>
-                <span style="margin-right: 5px" class="c_repo_action">
-                    <a id="i_fork" data-original-title="衍生作为本地仓库" rel="tooltip" href="javascript: void(0)"><img src="/static/img/glyphicons_114_list.png"/></a>
-                    <a class="count" title="衍生次数" style="font-size: 20px; font-weight: bold" href="/{{ user_name }}/{{ repo_name }}/clone_watch_star/">{{repo.fork}}</a>
-                </span>
-            </li>
-        </ul>
-        {% if current == 'index' %}
-        <div id="id_repo_desc" class="breadcrumb" style="border-top: 0px; padding: 8px;">
-    	    <div class="row">
-    			<div class="span9">
-    			    <p>{{repo.desc}} — <a href="#README.md">更多介绍</a></p>
-    			</div>
-                <span id="id_manage_repo" style="display:none; margin-right: 11px" class="pull-right">
-                    <a href="/{{user_name}}/{{ repo_name }}/edit/"><span class="label label-info">编辑</span></a>
-                    <a href="/{{user_name}}/{{repo_name}}/delete/"><span class="label label-info">删除</span></a>
-                </span>
-    		</div>
-    		<div class="row">
-    			<div class="span10">
-                    {% if repo.status != 0 %}
-                    <div style="margin-bottom: 12px;">
-                        <span class="label label-important" style="margin: 15px; padding: 5px; margin-left: 0px">
-                            仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）
-                        </span>
-                    </div>
-                    {% endif %}
-                    {% if has_fork_right %}
-                        <span style="margin-bottom: 5px">
-                            {% if is_repo_member %}
-                                <span id="id_ssh_fork">SSH</span> |
-                            {% endif %}
-                                <span id="id_http_fork">HTTP</span>
-                            {% if repo.auth_type == 0 %}
-                                | <span id="id_git_fork">GIT</span>
-                            {% endif %}
-                        </span>
-                        <span id="id_git_url" style="margin-left: 10px">
-                            {% if is_repo_member %}
-                                <input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git"/>
-                            {% elif repo.auth_type == 0 %}
-                                <input class="input-xlarge focused" value="https://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>
-                            {% endif %}
-                        </span>
-                        <span id="id_read_write" class="muted">
-                            {% if is_repo_member %}
-                                读写
-                            {% elif repo.auth_type == 0 %}
-                                只读
-                            {% endif %}
-                        </span>
-                    {% endif %}
-    		    </div>
-    		</div>
-		</div>
-        {% endif %}
-	</div>
 
-	<div class="row">
-	    <div id="repo_nav" class="span12">
-	        <ul class="nav nav-tabs">
-                <li id="i_refs" class="dropdown">
-                    <a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle"><span>{%if is_branch %}分支{%else%}标签{%endif%}：</span><b>{{ refs }}</b> <b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                    {% for branch in refs_meta.branches %}
-                        <li><a href="/{{user_name}}/{{repo_name}}/tree/{{branch}}/">{%if branch == refs %}✓{%endif%}{{branch}}</a></li>
-                    {% endfor %}
-                    {% if refs_meta.tags|length > 0 %}
-                        <li class="divider"></li>
-                    {% endif %}
-                    {% for tag in refs_meta.tags %}
-                        <li><a href="/{{user_name}}/{{repo_name}}/tree/{{tag}}/">{%if branch == refs %}✓{%endif%}{{tag}}</a></li>
-                    {% endfor %}
-                    </ul>
-                </li>
-                <li {% if current == 'tree' or current == 'index' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tree/{{ refs }}/">文件列表</a></li>
-                <li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/">提交信息</a></li>
-                <li {% if current == 'refs_graph' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/refs/graph/{{ refs }}/">分支图</a></li>
-                <!--li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/branches/{{ refs }}/">分支</a></li-->
-                <!--li {% if current == 'tags' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/tags/{{ refs }}/">标签</a></li-->
-                <li {% if current == 'compare' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/compare/{{ refs }}/">Compare</a></li>
-                <li {% if current == 'pull' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/pulls/">合并请求{% if repo_pull_new_count > 0 %} <span class="badge">{{repo_pull_new_count}}</span>{% endif %}</a></li>
-                <li {% if current == 'issues' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/issues/">Issues</a></li>
-                <li {% if current == 'network' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/network/">协同</a></li>
-                <li {% if current == 'clone' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/clone_watch_star/">衍生&amp;关注</a></li>
-                <li {% if current == 'stats' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/stats/">统计</a></li>
-                {% if user.is_authenticated and repo.user_id == user.id %}
-                <li {% if current == 'settings' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/settings/">设置</a></li>
-                {% endif %}
-            </ul>
-    {% block subcontainer %}{% endblock %}
-		</div>
-	</div>
-</div>
+{% block css %}
+	{% if current == 'index' or current == 'tree' or current == 'commits' %}
+		<link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet'>
+		<link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet'>
+	{% endif %}
 {% endblock %}
+
+{% block container_class_name %} bubble bubble-flat repo{% endblock %}
+
+
+{% block container %}
+	<header class="header">
+		<div class="repo-actions-bar">
+			<ul class="repocrumb breadcrumb">
+				<li class="user"><a href="/{{ user_name }}/">{{ user_name }}</a><span class="divider">/</span></li>
+				<li><a href="/{{ user_name }}/{{ repo_name }}/">{{ repo_name }}</a><sup><i class="icon-dropbox"></i></sup></li>
+			</ul>
+			<ul class="repo-actions">
+				<li><a href="#" class="btn btn-mini btn-primary"><i class="icon-random"></i>Compare</a>
+				<li class="btn-group">
+					<a class="btn btn-mini fork first" data-original-title="衍生作为本地仓库" rel="tooltip" href="javascript: void(0)">Pull Request</a>
+					<span class="btn btn-mini count last" title="衍生次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.fork}}</span>
+				</li>
+				<li><a href="#" class="btn btn-mini">Star</a>
+				<li class="btn-group">
+					{% if not is_watched_repo %}
+						<a class="btn btn-mini watch first" data-original-title="Watch" rel="tooltip" href="javascript: void(0)">Watch</a>
+					{% else %}
+						<a class="btn btn-mini unwatch first" data-original-title="Unwatch" rel="tooltip" href="javascript: void(0)">Unwatch</a>
+					{% endif %}
+					<span class="btn btn-mini count last" title="关注次数" href="/{{ user_name }}/{{ repo_name }}/clone_watch/">{{repo.watch}}</span>
+				</li>
+			</ul>
+		</div>
+	</header>
+
+	<section class="colspan">
+		<nav class="sidenav">
+			<ul class="nav nav-list">
+				<li class="first{% if current == 'index' or current == 'tree' %} active{% endif %}"><a href="/{{ user_name }}/{{ repo_name }}/tree/" data-original-title="Code" rel="tooltip"><span><i class="icon-code"></i></span></a></li>
+				<li class="middle{% if current == 'issues' %} active{% endif %}"><a href="/{{ user_name }}/{{ repo_name }}/issues/" data-original-title="Issues" rel="tooltip"><span><i class="icon-bug"></i></span></a></li>
+				<li class="middle{% if current == 'pulls' %} active{% endif %}"><a href="/{{ user_name }}/{{ repo_name }}/pulls/" data-original-title="Pull Request" rel="tooltip"><span><i class="icon-code-fork"></i></span></a></li>
+				<li class="middle"><a href="#" data-original-title="Overview" rel="tooltip"><span><i class="icon-desktop"></i></span></a></li>
+				<li class="middle"><a href="#" data-original-title="Graph" rel="tooltip"><span><i class="icon-th"></i></span></a></li>
+				<li class="last{% if current == 'edit' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/edit/" data-original-title="Setting" rel="tooltip"><span><i class="icon-wrench"></i></span></a></li>
+			</ul>
+		</nav>
+
+		<section class="bubble-inner{% block bubble_inner_class_name %}{% endblock %}">
+
+			{% block cloneurl %}{% endblock %}
+
+			{% if current == 'index' or current == 'tree' or current == 'commits' %}
+				<nav class="repo-tabs nav nav-tabs">
+					<ul class="nav clearfix">
+						<li class="first{% if current == 'index' or current == 'tree' %} active{% endif %}"><a href="/{{ user_name }}/{{ repo_name }}/tree/">Code</a></li>
+						<li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{ user_name }}/{{ repo_name }}/commits/{{ refs }}/">Commit<span class="label label-mini{% if current == 'commits' %} label-success{% endif %}">58</span></a></li>
+						<li><a href="#">Branch<span class="label label-mini">4</span></a></li>
+						<li><a href="#">Tag<span class="label label-mini">2</span></a></li>
+						<li class="last"><a href="#">Graph</a></li>
+					</ul>
+				</nav>
+			{% endif %}
+
+			{% block bubbleheader %}{% endblock %}
+
+			<section class="inner-container">
+				{% block subcontainer %}{% endblock %}
+			</section>
+
+		</section>
+
+	</section>
+
+{% endblock %}
+
+
+
+
 {% block js %}
+<script>
+	$(function(){
+		$('#toggle-arrow').click(
+			function(){
+				$(this).next('.url').slideToggle('fast');
+			}
+		);
+		$('#url').click(
+			function(){
+				$(this).toggleClass('active');
+			}
+		);
+		$('.sidenav a.btn').tooltip();
+	});
+</script>
 <script src="/static/js/moment.min.js"></script>
 <script src="/static/js/moment.zh-cn.js"></script>
 <script>
 /*global jQuery, window */
 $(function(){
     moment.lang('zh-cn');
-    $('#i_git_url').click(function(event) {
+
+    $('.branches .dropdown-toggle').click(function(event) {
         $('#i_git_url').select();
     });
     $('#i_star').click(function() {
@@ -165,109 +121,121 @@ $(function(){
         if(disabled_watch) {
             return false;
         }
-        disabled_watch = true;
-        $.ajax({
-            url: '/{{user_name}}/{{repo_name}}/watch/',
-            type: 'POST',
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-                disabled_watch = false;
-                $('#id_repo_alert').show();
-                $('#id_alert_message').html('网络原因，请求失败，请刷新再次尝试');
-            },
-            success: function(json){
-                if(json.result == 'success') {
-                    window.location = window.location
-                    return true;
-                }
-                $('#id_repo_alert').show();
-                $('#id_alert_message').html(json.message);
-            },
+        var disabled_watch = false;
+        var disabled_fork = false;
+        $('.watch').click(function() {
+            if(disabled_watch) {
+                return false;
+            }
+            disabled_watch = true;
+            $.ajax({
+                url: '/{{user_name}}/{{repo_name}}/watch/',
+                type: 'POST',
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+                dataType: 'json',
+                timeout: 10000,
+                error: function(){
+                    disabled_watch = false;
+                    $('#id_repo_alert').show();
+                    $('#id_alert_message').html('网络原因，请求失败，请刷新再次尝试');
+                },
+                success: function(json){
+                    if(json.result == 'success') {
+                        window.location = window.location
+                        return true;
+                    }
+                    $('#id_repo_alert').show();
+                    $('#id_alert_message').html(json.message);
+                },
+            })
         })
-    })
-    $('#i_unwatch').click(function() {
-        if(disabled_watch) {
-            return false;
-        }
-        disabled_watch = true;
-        $.ajax({
-            url: '/{{user_name}}/{{repo_name}}/unwatch/',
-            type: 'POST',
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-                disabled_watch = false;
-                $('#id_repo_alert').show();
-                $('#id_alert_message').html('网络原因，请求失败，请刷新再次尝试');
-            },
-            success: function(json){
-                if(json.result == 'success') {
-                    window.location = window.location
-                    return true;
-                }
-                $('#id_repo_alert').show();
-                $('#id_alert_message').html(json.message);
-            },
+        $('.unwatch').click(function() {
+            if(disabled_watch) {
+                return false;
+            }
+            disabled_watch = true;
+            $.ajax({
+                url: '/{{user_name}}/{{repo_name}}/unwatch/',
+                type: 'POST',
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+                dataType: 'json',
+                timeout: 10000,
+                error: function(){
+                    disabled_watch = false;
+                    $('#id_repo_alert').show();
+                    $('#id_alert_message').html('网络原因，请求失败，请刷新再次尝试');
+                },
+                success: function(json){
+                    if(json.result == 'success') {
+                        window.location = window.location
+                        return true;
+                    }
+                    $('#id_repo_alert').show();
+                    $('#id_alert_message').html(json.message);
+                },
+            })
         })
-    })
-{% if has_fork_right %}
-    $('#i_fork').click(function() {
-        if(disabled_fork) {
-            return false;
-        }
-        disabled_fork = true;
-        $.ajax({
-            url: '/{{user_name}}/{{repo_name}}/fork/',
-            type: 'POST',
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-                disabled_fork = false;
-                $('#id_repo_alert').show();
-                $('#id_alert_message').html('网络原因，请求失败，请刷新再次尝试');
-            },
-            success: function(json){
-                if(json.result == 'success') {
-                    window.location = '/{{user.username}}/{{repo_name}}/';
-                    return true;
-                }
-                $('#id_repo_alert').show();
-                $('#id_alert_message').html(json.message);
-            },
+    {% if has_fork_right %}
+        $('.fork').click(function() {
+            if(disabled_fork) {
+                return false;
+            }
+            disabled_fork = true;
+            $.ajax({
+                url: '/{{user_name}}/{{repo_name}}/fork/',
+                type: 'POST',
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+                dataType: 'json',
+                timeout: 10000,
+                error: function(){
+                    disabled_fork = false;
+                    $('#id_repo_alert').show();
+                    $('#id_alert_message').html('网络原因，请求失败，请刷新再次尝试');
+                },
+                success: function(json){
+                    if(json.result == 'success') {
+                        window.location = '/{{user.username}}/{{repo_name}}/';
+                        return true;
+                    }
+                    $('#id_repo_alert').show();
+                    $('#id_alert_message').html(json.message);
+                },
+            })
         })
-    })
-{% endif %}
-    var is_refs_mouseover = false;
-    $('.c_repo_action').tooltip({
-        selector: "a[rel=tooltip]"
+    {% endif %}
+        $('.c_repo_action').tooltip({
+            selector: "a[rel=tooltip]"
+        });
+        $('#id_ssh_fork').mouseover(function(event) {
+            $('#id_git_url').html('<input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git"/>');
+            $('#id_read_write').html('读写');
+        });
+        $('#id_http_fork').mouseover(function(event) {
+            $('#id_git_url').html('<input class="input-xlarge focused" value="https://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>');
+            $('#id_read_write').html('读写');
+        });
+        $('#id_git_fork').mouseover(function(event) {
+            $('#id_git_url').html('<input class="input-xlarge focused" value="git://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>');
+            $('#id_read_write').html('只读');
+        });
+    {% if is_owner %}
+        $('#id_repo_desc').live('mouseover mouseout', function(event) {
+            if (event.type == 'mouseover') {
+                $('#id_manage_repo').show();
+            } else {
+                $('#id_manage_repo').hide();
+            }
+        });
+    {% endif %}
+			$('.repo-admin-edit').hide();
+			$('.repo-summary > .description').hover(
+				function(){
+					$('.repo-admin-edit').show();
+				},function(){
+					$('.repo-admin-edit').hide();
+				}
+			);
     });
-    $('#id_ssh_fork').mouseover(function(event) {
-        $('#id_git_url').html('<input class="input-xlarge focused" value="git@gitshell.com:{{ user_name }}/{{ repo_name }}.git"/>');
-        $('#id_read_write').html('读写');
-    });
-    $('#id_http_fork').mouseover(function(event) {
-        $('#id_git_url').html('<input class="input-xlarge focused" value="https://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>');
-        $('#id_read_write').html('读写');
-    });
-    $('#id_git_fork').mouseover(function(event) {
-        $('#id_git_url').html('<input class="input-xlarge focused" value="git://gitshell.com/{{ user_name }}/{{ repo_name }}.git"/>');
-        $('#id_read_write').html('只读');
-    });
-{% if is_owner %}
-    $('#id_repo_desc').live('mouseover mouseout', function(event) {
-        if (event.type == 'mouseover') {
-            $('#id_manage_repo').show();
-        } else {
-            $('#id_manage_repo').hide();
-        }
-    });
-{% endif %}
-
-});
-</script>
-{% block subjs %}{% endblock %}
+    </script>
+    {% block subjs %}{% endblock %}
 {% endblock %}

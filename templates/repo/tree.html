@@ -1,54 +1,141 @@
 {% extends "repo/repo.html" %}
-{% block subcontainer %}
-<div class="file-list">
-    <h4><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">{{repo_name}}</a> /
-        <span id="i_repo_path"></span>
-        <a style="margin-left: 5px" href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="pull-right"><span class="label label-info">历史</span></a>
-    </h4>
-    <style>
-        table { table-layout: fixed; }
-        table th, table td { overflow: hidden; }
-    </style>
-	<table class="table table-striped">
-			<thead class="fixed">
-			  <tr>
-				<th width="20%">名称</th>
-				<th width="10%">时间</th>
-				<th>日志</th>
-			  </tr>
-			</thead>
-			<tbody>
-            {% if not tree %}
-			  <tr>
-				<td colspan="3">
-                    没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码
-				<td>
-			  <tr>
-            {% endif %}
-            {% for file, attrs in tree.items %}
-			  <tr>
-				<td>
-                {% if attrs.0 == 'tree' %}
-                    <i class="icon-folder-open"></i>
-                    <a href="/{{user_name}}/{{repo_name}}/tree/{{ refs }}/{%if path != '.' %}{{ path }}{%endif%}{{ file }}" title="{{ file }}">{{ file }}</a>
-                {% else %}
-                    <i class="icon-file"></i> 
-                    <a href="/{{user_name}}/{{repo_name}}/blob/{{ refs }}/{%if path != '.' %}{{ path }}{%endif%}{{ file }}" title="{{ file }}">{{ file }}</a>
-                {% endif %}
-                </td>
-				<td><span class="c_unixtime hide">{{ attrs.2 }}</span></td>
-				<td>{{ attrs.4 }} [<a href="/{{attrs.3}}/">{{attrs.3}}</a>]</td>
-			  </tr>
-            {% endfor %}
-			</tbody>
-	</table>
-    {% if readme_md %}
-    <div>
-        <pre id="id_readme_md" style="margin-top: 12px">{{ readme_md }}</pre>
-    </div>
-    {% endif %}
-</div>		  
+
+{% block css %}
+	<link href="/static/css/app/highlight/github.css" rel="stylesheet">
 {% endblock %}
+
+{% block bubble_inner_class_name %} files{% endblock %}
+
+{% block cloneurl %}
+
+		<div class="description well">
+			<p>{{repo.desc|truncatechars:80}} <a href="#README.md">Read More</a></p>
+		</div>
+
+		<div class="url-container clearfix{% if current == 'index' or current == 'tree' %} visible{%else%} hide{%endif%}">
+			{% if repo.status != 0 %}
+				<p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
+			{% endif %}
+			{% if has_fork_right %}
+				<dl class="url colspan">
+					<dt class="btn-group span">
+						{% if is_repo_member %}
+							<span class="first"><a id="id_ssh_fork" class="url-select btn">SSH</a></span>
+						{% endif %}
+							<span class="middle"><a id="id_http_fork" class="active url-select btn">HTTP</a></span>
+						{% if repo.auth_type == 0 %}
+							<span class="middle"><a id="id_git_fork" class="url-select btn">GIT</a></span>
+						{% endif %}
+					</dt>
+					<dd class="url-holder btn-group span">
+						{% if is_repo_member %}
+						<span class="middle">
+							<span class="url-data btn" id="url"><span class="url-git">git</span>@<span class="url-gitshell">gitshell.com</span>:<span class="url-username">{{ user_name }}</span>/<span class="url-repo-name">{{ repo_name }}</span>.git</span>
+						</span>
+						{% elif repo.auth_type == 0 %}
+						<span class="middle">
+							<span class="url-data btn"><span class="url-git">https://</span><span class="url-gitshell">gitshell.com</span>/<span class="url-username">{{ user_name }}</span>/<span class="url-repo-name">{{ repo_name }}</span>.git</span>
+						</span>
+						{% endif %}
+						<span class="last">
+							<span class="clipboard url-select btn"><a class="url-js-copy"><i class="icon-copy"></i>复制</a></span>
+						</span>
+						<span class="meta url-info">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>
+					</dd>
+				</dl>
+			{% endif %}
+		</div>
+
+{% endblock %}
+
+{% block subcontainer %}
+		<header class="header clearfix">
+			<div class="clearfix pull-left">
+				<div class="branches dropdown">
+					<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle btn btn-mini">
+						<span class="dropdown-toggle-inner">
+							<span class="branch">Branch:</span>
+							<span class="branch-name">{{ refs }}</span>
+							<i class="icon-caret-down"></i>
+						</span>
+					</a>
+					<nav class="dropdown-menu">
+						<ul class="nav nav-list">
+							<li class="master"><a href="/repo/{{branch}}/"><span>master</span></a></li>
+							<li><a href="/repo/{{branch}}/"><span>template_yuwen_0522</span></a></li>
+							<li><a href="/repo/{{branch}}/"><span>blueStyle</span></a></li>
+							<li class="active"><a href="/repo/{{branch}}/"><i class="icon-ok"></i><span>flatUI</span></a></li>
+						</ul>
+					</nav>
+				</div>
+				<span class="current-branch-name"><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">{{repo_name}}</a></span>
+			</div>
+			<span class="pull-right">
+				<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="btn btn-mini">Commits</a>
+				{% if not is_tree %}
+					<a href="/{{user_name}}/{{repo_name}}/raw/tree/{{refs}}/{{path}}" class="btn btn-mini">原始文件</a>
+				{% endif %}
+			</span>
+    </header>
+
+    {% if is_tree %}
+
+				<table class="table">
+					<tbody>
+						{% if not tree %}
+							<tr>
+								<td><p class="info text-error"><i class="icon-bell"></i>没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码。</p></td>
+							</tr>
+						{% endif %}
+
+						{% for file, attrs in tree.items %}
+							<tr>
+								<td class="icon">
+									{% if attrs.0 == 'tree' %}
+										<i class=""><img src="/static/img/file_dir.png" alt="dir"></i>
+									{% else %}
+										<i class=""><img src="/static/img/file_txt.png" alt="txt"></i> 
+									{% endif %}
+								</td>
+								<td class="file-name">
+									{% if current == 'index' %}
+										<a href="tree/{{ refs }}/{{ file }}" title="{{ file }}">{{ file }}</a>
+									{% else %}
+										<a href="{{ file }}" title="{{ file }}">{{ file }}</a>
+									{% endif %}
+								</td>
+								<td class="commit-info">
+									{% if attrs.4|length > 80 %}
+										<a href="#" data-toggle="popover" data-content="{{attrs.4}}" data-placement="bottom" class="commit">{{ attrs.4|truncatechars:80 }}</a>
+									{% else %}
+										<a href="#" class="commit">{{ attrs.4 }}</a>
+									{% endif %}
+									<a href="/{{attrs.3}}/" class="commiter">@{{attrs.3}}</a>
+								<td class="date">
+									<span class="date unixtime">{{ attrs.2 }}</span></td>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+
+    {% else %}
+
+			<section class="repo">
+				{% if not blob %}
+				<p class="info"><i class="icon-bell"></i>没有源代码、二进制文件; 或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码。</p>
+				{% else %}
+					{% if is_markdown %}
+						<pre><code id="id_markdown_content">{{ blob }}</code></pre>
+					{% else %}
+						<pre><code class="{{ brush }}">{{ blob }}</code></pre>
+					{% endif %}
+				{% endif %}
+			</section>
+
+    {% endif %}
+{% endblock %}
+
 {% block subjs %}
 {% if is_markdown or readme_md %}
 <script src="/static/js/Markdown.Converter.js"></script>
@@ -57,46 +144,57 @@
 {% endif %}
 <script>
 $(function(){
-    $('.c_unixtime').each(function(index){ 
-        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-        $(this).show();
-    });
-    set_path_href = function() {
-        var base_href_path = '/{{user_name}}/{{repo_name}}/tree/{{refs}}/';
-        var path = '{{path}}';
-        if(path == '.') {
-            return;
-        }
-        var paths = path.split('/');
-        path_href_html = '';
-        for(x in paths) {
-            subpath = paths[x];
-            if(subpath == '') {
-                break;
-            }
-            base_href_path = (base_href_path + subpath + '/');
-            if(path.substr(-1) === "/") {
-                if(x != (paths.length-2)) {
-                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
-                } else {
-                    path_href_html = (path_href_html + ' ' + subpath + ' /');
-                }
-            } else {
-                if(x != (paths.length-1)) {
-                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
-                } else {
-                    path_href_html = (path_href_html + ' ' + subpath);
-                }
-            }
-        }
-        $('#i_repo_path').html(path_href_html);
-    };
-    set_path_href();
-{% if readme_md %}
-    var converter = new Markdown.getSanitizingConverter();
-    var html = converter.makeHtml($('#id_readme_md').html());
-    $('#id_readme_md').html(html);
-{% endif %}
+			set_path_href = function() {
+					var base_href_path = '/{{user_name}}/{{repo_name}}/tree/{{refs}}/';
+					var path = '{{path}}';
+					if(path == '.') {
+							return;
+					}
+					var paths = path.split('/');
+					path_href_html = '';
+					for(x in paths) {
+							subpath = paths[x];
+							if(subpath == '') {
+							}
+							base_href_path = (base_href_path + subpath + '/');
+							if(path.substr(-1) === "/") {
+									if(x != (paths.length-2)) {
+											path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+									} else {
+											path_href_html = (path_href_html + ' ' + subpath + ' /');
+									}
+							} else {
+									if(x != (paths.length-1)) {
+											path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+									} else {
+											path_href_html = (path_href_html + ' ' + subpath);
+									}
+							}
+					}
+					$('#i_repo_path').html(path_href_html);
+			};
+			set_path_href();
+	{% if not is_tree and not is_markdown %}
+			$('pre code').each(function(i, e) {hljs.highlightBlock(e)});
+	{% endif %}
+	{% if is_markdown %}
+			var converter = new Markdown.getSanitizingConverter();
+			var html = converter.makeHtml($('#id_markdown_content').html());
+			$('#id_markdown_content').html(html);
+			$('#id_markdown_content').show();
+	{% endif %}
+    {% if readme_md %}
+        var converter = new Markdown.getSanitizingConverter();
+        var html = converter.makeHtml($('#id_readme_md').html());
+        $('#id_readme_md').html(html);
+    {% endif %}
+
+		$('[data-toggle="popover"]').hover(function(){
+			$(this).popover('show');
+		}, function(){
+			$(this).popover('hide');
+		});
 });
 </script>
+
 {% endblock %}
