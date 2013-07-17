@@ -4,50 +4,48 @@
 
 
 {% block subcontainer %}
-	<nav class="sidebar pull-left">
+	<nav class="sidebar">
 		<h1 class="heading">Issues</h1>
 		{% include "repo/condition.html" %}
 	</nav>
 
-	<div class="issue-list pull-right">
-	<div class="hide btn-group clearfix">
-		{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn first">更新</a>{%else%}<span class="btn btn-disable">更新</span>{%endif%}
-		{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn last">创建</a>{%else%}<span class="btn btn-disable">创建</span>{%endif%}
-	</div>
-	{% for issue in issues %}
-	<div class="issue colspan">
-		<figure class="avatar span">
-			<img src="https://gravatar.com/avatar/{{ issue.user_id }}/?s=35" alt="{{issue.user_id}}">
-		</figure>
-		<div class="data span clearfix">
-			<h4 class="heading">
+	<section class="issue-list">
+		<header class="header">
+			<h1 class="heading">Gitshell Issues</h1>
+			<div class="">
+				<a href="#">创建Issue</a>
+			</div>
+		</header>
+		<div class="hide btn-group clearfix">
+			{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn first">更新</a>{%else%}<span class="btn btn-disable">更新</span>{%endif%}
+			{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn last">创建</a>{%else%}<span class="btn btn-disable">创建</span>{%endif%}
+		</div>
+		{% for issue in issues %}
+		<div class="issue">
+			<figure class="avatar span">
+				<img src="https://gravatar.com/avatar/{{ issue.user_id }}/?s=18" alt="{{issue.user_id}}">
+			</figure>
+			<div class="data">
 				<span class="issue-id">#{{issue.id}}</span>
 				<a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/" class="txt">{{issue.subject|truncatechars:100}}</a>
-			</h4>
-			{% if user.id == repo.user_id %}
-				<a href="javascript: void(0)" rel="tooltip" data-original-title="拖动到上面做属性更改"><i class="icon-ellipsis-vertical"></i></a>
-			{% else %}
-				<a href="javascript: void(0)" rel="tooltip"><i class="icon-ellipsis-vertical"></i></a>
-			{% endif %}
-			<span class="unixtime date">{%if orderby == 'modify_time'%}{{issue.modify_time}}{%else%}{{issue.create_time}}{%endif%}</span>
+				<span class="unixtime date">{%if orderby == 'modify_time'%}{{issue.modify_time}}{%else%}{{issue.create_time}}{%endif%}</span>
+			</div>
 		</div>
-	</div>
-	{% endfor %}
-	{% if not issues %}
-		<div class="issue"><p class="info text-warning">没有Issues，或者没有查看Issues权限，半公开和私有项目需要申请成为成员才能查看Issues</p></div>
-	{% endif %}
-</div>
-
-	<footer class="footer">
-		<nav class="pagination">
-			<ul class="nav">
-				<li><a id="i_index_page" href="javascript:void(0)"><i class="icon-home"></i>首页</a></li>
-				<li><a id="i_pre_page" href="javascript:void(0)">前一页</a></li>
-				<li class="active">第{{page}}页</li>
-				<li><a id="i_next_page" href="javascript:void(0)">后一页</a></li>
-			</ul>
-		</nav>
-	</footer>
+		{% endfor %}
+		{% if not issues %}
+			<div class="issue"><p class="info text-warning">没有Issues，或者没有查看Issues权限，半公开和私有项目需要申请成为成员才能查看Issues</p></div>
+		{% endif %}
+		<footer class="footer">
+			<nav class="pagination">
+				<p class="nav">
+					<a id="i_index_page" href="javascript:void(0)"><i class="icon-home"></i>首页</a>
+					<a id="i_pre_page" href="javascript:void(0)">前一页</a>
+					<a class="active">第{{page}}页</span>
+					<a id="i_next_page" href="javascript:void(0)">后一页</a>
+				</p>
+			</nav>
+		</footer>
+	</section>
 
 {% endblock %}
 

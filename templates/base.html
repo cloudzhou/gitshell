@@ -32,17 +32,35 @@
 				</ul>
 				<ul class="nav account">
 					{% if user.is_authenticated %}
-						<li class="notifications"><a href="#" class="label label-warning">6</a></li>
+						<li class="notification"><a href="#" class="label label-warning">6</a></li>
 						<li class="dropdown{%if mainnav == 'user'%} active{%endif%}">
 							<a href="/{{ user.username }}/" class="user dropdown-toggle" data-toggle="dropdown" data-target="#">
 								<img class="avatar" src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=35" alt="{{ user.username }}">
 							</a>
 							<div class="dropdown-menu" role="menu" aria-labelladby="dLable">
-								<h2>{{ user.username }}</h2>
-								<p class="email">{{ user.email }}</p>
+								<div class="info">
+									<header class="header">
+										<h1 class="heading"><a href="/{{ user.username }}/" id="username">{{ user.username }}<i class="userid"><img src="/static/img/icons/id-user.png" alt=""></i></a></h1>
+										<p class="email">{{ user.email }}</p>
+									</header>
+									<ul class="unstyledList repo-count">
+										<li>
+											<h4>仓库数<span class="used">{{userprofile.get_total_repo}}</span><span class="divider">/</span><span class="capacity">100</span></h4>
+											<div class="progress">
+												<span id="id_repo_count" class="bar" style="width: 18%;"></span>
+											</div>
+										</li>
+										<li>
+											<h4>仓库配额<span class="used">{{userprofile.used_quote}}</span><span class="divider">/</span><span class="capacity">{{userprofile.quote}}</span></h4>
+											<div class="progress progress-danger">
+												<span id="id_quote_used" class="bar" style="width: 6%;"></span>
+											</div>
+										</li>
+									</ul>
+								</div>
 								<ul class="nav nav-list">
 									<li><a href="/settings/"><span><i class="icon-wrench"></i>设置</span></a></li>
-									<li><a href="/logout/"><span><i class="icon-off"></i>登出</span></a></li>
+									<li><a href="/logout/" class="logout"><span><i class="icon-off"></i>登出</span></a></li>
 								</ul>
 							</div>
 						</li>
@@ -60,13 +78,13 @@
 			{% block container %}{% endblock %}
 		</section>
 
-		<footer class="footer">
+		<footer id="footer">
 			<div class="container">
 				<nav class="nav">
 					<a href="/help/#about" class="about-gitshell">关于GitShell<i class="icon-sort"></i></a>
 					<a href="/help/#mission">我们的愿景</a>
 					<a href="/help/#faq">FAQ</a>
-					<a href="/help/#join_login" class="free-join">注册<sup>免费</sup></a>
+					<a href="/help/#join_login" class="free-join">注册</a>
 					<a href="/help/" class="help">帮助</a>
 					<a target="_blank" href="http://blog.gitshell.com">官方博客</a>
 					<a href="/help/#contact">联系GitShell</a>
@@ -82,11 +100,23 @@
 		<script src="/static/js/select2.min.js"></script>
 		<script>
 			$(function(){
+
 				$('.unixtime').each(function(index){ 
 					$(this).html(moment(new Date($(this).html()*1000)).fromNow());
 					$(this).show();
 				});
+
 				$('.dropdown-toggle').dropdown();
+
+				$("#username").live({
+					mouseover: function(){
+						$(this).find(".userid").show();
+					},
+					mouseout: function(){
+						$(this).find(".userid").hide();
+					}
+				});
+
 			});
 		</script>
 		{% block js %}{% endblock %}

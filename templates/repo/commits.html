@@ -7,12 +7,6 @@
 {% block bubble_inner_class_name %} commits{% endblock %}
 
 {% block subcontainer %}
-		<header class="header">
-			<ul class="breadcrumb">
-				<li><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">{{repo_name}}</a><span class="divider"></span></li>
-				<li class="active">Commits</li>
-			</ul>
-		</header>
 
 		{% for commit_attrs in commits %}
 			<div class="commit colspan">
@@ -29,15 +23,24 @@
 
 		{% if not commits %}
 			<div class="commit">
-				<p class="info text-error"><i class="icon-bell"></i>没有提交信息，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
+				<p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有提交信息，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
 			</div>
 		{% endif %}
 
 		<footer class="footer">
 			<nav class="pagination">
-				<h2>Pagination</h2>
-				<ul class="nav">
-				</ul>
+				<p class="nav">
+					<a href="#"><img src="/static/img/icons/pagination-previous.png" alt="">上一页</a>
+					<a href="#">1</a>
+					<a href="#">2</a>
+					<a href="#">3</a>
+					<a href="#">4</a>
+					<a href="#">5</a>
+					<a href="#">6</a>
+					<a href="#">7</a>
+					<a href="#">8</a>
+					<a href="#">下一页<img src="/static/img/icons/pagination-next.png" alt=""></a>
+				</p>
 			</nav>
 		</footer>
 

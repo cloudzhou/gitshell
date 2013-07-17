@@ -12,7 +12,7 @@
 			<p>{{repo.desc|truncatechars:80}} <a href="#README.md">Read More</a></p>
 		</div>
 
-		<div class="url-container clearfix{% if current == 'index' or current == 'tree' %} visible{%else%} hide{%endif%}">
+		<div class="url-container hide clearfix{% if current == 'index' or current == 'tree' %} visible{%else%} hide{%endif%}">
 			{% if repo.status != 0 %}
 				<p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
 			{% endif %}
@@ -49,68 +49,79 @@
 {% endblock %}
 
 {% block subcontainer %}
-		<header class="header clearfix">
-			<div class="clearfix pull-left">
-				<div class="branches dropdown">
-					<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle btn btn-mini">
-						<span class="dropdown-toggle-inner">
-							<span class="branch">Branch:</span>
-							<span class="branch-name">{{ refs }}</span>
-							<i class="icon-caret-down"></i>
-						</span>
-					</a>
-					<nav class="dropdown-menu">
-						<ul class="nav nav-list">
-							<li class="master"><a href="/repo/{{branch}}/"><span>master</span></a></li>
-							<li><a href="/repo/{{branch}}/"><span>template_yuwen_0522</span></a></li>
-							<li><a href="/repo/{{branch}}/"><span>blueStyle</span></a></li>
-							<li class="active"><a href="/repo/{{branch}}/"><i class="icon-ok"></i><span>flatUI</span></a></li>
-						</ul>
-					</nav>
-				</div>
-				<span class="current-branch-name"><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">{{repo_name}}</a></span>
-			</div>
-			<span class="pull-right">
-				<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="btn btn-mini">Commits</a>
-				{% if not is_tree %}
-					<a href="/{{user_name}}/{{repo_name}}/raw/tree/{{refs}}/{{path}}" class="btn btn-mini">原始文件</a>
-				{% endif %}
-			</span>
-    </header>
 
-    {% if is_tree %}
+	{% if is_tree %}
 		<div class="tree">
-			<ul class="nav nav-list">
-				{% for file, attrs in tree.items %}
-					{% if attrs.0 == 'tree' %}
-					<li>
-						<i class=""><img src="/static/img/file_dir.png" alt="dir"></i><a href="{{ file }}">{{ file }}</a>
-						<ul class="nav nav-list">
-							<li><a href="#">dir 1</a></li>
-							<li><a href="#">dir 2</a></li>
-							<li><a href="#">file 1</a></li>
-						</ul>
-					</li>
-					{% else %}
-					<li><i class=""><img src="/static/img/file_txt.png" alt="txt"></i><a href="#">{{ file }}</a></li>
-					{% endif %}
-				{% endfor %}
-			</ul>
+			<nav class="file-browser">
+				<div class="branches dropdown">
+					<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle btn-group">
+						<span class="branch btn btn-mini first">
+							<i class="icon-code-fork"></i>
+							<span class="branch-name">{{ refs }}</span>
+						</span>
+						<span class="btn btn-mini last"><i class="icon-caret-down"></i></span>
+					</a>
+					<ul class="dropdown-menu nav nav-list">
+						<li class="master"><a href="/repo/{{branch}}/"><span>master</span></a></li>
+						<li><a href="/repo/{{branch}}/"><span>template_yuwen_0522</span></a></li>
+						<li><a href="/repo/{{branch}}/"><span>blueStyle</span></a></li>
+						<li class="active"><a href="/repo/{{branch}}/"><i class="icon-ok"></i><span>flatUI</span></a></li>
+					</ul>
+				</div>
+				<ul class="nav nav-list">
+					{% for file, attrs in tree.items %}
+						{% if attrs.0 == 'tree' %}
+						<li class="file-browser">
+							<a href="{{ file }}" class="browser-toggle">
+								<figure class="file-icon dir">
+									<span class="fold-collapsed"><img src="/static/img/icons/Folding-Collapsed.png" alt=""></span>
+									<span class="fold"><img src="/static/img/file_dir.png" alt="dir"></span>
+								</figure>{{ file }}<i class="icon-expand-alt"></i>
+							</a>
+							<ul class="nav nav-list">
+								<li class="file-browser"><a href="#">
+									<figure class="file-icon dir">
+										<span class="fold-collapsed"><img src="/static/img/icons/Folding-Collapsed.png" alt=""></span>
+										<span class="fold"><img src="/static/img/file_dir.png" alt=""></span>
+									</figure>dir 1</a></li>
+								<li><a href="#"><figure class="file-icon dir"><img src="/static/img/file_txt.png" alt=""></figure>file 1</a></li>
+								<li><a href="#"><figure class="file-icon dir"><img src="/static/img/file_txt.png" alt=""></figure>file 2</a></li>
+							</ul>
+						</li>
+						{% else %}
+							<li><a href="#"><figure class="file-icon file"><img src="/static/img/file_txt.png" alt="txt"></figure>{{ file }}</a></li>
+						{% endif %}
+					{% endfor %}
+				</ul>
+			</nav>
 
 			<div class="table-container">
-				<a href="#">Toggle Color Scheme</a>
+				<div class="theme-selector">
+					<div class="switcher"><a href="#" id="switch-toggle">Color Scheme</a></div>
+					<ul class="theme-list clearfix" id="themes">
+						<li class="active"><a href="#">Default</a></li>
+						<li><a href="#">Github</a></li>
+						<li><a href="#">Sunburst</a></li>
+						<li><a href="#">Solarized</a></li>
+						<li><a href="#">Mustang</a></li>
+						<li><a href="#">Twilight</a></li>
+						<li><a href="#">Mac Classic</a></li>
+						<li><a href="#">Google Code</a></li>
+						<li><a href="#">xCode</a></li>
+						<li><a href="#">Tomorrow</a></li>
+						<li><a href="#">Zenburt</a></li>
+					</ul>
+				</div>
 				<table class="table">
 					<tbody>
 						{% if not tree %}
 							<tr>
-								<td><p class="info text-error"><i class="icon-bell"></i>没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码。</p></td>
+								<td><p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码。</p></td>
 							</tr>
 						{% endif %}
 
 						{% for file, attrs in tree.items %}
 							<tr>
-								<td class="icon">
-								</td>
 								<td class="file-name">
 									{% if current == 'index' %}
 										<a href="tree/{{ refs }}/{{ file }}" title="{{ file }}">{{ file }}</a>
@@ -138,7 +149,7 @@
 
 			<section class="repo">
 				{% if not blob %}
-				<p class="info"><i class="icon-bell"></i>没有源代码、二进制文件; 或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码。</p>
+				<p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有源代码、二进制文件; 或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码。</p>
 				{% else %}
 					{% if is_markdown %}
 						<pre><code id="id_markdown_content">{{ blob }}</code></pre>
@@ -209,12 +220,37 @@
 			$('#id_markdown_content').show();
 	{% endif %}
 
+	var fileBrowserToggle = $('.tree .browser-toggle');
+	var fileBrowserNav = fileBrowserToggle.next('.nav');
+			fileBrowserNav.hide();
 
-		$('[data-toggle="popover"]').hover(function(){
+	fileBrowserToggle.live({
+		mouseover: function() {
+			$(this).find('i[class^="icon-"]').addClass('current');
+		},
+		mouseout: function() {
+			$(this).find('i[class^="icon-"]').removeClass('current');
+		},
+		click: function(e) {
+			e.preventDefault();
+			$(this).find('.fold-collapsed').toggleClass('active').end().next('.nav').toggle();
+		}
+	});
+
+	var switchToggle = $("#switch-toggle");
+	var themes = $("#themes");
+
+	switchToggle.click(
+		function(){ themes.slideToggle(100);}
+	);
+
+	$('[data-toggle="popover"]').hover(
+		function(){
 			$(this).popover('show');
 		}, function(){
 			$(this).popover('hide');
-		});
+		}
+	);
 
 
 	});
