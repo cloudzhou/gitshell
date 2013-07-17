@@ -6,13 +6,14 @@ from datetime import datetime
 import base64, hashlib, urlparse
 from subprocess import Popen
 from subprocess import PIPE
+from gitshell.settings import logger
 
 SECRET_KEY = 'git424953shell'
 REMOTE_HOST = 'gitshell.com'
 REMOTE_PORT = 443
 
 def start():
-    print '==================== START ===================='
+    logger.info('==================== START dropbox_sync_repo ====================')
     gitshell_connection = None
     try:
         gitshell_connection = httplib.HTTPSConnection(REMOTE_HOST, REMOTE_PORT, timeout=10)
@@ -28,10 +29,10 @@ def start():
                 for repo in repos:
                     do_repo(repo)
     except Exception, e:
-        print 'exception: %s' % e
+        logger.exception(e)
     finally:
         if gitshell_connection: gitshell_connection.close()
-    print '==================== END ===================='
+    logger.info('==================== END dropbox_sync_repo ====================')
 
 def do_repo(repo):
     id = str(repo['id'])

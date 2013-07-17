@@ -127,7 +127,7 @@ class FeedManager():
                 notifMessage.relative_obj = issue
             elif notifMessage.is_at_issue_comment():
                 issue_comment = IssueManager.get_issue_comment(notifMessage.relative_id)
-                issue = RepoManager.get_issue_by_id(issue_comment.issue_id)
+                issue = IssueManager.get_issue_by_id(issue_comment.issue_id)
                 if issue is not None:
                     repo = RepoManager.get_repo_by_id(issue.repo_id)
                     if repo is not None:

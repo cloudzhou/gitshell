@@ -22,6 +22,7 @@ from gitshell.repo.models import RepoManager
 from gitshell.stats.models import StatsManager
 from gitshell.feed.feed import FeedAction
 from gitshell.stats import timeutils
+from gitshell.settings import logger
 from gitshell.feed.views import get_feeds_as_json
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo
@@ -505,8 +506,8 @@ def _create_user_and_authenticate(request, username, email, password):
     user = None
     try:
         user = User.objects.create_user(username, email, password)
-    except IntegrityError:
-        print 'user IntegrityError'
+    except IntegrityError, e:
+        logger.exception(e)
         return False
     if user is not None and user.is_active:
         user = auth_authenticate(username=user.username, password=password)

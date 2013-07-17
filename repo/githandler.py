@@ -7,7 +7,7 @@ from subprocess import check_output, Popen, PIPE
 from chardet.universaldetector import UniversalDetector
 from gitshell.objectscache.models import CacheKey
 from gitshell.viewtools.views import json_httpResponse
-from gitshell.settings import PULLREQUEST_REPO_PATH
+from gitshell.settings import PULLREQUEST_REPO_PATH, logger
 """
 git ls-tree `cat .git/refs/heads/master` -- githooks/
 git log -1 --pretty='%ct %s' -- githooks/
@@ -63,8 +63,8 @@ class GitHandler():
             self._dumps_write_stage_file({'blob': result}, stage_file)
             return result
         except Exception, e:
-            print e
-            return None
+            logger.exception(e)
+        return None
     
     def repo_log_file(self, repo_path, from_commit_hash, commit_hash, path):
         (from_commit_hash, commit_hash, path) = self._all_to_utf8(from_commit_hash, commit_hash, path)
@@ -100,7 +100,7 @@ class GitHandler():
             self._dumps_write_stage_file({'diff': diff}, stage_file)
             return diff
         except Exception, e:
-            print e
+            logger.exception(e)
         return {}
 
     def repo_log_graph(self, repo, repo_path, commit_hash):
@@ -118,7 +118,7 @@ class GitHandler():
             self._dumps_write_stage_file(log_graph_json, stage_file)
             return log_graph_json
         except Exception, e:
-            print e
+            logger.exception(e)
         return {'log_graph': ''}
         
     def repo_ls_refs(self, repo, repo_path):
@@ -154,7 +154,7 @@ class GitHandler():
             output = popen.communicate()[0].strip()
             return popen.returncode == 0
         except Exception, e:
-            print e
+            logger.exception(e)
         return False
 
     def merge_pull_request(self, source_repo, desc_repo, source_refs, desc_refs, merge_commit_message):
@@ -173,7 +173,7 @@ class GitHandler():
             output = popen.communicate()[0].strip()
             return (popen.returncode, output)
         except Exception, e:
-            print e
+            logger.exception(e)
         return (128, '合并失败，请检查是否存在冲突 或者 non-fast-forward')
 
     def update_server_info(self, repo):
@@ -186,7 +186,7 @@ class GitHandler():
                 output = popen.communicate()[0].strip()
                 return popen.returncode == 0
             except Exception, e:
-                print e
+                logger.exception(e)
             return False
 
     def _repo_load_log_file(self, from_commit_hash, commit_hash, path):
@@ -217,8 +217,8 @@ class GitHandler():
                 })
             return commits
         except Exception, e:
-            print e
-            return None
+            logger.exception(e)
+        return None
     
     def _ls_tree_check_output(self, commit_hash, path):
         command = '/usr/bin/git ls-tree %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
@@ -263,9 +263,8 @@ class GitHandler():
                     result[relative_path].append(last_commit_message)
             return result
         except Exception, e:
-            traceback.print_exc(file=sys.stdout)
-            print e
-            return None
+            logger.exception(e)
+        return None
 
     def _get_diff_stage_file(self, repo_path, pre_commit_hash, commit_hash, context, path):
         (username, reponame) = repo_path.split('/')[-2:]
@@ -286,10 +285,10 @@ class GitHandler():
                 result = json.load(json_data)
                 return result
             except Exception, e:
-                print e
-                return None
+                logger.exception(e)
             finally:
                 json_data.close()
+        return None
 
     def _dumps_write_stage_file(self, result, stage_file):
         if result is None:
@@ -305,7 +304,7 @@ class GitHandler():
             stage_file_w.flush()
             shutil.move(stage_file_tmp, stage_file)
         except Exception, e:
-            print e
+            logger.exception(e)
         finally:
             if os.path.exists(stage_file_tmp):
                 os.remove(stage_file_tmp)
@@ -425,8 +424,7 @@ class GitHandler():
                     'commit_message': commit_message,
                 }
         except Exception, e:
-            traceback.print_exc(file=sys.stdout)
-            print e
+            logger.exception(e)
         meta['detail_commit'] = refs_detail_commit
 
     def _get_repo_meta_by_cache(self, repo):
@@ -485,8 +483,8 @@ class GitHandler():
             os.chdir(path)
             return True
         except Exception, e:
-            print e
-            return False
+            logger.exception(e)
+        return False
 
     def _all_to_utf8(self, *args):
         return tuple([x.encode('utf8') if x is not None and isinstance(x, unicode) else x for x in args])

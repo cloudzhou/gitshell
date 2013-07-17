@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-  
-import os, re
+import os, re, sys
 import json, time, urllib
 import shutil, copy, random
 from datetime import datetime, timedelta
@@ -22,7 +22,7 @@ from gitshell.gsuser.models import GsuserManager
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
-from gitshell.settings import SECRET_KEY, REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, PULLREQUEST_REPO_PATH
+from gitshell.settings import SECRET_KEY, REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, PULLREQUEST_REPO_PATH, logger
 from gitshell.daemon.models import EventManager
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.gsuser.middleware import KEEP_REPO_NAME
@@ -376,7 +376,6 @@ def pull_diff(request, user_name, repo_name, source_username, source_refs, desc_
     desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
     if repo is None or source_repo is None or desc_repo is None:
         return json_httpResponse({'diff': {}, 'result': 'failed'})
-    pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.username, desc_repo.name)
     if not _has_pull_right(request, source_repo, desc_repo):
         return json_httpResponse({'diff': {}, 'result': 'failed'})
 
@@ -969,7 +968,7 @@ def __is_url_valid(url):
         validator(url)
         return True
     except ValidationError, e:
-        print e
+        logger.exception(e)
     return False
     
 @repo_permission_check

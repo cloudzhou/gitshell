@@ -8,14 +8,14 @@ from subprocess import PIPE
 from gitshell.repo.models import RepoManager
 from gitshell.gsuser.models import GsuserManager
 from gitshell.daemon.models import EventManager, IMPORT_REPO_TUBE_NAME
-from gitshell.settings import GIT_BARE_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
+from gitshell.settings import GIT_BARE_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT, logger
 from django.db.models.signals import post_save, post_delete
 from gitshell.objectscache.da import da_post_save
 
 TOTAL_THREAD_COUNT = 10
 
 def start():
-    print '==================== START ===================='
+    logger.info('==================== START importrepoworker ====================')
     import_repo_threads = []
     for i in range(0, TOTAL_THREAD_COUNT):
         import_repo_threads.append(ImportRepoThread())
@@ -23,12 +23,12 @@ def start():
         import_repo_thread.start()
     for import_repo_thread in import_repo_threads:
         import_repo_thread.join()
-    print '==================== STOP ===================='
+    logger.info('==================== STOP importrepoworker ====================')
 
 def stop():
     for i in range(0, TOTAL_THREAD_COUNT):
         EventManager.send_stop_event(IMPORT_REPO_TUBE_NAME)
-    print 'send stop event message...'
+    logger.info('send stop event message...')
 
 class ImportRepoThread(threading.Thread):
 
@@ -39,15 +39,14 @@ class ImportRepoThread(threading.Thread):
             event_job = beanstalk.reserve()
             try:
                 event = json.loads(event_job.body)
-                print event
                 # exit signal
                 if event['type'] == -1:
                     event_job.delete()
                     sys.exit(0)
                 self._do_event(event)
             except Exception, e:
-                print 'do_event catch except, event: %s' % event_job.body
-                print 'exception: %s' % e
+                logger.info('do_event catch except, event: %s' % event_job.body)
+                logger.exception(e)
             event_job.delete()
 
     # import from remote git url, like github
@@ -79,7 +78,7 @@ class ImportRepoThread(threading.Thread):
         except Exception, e:
             local_repo.status = 500
             local_repo.save()
-            print e
+            logger.exception(e)
         RepoManager.check_export_ok_file(local_repo)
     
 def __cache_version_update(sender, **kwargs):

@@ -3,6 +3,7 @@ import base64
 from django.core.cache import cache
 from django.db import connection, transaction
 from gitshell.objectscache.models import Count
+from gitshell.settings import logger
 from django.db.models.signals import post_save, post_delete
 import time
 
@@ -167,8 +168,8 @@ def __get(model, pkid, only_visibly):
         cache.add(id_key, obj)
         return obj
     except Exception, e:
-        print 'exception: %s' % e
-        return None
+        logger.exception(e)
+    return None
 
 def get_many(model, pkids):
     return __get_many(model, pkids, True)
@@ -194,8 +195,7 @@ def __get_many(model, pkids, only_visibly):
             else:
                 objects = model.objects.filter(id__in=uncache_ids)
         except Exception, e:
-            print 'exception: %s' % e
-            pass
+            logger.exception(e)
         __add_many(table, objects)
         many_objects.extend(objects)
     objects_map = dict([(x.id, x) for x in many_objects])
@@ -232,8 +232,8 @@ def queryraw(model, rawsql_id, parameters):
     try:
         return list(model.objects.raw(rawsql[rawsql_id], parameters))
     except Exception, e:
-        print 'exception: %s' % e
-        return []
+        logger.exception(e)
+    return []
     
 def count(model, pt_id, rawsql_id, parameters):
     table = model._meta.db_table

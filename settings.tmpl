@@ -1,4 +1,5 @@
 # Django settings for gitshell project.
+import logging
 
 DEBUG = ${debug}
 TEMPLATE_DEBUG = ${template_debug}
@@ -117,9 +118,16 @@ INSTALLED_APPS = (
 )
 
 # See http://docs.djangoproject.com/en/dev/topics/logging
+logger = logging.getLogger('gitshell')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+    },
     'handlers': {
         'mail_admins': {
             'level': 'ERROR',
@@ -127,8 +135,12 @@ LOGGING = {
         },
         'file': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'formatter': 'verbose',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': '${logging_file_path}',
+            'when' : 'midnight',
+            'interval' : 1,
+            'backupCount' : 30,
         },
     },
     'loggers': {

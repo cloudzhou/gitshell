@@ -15,7 +15,7 @@ def main():
             print 'exception: %s' % e
         event_job.delete()
 
-def do_event(event_job):
+def do_stats_event(event_job):
     pass
 
 if __name__ == '__main__':

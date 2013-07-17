@@ -15,12 +15,12 @@ from gitshell.feed.models import Feed, NotifMessage, FeedManager
 from gitshell.feed.feed import FeedAction
 from gitshell.stats.models import StatsManager
 from gitshell.daemon.models import EventManager, EVENT_TUBE_NAME
-from gitshell.settings import REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT
+from gitshell.settings import REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT, logger
 from gitshell.objectscache.da import da_post_save
 
 MAX_COMMIT_COUNT = 100
 def start():
-    print '==================== START ===================='
+    logger.info('==================== START eventworker ====================')
     beanstalk = beanstalkc.Connection(host=BEANSTALK_HOST, port=BEANSTALK_PORT)
     EventManager.switch(beanstalk, EVENT_TUBE_NAME)
     while True:
@@ -30,13 +30,13 @@ def start():
             # exit signal
             if event['type'] == -1:
                 event_job.delete()
-                print '==================== STOP ===================='
                 sys.exit(0)
             do_event(event)
         except Exception, e:
-            print 'do_event catch except, event: %s' % event_job.body
-            print 'exception: %s' % e
+            logger.error('do_event catch except, event: %s' % event_job.body)
+            logger.exception(e)
         event_job.delete()
+    logger.info('==================== STOP eventworker ====================')
 
 # abspath is the repo hooks directory
 def do_event(event):
