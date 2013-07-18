@@ -20,13 +20,34 @@ class Userprofile(BaseModel):
     watchrepo = models.IntegerField(null=False, default=0)
     watch = models.IntegerField(null=False, default=0)
     be_watched = models.IntegerField(null=False, default=0)
-    quote = models.BigIntegerField(null=False, default=631242752)
+    quote = models.BigIntegerField(null=False, default=536870912)
     used_quote = models.BigIntegerField(null=False, default=0)
 
     unread_message = models.IntegerField(null=False, default=0)
 
     def get_total_repo(self):
         return self.prirepo + self.pubrepo
+
+    def get_used_repo_percent(self):
+        return (self.get_total_repo()/100.0)*100.0;
+
+    def get_used_quote_percent(self):
+        return (self.used_quote*1.0/self.quote)*100.0;
+
+    def get_readable_used_quote(self):
+        return self._get_readable_du(self.used_quote)
+
+    def get_readable_quote(self):
+        return self._get_readable_du(self.quote)
+
+    def _get_readable_du(self, quote):
+        if quote < 1024:
+            return str(quote) + 'b'
+        if quote < 1048576:
+            return str(quote/1024) + 'kb'
+        if quote < 1073741824:
+            return str(quote/1048576) + 'mb'
+        return str(quote/1073741824) + 'g'
 
 class ThirdpartyUser(BaseModel):
     user_type = models.IntegerField(default=0, null=True)

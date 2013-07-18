@@ -11,7 +11,7 @@
 					<a href="#about"><span>关于我们</span></a>
 					<a href="#mission"><span>愿景</span></a>
 					<a href="#faq"><span>FAQ</span></a>
-					<a href="#service" class="active"><span>服务条款</span></a>
+					<a href="#service"><span>服务条款</span></a>
 					<a href="#contact"><span>联系方式</span></a>
 				</dd>
 				<dt class="leader"><i class="icon-caret-down"></i>快速入门</dt>
@@ -236,7 +236,7 @@ $ git pull</code>
 	<script>
 		$(function(){
 			if(window.location.hash) {
-				$(window).scrollTop($(window).scrollTop() - 50);
+				$(window).scrollTop($(window).scrollTop() - 60);
 			}
 			$(document.body).delegate("a","click",function(){
 				var hrefStr = $(this).attr("href");
@@ -246,7 +246,7 @@ $ git pull</code>
 					var hashStr =$(this).attr('href'); 
 					var hashIds = hashStr.match(/#[a-z_A-Z]+$/);
 					var pos = $(hashIds[0]).offset();
-					$(window).scrollTop(pos.top - 50);
+					$(window).scrollTop(pos.top - 60);
 					return false;
 				}
 			});
