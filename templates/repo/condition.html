@@ -1,37 +1,49 @@
-<ul class="nav nav-list">
-{% for iter_assigned in assigneds %}
-	{%if assigned == iter_assigned %}
-	<li><a class="untrack_issues_attr label label-mini label-success">{%if assigned == '0' %}所有{%else%}{{iter_assigned}}{%endif%}</span></li>
-	{%else%}
-		{%if iter_assigned == '0' %}
-		<li><a class="issues_attr btn btn-mini" href="javascript:void(0)" value="assigned___0">所有</a></li>
-		{%else%}
-		<li><a class="issues_attr btn btn-mini" href="javascript:void(0)" value="assigned___{{iter_assigned}}">{{iter_assigned}}</a></li>
-		{%endif%}
-	{%endif%}
-{% endfor %}
+<dl class="nav nav-list">
+	<dt class="leader"><i class="icon-caret-down"></i>指派</dt>
+	<dd>
+		{% for iter_assigned in assigneds %}
+			{%if assigned == iter_assigned %}
+				<a class="untrack_issues_attr active" href="#"><i class="icon-ok"></i>{%if assigned == '0' %}所有{%else%}{{iter_assigned}}{%endif%}</a>
+			{%else%}
+				{%if iter_assigned == '0' %}
+					<a class="issues_attr" href="javascript:void(0)" value="assigned___0">所有</a>
+				{%else%}
+					<a class="issues_attr" href="javascript:void(0)" value="assigned___{{iter_assigned}}">{{iter_assigned}}</a>
+				{%endif%}
+			{%endif%}
+		{% endfor %}
+	</dd>
 
-{%for iter_tracker in TRACKERS%}
-	{%if tracker == iter_tracker.value%}
-	<li><a class="untrack_issues_attr label label-mini label-success">{{iter_tracker.name}}</span></li>
-	{%else%}
-	<li><a class="issues_attr btn btn-mini" href="javascript:void(0)" value="tracker___{{iter_tracker.value}}">{{iter_tracker.name}}</a></li>
-	{%endif%}
-{%endfor%}
+	<dt class="leader"><i class="icon-caret-down"></i>Trace</dt>
+	<dd>
+		{%for iter_tracker in TRACKERS%}
+			{%if tracker == iter_tracker.value%}
+			<a class="untrack_issues_attr active" href="#"><i class="icon-ok"></i>{{iter_tracker.name}}</a>
+			{%else%}
+				<a class="issues_attr" href="javascript:void(0)" value="tracker___{{iter_tracker.value}}">{{iter_tracker.name}}</a>
+			{%endif%}
+		{%endfor%}
+	</dd>
 
-{%for iter_status in STATUSES%}
-	{%if status == iter_status.value%}
-	<li><a class="untrack_issues_attr label label-mini label-success">{{iter_status.name}}</span></li>
-	{%else%}
-	<li><a class="issues_attr btn btn-mini" href="javascript:void(0)" value="status___{{iter_status.value}}">{{iter_status.name}}</a></li>
-	{%endif%}
-{%endfor%}
+	<dt class="leader"><i class="icon-caret-down"></i>状态</dt>
+	<dd>
+		{%for iter_status in STATUSES%}
+			{%if status == iter_status.value%}
+			<a class="untrack_issues_attr active" href="#"><i class="icon-ok"></i>{{iter_status.name}}</a>
+			{%else%}
+			<a class="issues_attr" href="javascript:void(0)" value="status___{{iter_status.value}}">{{iter_status.name}}</a>
+			{%endif%}
+		{%endfor%}
+	</dd>
 
-{%for iter_priority in PRIORITIES%}
-	{%if priority == iter_priority.value%}
-	<li><a class="untrack_issues_attr label label-mini label-success">{{iter_priority.name}}</span></li>
-	{%else%}
-	<li><a class="issues_attr btn btn-mini" href="javascript:void(0)" value="priority___{{iter_priority.value}}">{{iter_priority.name}}</a></li>
-	{%endif%}
-{%endfor%}
-<a href="/{{user_name}}/{{repo_name}}/issues/create/0/" class="new-issue-btn btn btn-primary">创建 issues</a>
+	<dt class="leader"><i class="icon-caret-down"></i>紧迫度</dt>
+	<dd>
+		{%for iter_priority in PRIORITIES%}
+			{%if priority == iter_priority.value%}
+			<a class="untrack_issues_attr active" href="#"><i class="icon-ok"></i>{{iter_priority.name}}</a>
+			{%else%}
+			<a class="issues_attr" href="javascript:void(0)" value="priority___{{iter_priority.value}}">{{iter_priority.name}}</a>
+			{%endif%}
+		{%endfor%}
+	</dd>
+</dl>

@@ -5,35 +5,38 @@
 
 {% block subcontainer %}
 	<nav class="sidebar">
-		<h1 class="heading">Issues</h1>
 		{% include "repo/condition.html" %}
 	</nav>
 
 	<section class="issue-list">
 		<header class="header">
 			<h1 class="heading">Gitshell Issues</h1>
-			<div class="">
-				<a href="#">创建Issue</a>
-			</div>
+			<ul class="btn-group sort">
+				<li><a href="/{{user_name}}/{{repo_name}}/issues/create/0/" class="btn btn-mini btn-primary">创建 issues</a></li>
+				<li class="leader">排序:</li>
+				<li class="first">{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn btn-mini first">更新</a>{%else%}<span class="btn btn-mini btn-disable">更新</span>{%endif%}</li>
+				<li class="last">{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn btn-mini last">创建</a>{%else%}<span class="btn btn-mini btn-disable">创建</span>{%endif%}</li>
+			</ul>
 		</header>
-		<div class="hide btn-group clearfix">
-			{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn first">更新</a>{%else%}<span class="btn btn-disable">更新</span>{%endif%}
-			{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn last">创建</a>{%else%}<span class="btn btn-disable">创建</span>{%endif%}
-		</div>
 		{% for issue in issues %}
 		<div class="issue">
 			<figure class="avatar span">
-				<img src="https://gravatar.com/avatar/{{ issue.user_id }}/?s=18" alt="{{issue.user_id}}">
+				<img src="https://gravatar.com/avatar/{{ issue.user_id }}/?s=35" alt="{{issue.user_id}}">
 			</figure>
 			<div class="data">
-				<span class="issue-id">#{{issue.id}}</span>
-				<a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/" class="txt">{{issue.subject|truncatechars:100}}</a>
-				<span class="unixtime date">{%if orderby == 'modify_time'%}{{issue.modify_time}}{%else%}{{issue.create_time}}{%endif%}</span>
+				<p class="title">
+					<span class="issue-id">#{{issue.id}}</span>
+					<a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/" class="txt">{{issue.subject|truncatechars:100}}</a>
+				</p>
+				<div class="meta">
+					<span>作者:<a href="/{{ user.username }}/">{{ issue.user_id }}</a></span>
+					<span class="unixtime date">{%if orderby == 'modify_time'%}{{issue.modify_time}}{%else%}{{issue.create_time}}{%endif%}</span>
+				</div>
 			</div>
 		</div>
 		{% endfor %}
 		{% if not issues %}
-			<div class="issue"><p class="info text-warning">没有Issues，或者没有查看Issues权限，半公开和私有项目需要申请成为成员才能查看Issues</p></div>
+			<div class="issue"><p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有Issues，或者没有查看Issues权限，半公开和私有项目需要申请成为成员才能查看Issues</p></div>
 		{% endif %}
 		<footer class="footer">
 			<nav class="pagination">

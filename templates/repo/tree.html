@@ -220,8 +220,7 @@
 			$('#id_markdown_content').show();
 	{% endif %}
 
-	var fileBrowserToggle = $('.tree .browser-toggle');
-	var fileBrowserNav = fileBrowserToggle.next('.nav');
+	var fileBrowserToggle = $('.tree .browser-toggle'), fileBrowserNav = fileBrowserToggle.next('.nav');
 			fileBrowserNav.hide();
 
 	fileBrowserToggle.live({
@@ -237,8 +236,7 @@
 		}
 	});
 
-	var switchToggle = $("#switch-toggle");
-	var themes = $("#themes");
+	var switchToggle = $("#switch-toggle"), themes = $("#themes");
 
 	switchToggle.click(
 		function(){ themes.slideToggle(100);}

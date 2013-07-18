@@ -11,9 +11,9 @@ class RepoIssuesAttrs():
         self.name = name
         self.value = value
 
-TRACKERS = [RepoIssuesAttrs('所有', 0), RepoIssuesAttrs('缺陷', 1), RepoIssuesAttrs('功能', 2), RepoIssuesAttrs('支持', 3)]
-STATUSES = [RepoIssuesAttrs('所有', 0), RepoIssuesAttrs('新建', 1), RepoIssuesAttrs('已指派', 2), RepoIssuesAttrs('进行中', 3), RepoIssuesAttrs('已解决', 4), RepoIssuesAttrs('已关闭', 5), RepoIssuesAttrs('已拒绝', 6)]
-PRIORITIES = [RepoIssuesAttrs('所有', 0), RepoIssuesAttrs('紧急', 1), RepoIssuesAttrs('高', 2), RepoIssuesAttrs('普通', 3), RepoIssuesAttrs('低', 4)]
+TRACKERS = [RepoIssuesAttrs('缺陷', 1), RepoIssuesAttrs('功能', 2), RepoIssuesAttrs('支持', 3)]
+STATUSES = [RepoIssuesAttrs('新建', 1), RepoIssuesAttrs('已指派', 2), RepoIssuesAttrs('进行中', 3), RepoIssuesAttrs('已解决', 4), RepoIssuesAttrs('已关闭', 5), RepoIssuesAttrs('已拒绝', 6)]
+PRIORITIES = [RepoIssuesAttrs('紧急', 1), RepoIssuesAttrs('高', 2), RepoIssuesAttrs('普通', 3), RepoIssuesAttrs('低', 4)]
 TRACKERS_VAL = [1, 2, 3]
 STATUSES_VAL = [1, 2, 3, 4, 5, 6]
 PRIORITIES_VAL = [1, 2, 3, 4]
