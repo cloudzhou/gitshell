@@ -476,10 +476,9 @@ class RepoManager():
         return True
 
     @classmethod
-    def watch_repo(self, userprofile, watch_repo):
+    def watch_repo(self, user, userprofile, watch_repo):
         if watch_repo.auth_type == 2:
-            member = self.get_repo_member(watch_repo.id, userprofile.id)
-            if member == None:
+            if not self.is_repo_member(watch_repo, user):
                 return False
         if userprofile.watchrepo >= 100:
             return False
@@ -503,7 +502,7 @@ class RepoManager():
         return True
 
     @classmethod
-    def unwatch_repo(self, userprofile, watch_repo):
+    def unwatch_repo(self, user, userprofile, watch_repo):
         watchHistorys = query(WatchHistory, userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo.id])
         watchHistory = None
         if len(watchHistorys) > 0:
