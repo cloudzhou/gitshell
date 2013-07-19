@@ -384,6 +384,8 @@ class GitHandler():
             finally:
                 if refs_f != None:
                     refs_f.close()
+        meta['branch_count'] = len(branches)
+        meta['tag_count'] = len(tags)
         self._repo_meta_sort_refs(branches, tags)
         self._repo_meta_refs_detail_commit(repo, meta, commit_hash_dict)
         self._cache_repo_meta(repo, meta)

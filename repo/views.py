@@ -124,7 +124,7 @@ def ls_tree(request, user_name, repo_name, refs, path, current):
 
 @repo_permission_check
 def blob(request, user_name, repo_name, refs, path):
-    current = 'tree'
+    current = 'blob'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path is None or path == '':
         raise Http404
@@ -762,11 +762,17 @@ def log_graph(request, user_name, repo_name, refs):
     return json_httpResponse(response_dictionary)
     
 @repo_permission_check
+def refs_graph_default(request, user_name, repo_name):
+    refs = 'master'
+    return refs_graph(request, user_name, repo_name, refs)
+
+@repo_permission_check
 def refs_graph(request, user_name, repo_name, refs):
+    current = 'refs_graph'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    response_dictionary = {'mainnav': 'repo', 'current': 'refs_graph'}
+    response_dictionary = {'mainnav': 'repo', 'current': current}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/refs_graph.html',
                           response_dictionary,
@@ -1053,7 +1059,8 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     gitHandler = GitHandler()
     refs_meta = gitHandler.repo_ls_refs(repo, repo.get_abs_repopath())
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)
-    is_star_repo = RepoManager.is_star_repo(request.user.id, repo.id)
+    is_stared_repo = RepoManager.is_stared_repo(request.user.id, repo.id)
+    is_forked_repo = False
     is_repo_member = RepoManager.is_repo_member(repo, request.user)
     is_owner = (repo.user_id == request.user.id)
     is_branch = (refs in refs_meta['branches'])
@@ -1062,9 +1069,10 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     if not is_owner:
         child_repo = RepoManager.get_repo_by_forkrepo(request.user.username, repo)
         if child_repo is not None:
+            is_forked_repo = True
             has_pull_right = True
     repo_pull_new_count = RepoManager.count_pullRequest_by_descRepoId(repo.id, PULL_STATUS.NEW)
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_star_repo': is_star_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'is_branch': is_branch, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta}
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_stared_repo': is_stared_repo, 'is_forked_repo': is_forked_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'is_branch': is_branch, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta}
 
 @login_required
 def list_github_repos(request):

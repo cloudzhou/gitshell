@@ -235,21 +235,25 @@ $ git pull</code>
 {% block js %}
 	<script>
 		$(function(){
-			if(window.location.hash) {
-				$(window).scrollTop($(window).scrollTop() - 60);
-			}
-			$(document.body).delegate("a","click",function(){
+            $('a').click(function(){
 				var hrefStr = $(this).attr("href");
-				var reg = /.*#[a-z_A-Z]+$/;
-				var isHash= reg.test(hrefStr);
+				var reg = /.*#[a-zA-Z0-9_]+$/;
+				var isHash = reg.test(hrefStr);
 				if(isHash){
-					var hashStr =$(this).attr('href'); 
-					var hashIds = hashStr.match(/#[a-z_A-Z]+$/);
-					var pos = $(hashIds[0]).offset();
-					$(window).scrollTop(pos.top - 60);
+					var hashIds = hrefStr.match(/#[a-z_A-Z]+$/);
+                    var hashId = hashIds[0];
+                    window.location.hash = hashId;
+					var pos = $(hashId).offset();
+					$(window).scrollTop(pos.top - 70);
 					return false;
 				}
-			});
+            });
+            setTimeout(function() {
+			    if(window.location.hash) {
+		            var pos = $(window.location.hash).offset();
+			        $(window).scrollTop(pos.top - 70);
+			    }
+            }, 1);
 		});
 	</script>
 {% endblock %}

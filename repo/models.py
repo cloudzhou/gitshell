@@ -364,7 +364,7 @@ class RepoManager():
         return userprofiles
 
     @classmethod
-    def is_star_repo(self, user_id, repo_id):
+    def is_stared_repo(self, user_id, repo_id):
         repo = RepoManager.get_repo_by_id(repo_id)
         if repo is None:
             return False

@@ -17,9 +17,3 @@ def index(request):
     return render_to_response('index.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
-def home(request):
-    response_dictionary = {'hello_world': 'hello world'}
-    return render_to_response('user/home.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-

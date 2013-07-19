@@ -5,36 +5,41 @@
 	<div class="authorize">
 		<header class="banner">
 			<h1>加入Git的怀抱.</h1>
-			<p>国内最稳定的Git代码托管服务,dropbox实时备份。</p>
+			<p>稳定、快速的Git代码托管服务,dropbox实时备份。</p>
 		</header>
-		<form method="post" class="form">
+        <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn btn-success"><i class="icon-github"></i>用 GitHub 账户直接登录</a>
+        <hr class="hr">
+		<form method="post" class="form" action="/join/">
 			<fieldset>
-				<input type="email" placeholder="email" class="field">
-				<input type="password" placeholder="password" class="field">
-				<input type="password" placeholder="confirm password" class="field">
+                <!--TODO login js: detect email and username is taken, hidden password-->
+                {% csrf_token %}
+				<input type="text" name="email" placeholder="邮箱" class="field">
+				<input type="text" name="username" placeholder="用户名" class="field" maxlength="24">
+				<input type="password" name="unencrypt_password" placeholder="密码" class="field">
+				<input type="password" name="password" placeholder="密码" class="field hidden">
 				<button type="submit" class="btn btn-primary">现在加入</button>
 			</fieldset>
 		</form>
-		<p>当你点击注册的时候表示你接受GitShell的<a href="#">服务条款</a>和<a href="#">隐私政策</a>.</p>
+	    <p>当你点击注册的时候表示你接受Gitshell的<a href="/help/#service">服务条款</a>.</p>
 	</div>
 
 
 	<ul class="welcome-details horizontal-list">
 		<li>
 			<h2 class="heading">专注于 git 托管</h2>
-			<p>gitshell 专注于git托管,这是一切的基础;尽最大的努力提高用户体验,安全,多重备份;迭代更新频繁,持续给用户带来价值,code wins</p>
+			<p>Gitshell 专注于git托管,这是一切的基础;尽最大的努力提高用户体验,安全,多重备份;迭代更新频繁,持续给用户带来价值,code wins</p>
 		</li>
 		<li>
 			<h2 class="heading">团队协作，快速开发</h2>
-			<p>gitshell 适合于小团队基于git的快速迭代开发;仓库协同开发,issues,commit,视图统计;加入社交因素,快速获知,让每个成员置身开发中</p>
+			<p>Gitshell 适合于小团队基于git的快速迭代开发;仓库协同开发,issues,commit,视图统计;加入社交,快速获知,让每个成员置身开发中</p>
 		</li>
 		<li>
 			<h2 class="heading">良好的社区氛围</h2>
-			<p>开放的开发社区,<a href="/cloudzhou/gitshell/">gitshell</a>仓库<a href="/cloudzhou/gitshell/issues/">issues</a>公开;技能,评价,git pull请求,mail通知;对“噪音”零容忍,我们相信自由来自于自律</p>
+			<p>开放的开发社区,<a href="/cloudzhou/gitshell/">Gitshell</a>仓库<a href="/cloudzhou/gitshell/issues/">issues</a>公开;技能,评价,git pull请求,mail通知;对“噪音”零容忍,我们相信自由来自于自律</p>
 		</li>
 		<li>
 			<h2 class="heading">Dropbox实时备份</h2>
-			<p>GitShell是第一个支持Dropbox实时备份的Git代码托管服务，及时，安全。</p>
+			<p>Gitshell是第一个支持Dropbox实时备份的Git代码托管服务，及时，安全。</p>
 		</li>
 		<li>
 			<h2 class="heading">一键导入Github仓库</h2>
@@ -44,6 +49,5 @@
 
 {% endblock %}
 
-{% block js %}
-{% endblock %}
+{% block js %}{% endblock %}
 
