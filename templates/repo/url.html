@@ -1,0 +1,33 @@
+<div class="url-container hide clearfix{% if current == 'index' or current == 'tree' %} visible{%else%} hide{%endif%}">
+	{% if repo.status != 0 %}
+		<p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
+	{% endif %}
+	{% if has_fork_right %}
+		<dl class="url colspan">
+			<dt class="btn-group span">
+				{% if is_repo_member %}
+					<span class="first"><a id="id_ssh_fork" class="url-select btn">SSH</a></span>
+				{% endif %}
+					<span class="middle"><a id="id_http_fork" class="active url-select btn">HTTP</a></span>
+				{% if repo.auth_type == 0 %}
+					<span class="middle"><a id="id_git_fork" class="url-select btn">GIT</a></span>
+				{% endif %}
+			</dt>
+			<dd class="url-holder btn-group span">
+				{% if is_repo_member %}
+				<span class="middle">
+					<span class="url-data btn" id="url"><span class="url-git">git</span>@<span class="url-gitshell">gitshell.com</span>:<span class="url-username">{{ user_name }}</span>/<span class="url-repo-name">{{ repo_name }}</span>.git</span>
+				</span>
+				{% elif repo.auth_type == 0 %}
+				<span class="middle">
+					<span class="url-data btn"><span class="url-git">https://</span><span class="url-gitshell">gitshell.com</span>/<span class="url-username">{{ user_name }}</span>/<span class="url-repo-name">{{ repo_name }}</span>.git</span>
+				</span>
+				{% endif %}
+				<span class="last">
+					<span class="clipboard url-select btn"><a class="url-js-copy"><i class="icon-copy"></i>复制</a></span>
+				</span>
+				<span class="meta url-info">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>
+			</dd>
+		</dl>
+	{% endif %}
+</div>

@@ -31,7 +31,7 @@
 <script>
 /*global jQuery, window */
 $(function(){
-    $('.c_td_recommend').live('mouseover mouseout', function(event) {
+    $('.c_td_recommend').bind('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             if('{{gsuser.username}}' == '{{user.username}}') {
                 $(this).find('.c_rm_recommend').show();

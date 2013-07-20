@@ -37,7 +37,7 @@
 <script>
 /*global jQuery, window */
 $(function(){
-    $('.cl_watch_repo_tr').live('mouseover mouseout', function(event) {
+    $('.cl_watch_repo_tr').bind('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             var repo_id = $(this).attr('data-repo-id');
             $('#id_repo_'+repo_id).show();

@@ -81,7 +81,7 @@ $(function(){
 				}
 			, 300);
     });
-    $('.c_tr').live('mouseover mouseout', function(event) {
+    $('.c_tr').bind('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             $(this).find('.c_rm_member').show();
         } else {

@@ -63,7 +63,7 @@
 /*global jQuery, window */
 $(function(){
     moment.lang('zh-cn');
-    $('.cl_todo').live('mouseover mouseout', function(event) {
+    $('.cl_todo').bind('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             $(this).children('.cl_todo_control').show();
         } else {
@@ -192,11 +192,11 @@ $(function(){
         var todo_id = ui.draggable.attr('data');
         done_todo(todo_id);
     }
-    $('.cl_todo_check').live('click', function (e) {
+    $('.cl_todo_check').on('click', function (e) {
         var todo_id = $(this).parents('.cl_todo').attr('data');
         done_todo(todo_id);
     });
-    $('.cl_todone_check').live('click', function (e) {
+    $('.cl_todone_check').on('click', function (e) {
         var todone_id = $(this).parents('.cl_todone').attr('data');
         var todone_text = $('#id_todone_'+todone_id).children('.cl_todone_text').text();
         $.post('/home/todo/'+ {{scene.id}} +'/doing_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todone_id}, function(json){
@@ -210,7 +210,7 @@ $(function(){
             }
         });
     });
-    $('.go_top').live('click', function (e) {
+    $('.go_top').on('click', function (e) {
         var todo_id = $(this).parents('.cl_todo').attr('data');
         var todo_top = $('#id_todo_'+todo_id);
         todo_top.remove();
@@ -219,7 +219,7 @@ $(function(){
         $('a').tooltip();
         update_scene_meta()
     });
-    $('.go_down').live('click', function (e) {
+    $('.go_down').on('click', function (e) {
         var todo_id = $(this).parents('.cl_todo').attr('data');
         var todo_down = $('#id_todo_'+todo_id);
         todo_down.remove();
@@ -228,7 +228,7 @@ $(function(){
         $('a').tooltip();
         update_scene_meta()
     });
-    $('.remove_todo').live('click', function (e) {
+    $('.remove_todo').on('click', function (e) {
         var todo_id = $(this).parents('.cl_todo').attr('data');
         $.post('/home/todo/'+ {{scene.id}} +'/remove_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todo_id}, function(json){
             var result_todo_id = json.todo_id;
@@ -237,7 +237,7 @@ $(function(){
             }
         });
     });
-    $('#id_sceneRemove_button').live('click', function (e) {
+    $('#id_sceneRemove_button').on('click', function (e) {
         if($(this).text() == '删除场景') {
             $(this).text('确定删除？');
             return;

@@ -94,10 +94,8 @@
 			</div>
 		</footer>
 
-
-		<script src="/static/js/jquery-1.7.2.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
 		<script src="/static/js/bootstrap.min.js"></script>
-		<script src="/static/js/select2.min.js"></script>
 		<script>
 			$(function(){
 
@@ -108,7 +106,7 @@
 
 				$('.dropdown-toggle').dropdown();
 
-				$("#username").live({
+				$("#username").on({
 					mouseover: function(){
 						$(this).find(".userid").show();
 					},

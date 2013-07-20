@@ -52,7 +52,7 @@
 
 		<section class="bubble-inner{% block bubble_inner_class_name %}{% endblock %}">
 
-			{% block cloneurl %}{% endblock %}
+			{% block repo_description %}{% endblock %}
 
 			{% if current == 'index' or current == 'tree' or current == 'commits' %}
 				<nav class="repo-tabs nav nav-tabs">
@@ -260,7 +260,7 @@ $(function(){
             $('#id_read_write').html('只读');
         });
     {% if is_owner %}
-        $('#id_repo_desc').live('mouseover mouseout', function(event) {
+        $('#id_repo_desc').bind('mouseover mouseout', function(event) {
             if (event.type == 'mouseover') {
                 $('#id_manage_repo').show();
             } else {

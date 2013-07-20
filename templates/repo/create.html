@@ -262,7 +262,7 @@ $(function(){
     $('#id-refresh-repo').click(function() {
         list_github_repo()
     });
-    $('.import-repo-button').live('click', function() {
+    $('.import-repo-button').on('click', function() {
         var name = $(this).data('name');
         var git_url = $(this).data('git-url');
         var description = $(this).data('description');

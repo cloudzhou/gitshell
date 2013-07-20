@@ -1,65 +1,27 @@
 {% extends "repo/repo.html" %}
 
 {% block css %}
-	<link href="/static/css/app/highlight/github.css" rel="stylesheet">
+	<link href="/static/less/app/highlight/github.css" rel="stylesheet">
 {% endblock %}
 
 {% block bubble_inner_class_name %} files{% endblock %}
 
-{% block cloneurl %}
-
-		<div class="description well">
-			<p>{{repo.desc|truncatechars:80}} <a href="#README.md">Read More</a></p>
-		</div>
-
-		<div class="url-container hide clearfix{% if current == 'index' or current == 'tree' %} visible{%else%} hide{%endif%}">
-			{% if repo.status != 0 %}
-				<p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
-			{% endif %}
-			{% if has_fork_right %}
-				<dl class="url colspan">
-					<dt class="btn-group span">
-						{% if is_repo_member %}
-							<span class="first"><a id="id_ssh_fork" class="url-select btn">SSH</a></span>
-						{% endif %}
-							<span class="middle"><a id="id_http_fork" class="active url-select btn">HTTP</a></span>
-						{% if repo.auth_type == 0 %}
-							<span class="middle"><a id="id_git_fork" class="url-select btn">GIT</a></span>
-						{% endif %}
-					</dt>
-					<dd class="url-holder btn-group span">
-						{% if is_repo_member %}
-						<span class="middle">
-							<span class="url-data btn" id="url"><span class="url-git">git</span>@<span class="url-gitshell">gitshell.com</span>:<span class="url-username">{{ user_name }}</span>/<span class="url-repo-name">{{ repo_name }}</span>.git</span>
-						</span>
-						{% elif repo.auth_type == 0 %}
-						<span class="middle">
-							<span class="url-data btn"><span class="url-git">https://</span><span class="url-gitshell">gitshell.com</span>/<span class="url-username">{{ user_name }}</span>/<span class="url-repo-name">{{ repo_name }}</span>.git</span>
-						</span>
-						{% endif %}
-						<span class="last">
-							<span class="clipboard url-select btn"><a class="url-js-copy"><i class="icon-copy"></i>复制</a></span>
-						</span>
-						<span class="meta url-info">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>
-					</dd>
-				</dl>
-			{% endif %}
-		</div>
-
+{% block repo_description %}
+	<div class="description well"><p>{{repo.desc|truncatechars:80}} <a href="#README.md">Read More</a></p></div>
 {% endblock %}
 
 {% block subcontainer %}
 
 	{% if is_tree %}
-		<div class="tree">
-			<nav class="file-browser">
+		<div class="tree" id="resize-container">
+			<nav class="file-browser" id="file-browser">
 				<div class="branches dropdown">
-					<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle btn-group">
-						<span class="branch btn btn-mini first">
+					<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle btn btn-mini">
+						<span class="branch">
 							<i class="icon-code-fork"></i>
 							<span class="branch-name">{{ refs }}</span>
 						</span>
-						<span class="btn btn-mini last"><i class="icon-caret-down"></i></span>
+						<span class="caret btn btn-mini"><i class="icon-caret-down"></i></span>
 					</a>
 					<ul class="dropdown-menu nav nav-list">
 						<li class="master"><a href="/repo/{{branch}}/"><span>master</span></a></li>
@@ -76,7 +38,7 @@
 								<figure class="file-icon dir">
 									<span class="fold-collapsed"><img src="/static/img/icons/Folding-Collapsed.png" alt=""></span>
 									<span class="fold"><img src="/static/img/file_dir.png" alt="dir"></span>
-								</figure>{{ file }}<i class="icon-expand-alt"></i>
+								</figure>{{ file }}</i>
 							</a>
 							<ul class="nav nav-list">
 								<li class="file-browser"><a href="#">
@@ -95,7 +57,7 @@
 				</ul>
 			</nav>
 
-			<div class="table-container">
+			<div class="table-container" id="source">
 				<div class="theme-selector">
 					<div class="switcher"><a href="#" id="switch-toggle">Color Scheme</a></div>
 					<ul class="theme-list clearfix" id="themes">
@@ -169,14 +131,67 @@
 	{% if not is_tree %}
 		<script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script>
 	{% endif %}
-
 	{% if is_markdown %}
 		<script src="/static/js/Markdown.Converter.js"></script>
 		<script src="/static/js/Markdown.Editor.js"></script>
 		<script src="/static/js/Markdown.Sanitizer.js"></script>
 	{% endif %}
+	<script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+	<script src="/static/js/jquery-ui-1.10.3.custom.min.js"></script>
+	<script>
+		$(function(){
 
-	<script src="/static/js/bootstrap.min.js"></script>
+			// File browser resizable
+			$("#file-browser").resizable({
+				handles: "e,w",
+				//grid: 10,
+				minWidth: 180,
+				maxWidth: 300
+			});
+
+			$("#file-browser").bind("resize",
+				function(event, ui){
+					var fileBrowserWidth = $("#file-browser").width();
+					$("#source").css("margin-left", fileBrowserWidth + 10);
+				}
+			);
+
+			// File browser tree
+			var fileBrowserToggle = $("#file-browser .browser-toggle");
+			var fileBrowserNav = fileBrowserToggle.next(".nav");
+					fileBrowserNav.hide();
+
+			fileBrowserToggle.bind({
+				click: function(e) {
+					e.preventDefault();
+					$(this).find('.fold-collapsed').toggleClass('active').end().next('.nav').toggle();
+				}
+			});
+
+			// Important: place before File browser tree to avoid get initial height
+			//var navFileBrowserHeight = $("#file-browser > .nav-list").height();
+			//var sourceContainerHeight = $("#source").height();
+			//$("#file-browser").height(navFileBrowserHeight > sourceContainerHeight ? navFileBrowserHeight : sourceContainerHeight);
+
+			// Color Scheme
+			var switchToggle = $("#switch-toggle"), themes = $("#themes");
+			switchToggle.click(
+				function(e){ 
+					e.preventDefault(); 
+					themes.slideToggle(100);
+				}
+			);
+
+			// Bootstrap/popover
+			$('[data-toggle="popover"]').hover(
+				function(){
+					$(this).popover('show');
+				}, function(){
+					$(this).popover('hide');
+				}
+			);
+		});
+	</script>
 
 <script>
 	$(function(){
@@ -220,35 +235,6 @@
 			$('#id_markdown_content').show();
 	{% endif %}
 
-	var fileBrowserToggle = $('.tree .browser-toggle'), fileBrowserNav = fileBrowserToggle.next('.nav');
-			fileBrowserNav.hide();
-
-	fileBrowserToggle.live({
-		mouseover: function() {
-			$(this).find('i[class^="icon-"]').addClass('current');
-		},
-		mouseout: function() {
-			$(this).find('i[class^="icon-"]').removeClass('current');
-		},
-		click: function(e) {
-			e.preventDefault();
-			$(this).find('.fold-collapsed').toggleClass('active').end().next('.nav').toggle();
-		}
-	});
-
-	var switchToggle = $("#switch-toggle"), themes = $("#themes");
-
-	switchToggle.click(
-		function(){ themes.slideToggle(100);}
-	);
-
-	$('[data-toggle="popover"]').hover(
-		function(){
-			$(this).popover('show');
-		}, function(){
-			$(this).popover('hide');
-		}
-	);
 
 
 	});

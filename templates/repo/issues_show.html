@@ -109,7 +109,7 @@ $(function(){
 
 
     {% if has_issues_modify_right %}
-    $('#i_issue_subject').live('mouseover mouseout', function(event) {
+    $('#i_issue_subject').bind('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             $('#i_issue_edit').show();
         } else {
@@ -117,7 +117,7 @@ $(function(){
         }
     });
     {% endif %}
-    $('.issue').live('mouseover mouseout', function(event) {
+    $('.issue').bind('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             var issues_user_name = $(this).attr('data-user-name');
             if('{{user.username}}' == '{{user_name}}' || issues_user_name == '{{user.username}}') {

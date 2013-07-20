@@ -86,7 +86,7 @@ $(function(){
         });
     };
     do_orgi_feeds();
-    $('.feedtime').live('mouseover mouseout', function(event) {
+    $('.feedtime').bind('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             $(this).css('background-color', '#D9EDF7');
         } else {

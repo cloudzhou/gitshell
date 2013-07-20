@@ -137,7 +137,7 @@ $(function(){
         });
     };
     do_orgi_feeds();
-    $('.feedtime').live('mouseover mouseout', function(event) {
+    $('.feedtime').bind('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             $(this).addClass('current');
         } else {
