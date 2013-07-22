@@ -1,9 +1,10 @@
 {% extends "repo/repo.html" %}
 {% block subcontainer %}
+<!--TODO refactor-->
 <style>
 </style>
 <h2>Tags</h2>
-<div id="i_tags">
+<div id="tags">
 </div>
 {% endblock %}
 {% block subjs %}
@@ -26,7 +27,7 @@ $(function(){
             html.push('</tr>');
         }
         html.push('</tbody></table>');
-        $('#i_tags').html(html.join(''));
+        $('#tags').html(html.join(''));
         $('.c_unixtime').each(function(index){ 
             $(this).html(moment(new Date($(this).html()*1000)).fromNow());
             $(this).show();

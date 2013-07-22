@@ -55,7 +55,7 @@
                 <li class="middle{% if current == 'issues' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/issues/" data-original-title="Issues" rel="tooltip"><span><i class="icon-bug"></i></span></a></li>
                 <li class="middle{% if current == 'compare' or current == 'pulls' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/pulls/" data-original-title="Pull Request" rel="tooltip"><span><i class="icon-code-fork"></i></span></a></li>
                 <!--TODO design overview page-->
-                <li class="middle"><a href="#" data-original-title="Overview" rel="tooltip"><span><i class="icon-desktop"></i></span></a></li>
+                <!--li class="middle"><a href="#" data-original-title="Overview" rel="tooltip"><span><i class="icon-desktop"></i></span></a></li-->
                 <!--TODO if is_owner, last or middle ? -->
                 <li class="middle"><a href="/{{user_name}}/{{repo_name}}/stats/" data-original-title="Graph" rel="tooltip"><span><i class="icon-th"></i></span></a></li>
                 {% if is_owner %}
