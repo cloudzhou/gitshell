@@ -39,7 +39,7 @@
                     <span class="btn btn-mini count last" title="标星次数" href="/{{user_name}}/{{repo_name}}/clone_watch_star/">{{repo.star}}</span>
                 </li>
                 <li class="btn-group">
-                    {% if has_fork_right and not is_owner %}
+                    {% if has_fork_right %}
                         <a class="btn btn-mini fork first" data-original-title="Fork" rel="tooltip" href="javascript: void(0)">Fork</a>
                         <span class="btn btn-mini count last" title="衍生次数" href="/{{user_name}}/{{repo_name}}/clone_watch_star/">{{repo.fork}}</span>
                     {% endif %}
@@ -51,15 +51,15 @@
     <section class="colspan">
         <nav class="sidenav">
             <ul class="nav nav-list">
-                <li class="first{% if current == 'index' or current == 'tree' or current == 'blob' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/" data-original-title="Code" rel="tooltip"><span><i class="icon-code"></i></span></a></li>
+                <li class="first{% if current == 'index' or current == 'tree' or current == 'blob' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/{{refs}}/" data-original-title="Code" rel="tooltip"><span><i class="icon-code"></i></span></a></li>
                 <li class="middle{% if current == 'issues' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/issues/" data-original-title="Issues" rel="tooltip"><span><i class="icon-bug"></i></span></a></li>
-                <li class="middle{% if current == 'compare' or current == 'pulls' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/pulls/" data-original-title="Pull Request" rel="tooltip"><span><i class="icon-code-fork"></i></span></a></li>
+                <li class="middle{% if current == 'compare' or current == 'pull' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/pulls/" data-original-title="Pull Request" rel="tooltip"><span><i class="icon-code-fork"></i></span></a></li>
                 <!--TODO design overview page-->
-                <!--li class="middle"><a href="#" data-original-title="Overview" rel="tooltip"><span><i class="icon-desktop"></i></span></a></li-->
+                <li class="middle{% if current == 'pulse' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/pulse/" data-original-title="Overview" rel="tooltip"><span><i class="icon-desktop"></i></span></a></li>
                 <!--TODO if is_owner, last or middle ? -->
-                <li class="middle"><a href="/{{user_name}}/{{repo_name}}/stats/" data-original-title="Graph" rel="tooltip"><span><i class="icon-th"></i></span></a></li>
+                <li class="middle{% if current == 'stats' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/stats/" data-original-title="Graph" rel="tooltip"><span><i class="icon-th"></i></span></a></li>
                 {% if is_owner %}
-                <li class="last{% if current == 'edit' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/settings/" data-original-title="Setting" rel="tooltip"><span><i class="icon-wrench"></i></span></a></li>
+                <li class="last{% if current == 'settings' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/settings/" data-original-title="Setting" rel="tooltip"><span><i class="icon-wrench"></i></span></a></li>
                 {% endif %}
             </ul>
         </nav>
@@ -111,11 +111,11 @@
             {% if current == 'index' or current == 'tree' or current == 'blob' or current == 'commits' or current == 'branches' or current == 'tags' or current == 'refs_graph' %}
                 <nav class="repo-tabs nav nav-tabs">
                     <ul class="nav clearfix">
-                        <li class="first{% if current == 'index' or current == 'tree' or current == 'blob' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/tree/">Code</a></li>
-                        <li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{user_name}}/{{repo_name}}/commits/">Commit<span class="label label-mini{% if current == 'commits' %} label-success{% endif %}">{{repo.commit}}</span></a></li>
+                        <li class="first{% if current == 'index' or current == 'tree' or current == 'blob' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">Code</a></li>
+                        <li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">Commit<span class="label label-mini{% if current == 'commits' %} label-success{% endif %}">{{repo.commit}}</span></a></li>
                         <li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{user_name}}/{{repo_name}}/branches/">Branch<span class="label label-mini{% if current == 'branches' %} label-success{% endif %}">{{refs_meta.branch_count}}</span></a></li>
                         <li {% if current == 'tags' %} class="active" {% endif %}><a href="/{{user_name}}/{{repo_name}}/tags/">Tag<span class="label label-mini{% if current == 'tags' %} label-success{% endif %}">{{refs_meta.tag_count}}</span></a></li>
-                        <li class="last{% if current == 'refs_graph' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/refs/graph/">Graph</a></li>
+                        <li class="last{% if current == 'refs_graph' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/refs/graph/{{refs}}/">Graph</a></li>
                     </ul>
                 </nav>
             {% endif %}

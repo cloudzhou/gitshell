@@ -1,55 +1,41 @@
 {% extends "repo/repo.html" %}
 
 {% block css %}
-	<link href="/static/css/app/highlight/github.css" rel="stylesheet">
+    <link href="/static/css/app/highlight/github.css" rel="stylesheet">
 {% endblock %}
 
 {% block bubble_inner_class_name %} commits{% endblock %}
 
 {% block subcontainer %}
-		<header class="header">
-			<ul class="breadcrumb">
-				<li><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">{{repo_name}}</a><span class="divider"></span></li>
-				<li class="active">Commits</li>
-			</ul>
-		</header>
+    <!--TODO html error -->
+    <header class="header clearfix">
+        {% include "repo/branch-nav.html" %}
+    </header>
 
-		{% for commit_attrs in commits %}
-			<div class="commit colspan">
-				<div class="commiter user-plugin span">
-					<figure class="avatar"><img src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=30" alt="{{ gsuser.username }}"></figure>
-					<div class="info">
-						<p class="msg"><a href="#">{{ commit_attrs.commit_message|truncatechars:80 }}</a></p>
-						<p class="meta"><a href="/{{ commit_attrs.author }}/">{{ commit_attrs.author }}</a> <span class="date unixtime">{{ commit_attrs.committer_date }}</span></p>
-					</div>
-				</div>
-				<span class="hash span"><a href="#" class="btn label-mini btn-info">{{ commit_attrs.commit_hash }}</a></span>
-			</div>
-		{% endfor %}
+    {% for commit_attrs in commits %}
+        <div class="commit colspan">
+            <div class="commiter user-plugin span">
+                <figure class="avatar"><img src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=30" alt="{{ gsuser.username }}"></figure>
+                <div class="info">
+                    <p class="msg"><a href="#">{{ commit_attrs.commit_message|truncatechars:80 }}</a></p>
+                    <p class="meta"><a href="/{{ commit_attrs.author }}/">{{ commit_attrs.author }}</a> <span class="date unixtime">{{ commit_attrs.committer_date }}</span></p>
+                </div>
+            </div>
+            <span class="hash span"><a href="#" class="btn label-mini btn-info">{{ commit_attrs.commit_hash }}</a></span>
+        </div>
+    {% endfor %}
 
-		{% if not commits %}
-			<div class="commit">
-				<p class="info text-error"><i class="icon-bell"></i>没有提交信息，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
-			</div>
-		{% endif %}
-
-		<footer class="footer">
-			<nav class="pagination">
-				<h2>Pagination</h2>
-				<ul class="nav">
-				</ul>
-			</nav>
-		</footer>
+    {% if not commits %}
+        <div class="commit">
+            <p class="info text-error"><i class="icon-bell"></i>没有提交信息，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
+        </div>
+    {% endif %}
 
 {% endblock %}
 
 {% block subjs %}
 <script>
 $(function(){
-    $('.c_unixtime').each(function(index){ 
-        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-        $(this).show();
-    });
     set_path_href = function() {
         var base_href_path = '/{{user_name}}/{{repo_name}}/commits/{{refs}}/';
         var path = '{{path}}';
@@ -78,9 +64,10 @@ $(function(){
                 }
             }
         }
-        $('#i_repo_path').html(path_href_html);
+        $('#repo-path').html(path_href_html);
     };
     set_path_href();
+    <!--TODO add compare diff-->
     var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
     $('.c_diff_commit').click(function() {
         commit_hash = $(this).attr('value');

@@ -9,12 +9,14 @@
 .c_terminal .c_author { color: gray; }
 .c_terminal .c_refs { color: yellow; }
 </style>
-<h2>{{ refs }}</h2>
-<div id="i_log_graph" class="c_terminal">
-</div>
+    <header class="header clearfix">
+        {% include "repo/branch-nav.html" %}
+    </header>
+    <div id="i_log_graph" class="c_terminal"></div>
 {% endblock %}
 {% block subjs %}
 <script>
+<!--TODO btn btn-mini, branch and tag list -->
 $(function(){
     $.post('/{{user_name}}/{{repo_name}}/log/graph/{{ refs }}/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
         var htmls = [];

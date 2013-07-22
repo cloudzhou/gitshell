@@ -1,11 +1,16 @@
 {% extends "repo/repo.html" %}
+{% block bubble_inner_class_name %} files{% endblock %}
+
+<!--TODO refactor all-->
 {% block subcontainer %}
 <div class="file-list">
-    <h4><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">{{repo_name}}</a> /
-        <span id="i_repo_path"></span>
-        <a style="margin-left: 5px" href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="pull-right"><span class="label label-info">历史</span></a>
-        <a style="margin-left: 5px" href="/{{user_name}}/{{repo_name}}/raw/blob/{{refs}}/{{path}}" class="pull-right"><span class="label label-info">原始文件</span></a>
-    </h4>
+    <header class="header clearfix">
+        {% include "repo/branch-nav.html" %}
+        <span class="pull-right">
+            <a class="btn btn-mini" href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}">Commits</a>
+            <a class="btn btn-mini" href="/{{user_name}}/{{repo_name}}/raw/blob/{{refs}}/{{path}}">Raw</a>
+        </span>
+    </header>
     <style>
     #i_source_code .container:before, #i_source_code .container:after {
         content: "";
@@ -36,10 +41,6 @@
 {% endif %}
 <script>
 $(function(){
-    $('.c_unixtime').each(function(index){ 
-        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-        $(this).show();
-    });
     set_path_href = function() {
         var base_href_path = '/{{user_name}}/{{repo_name}}/tree/{{refs}}/';
         var path = '{{path}}';
@@ -68,7 +69,7 @@ $(function(){
                 }
             }
         }
-        $('#i_repo_path').html(path_href_html);
+        $('#repo-path').html(path_href_html);
     };
     set_path_href();
 {% if is_markdown %}

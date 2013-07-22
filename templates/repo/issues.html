@@ -2,13 +2,14 @@
 
 {% block bubble_inner_class_name %} issues{% endblock %}
 
+<!--create issue-->
 {% block subcontainer %}
 	<header class="header">
 		<h1 class="heading">Issues</h1>
 	</header>
-	<div class="hide btn-group clearfix">
-		{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn first">更新</a>{%else%}<span class="btn btn-disable">更新</span>{%endif%}
-		{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn last">创建</a>{%else%}<span class="btn btn-disable">创建</span>{%endif%}
+	<div class="btn-group clearfix">
+		{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn btn-mini first">更新</a>{%else%}<span class="btn btn-mini btn-disable">更新</span>{%endif%}
+		{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn btn-mini last">创建</a>{%else%}<span class="btn btn-mini btn-disable">创建</span>{%endif%}
 	</div>
 	{% for issue in issues %}
 	<div class="issue colspan">
@@ -47,9 +48,7 @@
 {% endblock %}
 
 {% block subjs %}
-	<!--script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script-->
 	<script src="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.21/jquery-ui.min.js"></script>
-	<!--script src="http://lib.sinaapp.com/js/jquery-ui/1.8.11/jquery-ui.min.js"></script-->
 	<script>
 		$(function(){
 			var current_attrs = {{current_attrs|safe}};

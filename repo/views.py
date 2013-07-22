@@ -633,16 +633,30 @@ def stats(request, user_name, repo_name):
 @repo_permission_check
 @login_required
 def settings(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'settings'
+    refs = 'master'; path = '.'; current = 'settings'; error = u''
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
         raise Http404
+    repoForm = RepoForm(instance = repo)
+    if request.method == 'POST':
+        repoForm = RepoForm(request.POST, instance = repo)
+        if not repoForm.is_valid():
+            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，选择好语言和可见度，active、watch、recommend、repo是保留的名称。'
+            return __response_edit_repo_error(request, response_dictionary, error)
+        name = repoForm.cleaned_data['name']
+        if not RepoManager.is_allowed_reponame_pattern(name):
+            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，active、watch、recommend、repo是保留的名称。'
+            return __response_edit_repo_error(request, response_dictionary, error)
+        repo = repoForm.save()
+        RepoManager.check_export_ok_file(repo)
+        return HttpResponseRedirect('/%s/%s/' % (repo.username, repo.name))
+
     if repo.dropbox_sync == 1 and (repo.dropbox_url is None or repo.dropbox_url == ''):
         dropbox_url = dropbox_share_direct('repositories/%s/%s_%s.git' % (repo.username, repo.id, repo.name))
         if dropbox_url is not None and dropbox_url != '':
             repo.dropbox_url = dropbox_url
             repo.save()
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'repoForm': repoForm, 'error': error}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/settings.html',
                           response_dictionary,
@@ -977,29 +991,6 @@ def __is_url_valid(url):
         logger.exception(e)
     return False
     
-@repo_permission_check
-@login_required
-def edit(request, user_name, repo_name):
-    error = u''
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    repoForm = RepoForm(instance = repo)
-    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error}
-    if request.method == 'POST':
-        repoForm = RepoForm(request.POST, instance = repo)
-        if not repoForm.is_valid():
-            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，选择好语言和可见度，active、watch、recommend、repo是保留的名称。'
-            return __response_edit_repo_error(request, response_dictionary, error)
-        name = repoForm.cleaned_data['name']
-        if not RepoManager.is_allowed_reponame_pattern(name):
-            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，active、watch、recommend、repo是保留的名称。'
-            return __response_edit_repo_error(request, response_dictionary, error)
-        repo = repoForm.save()
-        RepoManager.check_export_ok_file(repo)
-        return HttpResponseRedirect('/%s/%s/' % (repo.username, repo.name))
-    return render_to_response('repo/edit.html', response_dictionary, context_instance=RequestContext(request))
-
 def __response_edit_repo_error(request, response_dictionary, error):
     response_dictionary['error'] = error
     return render_to_response('repo/edit.html', response_dictionary, context_instance=RequestContext(request))

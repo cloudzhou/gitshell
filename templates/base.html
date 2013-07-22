@@ -1,117 +1,117 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
     <head>
-		<meta charset="utf-8">
-		<title>{% block title %}gitshell - 你的代码托管{% endblock %}</title>
-		<meta content="width=device-width, initial-scale=1.0" name="viewport">
-		<meta content="GitShell 专注git代码托管, 团队协同，项目开发" name="description">
-		<meta content="gitshell" name="author">
+        <meta charset="utf-8">
+        <title>{% block title %}gitshell - 你的代码托管{% endblock %}</title>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <meta content="GitShell 专注git代码托管, 团队协同，项目开发" name="description">
+        <meta content="gitshell" name="author">
         <meta name="csrf-token" content="{{csrf_token}}">
 
-		<link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
-		<link href="/static/less/gitshell.less" rel="stylesheet/less" type="text/css">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+        <link href="/static/less/gitshell.less" rel="stylesheet/less" type="text/css">
         <!-- TODO why script here ? -->
-		<script>
-			less = {
-				env: "development"
-			}
-		</script>
-		<script src="/static/js/less-1.4.0.min.js"></script>
-		{% block css %}{% endblock %}
-		<link rel="shortcut icon" href="/static/img/favicon.ico">
-	</head>
-	<body>
-		<header class="navbar navbar-fixed">
-			<nav class="navbar-inner container">
-				<a class="brand" href="/">Gitshell</a>
-				<ul class="nav global">
-					{% if user.is_authenticated %}
-						<li><a href="/home/">工作台</a></li>
-					{% else %}
-						<li><a href="/join/">工作台</a></li>
-					{% endif %}
-					<li {%if mainnav == 'explore'%}class="active"{%endif%}><a href="/explore/">浏览仓库</a></li>
-					<li {%if mainnav == 'help'%}class="active"{%endif%}><a href="/help/">帮助</a></li>
-				</ul>
-				<ul class="nav account">
-					{% if user.is_authenticated %}
+        <script>
+            less = {
+                env: "development"
+            }
+        </script>
+        <script src="/static/js/less-1.4.0.min.js"></script>
+        {% block css %}{% endblock %}
+        <link rel="shortcut icon" href="/static/img/favicon.ico">
+    </head>
+    <body>
+        <header class="navbar navbar-fixed">
+            <nav class="navbar-inner container">
+                <a class="brand" href="/">Gitshell</a>
+                <ul class="nav global">
+                    {% if user.is_authenticated %}
+                        <li><a href="/home/">工作台</a></li>
+                    {% else %}
+                        <li><a href="/join/">工作台</a></li>
+                    {% endif %}
+                    <li {%if mainnav == 'explore'%}class="active"{%endif%}><a href="/explore/">浏览仓库</a></li>
+                    <li {%if mainnav == 'help'%}class="active"{%endif%}><a href="/help/">帮助</a></li>
+                </ul>
+                <ul class="nav account">
+                    {% if user.is_authenticated %}
                         {% if userprofile.unread_message > 0 %}
-						<li class="notifications"><a href="/home/notif/" class="label label-warning">{{userprofile.unread_message}}</a></li>
+                        <li class="notifications"><a href="/home/notif/" class="label label-warning">{{userprofile.unread_message}}</a></li>
                         {% endif %}
-						<li class="dropdown{%if mainnav == 'user'%} active{%endif%}">
-							<a href="/{{ user.username }}/" class="user dropdown-toggle" data-toggle="dropdown" data-target="#">
-								<img class="avatar" src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=35" alt="{{ user.username }}">
-							</a>
-							<div class="dropdown-menu" role="menu" aria-labelladby="dLable">
-								<h2>{{ user.username }}</h2>
-								<p class="email">{{ user.email }}</p>
-								<ul class="nav nav-list">
-									<li><a href="/settings/"><span><i class="icon-wrench"></i>设置</span></a></li>
-									<li><a href="/logout/"><span><i class="icon-off"></i>登出</span></a></li>
-								</ul>
-							</div>
-						</li>
-					{% else %}
-						<li class="active"><a href="/join/">注册</a></li>
-						<li class="active"><a href="/login/">登录</a></li>
-					{% endif %}
-				</ul>
-			</nav>
-		</header>
+                        <li class="dropdown{%if mainnav == 'user'%} active{%endif%}">
+                            <a href="/{{ user.username }}/" class="user dropdown-toggle" data-toggle="dropdown" data-target="#">
+                                <img class="avatar" src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=35" alt="{{ user.username }}">
+                            </a>
+                            <div class="dropdown-menu" role="menu" aria-labelladby="dLable">
+                                <h2>{{ user.username }}</h2>
+                                <p class="email">{{ user.email }}</p>
+                                <ul class="nav nav-list">
+                                    <li><a href="/settings/"><span><i class="icon-wrench"></i>设置</span></a></li>
+                                    <li><a href="/logout/"><span><i class="icon-off"></i>登出</span></a></li>
+                                </ul>
+                            </div>
+                        </li>
+                    {% else %}
+                        <li class="active"><a href="/join/">注册</a></li>
+                        <li class="active"><a href="/login/">登录</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </header>
 
         <!--TODO repo_header ?-->
-		{% block repo_header %}{% endblock %}
+        {% block repo_header %}{% endblock %}
 
-		<section class="container{% block container_class_name %}{% endblock %}">
-			{% block container %}{% endblock %}
-		</section>
+        <section class="container{% block container_class_name %}{% endblock %}">
+            {% block container %}{% endblock %}
+        </section>
 
         <!--TODO clean footer -->
-		<footer class="footer">
-			<div class="container">
-				<nav class="colspan">
-					<dl class="nav nav-list span">
-						<dt class="leader">关于我们</dt>
-						<dd>
-							<a href="/help/#about">关于GitShell</a><br>
-							<a href="/help/#mission">我们的愿景</a><br>
-							<a href="/help/#faq">FAQ</a><br>
-							<a href="/help/#join_login">注册<sup>免费</sup></a><br>
-							<a href="/help/">帮助</a><br>
-							<a target="_blank" href="http://blog.gitshell.com">官方博客</a><br>
-							<a href="/help/#contact">联系GitShell</a>
-						</dd>
-					</dl>
-					<dl class="nav nav-list span">
-						<dt class="leader">开发日志</dt>
-						<dd>
-							<a href="/help/#about">关于</a><br>
-							<a href="/help/#mission">愿景</a><br>
-							<a href="/help/#faq">FAQ</a><br>
-							<a href="/help/#join_login">注册<sup>免费</sup></a>
-						</dd>
-					</dl>
-					<dl class="nav nav-list span">
-						<dt class="leader">联络</dt>
-						<dd>
-							<a href="/help/#about">新浪微博</a><br>
-							<a href="/help/#mission">腾讯微博</a><br>
-							<a href="/help/#faq">Twitter</a><br>
-							<a href="/help/#join_login">Google+</a><br>
-							<a target="_blank" href="http://blog.gitshell.com">RSS订阅</a><br>
-							<a href="/help/#contact">人人网</a>
-						</dd>
-					</dl>
-				</nav>
-				<p class="copyright">&copy; <strong>Gitshell</strong> 2013 专注<a target="_blank" href="http://git-scm.com/">Git</a>代码托管<a class="muted" href="http://www.miitbeian.gov.cn">苏ICP备12042031号</a></p>
-				<a href="#" class="btn pull-right">返回顶部</a>
-			</div>
-		</footer>
+        <footer class="footer">
+            <div class="container">
+                <nav class="colspan">
+                    <dl class="nav nav-list span">
+                        <dt class="leader">关于我们</dt>
+                        <dd>
+                            <a href="/help/#about">关于GitShell</a><br>
+                            <a href="/help/#mission">我们的愿景</a><br>
+                            <a href="/help/#faq">FAQ</a><br>
+                            <a href="/help/#join_login">注册<sup>免费</sup></a><br>
+                            <a href="/help/">帮助</a><br>
+                            <a target="_blank" href="http://blog.gitshell.com">官方博客</a><br>
+                            <a href="/help/#contact">联系GitShell</a>
+                        </dd>
+                    </dl>
+                    <dl class="nav nav-list span">
+                        <dt class="leader">开发日志</dt>
+                        <dd>
+                            <a href="/help/#about">关于</a><br>
+                            <a href="/help/#mission">愿景</a><br>
+                            <a href="/help/#faq">FAQ</a><br>
+                            <a href="/help/#join_login">注册<sup>免费</sup></a>
+                        </dd>
+                    </dl>
+                    <dl class="nav nav-list span">
+                        <dt class="leader">联络</dt>
+                        <dd>
+                            <a href="/help/#about">新浪微博</a><br>
+                            <a href="/help/#mission">腾讯微博</a><br>
+                            <a href="/help/#faq">Twitter</a><br>
+                            <a href="/help/#join_login">Google+</a><br>
+                            <a target="_blank" href="http://blog.gitshell.com">RSS订阅</a><br>
+                            <a href="/help/#contact">人人网</a>
+                        </dd>
+                    </dl>
+                </nav>
+                <p class="copyright">&copy; <strong>Gitshell</strong> 2013 专注<a target="_blank" href="http://git-scm.com/">Git</a>代码托管<a class="muted" href="http://www.miitbeian.gov.cn">苏ICP备12042031号</a></p>
+                <a href="#" class="btn pull-right">返回顶部</a>
+            </div>
+        </footer>
 
 
-		<script src="/static/js/jquery-1.7.2.min.js"></script>
-		<script src="/static/js/bootstrap.min.js"></script>
-		<script src="/static/js/select2.min.js"></script>
+        <script src="/static/js/jquery-1.7.2.min.js"></script>
+        <script src="/static/js/bootstrap.min.js"></script>
+        <script src="/static/js/select2.min.js"></script>
         <script src='/static/js/app/underscore/underscore-min.js'></script>
         <script src='/static/js/app/underscore/underscore.string.min.js'></script>
         <script type="text/javascript"> _.mixin(_.str.exports()) </script>
@@ -120,28 +120,28 @@
         <script src='/static/js/gitshell-template.js?timestamp=1373609013' type='text/javascript'></script>
         <script src='/static/js/gitshell.js?timestamp=1373609013' type='text/javascript'></script>
         <!--TODO refactor js-->
-		<script>
+        <script>
             moment.lang('zh-cn');
-			$(function(){
-				$('.unixtime').each(function(index){ 
-					$(this).html(moment(new Date($(this).html()*1000)).fromNow());
-					$(this).show();
-				});
-				$('.dropdown-toggle').dropdown();
-			});
-		</script>
-		{% block js %}{% endblock %}
-		<script>
-			var _gaq = _gaq || [];
-			_gaq.push(['_setAccount', 'UA-33142900-1']);
-			_gaq.push(['_trackPageview']);
+            $(function(){
+                $('.unixtime').each(function(index){ 
+                    $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+                    $(this).show();
+                });
+                $('.dropdown-toggle').dropdown();
+            });
+        </script>
+        {% block js %}{% endblock %}
+        <script>
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-33142900-1']);
+            _gaq.push(['_trackPageview']);
 
-			(function() {
-				var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-				ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-				var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-			})();
-		</script>
-	</body>
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
+    </body>
 </html>
 
