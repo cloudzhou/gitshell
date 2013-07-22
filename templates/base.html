@@ -65,8 +65,9 @@
 							</div>
 						</li>
 					{% else %}
-						<li {%if mainnav == 'eoin'%}class="active"{%endif%}><a href="/join/0/">注册</a></li>
-						<li {%if mainnav == 'login'%}class="active"{%endif%}><a href="/login/">登录</a></li>
+					<li class="welcome-msg">
+						<p>请<a href="/login/"{%if mainnav == 'login'%}class="active"{%endif%}>登录</a>,或者<a href="/join/0/"{%if mainnav == 'eoin'%}class="active"{%endif%}>注册</a>
+					</li>
 					{% endif %}
 				</ul>
 			</nav>
@@ -74,7 +75,7 @@
 
 		{% block repo_header %}{% endblock %}
 
-		<section class="container{% block container_class_name %}{% endblock %}">
+		<section id="container" class="{% block container_class_name %}{% endblock %}">
 			{% block container %}{% endblock %}
 		</section>
 

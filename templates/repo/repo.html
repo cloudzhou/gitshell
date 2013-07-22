@@ -12,8 +12,8 @@
 
 {% block container %}
 
-	<header class="header">
-		<div class="repo-actions-bar">
+	<header class="header repo-actions-bar">
+		<div class="container">
 			<ul class="repocrumb breadcrumb">
 				<li class="user"><a href="/{{ user_name }}/">{{ user_name }}</a><span class="divider">/</span></li>
 				<li><a href="/{{ user_name }}/{{ repo_name }}/">{{ repo_name }}</a><sup><i class="icon-dropbox"></i></sup></li>
@@ -38,7 +38,7 @@
 		</div>
 	</header>
 
-	<section class="colspan">
+	<section class="colspan container">
 		<nav class="sidenav">
 			<ul class="nav nav-list">
 				<li class="first{% if current == 'index' or current == 'tree' %} active{% endif %}"><a href="/{{ user_name }}/{{ repo_name }}/tree/" data-original-title="Code" rel="tooltip"><span><i class="icon-code"></i></span></a></li>

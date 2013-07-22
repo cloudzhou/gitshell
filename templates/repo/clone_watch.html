@@ -12,7 +12,7 @@
 			{%for fork_repo in fork_repos%}
 				<div class="user-plugin repo-{{forloop.parentloop.counter}}">
 					<figure class="avatar">
-						<img src="https://gravatar.com/avatar/{{fork_repo.imgurl}}?s=80" alt="{{ gsuser.username }}">
+						<img src="https://gravatar.com/avatar/{{fork_repo.imgurl}}?s=65" alt="{{ gsuser.username }}">
 					</figure>
 					<div class="info">
 						<p class="name">
@@ -24,13 +24,16 @@
 			{%endfor%}
 		{%endfor%}
 
+		<div class="header-ribbon">
+			<h2 class="heading">关注者</h2>
+		</div>
 		{% if watch_users %}
 			<div class="watchers">
 			{%for watch_user in watch_users%}
 				<div class="member">
 					<div class="user-plugin">
 						<figure class="avatar">
-							<img src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=80" alt="{{ gsuser.username }}">
+							<img src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=65" alt="{{ gsuser.username }}">
 						</figure>
 						<div class="info">
 							<p class="name">
