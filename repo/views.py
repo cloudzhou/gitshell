@@ -1120,6 +1120,8 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_repo_member = RepoManager.is_repo_member(repo, request.user)
     is_owner = (repo.user_id == request.user.id)
     is_branch = (refs in refs_meta['branches'])
+    is_tag = (refs in refs_meta['tags'])
+    is_commit = (not is_branch and not is_tag)
     has_fork_right = (repo.auth_type == 0 or is_repo_member)
     has_pull_right = is_owner
     if not is_owner:
@@ -1128,7 +1130,7 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
             is_forked_repo = True
             has_pull_right = True
     repo_pull_new_count = RepoManager.count_pullRequest_by_descRepoId(repo.id, PULL_STATUS.NEW)
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_stared_repo': is_stared_repo, 'is_forked_repo': is_forked_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'is_branch': is_branch, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta}
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_stared_repo': is_stared_repo, 'is_forked_repo': is_forked_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'is_branch': is_branch, 'is_tag': is_tag, 'is_commit': is_commit, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta}
 
 @login_required
 def list_github_repos(request):
