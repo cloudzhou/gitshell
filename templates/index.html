@@ -1,23 +1,17 @@
 {% extends "base.html" %}
 {% load gstools %}
+{% block container_class_name %} index{% endblock %}
 {% block container %}
 
-	<div class="authorize">
-		<header class="banner">
+	<div class="banner">
+		<header>
 			<h1>加入Git的怀抱.</h1>
 			<p>国内最稳定的Git代码托管服务,dropbox实时备份。</p>
 		</header>
-		<form method="post" class="form">
-			<fieldset>
-				<input type="email" placeholder="email" class="field">
-				<input type="password" placeholder="password" class="field">
-				<input type="password" placeholder="confirm password" class="field">
-				<button type="submit" class="btn btn-primary">现在加入</button>
-			</fieldset>
-		</form>
-		<p>当你点击注册的时候表示你接受GitShell的<a href="#">服务条款</a>和<a href="#">隐私政策</a>.</p>
+		<div class="authorize">
+			<a href="/join/" class="btn btn-success btn-large">现在加入</a>
+		</div>
 	</div>
-
 
 	<ul class="welcome-details horizontal-list">
 		<li>
