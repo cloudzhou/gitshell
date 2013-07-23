@@ -1,6 +1,6 @@
 {% extends "repo/repo.html" %}
 {% block subcontainer %}
-<!--TODO refactor-->
+<!--TODO refactor add create delete branch tag-->
 <style>
 </style>
 <h2>Branches</h2>
@@ -14,6 +14,7 @@ $(function(){
         var html = [];
         var detail_commit = json.refs_meta.detail_commit;
         var branches = json.refs_meta.branches;
+        var current_refs = '{{refs}}';
         html.push('<table class="table table-striped"><tbody>');
         for(x in branches) {
             html.push('<tr>');

@@ -12,16 +12,16 @@
         {% include "repo/branch-nav.html" %}
     </header>
 
-    {% for commit_attrs in commits %}
+    {% for commit in commits %}
         <div class="commit colspan">
             <div class="commiter user-plugin span">
-                <figure class="avatar"><img src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=30" alt="{{ gsuser.username }}"></figure>
+                <figure class="avatar"><img src="https://gravatar.com/avatar/{{commit.author_imgurl}}?s=30" alt="{{commit.author}}"></figure>
                 <div class="info">
-                    <p class="msg"><a href="#">{{ commit_attrs.commit_message|truncatechars:80 }}</a></p>
-                    <p class="meta"><a href="/{{ commit_attrs.author }}/">{{ commit_attrs.author }}</a> <span class="date unixtime">{{ commit_attrs.committer_date }}</span></p>
+                    <p class="msg"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/">{{commit.commit_message|truncatechars:80}}</a></p>
+                    <p class="meta"><a href="/{{commit.author}}/">{{commit.author}}</a> <span class="date unixtime">{{commit.committer_date}}</span></p>
                 </div>
             </div>
-            <span class="hash span"><a href="#" class="btn label-mini btn-info">{{ commit_attrs.commit_hash }}</a></span>
+            <span class="hash span"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/" class="btn label-mini btn-info">{{commit.commit_hash}}</a></span>
         </div>
     {% endfor %}
 

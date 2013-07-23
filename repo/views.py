@@ -148,6 +148,24 @@ def blob(request, user_name, repo_name, refs, path):
                           context_instance=RequestContext(request))
     
 @repo_permission_check
+def commit(request, user_name, repo_name, commit_hash):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    refs = 'master'; path = '.'; current = 'commits'
+    gitHandler = GitHandler()
+    commits = gitHandler.repo_log_file(repo.get_abs_repopath(), '0000000', commit_hash, 1, path)
+    _fillwith_commits(commits)
+    commit = None
+    if len(commits) > 0:
+        commit = commits[0]
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'commit_hash': commit_hash, 'commit': commit}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/commit.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+    
+@repo_permission_check
 def commits_default(request, user_name, repo_name):
     refs = 'master'; path = '.'
     return commits(request, user_name, repo_name, refs, path)
@@ -162,7 +180,8 @@ def commits(request, user_name, repo_name, refs, path):
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
-    commits = gitHandler.repo_log_file(abs_repopath, '0000000', commit_hash, path)
+    commits = gitHandler.repo_log_file(abs_repopath, '0000000', commit_hash, 50, path)
+    _fillwith_commits(commits)
     response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'path': path, 'commits': commits}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/commits.html',
@@ -182,7 +201,8 @@ def commits_log(request, user_name, repo_name, from_commit_hash, to_commit_hash)
     orgi_to_commit_hash = to_commit_hash
     from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_commit_hash)
     to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_commit_hash)
-    commits = gitHandler.repo_log_file(abs_repopath, from_commit_hash, to_commit_hash, '.')
+    commits = gitHandler.repo_log_file(abs_repopath, from_commit_hash, to_commit_hash, 50, '.')
+    _fillwith_commits(commits)
     response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'orgi_from_commit_hash': orgi_from_commit_hash, 'orgi_to_commit_hash': orgi_to_commit_hash, 'from_commit_hash': from_commit_hash, 'to_commit_hash': to_commit_hash, 'commits': commits, 'refs_meta': refs_meta}
     return json_httpResponse(response_dictionary)
 
@@ -364,7 +384,8 @@ def pull_commits(request, user_name, repo_name, source_username, source_refs, de
 
     source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), source_refs)
     desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), desc_refs)
-    commits = gitHandler.repo_log_file(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, path)
+    commits = gitHandler.repo_log_file(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, 50, path)
+    _fillwith_commits(commits)
     return json_httpResponse({'commits': commits, 'source_refs': source_refs, 'desc_refs': desc_refs, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
     
 @repo_permission_check
@@ -1155,9 +1176,18 @@ def _conver_repos(raw_repos, map_users):
         repos_vo.append(repo_dict) 
     return repos_vo
 
+def _fillwith_commits(commits):
+    for commit in commits:
+        userprofile = GsuserManager.get_userprofile_by_name(commit['author'])
+        if userprofile:
+            commit['author_imgurl'] = userprofile.imgurl
+        else:
+            commit['author_imgurl'] = '000000'
+
 def json_ok():
     return json_httpResponse({'result': 'ok'})
 
 def json_failed():
     return json_httpResponse({'result': 'failed'})
+
 

@@ -1,0 +1,46 @@
+{% extends "repo/repo.html" %}
+{% block bubble_inner_class_name %} commits{% endblock %}
+
+{% block subcontainer %}
+    <!--TODO html error -->
+    {% if commit %}
+        <div class="commit colspan">
+            <div class="commiter user-plugin span">
+                <figure class="avatar"><img src="https://gravatar.com/avatar/{{commit.author_imgurl}}?s=30" alt="{{commit.author}}"></figure>
+                <div class="info">
+                    <p class="msg"><a href="#">{{commit.commit_message|truncatechars:80}}</a></p>
+                    <p class="meta"><a href="/{{commit.author}}/">{{commit.author}}</a> <span class="date unixtime">{{commit.committer_date}}</span></p>
+                </div>
+            </div>
+            {% for parent_commit_hash in commit.parent_commit_hash %}
+            <span class="hash span"><a href="/{{user_name}}/{{repo_name}}/commit/{{parent_commit_hash}}/" class="btn label-mini btn-info parent_commit_hash">{{parent_commit_hash}}</a></span>
+            {% endfor %}
+            <span class="hash span">
+                {% if commit.parent_commit_hash|length > 1 %} parents: {% else %} parent: {% endif %}
+            </span>
+        </div>
+    {% else %}
+        <div class="commit">
+            <p class="info text-error"><i class="icon-bell"></i><em>没有找到该 Commit</em></p>
+        </div>
+    {% endif %}
+    <div id="diff">
+    </div>
+
+{% endblock %}
+
+{% block subjs %}
+<script>
+$(function(){
+    <!--TODO add compare diff-->
+    var commit_hash = '{{commit_hash}}';
+    var parent_commit_hash = $('.parent_commit_hash').text();
+    var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
+    repoComparer.from_refs = parent_commit_hash;
+    repoComparer.to_refs = commit_hash;
+    repoComparer.path = '.';
+    repoComparer.loadDiff($('#diff'), null, function() {
+    });
+});
+</script>
+{% endblock %}

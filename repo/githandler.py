@@ -66,18 +66,18 @@ class GitHandler():
             logger.exception(e)
         return None
     
-    def repo_log_file(self, repo_path, from_commit_hash, commit_hash, path):
+    def repo_log_file(self, repo_path, from_commit_hash, commit_hash, log_size, path):
         (from_commit_hash, commit_hash, path) = self._all_to_utf8(from_commit_hash, commit_hash, path)
         if not self._path_check_chdir(repo_path, commit_hash, path) or not re.match('^\w+$', from_commit_hash):
             return None
         path = self._get_quote_path(path)
         between_commit_hash = from_commit_hash + '...' + commit_hash
-        stage_file = self._get_stage_file(repo_path, between_commit_hash, path)
+        stage_file = self._get_stage_file(repo_path, between_commit_hash, str(log_size) + '|' + path)
         stage_file = stage_file + '.log'
         result = self._read_load_stage_file(stage_file)
         if result is not None:
             return result
-        result = self._repo_load_log_file(from_commit_hash, commit_hash, path)
+        result = self._repo_load_log_file(from_commit_hash, commit_hash, log_size, path)
         self._dumps_write_stage_file(result, stage_file)
         return result
 
@@ -235,12 +235,12 @@ class GitHandler():
                 logger.exception(e)
         return False
 
-    def _repo_load_log_file(self, from_commit_hash, commit_hash, path):
+    def _repo_load_log_file(self, from_commit_hash, commit_hash, log_size, path):
         commits = []
         between_commit_hash = commit_hash
         if from_commit_hash is not None and not from_commit_hash.startswith('0000000'):
             between_commit_hash = from_commit_hash + '...' + commit_hash
-        command = '/usr/bin/git log -50 --pretty="%%h______%%p______%%t______%%an______%%cn______%%ct|%%s" %s -- %s | /usr/bin/head -c 524288' % (between_commit_hash, path)
+        command = '/usr/bin/git log -%s --pretty="%%h______%%p______%%t______%%an______%%cn______%%ct|%%s" %s -- %s | /usr/bin/head -c 524288' % (log_size, between_commit_hash, path)
         try:
             raw_result = check_output(command, shell=True)
             for line in raw_result.split('\n'):
@@ -252,7 +252,7 @@ class GitHandler():
                 if len(attrs) != 6:
                     continue
                 (commit_hash, parent_commit_hash, tree_hash, author, committer, committer_date) = (attrs)
-                commits.append({
+                commit = {
                     'commit_hash': commit_hash,
                     'parent_commit_hash': parent_commit_hash,
                     'tree_hash': tree_hash,
@@ -260,7 +260,9 @@ class GitHandler():
                     'committer': committer,
                     'committer_date': committer_date,
                     'commit_message': commit_message,
-                })
+                }
+                commit['parent_commit_hash'] = parent_commit_hash.split(' ')
+                commits.append(commit)
             return commits
         except Exception, e:
             logger.exception(e)
@@ -318,9 +320,9 @@ class GitHandler():
         stage_file = '%s/%s/%s/%s' % (self.stage_path, username, reponame, hashlib.md5(identity).hexdigest())
         return stage_file
 
-    def _get_stage_file(self, repo_path, commit_hash, path):
+    def _get_stage_file(self, repo_path, commit_hash, uniq_str):
         (username, reponame) = repo_path.split('/')[-2:]
-        identity = '%s|%s' % (commit_hash, path)
+        identity = '%s|%s' % (commit_hash, uniq_str)
         stage_file = '%s/%s/%s/%s' % (self.stage_path, username, reponame, hashlib.md5(identity).hexdigest())
         return stage_file
         
@@ -464,13 +466,13 @@ class GitHandler():
                 (commit_hash, parent_commit_hash, tree_hash, author, committer, committer_date) = (attrs)
                 refs_detail_commit[refs] = {
                     'commit_hash': commit_hash,
-                    'parent_commit_hash': parent_commit_hash,
                     'tree_hash': tree_hash,
                     'author': author,
                     'committer': committer,
                     'committer_date': committer_date,
                     'commit_message': commit_message,
                 }
+                refs_detail_commit[refs]['parent_commit_hash'] = parent_commit_hash.split(' ')
         except Exception, e:
             logger.exception(e)
         meta['detail_commit'] = refs_detail_commit
@@ -520,7 +522,7 @@ class GitHandler():
         return True
 
     def _is_allowed_path(self, path):
-        if '..' in path:
+        if '..' in path or path.startswith('-'):
             return False
         if re.match('^[a-zA-Z0-9_\.\-/]+$', path):
             return True
@@ -652,5 +654,5 @@ if __name__ == '__main__':
     print gitHandler.repo_ls_tree('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', 'githooks/')
     print gitHandler.repo_ls_tree('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', '.')
     print gitHandler.repo_cat_file('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', 'README.md')
-    print gitHandler.repo_log_file('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', '0000000', 'README.md')
+    print gitHandler.repo_log_file('/opt/8001/gitshell/.git', '16d71ee5f6131254c7865951bf277ffe4bde1cf9', '0000000', 50, 'README.md')
     print gitHandler.repo_diff('/opt/8001/gitshell/.git', '7daf915', '1e25868', 3, 'README.md')

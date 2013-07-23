@@ -14,6 +14,7 @@ $(function(){
         var html = [];
         var detail_commit = json.refs_meta.detail_commit;
         var tags = json.refs_meta.tags;
+        var current_refs = '{{refs}}';
         html.push('<table class="table table-striped"><tbody>');
         for(x in tags) {
             html.push('<tr>');

@@ -113,8 +113,8 @@
                     <ul class="nav clearfix">
                         <li class="first{% if current == 'index' or current == 'tree' or current == 'blob' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">Code</a></li>
                         <li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">Commit<span class="label label-mini{% if current == 'commits' %} label-success{% endif %}">{{repo.commit}}</span></a></li>
-                        <li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{user_name}}/{{repo_name}}/branches/">Branch<span class="label label-mini{% if current == 'branches' %} label-success{% endif %}">{{refs_meta.branch_count}}</span></a></li>
-                        <li {% if current == 'tags' %} class="active" {% endif %}><a href="/{{user_name}}/{{repo_name}}/tags/">Tag<span class="label label-mini{% if current == 'tags' %} label-success{% endif %}">{{refs_meta.tag_count}}</span></a></li>
+                        <li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{user_name}}/{{repo_name}}/branches/{{refs}}/">Branch<span class="label label-mini{% if current == 'branches' %} label-success{% endif %}">{{refs_meta.branch_count}}</span></a></li>
+                        <li {% if current == 'tags' %} class="active" {% endif %}><a href="/{{user_name}}/{{repo_name}}/tags/{{refs}}/">Tag<span class="label label-mini{% if current == 'tags' %} label-success{% endif %}">{{refs_meta.tag_count}}</span></a></li>
                         <li class="last{% if current == 'refs_graph' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/refs/graph/{{refs}}/">Graph</a></li>
                     </ul>
                 </nav>
