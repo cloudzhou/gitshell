@@ -1,35 +1,24 @@
 {% extends "user/user_base.html" %}
 {% block left_sub_container %}
-        <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
-            <h2>评论</h2>
-        </div>
-        <div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th class="span2">用户</th>
-                        <th class="span5">评论</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for recommend in recommends %}
-                    <tr class="c_td_recommend">
-                        <td><img class="avatar" src="https://gravatar.com/avatar/{{ recommend.imgurl }}?s=40"/> <a href="/{{recommend.username}}/">{{recommend.username}}</a></td>
-                        <td style="vertical-align: middle">{{recommend.content}}
-                        <div class="pull-right">
-                            <a style="display: none" class="c_rm_recommend" value="{{ recommend.id }}" href="javascript:void(0)"> x </a>
-                            <button style="display: none" value="{{ recommend.id }}" class="c_rm_rf_recommend btn btn-mini btn-danger">确定删除该评论？</button>
-                        </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<div class="span left">
+	<h2 class="heading">评论</h2>
+	{% for recommend in recommends %}
+		<div class="c_td_recommend user-plugin">
+			<figure class="avatar"><img src="https://gravatar.com/avatar/{{ recommend.imgurl }}?s=40" alt="{{ recommend.username}}"></figure>
+			<div class="info">
+				<p class="name"><a href="/{{recommend.username}}/">{{recommend.username}}</a></p>
+				<p class="meta">{{recommend.content}}</p>
+				<span class="actions">
+					<a class="c_rm_recommend" value="{{ recommend.id }}" href="javascript:void(0)"><i class="icon-close"></i></a>
+					<a value="{{ recommend.id }}" class="c_rm_rf_recommend btn btn-mini btn-danger hide">确定删除该评论？</button>
+				</span>
+			</div>
+		</div>
+	{% endfor %}
+</div>
 {% endblock %}
 {% block subjs %}
 <script>
-/*global jQuery, window */
 $(function(){
     $('.c_td_recommend').live('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {

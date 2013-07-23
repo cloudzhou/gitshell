@@ -1,50 +1,44 @@
-{% extends "base.html" %}
+{% extends "user/user_base.html" %}
 
-{% block container %}
-<div class="page-header" style="margin-bottom: 18px; height: 52px; padding-bottom: 0px;">
-<h1 style="float: left; margin-right: 30px">:-), {{ user_name }}的仓库列表</h1><div style="float: left" class="btn-group">
-	<button data-toggle="dropdown" class="btn btn-small dropdown-toggle">查看列表 <span class="caret"></span></button>
-	<ul class="dropdown-menu">
-		{% for repo in repo_list %}
-		<li><a href="/{{ user_name }}/{{ repo.name }}/">{{ repo.name }}</a></li>
-		{% endfor %}
-		<li class="divider"></li>
-		<li><a href="/{{ user.username }}/repo/create/">+ 创建新的仓库</a></li>
-	</ul>
-	<a href="/{{ user.username }}/repo/create/" class="pull-left"><button class="btn btn-success btn-small" style="margin-left: 10px"><strong>+</strong> 创建仓库</button></a>
-</div>
-</div>
+{% block left_sub_container %}
+<div class="span left user-repos">
+<div class="item">
+	<h2 class="heading">{{ user_name }}的仓库列表</h2>
+	<div class="dropdown">
+		<a href="#" data-toggle="dropdown" class="btn btn-small dropdown-toggle">查看列表<i class="icon-caret-down"></i></a>
+		<ul class="dropdown-menu">
+			{% for repo in repo_list %}
+			<li><a href="/{{ user_name }}/{{ repo.name }}/">{{ repo.name }}</a></li>
+			{% endfor %}
+			<li class="create"><a href="/{{ user.username }}/repo/create/">+ 创建新的仓库</a></li>
+		</ul>
+		<a href="/{{ user.username }}/repo/create/" class="btn btn-success btn-small"><strong>+</strong>创建仓库</a>
+	</div>
 {% load humanize %}
 {% for repo in repo_list %}
-<div class="row" style="margin: 10px;">
-    <div class="span7">
-        <div class="c_repo" style="padding: 10px;">
-            <h3>☺ 
-            <a href="/{{ user_name }}/{{ repo.name }}/">{{ repo.name }}</a>
-            <span style="float: right;">
-            <a href="/{{ user_name }}/{{ repo.name }}/commits/" style="margin-right: 20px" rel="tooltip" data-original-title="commit 次数">♯ {{ repo.commit }}</a>
-            <a href="/{{ user_name }}/{{ repo.name }}/clone_watch/" style="margin-right: 20px" rel="tooltip" data-original-title="watch 次数">♥ {{ repo.watch }}</a>
-            <a href="/{{ user_name }}/{{ repo.name }}/clone_watch/" style="margin-right: 20px" rel="tooltip" data-original-title="fork 次数">♂ {{ repo.fork }}</a></span></h3>
-            <div style="margin-left: 20px;">
-                <h6>创建于{{ repo.create_time|date:"y/m/d" }}，最近更新{{ repo.modify_time|date:"y/m/d H:i" }}</h6> 
-                <p>{{ repo.desc }}</p>
-                <h6 id="i_{{repo.name}}_feed_history" style="display: none">最近</h6> 
-                <ul id="i_{{repo.name}}">
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
+	<div class="repo c_repo">
+		<h3 class="heading"><a href="/{{ user_name }}/{{ repo.name }}/">{{ repo.name }}</a></h3>
+		<div class="actions btn-group">
+			<a href="/{{ user_name }}/{{ repo.name }}/commits/" rel="tooltip" data-original-title="commit 次数" class="first btn btn-mini"><i class="icon-time"></i>{{ repo.commit }}</a>
+			<a href="/{{ user_name }}/{{ repo.name }}/clone_watch/" rel="tooltip" data-original-title="watch 次数" class="middle btn btn-mini"><i class="icon-eye-open"></i>{{ repo.watch }}</a>
+			<a href="/{{ user_name }}/{{ repo.name }}/clone_watch/" rel="tooltip" data-original-title="fork 次数" class="last btn btn-mini"><i class="icon-code-fork"></i>{{ repo.fork }}</a>
+		</div>
+		<div class="detail">
+			<p class="meta">创建于{{ repo.create_time|date:"y/m/d" }}，最近更新{{ repo.modify_time|date:"y/m/d H:i" }}</p> 
+			<p class="description">{{ repo.desc }}</p>
+			<ul id="i_{{repo.name}}" class="list">
+			</ul>
+		</div>
+	</div>
 {% endfor %}
+</div>
+</div>
 {% endblock %}
-
-
 
 {% block js %}
 	<script src="/static/js/moment.min.js"></script>
 	<script src="/static/js/moment.zh-cn.js"></script>
 	<script>
-	/*global jQuery, window */
 	$(function(){
 			moment.lang('zh-cn');
 			orgi_repo_feed_map = {{repo_feed_map|safe}};
@@ -81,7 +75,7 @@
 															}
 															if(feed.feed_type == 0) {
 																	commit = feed.relative_obj;
-																	html.push('<li><code><a href="/{{ user_name }}/' + commit.repo_name + '/">' + commit.commit_hash + '</a></code> ' + commit.subject + ' <span class="muted pull-right">' + commit.author + ' ' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></li>');
+																	html.push('<li><code><a href="/{{ user_name }}/' + commit.repo_name + '/">' + commit.commit_hash + '</a></code> ' + commit.subject + ' <span class="date">' + commit.author + ' ' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></li>');
 															} else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
 																	issue = feed.relative_obj;
 																	action = 'create issue';
@@ -105,14 +99,7 @@
 					})
 			};
 			do_repo_feeds();
-			$('.c_repo').hover(function() {
-					$(this).css('background-color', '#D9EDF7');
-			}, function(){
-					$(this).css('background-color', '#FFFFFF');
-			});
-			$('.c_repo').tooltip({
-				selector: "a[rel=tooltip]"
-			})
+			$('.c_repo').tooltip({ selector: "a[rel=tooltip]" });
 	});
 	</script>
 {% endblock %}
