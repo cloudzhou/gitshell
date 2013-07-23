@@ -176,18 +176,64 @@ class GitHandler():
             logger.exception(e)
         return (128, '合并失败，请检查是否存在冲突 或者 non-fast-forward')
 
+    def create_branch(self, repo, branch, base_branch):
+        if not self._is_allowed_path(branch) or not self._is_allowed_path(base_branch):
+            return False
+        refs_meta = self.repo_ls_refs(repo, repo.get_abs_repopath())
+        if branch in refs_meta['branches'] or base_branch not in refs_meta['branches']:
+            return False
+        args = ['/bin/bash', '/usr/bin/git', 'branch', branch, base_branch]
+        return self._run_command_on_repo_and_flush(repo, args)
+
+    def create_tag(self, repo, tag, base_branch):
+        if not self._is_allowed_path(tag) or not self._is_allowed_path(base_branch):
+            return False
+        refs_meta = self.repo_ls_refs(repo, repo.get_abs_repopath())
+        if tag in refs_meta['tags'] or base_branch not in refs_meta['branches']:
+            return False
+        args = ['/bin/bash', '/usr/bin/git', 'tag', tag, base_branch]
+        return self._run_command_on_repo_and_flush(repo, args)
+
+    def delete_branch(self, repo, branch):
+        if not self._is_allowed_path(branch):
+            return False
+        refs_meta = self.repo_ls_refs(repo, repo.get_abs_repopath())
+        if branch not in refs_meta['branches']:
+            return False
+        args = ['/bin/bash', '/usr/bin/git', 'branch', '-D', branch]
+        return self._run_command_on_repo_and_flush(repo, args)
+
+    def delete_tag(self, repo, tag):
+        if not self._is_allowed_path(tag):
+            return False
+        refs_meta = self.repo_ls_refs(repo, repo.get_abs_repopath())
+        if tag not in refs_meta['branches']:
+            return False
+        args = ['/bin/bash', '/usr/bin/git', 'tag', '-d', tag]
+        return self._run_command_on_repo_and_flush(repo, args)
+
     def update_server_info(self, repo):
+        args = ['/bin/bash', '/usr/bin/git', 'update-server-info']
+        return self._run_command_on_repo(repo, args)
+
+    def _run_command_on_repo_and_flush(self, repo, args):
+        if self._run_command_on_repo(repo, args):
+            self.update_server_info(repo)
+            cache.delete(CacheKey.REPO_COMMIT_VERSION % repo.id)
+            return True
+        return False
+
+    def _run_command_on_repo(self, repo, args):
         abs_repopath = repo.get_abs_repopath()
         if os.path.exists(abs_repopath):
             self._chdir(abs_repopath)
-            args = ['/bin/bash', '/usr/bin/git', 'update-server-info']
             try:
                 popen = Popen(args, stdout=PIPE, shell=False, close_fds=True)
                 output = popen.communicate()[0].strip()
                 return popen.returncode == 0
             except Exception, e:
                 logger.exception(e)
-            return False
+        return False
 
     def _repo_load_log_file(self, from_commit_hash, commit_hash, path):
         commits = []

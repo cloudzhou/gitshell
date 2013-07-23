@@ -794,6 +794,50 @@ def refs_graph(request, user_name, repo_name, refs):
 
 @repo_permission_check
 @require_http_methods(["POST"])
+def refs_branch_create(request, user_name, repo_name, branch, base_branch):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        return json_httpResponse({'returncode': 128, 'result': 'failed'})
+    gitHandler = GitHandler()
+    if gitHandler.create_branch(repo, branch, base_branch):
+        return json_httpResponse({'returncode': 0, 'result': 'success'})
+    return json_httpResponse({'returncode': 128, 'result': 'failed'})
+
+@repo_permission_check
+@require_http_methods(["POST"])
+def refs_branch_delete(request, user_name, repo_name, branch):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        return json_httpResponse({'returncode': 128, 'result': 'failed'})
+    gitHandler = GitHandler()
+    if gitHandler.delete_branch(repo, branch):
+        return json_httpResponse({'returncode': 0, 'result': 'success'})
+    return json_httpResponse({'returncode': 128, 'result': 'failed'})
+
+@repo_permission_check
+@require_http_methods(["POST"])
+def refs_tag_create(request, user_name, repo_name, tag, base_branch):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        return json_httpResponse({'returncode': 128, 'result': 'failed'})
+    gitHandler = GitHandler()
+    if gitHandler.create_tag(repo, tag, base_branch):
+        return json_httpResponse({'returncode': 0, 'result': 'success'})
+    return json_httpResponse({'returncode': 128, 'result': 'failed'})
+
+@repo_permission_check
+@require_http_methods(["POST"])
+def refs_tag_delete(request, user_name, repo_name, tag):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        return json_httpResponse({'returncode': 128, 'result': 'failed'})
+    gitHandler = GitHandler()
+    if gitHandler.delete_tag(repo, tag):
+        return json_httpResponse({'returncode': 0, 'result': 'success'})
+    return json_httpResponse({'returncode': 128, 'result': 'failed'})
+
+@repo_permission_check
+@require_http_methods(["POST"])
 def refs(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
