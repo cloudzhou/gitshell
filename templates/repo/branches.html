@@ -1,11 +1,8 @@
 {% extends "repo/repo.html" %}
 {% block subcontainer %}
 <!--TODO refactor add create delete branch tag-->
-<style>
-</style>
-<h2>Branches</h2>
-<div id="i_branches">
-</div>
+<h2 class="heading">Branches</h2>
+<div id="i_branches"></div>
 {% endblock %}
 {% block subjs %}
 <script>
@@ -20,12 +17,11 @@ $(function(){
             html.push('<tr>');
             var branch = branches[x];
             var commit = detail_commit[branch];
-            html.push('<td><h2><a href="/{{user_name}}/{{repo_name}}/tree/' + branch + '">' + branch + '</a></h2></td>');
-            html.push('<td><span class="muted">由' + commit.author + '<span class="c_unixtime">' + commit.committer_date + '</span>提交: ' + commit.commit_message + '</span></td>');
-            html.push('<td>');
-            html.push('<a href="/{{user_name}}/{{repo_name}}/branch/graph/' + branch + '/"><button type="button" class="btn">分支图</button></a>');
-            html.push('&nbsp;');
-            html.push('<a href="/{{user_name}}/{{repo_name}}/compare/' + branch + '/"><button type="button" class="btn btn-success">比较</button></a>');
+            html.push('<td class="branch-name"><h2 class="heading"><a href="/{{user_name}}/{{repo_name}}/tree/' + branch + '">' + branch + '</a></h2></td>');
+            html.push('<td class="meta"><span class="muted">由' + commit.author + '<span class="c_unixtime">' + commit.committer_date + '</span>提交: ' + commit.commit_message + '</span></td>');
+            html.push('<td class="actions">');
+            html.push('<a href="/{{user_name}}/{{repo_name}}/branch/graph/' + branch + '/" class="btn">分支图</a>');
+            html.push('<a href="/{{user_name}}/{{repo_name}}/compare/' + branch + '/" class="btn btn-success">比较</a>');
             html.push('</td>');
             html.push('</tr>');
         }

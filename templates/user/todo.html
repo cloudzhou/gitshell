@@ -1,75 +1,91 @@
 {% extends "user/home_base.html" %}
 
+{% block container_class_name %} user todo{% endblock %}
 {% block subcontainer %}
-<div class="row">
     <div id="todo_container">
-        <div id="id_sceneAdd_div" class="input-append form-inline">
-                    <input id="id_sceneAdd" type="text" placeholder="添加新的场景，支持Enter按键">
-                    <a href="#" id="id_sceneAdd_button" class="btn btn-primary" type="submit">添加新的情景</a>
-                    <a href="#" id="id_sceneCancel_button" class="btn" type="submit">取消</a>
+			<div class="todo-controls">
+        <div id="id_sceneAdd_div" class="form-inline hide">
+					<input id="id_sceneAdd" type="text" placeholder="添加新的场景，支持Enter按键">
+					<a href="#" id="id_sceneAdd_button" class="btn btn-primary" type="submit">添加新的情景</a>
+					<a href="#" id="id_sceneCancel_button" class="btn" type="submit">取消</a>
         </div>
-        <div id="id_todoAdd_div" class="input-append">
-            <input id="id_todoAdd" type="text" placeholder="添加新的todo，支持Enter按键" class="span6">
-            <button id="id_todoAdd_button" class="btn btn-primary" type="submit">添加</button>
-            {%if not todoing_list and scene.name != ''%}
-            <button id="id_sceneRemove_button" class="btn btn-danger" type="submit">删除场景</button>
-            {%endif%}
-            <div class="btn-group pull-left" style="margin-right: 2px">
-                <a href="#" data-toggle="dropdown" class="btn dropdown-toggle">@{{scene.name}}<i class="icon-caret-down"></i></a>
-                                <div class="dropdown-menu">
-                                    <ul class="nav nav-list">
-                                        {%for scene in scene_list%}
-                                            <li><a href="/home/todo/{{scene.id}}/">@{{scene.name}}</a></li>
-                                        {%endfor%}
-                                        <li class="divider"></li>
-                                        <li id="id_addScene"><a href="javascript: void(0)"><i class="icon-plus"></i> 添加新的场景</a></li>
-                                    </ul>
-                                </div>
-            </div>
+        <div id="id_todoAdd_div" class="todo-category">
+					<div class="btn-group dropdown">
+						<a href="#" data-toggle="dropdown" class="btn dropdown-toggle">@{{scene.name}}<i class="icon-caret-down"></i></a>
+						<div class="dropdown-menu">
+							<ul class="nav nav-list">
+								{%for scene in scene_list%}
+									<li><a href="/home/todo/{{scene.id}}/">@{{scene.name}}</a></li>
+								{%endfor%}
+								<li id="id_addScene"><a href="javascript: void(0)"><i class="icon-plus"></i> 添加新的场景</a></li>
+							</ul>
+						</div>
+					</div>
+					<input id="id_todoAdd" type="text" placeholder="添加新的todo，支持Enter按键" class="span6">
+					<button id="id_todoAdd_button" class="btn btn-primary" type="submit">添加</button>
+					{%if not todoing_list and scene.name != ''%}
+						<button id="id_sceneRemove_button" class="btn btn-danger" type="submit">删除场景</button>
+					{%endif%}
         </div>
-        <div id="id_todoList" class="span7">
-            {%for todoing in todoing_list%}
-            <div id="id_todo_{{todoing.id}}" class="cl_todo" data="{{todoing.id}}">
-                <a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序"><i class="icon-th-list"></i></a> 
-                <input class="cl_todo_check" type="checkbox" value="">
-                <span class="cl_todo_text">{{todoing.content}}</span>
-                <span class="cl_todo_control">
-                    <a class="go_top cl_control muted" title="置顶" href="javascript: void(0)">↑</a>
-                    <a class="go_down cl_control muted" title="置底" href="javascript: void(0)">↓</a>
-                    <a class="remove_todo cl_control muted" title="删除" href="javascript: void(0)">x</a>
-                </span>
-            </div>
-            {%endfor%}
+			</div>
+
+			<div id="id_todoList" class="todo-list">
+				{%for todoing in todoing_list%}
+				<div id="id_todo_{{todoing.id}}" class="todo-item cl_todo cleafix" data="{{todoing.id}}">
+					<div class="drag-todo">
+						<a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序" class="pull-left fade"><i class="icon-reorder"></i></a> 
+						<input class="cl_todo_check" type="checkbox" value="" class="pull-left">
+					</div>
+					<div class=""><p class="cl_todo_text">{{todoing.content}}</p></div>
+					<div class="cl_todo_control btn-group pull-right hide fade">
+						<a class="go_top cl_control first btn btn-mini" title="置顶" href="javascript: void(0)"><i class="icon-long-arrow-up"></i></a>
+						<a class="go_down cl_control middle btn btn-mini" title="置底" href="javascript: void(0)"><i class="icon-long-arrow-down"></i></a>
+						<a class="remove_todo cl_control last btn btn-mini" title="删除" href="javascript: void(0)"><i class="icon-remove"></i></a>
+					</div>
+				</div>
+				{%endfor%}
         </div>
-        <div id="id_todoneList" class="span7">
-            <div class="line"></div>
-            <div id="id_todone_div">
-            {%for todone in todone_list %}
-                <div id="id_todone_{{todone.id}}" class="cl_todone" data="{{todone.id}}">
-                    <input class="cl_todone_check" type="checkbox" value="" checked>
-                    <span class="cl_todone_text"> {{todone.content}}</span>
-                </div>
-            {%endfor%}
-            </div>
+				<hr>
+        <div id="id_todoneList" class="todo-list">
+					<div id="id_todone_div">
+					{%for todone in todone_list %}
+						<div id="id_todone_{{todone.id}}" class="cl_todone todo-item" data="{{todone.id}}">
+							<div class="drag-todo"><input class="cl_todone_check" type="checkbox" value="" checked="checked"></div>
+							<div class=""><p class="cl_todo_text"> {{todone.content}}</p></div>
+						</div>
+					{%endfor%}
+					</div>
         </div>
     </div>
-</div>
 {% endblock %}
 {% block js %}
+<script src="/static/js/moment.min.js"></script>
+<script src="/static/js/moment.zh-cn.js"></script>
 <!--script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script-->
 <script src="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.21/jquery-ui.min.js"></script>
 <!--script src="http://lib.sinaapp.com/js/jquery-ui/1.8.11/jquery-ui.min.js"></script-->
 <script>
-/*global jQuery, window */
 $(function(){
     moment.lang('zh-cn');
-    $('.cl_todo').live('mouseover mouseout', function(event) {
+
+		var todos = $("#id_todoList").find(".todo-item");
+
+		for (var i=0, len=todos.length; i<len; i++) {
+			if ( i < 25 ) {
+				todos[i].style.opacity = (100 - 2 * i) / 100; 
+			} else {
+				todos[i].style.opacity = 50 / 100;
+			}
+		};
+
+    $('.todo-item').live('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
-            $(this).children('.cl_todo_control').show();
+					$(this).find('.fade').fadeTo(0, 100);
         } else {
-            $(this).children('.cl_todo_control').hide();
+					$(this).find('.fade').fadeTo(0, 0);
         }
     });
+
     $('#id_todoAdd_button').click(function(event) {
         var todo_text = $('#id_todoAdd').val()
         add_todo(todo_text)
@@ -81,15 +97,15 @@ $(function(){
         }
     });
     function init_todo(todo_id, todo_text) {
-        var todo = '<div id="id_todo_' + todo_id + '" class="cl_todo" data="' + todo_id + '"> ' +
-                    '<a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序"><i class="icon-th-list"></i></a> ' +
-                    '<input class="cl_todo_check" type="checkbox" value=""> ' +
-                    '<span class="cl_todo_text">' + todo_text + '</span> ' +
-                    '<span class="cl_todo_control" style="margin-left: 10px; display: none">' +
-                    '<a class="go_top cl_control muted" title="置顶" href="javascript: void(0)">↑</a>' +
-                    '<a class="go_down cl_control muted" title="置底" href="javascript: void(0)">↓</a>' +
-                    '<a class="remove_todo cl_control muted" title="删除" href="javascript: void(0)">x</a>' +
-                    '</span></div>';
+        var todo = '<div id="id_todo_' + todo_id + '" class="cl_todo todo-item" data="' + todo_id + '"> ' +
+                    '<div class="drag-todo"><a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序" class="pull-left fade"><i class="icon-reorder"></i></a> ' +
+                    '<input class="cl_todo_check" type="checkbox" value=""></div>' +
+                    '<div class=""><p class="cl_todo_text">' + todo_text + '</p></div> ' +
+                    '<div class="cl_todo_control">' +
+                    '<a class="go_top cl_control muted" title="置顶" href="javascript: void(0)"><i class="icon-long-arrow-up"></i></a>' +
+                    '<a class="go_down cl_control muted" title="置底" href="javascript: void(0)"><i class="icon-long-arrow-down"></i></a>' +
+                    '<a class="remove_todo cl_control muted" title="删除" href="javascript: void(0)"><i class="icon-remove"></i></a>' +
+                    '</div></div>';
         return todo;
     }
     function init_todone(todo_id, todo_text) {
@@ -111,7 +127,7 @@ $(function(){
             $('a').tooltip();
         });
     }
-    $('#id_addScene').click(function(event) {
+    $('#id_addScene a').click(function(event) {
         $('#id_sceneAdd_div').show();
         $('#id_todoAdd_div').hide();
     });

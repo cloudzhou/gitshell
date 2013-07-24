@@ -1,8 +1,8 @@
 {% extends "repo/repo.html" %}
 {% block subcontainer %}
-<div class="span10" style="margin-left: 0px">
-    <div class="row">
-        <div class="span7">
+<header class="header">
+  <h1 class="heading">仓库设置</h1>
+</header>
             <form class="form-horizontal" action="" method="post">
                 {% csrf_token %}
                 <fieldset>
@@ -46,8 +46,7 @@
                     <span class="muted">公开：包括源代码公开；半公开：除了源代码之外公开；私有：对外不公开</span>
                 </fieldset>
             </form>
-        </div>
-    </div>
+
     <table class="table table-striped">
         <tbody>
             <tr class="span1">
@@ -88,7 +87,6 @@
         </tbody>
     </table>
     <a href="/{{user_name}}/{{repo_name}}/delete/"><button class="btn btn-mini btn-danger">删除该仓库</button></a>
-</div>
 {% endblock %}
 {% block subjs %}
 <script>
