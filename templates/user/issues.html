@@ -1,65 +1,60 @@
 {% extends "user/home_base.html" %}
-{% block css %}
-<style>
-</style>
-{% endblock %}
+
 {% block subcontainer %}
-<div class="row" style="">
-    <div id='issues_container' class="span10">
+    <div id='issues_container'>
         {% if issues %}
         <table class="table table-striped">
             <thead class="fixed">
-                <tr>
-                    <th class="span6">主题</th>
-                <th>状态</th>
-                </tr>
+                    <tr>
+                        <th>主题</th>
+                        <th>状态</th>
+                    </tr>
                 </thead>
-        <tbody>
-                <tr style="display: none"><td></td></tr>
+                <tbody>
                 {% for issue in issues %}
                 <tr class="c_issues" data="{{issue.id}}">
-                    <td><a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">#{{issue.id}} {{issue.subject}}</a> <a href="/{{user.username}}/{{issue.reponame}}/">[{{issue.reponame}}]</a>
-                    <span id="id_label_{{issue.id}}" class="c_label hide pull-right">
-                        <span class="c_fixed_label label label-info">解决</span>
-                        <span class="c_close_label label label-info">关闭</span>
-                        <span class="c_reject_label label label-info">拒绝</span>
-                    </span>
-                    </td>
+                        <td>
+                            <a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">#{{issue.id}} {{issue.subject}}</a> <a href="/{{user.username}}/{{issue.reponame}}/">[{{issue.reponame}}]</a>
+                            <span id="id_label_{{issue.id}}" class="c_label hide pull-right">
+                                <span class="c_fixed_label label label-info">解决</span>
+                                <span class="c_close_label label label-info">关闭</span>
+                                <span class="c_reject_label label label-info">拒绝</span>
+                            </span>
+                        </td>
                     <td class="muted">{{issue.tracker}} {{issue.status}} {{issue.priority}} {{issue.category}} <a href="/{{issue.user_id}}/">{{issue.user_id}}</a> <span style="display:none" class="c_unixtime">{{issue.modify_time}}</span></td>
-                </tr>
-                <tr id="id_tr_{{issue.id}}" data="{{issue.id}}" class="hide">
-                    <td>
-                        <input id="id_comment_{{issue.id}}" class="c_comment" style="width: 350px; margin-bottom: 0px;" />
-                        <input id="id_repo_id_{{issue.id}}" class="hide" value="{{issue.repo_id}}"/>
-                        <button class="c_button btn btn-mini btn-primary" type="submit"></button>
-                    </td>
-                    <td></td>
-                </tr>
+                    </tr>
+                    <tr id="id_tr_{{issue.id}}" data="{{issue.id}}" class="hide">
+                        <td>
+                            <input id="id_comment_{{issue.id}}" class="c_comment">
+                            <input id="id_repo_id_{{issue.id}}" class="hide" value="{{issue.repo_id}}">
+                            <button class="c_button btn btn-mini btn-primary" type="submit"></button>
+                        </td>
+                        <td></td>
+                    </tr>
                 {% endfor %}
-            </tbody>
-            <input id="id_action" class="hide" />
+                </tbody>
+                <input id="id_action" class="hide">
         </table>
-        {% else %}
-            没有 Issues 信息
-        {% endif %}
-    <ul class="pager pull-right">
-        {%if hasPre%}
-            <li><a href="/home/issues/0/">首页</a></li>
-            <li><a href="/home/issues/{{page|add:"-1"}}/">前一页</a></li>
-        {%endif%}
-        {%if hasPre or hasNext%}
-            <li style="padding-left: 6px;padding-right: 6px"> 第{{page}}页 </li>
-        {%endif%}
-        {%if hasNext%}
-            <li><a href="/home/issues/{{page|add:"+1"}}/">后一页</a></li>
-        {%endif%}
-      </ul>
+            {% else %}
+                <p class="text-info">没有 Issues 信息</p>
+            {% endif %}
+
+            <ul class="pager">
+                {%if hasPre%}
+                    <li><a href="/home/issues/0/">首页</a></li>
+                    <li><a href="/home/issues/{{page|add:"-1"}}/">前一页</a></li>
+                {%endif%}
+                {%if hasPre or hasNext%}
+                    <li style="padding-left: 6px;padding-right: 6px"> 第{{page}}页 </li>
+                {%endif%}
+                {%if hasNext%}
+                    <li><a href="/home/issues/{{page|add:"+1"}}/">后一页</a></li>
+                {%endif%}
+            </ul>
     </div>
-</div>
 {% endblock %}
 {% block js %}
 <script>
-/*global jQuery, window */
 $(function(){
     moment.lang('zh-cn');
     $('.c_unixtime').each(function(index){ 
