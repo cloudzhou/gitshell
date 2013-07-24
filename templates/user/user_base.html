@@ -2,122 +2,122 @@
 
 {% block container_class_name %} user{% endblock %}
 {% block container %}
-	<div class="bubble">
-		<header class="bubble-header member user-plugin clearfix">
+    <div class="bubble">
+        <header class="bubble-header member user-plugin clearfix">
 
-			<a href="https://gravatar.com/" class="avatar">
-				<figure>
-					<img src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=100" alt="{{ gsuser.username }}">
-				</figure>
-			</a>
+            <a href="https://gravatar.com/" class="avatar">
+                <figure>
+                    <img src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=100" alt="{{ gsuser.username }}">
+                </figure>
+            </a>
 
-			<div class="info">
-				<p class="name">{{ gsuser.username }}
-				{% if gsuserprofile.nickname %}
-					({{ gsuserprofile.nickname }})
-				{% endif %}
-					<span>{{ gsuserprofile.tweet }}</span>
-				</p>
-				<p id="id_user_alert" class="alert alert-error hide">
-					<strong>失败!</strong><span id="id_alert_message"></span>
-				</p>
-				<div class="meta">
-					{% if gsuserprofile.website %}
-						<a href="{{ gsuserprofile.website }}" target="_blank">{{ gsuserprofile.website }}</a><br>
-					{% endif %}
-					{% if gsuserprofile.company %}
-						<span><b>公司:</b> {{ gsuserprofile.company }}<span><br>
-					{% endif %}
-					{% if gsuserprofile.location %}
-						<span><b>所在地:</b> {{ gsuserprofile.location }}</span>
-					{% endif %}
-						<span>{{ gsuserprofile.create_time|date:"Y-m-d" }}加入</span>
-				</div>
-				<ul class="actions horizontal-list">
-					<li class="first">
-						{% if user.username == gsuser.username %}
-							<a href="/{{ gsuser.username }}/repo/">
-								<span class="link">{{ gsuserprofile.pubrepo|add:gsuserprofile.prirepo }}</span></a><br>
-						{% else %}
-							<a href="/{{ gsuser.username }}/repo/">
-								<span class="link">{{ gsuserprofile.pubrepo }}</span></a><br>
-						{% endif %}
-							<span class="muted">仓库</span>
-					</li>
-					<li class="middle">
-						<a href="/{{ gsuser.username }}/watch/repo/"><span class="link">{{ gsuserprofile.watchrepo }}</span></a><br>
-						<span class="muted">关注仓库</span>
-					</li>
-					<li class="middle">
-						<a href="/{{ gsuser.username }}/watch/user/"><span class="link">{{ gsuserprofile.watch }}</span></a><br>
-						<span class="muted">关注</span>
-					</li>
-					<li class="last">
-						<a href="/{{ gsuser.username }}/watch/user/"><span class="link">{{ gsuserprofile.be_watched }}</span></a></br>
-						<span class="muted">被关注</span>
-					</li>
-				</ul>
-				
-				{% if user.username != gsuser.username %}
-					{% if not is_watched_user %}
-						<a id="id_watch_user" class="btn" href="javascript: void(0)">+关注</a>
-					{% else %}
-						<a id="id_unwatch_user" class="btn" href="javascript: void(0)">-取消关注</a>
-					{% endif %}
-				{% endif %}
-			</div>
+            <div class="info">
+                <p class="name">{{ gsuser.username }}
+                {% if gsuserprofile.nickname %}
+                    ({{ gsuserprofile.nickname }})
+                {% endif %}
+                    <span>{{ gsuserprofile.tweet }}</span>
+                </p>
+                <p id="id_user_alert" class="alert alert-error hide">
+                    <strong>失败!</strong><span id="id_alert_message"></span>
+                </p>
+                <div class="meta">
+                    {% if gsuserprofile.website %}
+                        <a href="{{ gsuserprofile.website }}" target="_blank">{{ gsuserprofile.website }}</a><br>
+                    {% endif %}
+                    {% if gsuserprofile.company %}
+                        <span><b>公司:</b> {{ gsuserprofile.company }}<span><br>
+                    {% endif %}
+                    {% if gsuserprofile.location %}
+                        <span><b>所在地:</b> {{ gsuserprofile.location }}</span>
+                    {% endif %}
+                        <span>{{ gsuserprofile.create_time|date:"Y-m-d" }}加入</span>
+                </div>
+                <ul class="actions horizontal-list">
+                    <li class="first">
+                        {% if user.username == gsuser.username %}
+                            <a href="/{{ gsuser.username }}/repo/">
+                                <span class="link">{{ gsuserprofile.pubrepo|add:gsuserprofile.prirepo }}</span></a><br>
+                        {% else %}
+                            <a href="/{{ gsuser.username }}/repo/">
+                                <span class="link">{{ gsuserprofile.pubrepo }}</span></a><br>
+                        {% endif %}
+                            <span class="muted">仓库</span>
+                    </li>
+                    <li class="middle">
+                        <a href="/{{ gsuser.username }}/watch/repo/"><span class="link">{{ gsuserprofile.watchrepo }}</span></a><br>
+                        <span class="muted">关注仓库</span>
+                    </li>
+                    <li class="middle">
+                        <a href="/{{ gsuser.username }}/watch/user/"><span class="link">{{ gsuserprofile.watch }}</span></a><br>
+                        <span class="muted">关注</span>
+                    </li>
+                    <li class="last">
+                        <a href="/{{ gsuser.username }}/watch/user/"><span class="link">{{ gsuserprofile.be_watched }}</span></a></br>
+                        <span class="muted">被关注</span>
+                    </li>
+                </ul>
+                
+                {% if user.username != gsuser.username %}
+                    {% if not is_watched_user %}
+                        <a id="id_watch_user" class="btn" href="javascript: void(0)">+关注</a>
+                    {% else %}
+                        <a id="id_unwatch_user" class="btn" href="javascript: void(0)">-取消关注</a>
+                    {% endif %}
+                {% endif %}
+            </div>
 
 
 
-			</header>
+            </header>
 
-			<div class="bubble-inner colspan">
-				{% block left_sub_container %}{% endblock %}
-					<div class="span right sidebar">
-									{% if gsuserprofile.resume %}
-									<div id="id_user_resume" class="item">
-										<h2 class="heading">简历:</h2>
-										<div id="id_user_resume_content" class="well">{{ gsuserprofile.resume }}</div>
-									</div>
-									{% endif %}
-									<div id="id_user_recommends" class="item">
-											<h2 class="heading">评论:<a href="/{{gsuser.username}}/recommend/" class="more">more</a></h2>
-											{% for recommend in recommends %}
-													<span>{{recommend.content}}</span>
-													<small><a href="/{{recommend.username}}/">{{recommend.username}}</a> {{recommend.tweet}}</small>
-											{% endfor %}
-											<form class="form-inline" action="/{{user.username}}/recommend/" method="post">
-													{% csrf_token %}
-													{{ recommendsForm.content }}
-													<button id="id_recommend_submit" class="btn btn-mini hide" type="submit">确定</button>
-											</form>
-									</div>
-									<div class="item">
-										<h2 class="heading">关注<a href="/{{gsuser.username}}/watch/user/" class="more">more</a></h2>
-										<div class="colspan">
-											{% for watch_user in watch_users %}
-											<a href="/{{watch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ watch_user.username }}" data-content="{% if tweet != "" %}{{ watch_user.tweet }}{% else %}这家伙真懒{%endif%}">
-												<figure class="avatar"><img src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=32" alt=""></figure>
-											</a>
-											{% endfor %}
-										</div>
-									</div>
-									<div class="item">
-										<h2 class="heading">被关注<a href="/{{gsuser.username}}/watch/user/" class="more">more</a></h2>
-										<div class="colspan">
-											{% for bewatch_user in bewatch_users %}
-											<a href="/{{bewatch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ bewatch_user.username }}" data-content="{{ bewatch_user.tweet }}">
-												<figure class="avatar"><img src="https://gravatar.com/avatar/{{bewatch_user.imgurl}}?s=32" alt=""></figure>
-											</a>
-											{% endfor %}
-										</div>
-									</div>
-							</div>
-								</div>
+            <div class="bubble-inner colspan">
+                {% block left_sub_container %}{% endblock %}
+                    <div class="span right sidebar">
+                                    {% if gsuserprofile.resume %}
+                                    <div id="id_user_resume" class="item">
+                                        <h2 class="heading">简历:</h2>
+                                        <div id="id_user_resume_content" class="well">{{ gsuserprofile.resume }}</div>
+                                    </div>
+                                    {% endif %}
+                                    <div id="id_user_recommends" class="item">
+                                            <h2 class="heading">评论:<a href="/{{gsuser.username}}/recommend/" class="more">more</a></h2>
+                                            {% for recommend in recommends %}
+                                                    <span>{{recommend.content}}</span>
+                                                    <small><a href="/{{recommend.username}}/">{{recommend.username}}</a> {{recommend.tweet}}</small>
+                                            {% endfor %}
+                                            <form class="form-inline" action="/{{user.username}}/recommend/" method="post">
+                                                    {% csrf_token %}
+                                                    {{ recommendsForm.content }}
+                                                    <button id="id_recommend_submit" class="btn btn-mini hide" type="submit">确定</button>
+                                            </form>
+                                    </div>
+                                    <div class="item">
+                                        <h2 class="heading">关注<a href="/{{gsuser.username}}/watch/user/" class="more">more</a></h2>
+                                        <div class="colspan">
+                                            {% for watch_user in watch_users %}
+                                            <a href="/{{watch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ watch_user.username }}" data-content="{% if tweet != "" %}{{ watch_user.tweet }}{% else %}这家伙真懒{%endif%}">
+                                                <figure class="avatar"><img src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=32" alt=""></figure>
+                                            </a>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <div class="item">
+                                        <h2 class="heading">被关注<a href="/{{gsuser.username}}/watch/user/" class="more">more</a></h2>
+                                        <div class="colspan">
+                                            {% for bewatch_user in bewatch_users %}
+                                            <a href="/{{bewatch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ bewatch_user.username }}" data-content="{{ bewatch_user.tweet }}">
+                                                <figure class="avatar"><img src="https://gravatar.com/avatar/{{bewatch_user.imgurl}}?s=32" alt=""></figure>
+                                            </a>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                            </div>
+                                </div>
 
-	</div>
+    </div>
 
-	{% block row_sub_container %}{% endblock %}
+    {% block row_sub_container %}{% endblock %}
 
 {% endblock %}
 

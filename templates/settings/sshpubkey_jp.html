@@ -1,73 +1,73 @@
 {% extends "settings/base.html" %}
 
 {% block container-right %}
-	<h3 class="title">管理</h3>
-	<table class="table ssh">
-		<colgroup>
-			<col width="">
-			<col width="md5">
-			<col width="status">
-			<col width="action">
-		</colgroup>
-			<thead>
-				<tr>
-					<th class="first"><i class="icon-caret-down"></i>公開鍵識別子</th>
-					<th><i class="icon-caret-down"></i>指紋情報</th>
-					<th><i class="icon-caret-down"></i>ステータス</th>
-					<th><i class="icon-caret-down"></i>オペレーティング</th>
-				</tr>
-			</thead>
-			<tbody>
-					{% for userPubkey in userPubkey_all %}
-					<tr>
-							<td class="name">{{ userPubkey.name }}</td>
-							<td class="md5">{{ userPubkey.fingerprint }}</td>
-							<td class="status">ノーマル</td>
-							<td class="action">
-								<button id="i_remove_{{ userPubkey.id }}" value="{{ userPubkey.id }}" class="c_remove_sshpubkey btn btn-mini btn-warning">削除</button>
-							</td>
-					</tr>
-					{% endfor %}
-			</tbody>
-	</table>
-	<form id="i_do_sshpubkey_form" class="form-horizontal ssh" action="/settings/sshpubkey/remove/" method="post">
-			{% csrf_token %}
-			{{ doSshpubkeyForm.pubkey_id }}
-			{{ doSshpubkeyForm.action }}
-	</form>
+    <h3 class="title">管理</h3>
+    <table class="table ssh">
+        <colgroup>
+            <col width="">
+            <col width="md5">
+            <col width="status">
+            <col width="action">
+        </colgroup>
+            <thead>
+                <tr>
+                    <th class="first"><i class="icon-caret-down"></i>公開鍵識別子</th>
+                    <th><i class="icon-caret-down"></i>指紋情報</th>
+                    <th><i class="icon-caret-down"></i>ステータス</th>
+                    <th><i class="icon-caret-down"></i>オペレーティング</th>
+                </tr>
+            </thead>
+            <tbody>
+                    {% for userPubkey in userPubkey_all %}
+                    <tr>
+                            <td class="name">{{ userPubkey.name }}</td>
+                            <td class="md5">{{ userPubkey.fingerprint }}</td>
+                            <td class="status">ノーマル</td>
+                            <td class="action">
+                                <button id="i_remove_{{ userPubkey.id }}" value="{{ userPubkey.id }}" class="c_remove_sshpubkey btn btn-mini btn-warning">削除</button>
+                            </td>
+                    </tr>
+                    {% endfor %}
+            </tbody>
+    </table>
+    <form id="i_do_sshpubkey_form" class="form-horizontal ssh" action="/settings/sshpubkey/remove/" method="post">
+            {% csrf_token %}
+            {{ doSshpubkeyForm.pubkey_id }}
+            {{ doSshpubkeyForm.action }}
+    </form>
 
-	<form class="form-horizontal ssh" action="" method="post">
-			<legend class="title">加える</legend>
-			{% csrf_token %}
-					<div class="control-group">
-							<label for="id_pubkey_name" class="control-label">PKIアイデンティティ</label>
-							<div class="controls">
-									{{ sshpubkeyForm.pubkey_name }}
-							</div>
-					</div>
-					<div class="control-group">
-							<label for="id_pubkey" class="control-label">側位</label>
-							<div class="controls">
-									{{ sshpubkeyForm.pubkey }}
-							</div>
-					</div>
-					{% if error %}
-					<div class="alert">
-							<a data-dismiss="alert" class="close">×</a>
-							<strong>出错了！</strong> {{ error }}
-					</div>
-					{% endif %}
-					<div class="controls">
-							<button id="id_add_submit" class="btn btn-large btn-success" type="submit">加える</button>
-					</div>
-	</form>
+    <form class="form-horizontal ssh" action="" method="post">
+            <legend class="title">加える</legend>
+            {% csrf_token %}
+                    <div class="control-group">
+                            <label for="id_pubkey_name" class="control-label">PKIアイデンティティ</label>
+                            <div class="controls">
+                                    {{ sshpubkeyForm.pubkey_name }}
+                            </div>
+                    </div>
+                    <div class="control-group">
+                            <label for="id_pubkey" class="control-label">側位</label>
+                            <div class="controls">
+                                    {{ sshpubkeyForm.pubkey }}
+                            </div>
+                    </div>
+                    {% if error %}
+                    <div class="alert">
+                            <a data-dismiss="alert" class="close">×</a>
+                            <strong>出错了！</strong> {{ error }}
+                    </div>
+                    {% endif %}
+                    <div class="controls">
+                            <button id="id_add_submit" class="btn btn-large btn-success" type="submit">加える</button>
+                    </div>
+    </form>
 {% endblock %}
 
 {% block js %}
 <script>
 /*global jQuery, window */
 $(function(){
-		$('#i_do_sshpubkey_form').hide()
+        $('#i_do_sshpubkey_form').hide()
     var pubkey_init = function() {
         $('#id_pubkey_name').attr('placeholder', 'たとえば、次のように会社、ノート、開発環境');
         $('#id_pubkey').attr('placeholder', 'id_rsa.pub文本内容, 最多10个key');

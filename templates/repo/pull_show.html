@@ -1,16 +1,16 @@
 {% extends "repo/repo.html" %}
 
 {% block css %}
-	<link href="/static/css/app/highlight/github.css" rel="stylesheet">
+    <link href="/static/css/app/highlight/github.css" rel="stylesheet">
 {% endblock %}
 
 {% block bubble_inner_class_name %} pulls{% endblock %}
 
 {% block subcontainer %}
 <div>
-	<header class="header">
-		<h1 class="heading">#{{pullRequest.id}} 合并请求</h1>
-	</header>
+    <header class="header">
+        <h1 class="heading">#{{pullRequest.id}} 合并请求</h1>
+    </header>
 
     <!--create pull request-->
     <div class="row" style="margin-top: 20px">
@@ -75,7 +75,7 @@
             </div>
         </div>
     </div>
-</div>		  
+</div>          
 {% endblock %}
 
 {% block subjs %}

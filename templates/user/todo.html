@@ -4,9 +4,9 @@
 <div class="row">
     <div id="todo_container">
         <div id="id_sceneAdd_div" class="input-append form-inline">
-					<input id="id_sceneAdd" type="text" placeholder="添加新的场景，支持Enter按键">
-					<a href="#" id="id_sceneAdd_button" class="btn btn-primary" type="submit">添加新的情景</a>
-					<a href="#" id="id_sceneCancel_button" class="btn" type="submit">取消</a>
+                    <input id="id_sceneAdd" type="text" placeholder="添加新的场景，支持Enter按键">
+                    <a href="#" id="id_sceneAdd_button" class="btn btn-primary" type="submit">添加新的情景</a>
+                    <a href="#" id="id_sceneCancel_button" class="btn" type="submit">取消</a>
         </div>
         <div id="id_todoAdd_div" class="input-append">
             <input id="id_todoAdd" type="text" placeholder="添加新的todo，支持Enter按键" class="span6">
@@ -16,15 +16,15 @@
             {%endif%}
             <div class="btn-group pull-left" style="margin-right: 2px">
                 <a href="#" data-toggle="dropdown" class="btn dropdown-toggle">@{{scene.name}}<i class="icon-caret-down"></i></a>
-								<div class="dropdown-menu">
-									<ul class="nav nav-list">
-										{%for scene in scene_list%}
-											<li><a href="/home/todo/{{scene.id}}/">@{{scene.name}}</a></li>
-										{%endfor%}
-										<li class="divider"></li>
-										<li id="id_addScene"><a href="javascript: void(0)"><i class="icon-plus"></i> 添加新的场景</a></li>
-									</ul>
-								</div>
+                                <div class="dropdown-menu">
+                                    <ul class="nav nav-list">
+                                        {%for scene in scene_list%}
+                                            <li><a href="/home/todo/{{scene.id}}/">@{{scene.name}}</a></li>
+                                        {%endfor%}
+                                        <li class="divider"></li>
+                                        <li id="id_addScene"><a href="javascript: void(0)"><i class="icon-plus"></i> 添加新的场景</a></li>
+                                    </ul>
+                                </div>
             </div>
         </div>
         <div id="id_todoList" class="span7">

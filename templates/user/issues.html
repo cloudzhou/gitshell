@@ -7,25 +7,25 @@
 <div class="row" style="">
     <div id='issues_container' class="span10">
         {% if issues %}
-    	<table class="table table-striped">
-    		<thead class="fixed">
-    		    <tr>
-    		        <th class="span6">主题</th>
-    			<th>状态</th>
-    		    </tr>
+        <table class="table table-striped">
+            <thead class="fixed">
+                <tr>
+                    <th class="span6">主题</th>
+                <th>状态</th>
+                </tr>
                 </thead>
-		<tbody>
+        <tbody>
                 <tr style="display: none"><td></td></tr>
                 {% for issue in issues %}
-			    <tr class="c_issues" data="{{issue.id}}">
-				    <td><a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">#{{issue.id}} {{issue.subject}}</a> <a href="/{{user.username}}/{{issue.reponame}}/">[{{issue.reponame}}]</a>
+                <tr class="c_issues" data="{{issue.id}}">
+                    <td><a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">#{{issue.id}} {{issue.subject}}</a> <a href="/{{user.username}}/{{issue.reponame}}/">[{{issue.reponame}}]</a>
                     <span id="id_label_{{issue.id}}" class="c_label hide pull-right">
                         <span class="c_fixed_label label label-info">解决</span>
                         <span class="c_close_label label label-info">关闭</span>
                         <span class="c_reject_label label label-info">拒绝</span>
                     </span>
                     </td>
-				    <td class="muted">{{issue.tracker}} {{issue.status}} {{issue.priority}} {{issue.category}} <a href="/{{issue.user_id}}/">{{issue.user_id}}</a> <span style="display:none" class="c_unixtime">{{issue.modify_time}}</span></td>
+                    <td class="muted">{{issue.tracker}} {{issue.status}} {{issue.priority}} {{issue.category}} <a href="/{{issue.user_id}}/">{{issue.user_id}}</a> <span style="display:none" class="c_unixtime">{{issue.modify_time}}</span></td>
                 </tr>
                 <tr id="id_tr_{{issue.id}}" data="{{issue.id}}" class="hide">
                     <td>
@@ -36,9 +36,9 @@
                     <td></td>
                 </tr>
                 {% endfor %}
-    		</tbody>
+            </tbody>
             <input id="id_action" class="hide" />
-    	</table>
+        </table>
         {% else %}
             没有 Issues 信息
         {% endif %}

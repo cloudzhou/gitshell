@@ -2,10 +2,10 @@
 
 {% block left_sub_container %}
 <div class="span left">
-	<div class="item">
-		<h2 class="heading">最近活跃</h2>
-		<div id="id_lastest_active" class="list"></div>
-	</div>
+    <div class="item">
+        <h2 class="heading">最近活跃</h2>
+        <div id="id_lastest_active" class="list"></div>
+    </div>
 </div>
 {% endblock %}
 {% block subjs %}
@@ -61,7 +61,7 @@ $(function(){
                     if(feed.feed_type == 0) {
                         commit = feed.relative_obj;
                         feed_date_str = moment(new Date(commit.committer_date*1000)).format('MM/DD');
-												html.push('<li><h3 class="heading"><a href="#">' + commit.repo_name + '</a></h3><p>' + commit.subject + '<span class="modified">' + feed_date_str + '</span></p></li>')
+                                                html.push('<li><h3 class="heading"><a href="#">' + commit.repo_name + '</a></h3><p>' + commit.subject + '<span class="modified">' + feed_date_str + '</span></p></li>')
                     } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
                         issue = feed.relative_obj;
                         action = 'create issue';
@@ -75,7 +75,7 @@ $(function(){
                             detail = feed.first_refname;
                         }
                         feed_date_str = moment(new Date(issue.create_time*1000)).format('MM/DD');
-												html.push('<li><h3 class="heading"><a href="/' + issue.username + '/' + issue.reponame + '/">' + issue.reponame + '</a></h3><p>' + action + ' #' + issue.id + ' on <a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></p><p>' + detail + '<a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a><span class="date">'+ feed_date_str +'</span></p></li>')
+                                                html.push('<li><h3 class="heading"><a href="/' + issue.username + '/' + issue.reponame + '/">' + issue.reponame + '</a></h3><p>' + action + ' #' + issue.id + ' on <a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></p><p>' + detail + '<a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a><span class="date">'+ feed_date_str +'</span></p></li>')
                     }
                 }
                 $('#id_lastest_active').html(html.join(''));
