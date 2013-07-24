@@ -75,7 +75,7 @@ $(function(){
                             if(split != 'HEAD') {
                                 refs_splits.push('<a href="/{{user_name}}/{{repo_name}}/tree/' + split + '/"><span class="label ' + label_class + '">' + split + '</span></a>');
                             } else {
-                                refs_splits.push('<span class="label">' + split + '</span>');
+                                refs_splits.push('<span class="label label-success">' + split + '</span>');
                             }
                         }
                         refs = '(' + refs_splits.join(', ') + ')';
