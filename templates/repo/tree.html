@@ -110,12 +110,7 @@ $(function(){
         var html = converter.makeHtml($('#id_readme_md').html());
         $('#id_readme_md').html(html);
     {% endif %}
-
-    $('[data-toggle="popover"]').hover(function(){
-        $(this).popover('show');
-    }, function(){
-        $(this).popover('hide');
-    });
+    $('[data-toggle="popover"]').popover({ animation: false });
 });
 </script>
 

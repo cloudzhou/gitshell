@@ -2,167 +2,55 @@
 
 {% block left_sub_container %}
 
-	<div class="page-header small_page-header">
-		<h2>最近 <small><a href="/{{gsuser.username}}/active/" class="more">more</a></small></h2>
-	</div>
+<div class="span left">
+    <div class="item">
+        <h2 class="heading">最近<a href="/{{gsuser.username}}/active/" class="more">more</a></h2>
+        <ul id="id_lastest_active" class="list"></ul>
+    </div>
 
-        <div>
-            <table class="table table-striped zero_border_table">
-                <thead>
-                  <tr>
-                    <th class="span1">事件</th>
-                    <th class="span5">详细</th>
-                  </tr>
-                </thead>
-                <tbody id="id_lastest_active">
-                </tbody>
-            </table>
-        </div>
-        <div class="page-header small_page-header c_user_stats" style="display: none">
-            <h2>统计<small><span><a href="/stats/{{gsuser.username}}/" class="more">more</a></small></span></h2>
-        </div>
-        <div class="c_user_stats" style="display: none">
+    <div class="item c_user_stats">
+        <h2 class="heading">统计<a href="/stats/{{gsuser.username}}/" class="more">more</a></h2>
+        <div class="c_user_stats">
             <div id="figure-a" class="figure lg">
                 <div id="id_month_container" class="user_chart"></div>
                 <div class="muted">统计最近一月 <strong>commit</strong> 次数 异步统计，仅供参考</div>
             </div>
         </div>
-        <div class="page-header small_page-header">
-            <h2>仓库<small><a href="/{{gsuser.username}}/repo/" class="more">more</a></small></h2>
+    </div>
+
+    <ul class="nav nav-tabs heading" id="repo-tab">
+        <li><a href="#repos" data-toggle="tab">仓库</a></li>
+        <li><a href="#watched-repos" data-toggle="tab">关注仓库</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="item tab-pane active" id="repos">
+                <ul class="list">
+                    {% for repo in repos %}
+                        <li>
+                            <h3 class="heading"><a href="/{{gsuser.username}}/{{repo.name}}/">{{repo.name}}</a><span class="modified"><span class="unixtime">{{repo.modify_time|date:"U"}}</span>更新过</span></h3>
+                            <p>{{repo.desc}}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <p><a href="/{{gsuser.username}}/repo/" class="more">more</a></p>
         </div>
-        <div>
-            <table class="table table-striped zero_border_table">
-                <thead>
-                    <tr>
-                        <th class="span1">名称</th>
-                        <th class="">简介</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for repo in repos %}
-                    <tr>
-                        <td><a href="/{{gsuser.username}}/{{repo.name}}/">{{repo.name}}</a></td>
-                        <td>{{repo.desc}}
-                        <span style="display:none" class="pull-right muted c_unixtime">{{repo.modify_time|date:"U"}}</span>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="page-header small_page-header">
-            <h2>标星仓库<small><a href="/{{gsuser.username}}/star/repo/" class="more">more</a></small></h2>
-        </div>
-        <div>
-            <table class="table table-striped zero_border_table">
-                <thead>
-                    <tr>
-                        <th class="span1">名称</th>
-                        <th class="">简介</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for star_repo in star_repos %}
-                    <tr>
-                        <td><a href="/{{star_repo.username}}/{{star_repo.name}}/">{{star_repo.name}}</a></td>
-                        <td>{{star_repo.desc}}
-                        <span style="display:none" class="pull-right muted c_unixtime">{{star_repo.modify_time}}</span>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="page-header small_page-header">
-            <h2>关注仓库<small><a href="/{{gsuser.username}}/watch/repo/" class="more">more</a></small></h2>
-        </div>
-        <div>
-            <table class="table table-striped zero_border_table">
-                <thead>
-                    <tr>
-                        <th class="span1">名称</th>
-                        <th class="">简介</th>
-                    </tr>
-                </thead>
-                <tbody>
+
+        <div class="item tab-pane" id="watched-repos">
+            <ul class="list">
                 {% for watch_repo in watch_repos %}
-                    <tr>
-                        <td><a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a></td>
-                        <td>{{watch_repo.desc}}
-                        <span style="display:none" class="pull-right muted c_unixtime">{{watch_repo.modify_time}}</span>
-                        </td>
-                    </tr>
+                    <li>
+                        <h3 class="heading"><a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a><span class="modified"><span class="unixtime">{{watch_repo.modify_time}}</span>更新过</span></h3>
+                        <p>{{watch_repo.desc}}</p>
+                    </li>
                 {% endfor %}
-                </tbody>
-            </table>
+            </ul>
+            <p><a href="/{{gsuser.username}}/watch/repo/" class="more">more</a></p>
         </div>
-        <div class="page-header small_page-header">
-            <h2>关注<small><a href="/{{gsuser.username}}/watch/user/" class="more">more</a></small></h2>
-        </div>
-        <div>
-            <table class="table table-striped zero_border_table">
-                <thead>
-                    <tr>
-                        <th class="span2">用户</th>
-                        <th class="span5">简介</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for watch_user in watch_users %}
-                    <tr>
-                        <td><img class="avatar" src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=32"/> <a href="/{{watch_user.username}}/">{{watch_user.username}}</a></td>
-                        <td style="vertical-align: middle">{{watch_user.tweet}}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="page-header small_page-header">
-            <h2>被关注 <small><a href="/{{gsuser.username}}/watch/user/" class="more">more</a></small></h2>
-        </div>
-        <div>
-            <table class="table table-striped zero_border_table">
-                <thead>
-                    <tr>
-                        <th class="span2">用户</th>
-                        <th class="span5">简介</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for bewatch_user in bewatch_users %}
-                    <tr>
-                        <td><img class="avatar" src="https://gravatar.com/avatar/{{bewatch_user.imgurl}}?s=32"/> <a href="/{{bewatch_user.username}}/">{{bewatch_user.username}}</a></td>
-                        <td style="vertical-align: middle">{{bewatch_user.tweet}}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-{% endblock %}
-{% block right_sub_container %}
-        {% if gsuserprofile.resume %}
-        <div id="id_user_resume">
-            <h4 style="margin-bottom: 8px; font-weight: normal; color: #999999;">简历:</h4>
-            <blockquote>
-                <div id="id_user_resume_content" style="display:none">{{ gsuserprofile.resume }}</div>
-            </blockquote>
-        </div>
-        {% endif %}
-        <div id="id_user_recommends">
-            <h4 style="margin-bottom: 8px; font-weight: normal; color: #999999;">评论:
-                <small><a href="/{{gsuser.username}}/recommend/" class="more">more</a></small></h4>
-            <blockquote style="border-left-width: 0px;">
-                {% for recommend in recommends %}
-                    <span>{{recommend.content}}</span>
-                    <small style="margin-left: 10px; margin-bottom:6px"><a href="/{{recommend.username}}/">{{recommend.username}}</a> {{recommend.tweet}}</small>
-                {% endfor %}
-                <form class="form-inline" action="/{{user.username}}/recommend/" method="post">
-                    {% csrf_token %}
-                    {{ recommendsForm.content }}
-                    <button id="id_recommend_submit" class="btn hide" type="submit">确定</button>
-                </form>
-            </blockquote>
-        </div>
+    </div>
+
+
+</div>
 {% endblock %}
 {% block subjs %}
 <script src="/static/js/app/highcharts/highcharts.js"></script>
@@ -170,7 +58,12 @@
 <script src="/static/js/Markdown.Editor.js"></script>
 <script src="/static/js/Markdown.Sanitizer.js"></script>
 <script>
-/*global jQuery, window */
+    $(function(){
+        $(".user-span").popover({ animation: false, placement: "bottom" });
+        $("#repo-tab a:first").tab("show");
+    });
+</script>
+<script>
 $(function(){
     moment.lang('zh-cn');
 {% if gsuserprofile.resume %}
@@ -178,21 +71,20 @@ $(function(){
         var converter = new Markdown.getSanitizingConverter();
         var html = converter.makeHtml($('#id_user_resume_content').html());
         $('#id_user_resume_content').html(html);
-        $('#id_user_resume_content').show();
+        $('#id_user_resume_content').css("padding", "0 10px").show();
     };
     resume_md_converter();
 {% endif %}
-    $('#id_content').attr('placeholder', '言简意赅评论一下他，希望你确实了解他');
-    $('#id_content').addClass('input-xlarge');
+    $('#id_content').attr('placeholder', '跟他打个招呼吧');
     $('#id_content').click(function() {
-        $('#id_recommend_submit').show();
+            $('#id_recommend_submit').show();
     });
     $('#id_content').blur(function() {
-        setTimeout(
-            function(event) {
-                $('#id_recommend_submit').hide();
-            }
-        , 200)
+            setTimeout(
+                function(event) {
+                    $('#id_recommend_submit').hide();
+                }
+            , 200)
     });
     var orgi_feeds = {{ feeds_as_json|safe }}
     var sorted_feeds = []
@@ -244,7 +136,7 @@ $(function(){
                     if(feed.feed_type == 0) {
                         commit = feed.relative_obj;
                         feed_date_str = moment(new Date(commit.committer_date*1000)).fromNow();
-                        html.push('<tr><td><a href="/' + commit.user_name + '/' + commit.repo_name + '/">' + commit.repo_name + '</a></td><td>' + commit.subject + ' <span class="pull-right muted">' + feed_date_str + '</span></td></tr>');
+                                                html.push('<li><h3 class="heading"><a href="/' + commit.user_name + '/' + commit.repo_name + '/">' + commit.repo_name + '</a></h3><p>' + commit.subject + ' <span class="modified">' + feed_date_str + '</span></p></li>');
                     } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
                         issue = feed.relative_obj;
                         action = 'create issue';
@@ -257,21 +149,18 @@ $(function(){
                             action = 'change issue';
                             detail = feed.first_refname;
                         }
-                        html.push('<tr><td><a href="/' + issue.username + '/' + issue.reponame + '/">' + issue.reponame + '</a></td><td>' + action + ' #' + issue.id + ' on <strong><a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></strong> ' + detail + '<div><a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a> <span class="muted">' + moment(new Date(issue.create_time*1000)).fromNow() + '</span></div></td>')
+                                                html.push('<li><h3 class="heading"><a href="/' + issue.username + '/' + issue.reponame + '/">' + issue.reponame + '</a></h3><p>' + action + ' #' + issue.id + ' on <a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></p><p>' + detail + '<a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a> <span class="date">' + moment(new Date(issue.create_time*1000)).fromNow() + '</span></p></li>')
                     }
                 }
                 $('#id_lastest_active').html(html.join(''));
                 if(feeds.length == 0) {
-                    $('#id_lastest_active').html('<tr><td colspan=3>还没有活跃信息</td></tr>');
+                    $('#id_lastest_active').html('<p>还没有活跃信息</p>');
                 }
             }
         });
     };
     do_orgi_feeds();
-    $('.c_unixtime').each(function(index){ 
-        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-        $(this).show();
-    });
+
     var last30days = {{last30days}};
     var last30daysAsCat = [];
     for(x in last30days) {
