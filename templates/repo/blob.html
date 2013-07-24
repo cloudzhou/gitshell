@@ -18,7 +18,7 @@
     }
     </style>
     <div id="i_source_code">
-        {% if not blob %}
+        {% if not blob and blob != '' %}
             没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码
         {% else %}
             {% if is_markdown %}
