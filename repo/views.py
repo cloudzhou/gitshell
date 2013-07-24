@@ -293,7 +293,7 @@ def pulls(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    refs = _get_current_refs(request.user, repo, None, True)
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'
     pullRequests = RepoManager.list_pullRequest_by_descRepoId(repo.id)
     response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequests': pullRequests}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
@@ -548,11 +548,11 @@ def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, contex
     return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': path, 'diff': diff})
 
 @repo_permission_check
-def network(request, user_name, repo_name):
+def collaborator(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'network'
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'collaborator'
     error = u''
     repoMemberForm = RepoMemberForm()
     if request.method == 'POST' and request.user.is_authenticated():
@@ -578,12 +578,12 @@ def network(request, user_name, repo_name):
     members_vo = [merge_user_map[o] for o in member_ids]
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/network.html',
+    return render_to_response('repo/collaborator.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def clone_watch_star(request, user_name, repo_name):
+def pulse(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -604,7 +604,7 @@ def clone_watch_star(request, user_name, repo_name):
     watch_users = RepoManager.list_watch_user(repo.id)
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'fork_repos_tree': fork_repos_tree, 'star_users': star_users, 'watch_users': watch_users}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/clone_watch_star.html',
+    return render_to_response('repo/pulse.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
