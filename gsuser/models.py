@@ -49,6 +49,10 @@ class Userprofile(BaseModel):
             return str(quote/1048576) + 'mb'
         return str(quote/1073741824) + 'g'
 
+   ### auth_user filed ###
+    date_joined = 0
+    last_login = 0
+
 class ThirdpartyUser(BaseModel):
     user_type = models.IntegerField(default=0, null=True)
     tp_id = models.IntegerField(default=0, null=True)

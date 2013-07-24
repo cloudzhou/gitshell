@@ -14,11 +14,11 @@
                 {%for fork_repo in fork_repos%}
                     <div class="user-plugin repo-{{forloop.parentloop.counter}}">
                         <figure class="avatar">
-                            <img src="https://gravatar.com/avatar/{{fork_repo.imgurl}}?s=40" alt="{{ gsuser.username }}">
+                            <img src="https://gravatar.com/avatar/{{fork_repo.imgurl}}?s=40" alt="{{ fork_repo.username }}">
                         </figure>
                         <div class="info">
                             <p class="name">
-                                <a class="c_img_{{forloop.parentloop.counter}}" href="/{{fork_repo.username}}/">{{fork_repo.username}}</a>
+                                <a class="c_img_{{forloop.parentloop.counter}}" href="/{{fork_repo.username}}/{{fork_repo.name}}/">{{fork_repo.username}}</a>
                             </p>
                             <p class="meta extra-info" title="{{fork_repo.desc}}">{{fork_repo.desc|truncatechars:40}}</p>
                         </div>
@@ -32,6 +32,42 @@
             {%endfor%}
 
             <header class="header">
+                <h1 class="heading">标星用户</h1>
+            </header>
+
+            {% if star_users %}
+                <div class="stars">
+                {%for star_user in star_users%}
+                    <div class="member">
+                        <div class="user-plugin">
+                            <figure class="avatar">
+                                <img src="https://gravatar.com/avatar/{{ star_user.imgurl }}?s=40" alt="{{star_user.username}}">
+                            </figure>
+                            <div class="info">
+                                <p class="name">
+                                    <a href="/{{star_user.username}}/">{{star_user.username}}</a>
+                                    {%if star_user.nickname%}
+                                        <span>({{star_user.nickname}})</span>
+                                    {%endif%}
+                                    {%if star_user.tweet%}
+                                        <span class="tweet" title="{{star_user.tweet}}">{{star_user.tweet|truncatechars:20}}</span>
+                                    {%endif%}
+                                </p>
+                                <p class="meta">
+                                    <span><i class="icon-time"></i><span class="unixtime">{{star_user.date_joined}}</span>加入</span>
+                                    <span class="divider"></span>
+                                    <span><i class="icon-map-marker"></i><span class="unixtime">{{star_user.last_login}}</span>登录</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {%endfor%}
+                </div>
+            {% else %}
+                <p class="info text-error">还没有任何标星用户.</p>
+            {% endif %}
+
+            <header class="header">
                 <h1 class="heading">关注用户</h1>
             </header>
 
@@ -41,7 +77,7 @@
                     <div class="member">
                         <div class="user-plugin">
                             <figure class="avatar">
-                                <img src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=40" alt="{{ gsuser.username }}">
+                                <img src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=40" alt="{{watch_user.username}}">
                             </figure>
                             <div class="info">
                                 <p class="name">

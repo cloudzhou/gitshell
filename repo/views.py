@@ -92,10 +92,10 @@ def tree(request, user_name, repo_name, refs, path):
 @repo_permission_check
 @repo_source_permission_check
 def raw_blob(request, user_name, repo_name, refs, path):
-    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path.endswith('/'):
         raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
@@ -104,10 +104,10 @@ def raw_blob(request, user_name, repo_name, refs, path):
 
 @repo_permission_check
 def ls_tree(request, user_name, repo_name, refs, path, current):
-    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
     if path is None or path == '':
         path = '.'
     abs_repopath = repo.get_abs_repopath()
@@ -129,10 +129,10 @@ def ls_tree(request, user_name, repo_name, refs, path, current):
 @repo_permission_check
 def blob(request, user_name, repo_name, refs, path):
     current = 'blob'
-    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path is None or path == '':
         raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
     abs_repopath = repo.get_abs_repopath()
     gitHandler = GitHandler()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
@@ -154,10 +154,10 @@ def blob(request, user_name, repo_name, refs, path):
     
 @repo_permission_check
 def commit(request, user_name, repo_name, commit_hash):
-    refs = _get_current_refs(request.user, None, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True)
     path = '.'; current = 'commits'
     gitHandler = GitHandler()
     commits = gitHandler.repo_log_file(repo.get_abs_repopath(), '0000000', commit_hash, 1, path)
@@ -178,10 +178,10 @@ def commits_default(request, user_name, repo_name):
     
 @repo_permission_check
 def commits(request, user_name, repo_name, refs, path):
-    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
     if path is None or path == '':
         path = '.'
     gitHandler = GitHandler()
@@ -219,10 +219,10 @@ def branches_default(request, user_name, repo_name):
 
 @repo_permission_check
 def branches(request, user_name, repo_name, refs):
-    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
     response_dictionary = {'mainnav': 'repo', 'current': 'branches'}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/branches.html',
@@ -235,10 +235,10 @@ def tags_default(request, user_name, repo_name):
 
 @repo_permission_check
 def tags(request, user_name, repo_name, refs):
-    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
     response_dictionary = {'mainnav': 'repo', 'current': 'tags'}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/tags.html',
@@ -255,10 +255,10 @@ def compare_master(request, user_name, repo_name, refs):
 
 @repo_permission_check
 def compare_commit(request, user_name, repo_name, from_refs, to_refs):
-    refs = _get_current_refs(request.user, None, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True)
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
     from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_refs)
@@ -290,10 +290,10 @@ def merge(request, user_name, repo_name, source_refs, desc_refs):
 
 @repo_permission_check
 def pulls(request, user_name, repo_name):
-    refs = _get_current_refs(request.user, None, True); path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'
     pullRequests = RepoManager.list_pullRequest_by_descRepoId(repo.id)
     response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequests': pullRequests}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
@@ -321,12 +321,12 @@ def pull_new_default(request, user_name, repo_name):
 @login_required
 @repo_permission_check
 def pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
-    refs = _get_current_refs(request.user, None, True); path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
     desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
     if repo is None or source_repo is None or desc_repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'
 
     # pull action
     if request.method == 'POST':
@@ -362,10 +362,10 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
 
 @repo_permission_check
 def pull_show(request, user_name, repo_name, pullRequest_id):
-    refs = _get_current_refs(request.user, None, True); path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'
     pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     
     response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequest': pullRequest}
@@ -399,12 +399,12 @@ def pull_commits(request, user_name, repo_name, source_username, source_refs, de
 @repo_permission_check
 @require_http_methods(["POST"])
 def pull_diff(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs, context):
-    refs = _get_current_refs(request.user, None, True); path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
     desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
     if repo is None or source_repo is None or desc_repo is None:
         return json_httpResponse({'diff': {}, 'result': 'failed'})
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'
     if not _has_pull_right(request, source_repo, desc_repo):
         return json_httpResponse({'diff': {}, 'result': 'failed'})
 
@@ -548,11 +548,11 @@ def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, contex
     return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': path, 'diff': diff})
 
 @repo_permission_check
-def network(request, user_name, repo_name):
-    refs = _get_current_refs(request.user, None, True); path = '.'; current = 'network'
+def collaborator(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'collaborator'
     error = u''
     repoMemberForm = RepoMemberForm()
     if request.method == 'POST' and request.user.is_authenticated():
@@ -578,16 +578,16 @@ def network(request, user_name, repo_name):
     members_vo = [merge_user_map[o] for o in member_ids]
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/network.html',
+    return render_to_response('repo/collaborator.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def clone_watch_star(request, user_name, repo_name):
-    refs = _get_current_refs(request.user, None, True); path = '.'; current = 'clone'
+def pulse(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'clone'
     raw_fork_repos_tree = []
     fork_repo_id = repo.fork_repo_id
     if fork_repo_id != 0:
@@ -604,16 +604,16 @@ def clone_watch_star(request, user_name, repo_name):
     watch_users = RepoManager.list_watch_user(repo.id)
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'fork_repos_tree': fork_repos_tree, 'star_users': star_users, 'watch_users': watch_users}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/clone_watch_star.html',
+    return render_to_response('repo/pulse.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @repo_permission_check
 def stats(request, user_name, repo_name):
-    refs = _get_current_refs(request.user, None, True); path = '.'; current = 'stats'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'stats'
     userprofile = GsuserManager.get_userprofile_by_id(repo.user_id)
     now = datetime.now()
     last12hours = timeutils.getlast12hours(now)
@@ -659,10 +659,10 @@ def stats(request, user_name, repo_name):
 @repo_permission_check
 @login_required
 def settings(request, user_name, repo_name):
-    refs = _get_current_refs(request.user, None, True); path = '.'; current = 'settings'; error = u''
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'settings'; error = u''
     repoForm = RepoForm(instance = repo)
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
@@ -809,10 +809,10 @@ def refs_graph_default(request, user_name, repo_name):
 @repo_permission_check
 def refs_graph(request, user_name, repo_name, refs):
     current = 'refs_graph'
-    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
     response_dictionary = {'mainnav': 'repo', 'current': current}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/refs_graph.html',
@@ -1192,10 +1192,14 @@ def _fillwith_commits(commits):
         else:
             commit['author_imgurl'] = '000000'
 
-def _get_current_refs(user, refs, update_to_cache):
+def _get_current_refs(user, repo, refs, update_to_cache):
     if not user.is_authenticated():
         if refs and RepoManager.is_allowed_refsname_pattern(refs):
             return refs
+        return 'master'
+    gitHandler = GitHandler()
+    refs_meta = gitHandler.repo_ls_refs(repo, repo.get_abs_repopath())
+    if refs not in refs_meta['branches'] and refs not in refs_meta['tags']:
         return 'master'
     feedAction = FeedAction()
     user_refs = feedAction.get_user_attr(user.id, AttrKey.REFS)

@@ -355,11 +355,14 @@ class RepoManager():
         stars = query(Star, None, 'star_l_repoId', [repo_id, offset, row_count])
         userprofiles = []
         for x in stars:
+            user = GsuserManager.get_user_by_id(x.user_id)
             userprofile = GsuserManager.get_userprofile_by_id(x.user_id)
             if userprofile is None or userprofile.visibly == 1:
                 x.visibly = 1
                 x.save()
                 continue
+            userprofile.date_joined = time.mktime(user.date_joined.timetuple())
+            userprofile.last_login = time.mktime(user.last_login.timetuple())
             userprofiles.append(userprofile)
         return userprofiles
 
