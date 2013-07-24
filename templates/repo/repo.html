@@ -51,7 +51,7 @@
     <section class="colspan">
         <nav class="sidenav">
             <ul class="nav nav-list">
-                <li class="first{% if current == 'index' or current == 'tree' or current == 'blob' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/{{refs}}/" data-original-title="Code" rel="tooltip"><span><i class="icon-code"></i></span></a></li>
+                <li class="first{% if current == 'index' or current == 'tree' or current == 'blob' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/" data-original-title="Code" rel="tooltip"><span><i class="icon-code"></i></span></a></li>
                 <li class="middle{% if current == 'issues' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/issues/" data-original-title="Issues" rel="tooltip"><span><i class="icon-bug"></i></span></a></li>
                 <li class="middle{% if current == 'compare' or current == 'pull' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/pulls/" data-original-title="Pull Request" rel="tooltip"><span><i class="icon-code-fork"></i></span></a></li>
                 <!--TODO design overview page-->

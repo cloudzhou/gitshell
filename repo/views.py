@@ -8,12 +8,13 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.shortcuts import render_to_response
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from django.utils.html import escape
 from django.forms.models import model_to_dict
-from gitshell.feed.feed import FeedAction
+from gitshell.feed.feed import AttrKey, FeedAction
 from gitshell.feed.models import FeedManager
 from gitshell.repo.Forms import RepoForm, RepoMemberForm
 from gitshell.repo.githandler import GitHandler
@@ -24,6 +25,7 @@ from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
 from gitshell.settings import SECRET_KEY, REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, PULLREQUEST_REPO_PATH, logger
 from gitshell.daemon.models import EventManager
+from gitshell.objectscache.models import CacheKey
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.gsuser.middleware import KEEP_REPO_NAME
 from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo, dropbox_share_direct
@@ -74,12 +76,12 @@ def user_repo_paging(request, user_name, pagenum):
 
 @repo_permission_check
 def repo(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'index'
+    refs = None; path = '.'; current = 'index'
     return ls_tree(request, user_name, repo_name, refs, path, current)
 
 @repo_permission_check
 def tree_default(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'tree'
+    refs = None; path = '.'; current = 'tree'
     return ls_tree(request, user_name, repo_name, refs, path, current)
     
 @repo_permission_check
@@ -90,6 +92,7 @@ def tree(request, user_name, repo_name, refs, path):
 @repo_permission_check
 @repo_source_permission_check
 def raw_blob(request, user_name, repo_name, refs, path):
+    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path.endswith('/'):
         raise Http404
@@ -101,6 +104,7 @@ def raw_blob(request, user_name, repo_name, refs, path):
 
 @repo_permission_check
 def ls_tree(request, user_name, repo_name, refs, path, current):
+    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -125,6 +129,7 @@ def ls_tree(request, user_name, repo_name, refs, path, current):
 @repo_permission_check
 def blob(request, user_name, repo_name, refs, path):
     current = 'blob'
+    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path is None or path == '':
         raise Http404
@@ -149,10 +154,11 @@ def blob(request, user_name, repo_name, refs, path):
     
 @repo_permission_check
 def commit(request, user_name, repo_name, commit_hash):
+    refs = _get_current_refs(request.user, None, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    refs = 'master'; path = '.'; current = 'commits'
+    path = '.'; current = 'commits'
     gitHandler = GitHandler()
     commits = gitHandler.repo_log_file(repo.get_abs_repopath(), '0000000', commit_hash, 1, path)
     _fillwith_commits(commits)
@@ -167,11 +173,12 @@ def commit(request, user_name, repo_name, commit_hash):
     
 @repo_permission_check
 def commits_default(request, user_name, repo_name):
-    refs = 'master'; path = '.'
+    refs = None; path = '.'
     return commits(request, user_name, repo_name, refs, path)
     
 @repo_permission_check
 def commits(request, user_name, repo_name, refs, path):
+    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -208,10 +215,11 @@ def commits_log(request, user_name, repo_name, from_commit_hash, to_commit_hash)
 
 @repo_permission_check
 def branches_default(request, user_name, repo_name):
-    return branches(request, user_name, repo_name, 'master')
+    return branches(request, user_name, repo_name, None)
 
 @repo_permission_check
 def branches(request, user_name, repo_name, refs):
+    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -223,10 +231,11 @@ def branches(request, user_name, repo_name, refs):
 
 @repo_permission_check
 def tags_default(request, user_name, repo_name):
-    return tags(request, user_name, repo_name, 'master')
+    return tags(request, user_name, repo_name, None)
 
 @repo_permission_check
 def tags(request, user_name, repo_name, refs):
+    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -246,7 +255,7 @@ def compare_master(request, user_name, repo_name, refs):
 
 @repo_permission_check
 def compare_commit(request, user_name, repo_name, from_refs, to_refs):
-    refs = from_refs
+    refs = _get_current_refs(request.user, None, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -281,7 +290,7 @@ def merge(request, user_name, repo_name, source_refs, desc_refs):
 
 @repo_permission_check
 def pulls(request, user_name, repo_name):
-    refs = 'master'; path = '.'
+    refs = _get_current_refs(request.user, None, True); path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -312,7 +321,7 @@ def pull_new_default(request, user_name, repo_name):
 @login_required
 @repo_permission_check
 def pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
-    refs = 'master'; path = '.'
+    refs = _get_current_refs(request.user, None, True); path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
     desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
@@ -353,7 +362,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
 
 @repo_permission_check
 def pull_show(request, user_name, repo_name, pullRequest_id):
-    refs = 'master'; path = '.'
+    refs = _get_current_refs(request.user, None, True); path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -368,7 +377,6 @@ def pull_show(request, user_name, repo_name, pullRequest_id):
 @repo_permission_check
 @require_http_methods(["POST"])
 def pull_commits(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
-    refs = 'master'; path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
     desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
@@ -391,7 +399,7 @@ def pull_commits(request, user_name, repo_name, source_username, source_refs, de
 @repo_permission_check
 @require_http_methods(["POST"])
 def pull_diff(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs, context):
-    refs = 'master'; path = '.'
+    refs = _get_current_refs(request.user, None, True); path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
     desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
@@ -421,13 +429,12 @@ def pull_diff(request, user_name, repo_name, source_username, source_refs, desc_
             filerefs = source_refs
         filepath = '/%s/%s/%s/%s/%s' % (fileusername, filereponame, filetype, filerefs, filename)
         x['filepath'] = filepath
-    return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': '', 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success', 'context': context})
+    return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': path, 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success', 'context': context})
 
 @repo_permission_check
 @login_required
 @require_http_methods(["POST"])
 def pull_merge(request, user_name, repo_name, pullRequest_id):
-    refs = 'master'; path = '.'
     args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
     if args is None:
         return json_httpResponse({'returncode': 128, 'output': 'merge failed', 'result': 'failed'})
@@ -458,7 +465,6 @@ def pull_merge(request, user_name, repo_name, pullRequest_id):
 @login_required
 @require_http_methods(["POST"])
 def pull_reject(request, user_name, repo_name, pullRequest_id):
-    refs = 'master'; path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
         return json_httpResponse({'result': 'failed'})
@@ -475,7 +481,6 @@ def pull_reject(request, user_name, repo_name, pullRequest_id):
 @login_required
 @require_http_methods(["POST"])
 def pull_close(request, user_name, repo_name, pullRequest_id):
-    refs = 'master'; path = '.'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
         return json_httpResponse({'result': 'failed'})
@@ -544,7 +549,7 @@ def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, contex
 
 @repo_permission_check
 def network(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'network'
+    refs = _get_current_refs(request.user, None, True); path = '.'; current = 'network'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -579,7 +584,7 @@ def network(request, user_name, repo_name):
 
 @repo_permission_check
 def clone_watch_star(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'clone'
+    refs = _get_current_refs(request.user, None, True); path = '.'; current = 'clone'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -605,7 +610,7 @@ def clone_watch_star(request, user_name, repo_name):
 
 @repo_permission_check
 def stats(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'stats'
+    refs = _get_current_refs(request.user, None, True); path = '.'; current = 'stats'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -654,7 +659,7 @@ def stats(request, user_name, repo_name):
 @repo_permission_check
 @login_required
 def settings(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'settings'; error = u''
+    refs = _get_current_refs(request.user, None, True); path = '.'; current = 'settings'; error = u''
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
         raise Http404
@@ -798,12 +803,13 @@ def log_graph(request, user_name, repo_name, refs):
     
 @repo_permission_check
 def refs_graph_default(request, user_name, repo_name):
-    refs = 'master'
+    refs = None
     return refs_graph(request, user_name, repo_name, refs)
 
 @repo_permission_check
 def refs_graph(request, user_name, repo_name, refs):
     current = 'refs_graph'
+    refs = _get_current_refs(request.user, refs, True)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -1185,6 +1191,22 @@ def _fillwith_commits(commits):
             commit['author_imgurl'] = userprofile.imgurl
         else:
             commit['author_imgurl'] = '000000'
+
+def _get_current_refs(user, refs, update_to_cache):
+    if not user.is_authenticated():
+        if refs and RepoManager.is_allowed_refsname_pattern(refs):
+            return refs
+        return 'master'
+    feedAction = FeedAction()
+    user_refs = feedAction.get_user_attr(user.id, AttrKey.REFS)
+    if refs and RepoManager.is_allowed_refsname_pattern(refs):
+        if refs != user_refs and update_to_cache:
+            feedAction.set_user_attr(user.id, AttrKey.REFS, refs)
+        return refs
+    if user_refs:
+        return user_refs
+    feedAction.set_user_attr(user.id, AttrKey.REFS, 'master')
+    return 'master'
 
 def json_ok():
     return json_httpResponse({'result': 'ok'})

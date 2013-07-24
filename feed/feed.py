@@ -40,6 +40,7 @@ class PositionKey:
 class AttrKey:
     # key-value
     SCENE_ID = 'scene_id'
+    REFS = 'refs'
 
 """ all method about feed and redis """
 class FeedAction():
