@@ -392,7 +392,7 @@ def pull_commits(request, user_name, repo_name, source_username, source_refs, de
 
     source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), source_refs)
     desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), desc_refs)
-    commits = gitHandler.repo_log_file(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, 50, path)
+    commits = gitHandler.repo_log_file(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, 50, '.')
     _fillwith_commits(commits)
     return json_httpResponse({'commits': commits, 'source_refs': source_refs, 'desc_refs': desc_refs, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
     
@@ -587,7 +587,7 @@ def pulse(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'clone'
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'pulse'
     raw_fork_repos_tree = []
     fork_repo_id = repo.fork_repo_id
     if fork_repo_id != 0:
