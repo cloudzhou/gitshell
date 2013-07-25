@@ -1193,23 +1193,19 @@ def _fillwith_commits(commits):
             commit['author_imgurl'] = '000000'
 
 def _get_current_refs(user, repo, refs, update_to_cache):
-    if not user.is_authenticated():
-        if refs and RepoManager.is_allowed_refsname_pattern(refs):
-            return refs
-        return 'master'
     gitHandler = GitHandler()
     refs_meta = gitHandler.repo_ls_refs(repo, repo.get_abs_repopath())
-    if refs not in refs_meta['branches'] and refs not in refs_meta['tags']:
+    if refs and refs not in refs_meta['branches'] and refs not in refs_meta['tags']:
         return 'master'
     feedAction = FeedAction()
-    user_refs = feedAction.get_user_attr(user.id, AttrKey.REFS)
+    repo_refs = feedAction.get_repo_attr(repo.id, AttrKey.REFS)
     if refs and RepoManager.is_allowed_refsname_pattern(refs):
-        if refs != user_refs and update_to_cache:
-            feedAction.set_user_attr(user.id, AttrKey.REFS, refs)
+        if refs != repo_refs and update_to_cache:
+            feedAction.set_repo_attr(repo.id, AttrKey.REFS, refs)
         return refs
-    if user_refs:
-        return user_refs
-    feedAction.set_user_attr(user.id, AttrKey.REFS, 'master')
+    if repo_refs:
+        return repo_refs
+    feedAction.set_repo_attr(repo.id, AttrKey.REFS, 'master')
     return 'master'
 
 def json_ok():

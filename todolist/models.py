@@ -157,8 +157,9 @@ class ToDoListManager():
                 return meta_todo_order_ids
             self.update_scene_meta(user_id, scene_id, meta_todo_order_ids)
             scene = self.get_scene_by_id(user_id, scene_id)
-            meta_todo_order_ids = [int(x) for x in scene.meta.split(',')]
-            return meta_todo_order_ids
+            if scene.meta and scene.meta != '':
+                meta_todo_order_ids = [int(x) for x in scene.meta.split(',')]
+                return meta_todo_order_ids
         return []
 
     @classmethod

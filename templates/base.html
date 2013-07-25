@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <title>{% block title %}gitshell - 你的代码托管{% endblock %}</title>
         <meta content="width=device-width, initial-scale=1.0" name="viewport">
-        <meta content="GitShell 专注git代码托管, 团队协同，项目开发" name="description">
+        <meta content="Gitshell 专注git代码托管, 团队协同，项目开发" name="description">
         <meta content="gitshell" name="author">
         <meta name="csrf-token" content="{{csrf_token}}">
         <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
@@ -22,7 +22,7 @@
     <body>
         <header class="navbar navbar-fixed">
             <nav class="navbar-inner container">
-                <a class="brand" href="/">GitShell</a>
+                <a class="brand" href="/">Gitshell</a>
                 <ul class="nav global">
                     {% if user.is_authenticated %}
                         <li><a href="/home/">工作台</a></li>
@@ -75,13 +75,13 @@
                     <dl class="nav nav-list span">
                         <dt class="leader">关于我们</dt>
                         <dd>
-                            <a href="/help/#about">关于GitShell</a><br>
+                            <a href="/help/#about">关于Gitshell</a><br>
                             <a href="/help/#mission">我们的愿景</a><br>
                             <a href="/help/#faq">FAQ</a><br>
                             <a href="/help/#join_login">注册<sup>免费</sup></a><br>
                             <a href="/help/">帮助</a><br>
                             <a target="_blank" href="http://blog.gitshell.com">官方博客</a><br>
-                            <a href="/help/#contact">联系GitShell</a>
+                            <a href="/help/#contact">联系Gitshell</a>
                         </dd>
                     </dl>
                     <dl class="nav nav-list span">
@@ -96,12 +96,8 @@
                     <dl class="nav nav-list span">
                         <dt class="leader">联络</dt>
                         <dd>
-                            <a href="/help/#about">新浪微博</a><br>
-                            <a href="/help/#mission">腾讯微博</a><br>
-                            <a href="/help/#faq">Twitter</a><br>
-                            <a href="/help/#join_login">Google+</a><br>
-                            <a target="_blank" href="http://blog.gitshell.com">RSS订阅</a><br>
-                            <a href="/help/#contact">人人网</a>
+                            <a target="_blank" href="http://e.weibo.com/gitshell">新浪微博</a><br>
+                            <a target="_blank" href="http://gitshell.1kapp.com/?feed=rss2">RSS订阅</a><br>
                         </dd>
                     </dl>
                 </nav>
