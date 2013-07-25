@@ -270,7 +270,7 @@ class GitHandler():
     
     def _ls_tree_check_output(self, commit_hash, path):
         command = '/usr/bin/git ls-tree %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
-        tree = {}; dirs = []; files = []
+        tree = {}; dirs = []; files = []; has_readme = False; readme_file = '';
         try:
             raw_output = check_output(command, shell=True)
             max = 500
@@ -285,6 +285,10 @@ class GitHandler():
                     relative_path = self._oct_utf8_decode(relative_path)
                     if self._repo_file_path_check(relative_path):
                         tree[relative_path] = [relative_path] + array[1:3]
+                        relative_path_lower = relative_path.lower()
+                        if relative_path_lower == 'readme.md' or relative_path_lower == 'readme.mkd':
+                            has_readme = True
+                            readme_file = relative_path
                         if array[1] == 'tree':
                             dirs.append(relative_path)
                         else:
@@ -319,7 +323,7 @@ class GitHandler():
             for file_path in dirs + files:
                 tree_item = tree[file_path]
                 ordered_tree.append(tree_item)
-            return ordered_tree
+            return {'tree': ordered_tree, 'has_readme': has_readme, 'readme_file': readme_file}
         except Exception, e:
             logger.exception(e)
         return None

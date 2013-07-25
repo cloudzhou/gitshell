@@ -20,7 +20,7 @@
                 <li class="divider"></li>
             {% endif %}
             {% for tag in refs_meta.tags %}
-                <li{%if tag == refs %}class="active"{%endif%}>
+                <li{%if tag == refs %} class="active"{%endif%}>
                     <a href="/{{user_name}}/{{repo_name}}/{%if current == 'index' or current == 'tree' or current == 'blob' %}tree{%endif%}{%if current == 'commits' %}commits{%endif%}{%if current == 'refs_graph' %}refs/graph{%endif%}/{{tag}}/">{%if tag == refs %}<i class="icon-ok"></i>{%endif%}<span>{{tag}}</span></a>
                 </li>
             {% endfor %}

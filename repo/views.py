@@ -69,7 +69,7 @@ def user_repo_paging(request, user_name, pagenum):
         userprofile.prirepo = prirepo
         userprofile.save()
 
-    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_list': repo_list, 'repo_feed_map': repo_feed_map}
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'gsuser': user, 'gsuserprofile': userprofile, 'repo_list': repo_list, 'repo_feed_map': repo_feed_map}
     return render_to_response('repo/user_repo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -118,8 +118,8 @@ def ls_tree(request, user_name, repo_name, refs, path, current):
         if path == '.' or path.endswith('/'):
             tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
     readme_md = None
-    if 'README.md' in tree:
-        readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, path + '/README.md')
+    if tree['has_readme']:
+        readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, path + '/' + tree['readme_file'])
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'readme_md': readme_md}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/tree.html',
