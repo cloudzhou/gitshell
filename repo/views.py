@@ -69,7 +69,7 @@ def user_repo_paging(request, user_name, pagenum):
         userprofile.prirepo = prirepo
         userprofile.save()
 
-    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_list': repo_list, 'repo_feed_map': repo_feed_map}
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'gsuser': user, 'gsuserprofile': userprofile, 'repo_list': repo_list, 'repo_feed_map': repo_feed_map}
     return render_to_response('repo/user_repo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -118,8 +118,8 @@ def ls_tree(request, user_name, repo_name, refs, path, current):
         if path == '.' or path.endswith('/'):
             tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
     readme_md = None
-    if 'README.md' in tree:
-        readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, path + '/README.md')
+    if tree['has_readme']:
+        readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, path + '/' + tree['readme_file'])
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'readme_md': readme_md}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/tree.html',
@@ -392,7 +392,7 @@ def pull_commits(request, user_name, repo_name, source_username, source_refs, de
 
     source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), source_refs)
     desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), desc_refs)
-    commits = gitHandler.repo_log_file(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, 50, path)
+    commits = gitHandler.repo_log_file(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, 50, '.')
     _fillwith_commits(commits)
     return json_httpResponse({'commits': commits, 'source_refs': source_refs, 'desc_refs': desc_refs, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
     
@@ -587,7 +587,7 @@ def pulse(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'clone'
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'pulse'
     raw_fork_repos_tree = []
     fork_repo_id = repo.fork_repo_id
     if fork_repo_id != 0:
@@ -1193,23 +1193,19 @@ def _fillwith_commits(commits):
             commit['author_imgurl'] = '000000'
 
 def _get_current_refs(user, repo, refs, update_to_cache):
-    if not user.is_authenticated():
-        if refs and RepoManager.is_allowed_refsname_pattern(refs):
-            return refs
-        return 'master'
     gitHandler = GitHandler()
     refs_meta = gitHandler.repo_ls_refs(repo, repo.get_abs_repopath())
-    if refs not in refs_meta['branches'] and refs not in refs_meta['tags']:
+    if refs and refs not in refs_meta['branches'] and refs not in refs_meta['tags']:
         return 'master'
     feedAction = FeedAction()
-    user_refs = feedAction.get_user_attr(user.id, AttrKey.REFS)
+    repo_refs = feedAction.get_repo_attr(repo.id, AttrKey.REFS)
     if refs and RepoManager.is_allowed_refsname_pattern(refs):
-        if refs != user_refs and update_to_cache:
-            feedAction.set_user_attr(user.id, AttrKey.REFS, refs)
+        if refs != repo_refs and update_to_cache:
+            feedAction.set_repo_attr(repo.id, AttrKey.REFS, refs)
         return refs
-    if user_refs:
-        return user_refs
-    feedAction.set_user_attr(user.id, AttrKey.REFS, 'master')
+    if repo_refs:
+        return repo_refs
+    feedAction.set_repo_attr(repo.id, AttrKey.REFS, 'master')
     return 'master'
 
 def json_ok():

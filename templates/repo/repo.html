@@ -14,10 +14,9 @@
         <div class="repo-actions-bar">
             <ul class="repocrumb breadcrumb">
                 <li class="user"><a href="/{{user_name}}/">{{user_name}}</a><span class="divider">/</span></li>
-                <!--TODO green dropbox icon if set dropbox sync, grep icon if not open-->
                 <li>
                     <a href="/{{user_name}}/{{repo_name}}/">{{repo_name}}</a>
-                    <sup class="synced"><a href="/{{user_name}}/{{repo_name}}/settings/#dropbox"><i class="icon-dropbox"></i></a></sup>
+                    <sup class="{%if repo.dropbox_sync == 1%}synced{%endif%}"><a href="/{{user_name}}/{{repo_name}}/settings/#dropbox"><i class="icon-dropbox"></i></a></sup>
                 </li>
             </ul>
             <ul class="repo-actions">
@@ -39,7 +38,7 @@
                     <span class="btn btn-mini count last" title="标星次数" href="/{{user_name}}/{{repo_name}}/clone_watch_star/">{{repo.star}}</span>
                 </li>
                 <li class="btn-group">
-                    {% if has_fork_right %}
+                  {% if has_fork_right %}
                         <a class="btn btn-mini fork first" data-original-title="Fork" rel="tooltip" href="javascript: void(0)">Fork</a>
                         <span class="btn btn-mini count last" title="衍生次数" href="/{{user_name}}/{{repo_name}}/clone_watch_star/">{{repo.fork}}</span>
                     {% endif %}

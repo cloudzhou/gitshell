@@ -34,35 +34,25 @@ def user(request, user_name):
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     recommendsForm = RecommendsForm()
     repos = RepoManager.list_unprivate_repo_by_userId(gsuser.id, 0, 10)
-    raw_recommends = GsuserManager.list_recommend_by_userid(gsuser.id, 0, 20)
-    recommends = __conver_to_recommends_vo(raw_recommends)
-
-    feedAction = FeedAction()
-    raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
-    raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
-    raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 10)
-    watch_repo_ids = [int(x[0]) for x in raw_watch_repos]
-    watch_user_ids = [int(x[0]) for x in raw_watch_users]
-    bewatch_user_ids = [int(x[0]) for x in raw_bewatch_users]
-    watch_repos_map = RepoManager.merge_repo_map(watch_repo_ids)
-    watch_users_map = GsuserManager.map_users(watch_user_ids)
-    bewatch_users_map = GsuserManager.map_users(bewatch_user_ids)
-    watch_repos = [watch_repos_map[x] for x in watch_repo_ids if x in watch_repos_map]
-    watch_users = [watch_users_map[x] for x in watch_user_ids if x in watch_users_map]
-    bewatch_users = [bewatch_users_map[x] for x in bewatch_user_ids if x in bewatch_users_map]
 
     now = datetime.now()
     last30days = timeutils.getlast30days(now)
     last30days_commit = get_last30days_commit(gsuser)
 
     feedAction = FeedAction()
+
+    raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
+    watch_repo_ids = [int(x[0]) for x in raw_watch_repos]
+    watch_repos_map = RepoManager.merge_repo_map(watch_repo_ids)
+    watch_repos = [watch_repos_map[x] for x in watch_repo_ids if x in watch_repos_map]
+
     pri_user_feeds = feedAction.get_pri_user_feeds(gsuser.id, 0, 10)
     pub_user_feeds = feedAction.get_pub_user_feeds(gsuser.id, 0, 10)
     feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
 
     star_repos = RepoManager.list_star_repo(gsuser.id, 0, 20)
 
-    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'repos': repos, 'watch_repos': watch_repos, 'star_repos': star_repos, 'watch_users': watch_users, 'bewatch_users': bewatch_users, 'last30days': last30days, 'last30days_commit': last30days_commit, 'feeds_as_json': feeds_as_json, 'recommends': recommends}
+    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'repos': repos, 'watch_repos': watch_repos, 'star_repos': star_repos, 'last30days': last30days, 'last30days_commit': last30days_commit, 'feeds_as_json': feeds_as_json}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/user.html',
                           response_dictionary,
@@ -265,7 +255,7 @@ def recommend_delete(request, user_name, recommend_id):
 
 @login_required
 @require_http_methods(["POST"])
-def network_watch(request, user_name):
+def watch(request, user_name):
     response_dictionary = {'result': 'success'}
     gsuserprofile = GsuserManager.get_userprofile_by_name(user_name)
     if gsuserprofile is None:
@@ -278,7 +268,7 @@ def network_watch(request, user_name):
 
 @login_required
 @require_http_methods(["POST"])
-def network_unwatch(request, user_name):
+def unwatch(request, user_name):
     response_dictionary = {'result': 'success'}
     gsuserprofile = GsuserManager.get_userprofile_by_name(user_name)
     if gsuserprofile is None:
@@ -484,10 +474,22 @@ def resetpassword(request, step):
                           context_instance=RequestContext(request))
 
 def get_common_user_dict(request, gsuser, gsuserprofile):
+    feedAction = FeedAction()
+    raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
+    raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 10)
+    watch_user_ids = [int(x[0]) for x in raw_watch_users]
+    bewatch_user_ids = [int(x[0]) for x in raw_bewatch_users]
+    watch_users_map = GsuserManager.map_users(watch_user_ids)
+    bewatch_users_map = GsuserManager.map_users(bewatch_user_ids)
+    watch_users = [watch_users_map[x] for x in watch_user_ids if x in watch_users_map]
+    bewatch_users = [bewatch_users_map[x] for x in bewatch_user_ids if x in bewatch_users_map]
+    raw_recommends = GsuserManager.list_recommend_by_userid(gsuser.id, 0, 20)
+    recommends = __conver_to_recommends_vo(raw_recommends)
+
     is_watched_user = False
     if request.user.is_authenticated():
         is_watched_user = RepoManager.is_watched_user(request.user.id, gsuser.id)
-    return {'gsuser': gsuser, 'gsuserprofile': gsuserprofile, 'is_watched_user': is_watched_user}
+    return {'gsuser': gsuser, 'gsuserprofile': gsuserprofile, 'watch_users': watch_users, 'bewatch_users': bewatch_users, 'recommends': recommends, 'is_watched_user': is_watched_user, 'show_common': True}
 
 def get_last30days_commit(gsuser):
     now = datetime.now()

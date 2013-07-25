@@ -26,28 +26,28 @@
             </tr>
             {% endif %}
 
-            {% for file, attrs in tree.items %}
+            {% for file_attrs in tree.tree %}
             <tr>
                 <td class="icon">
                     <!--dir and file image-->
-                    {% if attrs.0 == 'tree' %}
+                    {% if file_attrs.1 == 'tree' %}
                         <i class="icon-folder-open"></i>
                     {% else %}
                         <i class="icon-file"></i>
                     {% endif %}
                 </td>
                 <td class="file-name">
-                    <a href="/{{user_name}}/{{repo_name}}/{%if attrs.0 == 'tree'%}tree{%else%}blob{%endif%}/{{ refs }}/{%if path != '.' %}{{ path }}{%endif%}{{ file }}" title="{{ file }}">{{ file }}</a>
+                    <a href="/{{user_name}}/{{repo_name}}/{%if file_attrs.1 == 'tree'%}tree{%else%}blob{%endif%}/{{refs}}/{%if path != '.' %}{{path}}{%endif%}{{file_attrs.0}}" title="{{file_attrs.0}}">{{file_attrs.0}}</a>
                 </td>
                 <td class="commit-info">
-                    {% if attrs.4|length > 80 %}
-                        <a href="javascript:void(0)" data-toggle="popover" data-content="{{attrs.4}}" data-placement="bottom" class="commit">{{ attrs.4|truncatechars:80 }}</a>
+                    {% if file_attrs.5|length > 80 %}
+                        <a href="javascript:void(0)" data-toggle="popover" data-content="{{file_attrs.5}}" data-placement="bottom" class="commit">{{file_attrs.5|truncatechars:80}}</a>
                     {% else %}
-                        <a href="javascript:void(0)" class="commit">{{ attrs.4 }}</a>
+                        <a href="javascript:void(0)" class="commit">{{file_attrs.5}}</a>
                     {% endif %}
-                    <a href="/{{attrs.3}}/" class="commiter">@{{ attrs.3 }}</a>
+                    <a href="/{{file_attrs.4}}/" class="commiter">@{{file_attrs.4}}</a>
                 <td class="date">
-                    <span class="date unixtime">{{ attrs.2 }}</span></td>
+                    <span class="date unixtime">{{file_attrs.3}}</span></td>
                 </td>
             </tr>
             {% endfor %}
@@ -55,8 +55,8 @@
         </table>
         <!--TODO readme.md -->
         {% if readme_md %}
-        <div class="readme">
-          <pre id="id_readme_md">{{ readme_md }}</pre>
+        <div id="README.md" class="readme">
+          <pre id="id_readme_md">{{readme_md}}</pre>
         </div>
         {% endif %}
     </div>

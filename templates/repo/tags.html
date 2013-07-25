@@ -23,7 +23,7 @@ $(function(){
             html.push('<td><h2><a href="/{{user_name}}/{{repo_name}}/tree/' + tag + '">' + tag + '</a></h2></td>');
             html.push('<td><span class="muted">由' + commit.author + '<span class="c_unixtime">' + commit.committer_date + '</span>提交: ' + commit.commit_message + '</span></td>');
             html.push('<td>');
-            html.push('<a href="/{{user_name}}/{{repo_name}}/refs/graph/' + tag + '/"><button type="button" class="btn">分支图</button></a>');
+            html.push('<a href="/{{user_name}}/{{repo_name}}/refs/graph/' + tag + '/"><button type="button" class="btn">Graph</button></a>');
             html.push('</td>');
             html.push('</tr>');
         }

@@ -73,48 +73,49 @@
 
             <div class="bubble-inner colspan">
                 {% block left_sub_container %}{% endblock %}
-                    <div class="span right sidebar">
-                                    {% if gsuserprofile.resume %}
-                                    <div id="id_user_resume" class="item">
-                                        <h2 class="heading">简历:</h2>
-                                        <div id="id_user_resume_content" class="well">{{ gsuserprofile.resume }}</div>
-                                    </div>
-                                    {% endif %}
-                                    <div id="id_user_recommends" class="item">
-                                            <h2 class="heading">评论:<a href="/{{gsuser.username}}/recommend/" class="more">more</a></h2>
-                                            {% for recommend in recommends %}
-                                                    <span>{{recommend.content}}</span>
-                                                    <small><a href="/{{recommend.username}}/">{{recommend.username}}</a> {{recommend.tweet}}</small>
-                                            {% endfor %}
-                                            <form class="form-inline" action="/{{user.username}}/recommend/" method="post">
-                                                    {% csrf_token %}
-                                                    {{ recommendsForm.content }}
-                                                    <button id="id_recommend_submit" class="btn btn-mini hide" type="submit">确定</button>
-                                            </form>
-                                    </div>
-                                    <div class="item">
-                                        <h2 class="heading">关注<a href="/{{gsuser.username}}/watch/user/" class="more">more</a></h2>
-                                        <div class="colspan">
-                                            {% for watch_user in watch_users %}
-                                            <a href="/{{watch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ watch_user.username }}" data-content="{% if tweet != "" %}{{ watch_user.tweet }}{% else %}这家伙真懒{%endif%}">
-                                                <figure class="avatar"><img src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=32" alt=""></figure>
-                                            </a>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                    <div class="item">
-                                        <h2 class="heading">被关注<a href="/{{gsuser.username}}/watch/user/" class="more">more</a></h2>
-                                        <div class="colspan">
-                                            {% for bewatch_user in bewatch_users %}
-                                            <a href="/{{bewatch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ bewatch_user.username }}" data-content="{{ bewatch_user.tweet }}">
-                                                <figure class="avatar"><img src="https://gravatar.com/avatar/{{bewatch_user.imgurl}}?s=32" alt=""></figure>
-                                            </a>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                            </div>
-                                </div>
-
+                {% if show_common %}
+                <div class="span right sidebar">
+                    {% if gsuserprofile.resume %}
+                    <div id="id_user_resume" class="item">
+                        <h2 class="heading">简历:</h2>
+                        <div id="id_user_resume_content" class="well">{{ gsuserprofile.resume }}</div>
+                    </div>
+                    {% endif %}
+                    <div id="id_user_recommends" class="item">
+                            <h2 class="heading">评论:<a href="/{{gsuser.username}}/recommend/" class="more">more</a></h2>
+                            {% for recommend in recommends %}
+                                    <span>{{recommend.content}}</span>
+                                    <small><a href="/{{recommend.username}}/">{{recommend.username}}</a> {{recommend.tweet}}</small>
+                            {% endfor %}
+                            <form class="form-inline" action="/{{user.username}}/recommend/" method="post">
+                                    {% csrf_token %}
+                                    {{ recommendsForm.content }}
+                                    <button id="id_recommend_submit" class="btn btn-mini hide" type="submit">确定</button>
+                            </form>
+                    </div>
+                    <div class="item">
+                        <h2 class="heading">关注<a href="/{{gsuser.username}}/watch/user/" class="more">more</a></h2>
+                        <div class="colspan">
+                            {% for watch_user in watch_users %}
+                            <a href="/{{watch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ watch_user.username }}" data-content="{% if tweet != "" %}{{ watch_user.tweet }}{% else %}这家伙真懒{%endif%}">
+                                <figure class="avatar"><img src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=32" alt=""></figure>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="item">
+                        <h2 class="heading">被关注<a href="/{{gsuser.username}}/watch/user/" class="more">more</a></h2>
+                        <div class="colspan">
+                            {% for bewatch_user in bewatch_users %}
+                            <a href="/{{bewatch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ bewatch_user.username }}" data-content="{{ bewatch_user.tweet }}">
+                                <figure class="avatar"><img src="https://gravatar.com/avatar/{{bewatch_user.imgurl}}?s=32" alt=""></figure>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
     </div>
 
     {% block row_sub_container %}{% endblock %}
@@ -133,7 +134,7 @@ $(function(){
         }
         disabled_watch = true;
         $.ajax({
-            url: '/ajax/network/watch/{{ gsuser.username }}/',
+            url: '/ajax/user/watch/{{ gsuser.username }}/',
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
@@ -159,7 +160,7 @@ $(function(){
         }
         disabled_watch = true;
         $.ajax({
-            url: '/ajax/network/unwatch/{{ gsuser.username }}/',
+            url: '/ajax/user/unwatch/{{ gsuser.username }}/',
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
