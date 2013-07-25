@@ -377,7 +377,7 @@ def pull_show(request, user_name, repo_name, pullRequest_id):
 @repo_permission_check
 @require_http_methods(["POST"])
 def pull_commits(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    repo = RepoManager.get_repo_by_name(user_name, repo_name); path = '.'
     source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
     desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
     if repo is None or source_repo is None or desc_repo is None:

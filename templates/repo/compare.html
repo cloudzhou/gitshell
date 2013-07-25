@@ -1,56 +1,48 @@
 {% extends "repo/repo.html" %}
+{% block container_class_name %} bubble repo pulls{% endblock %}
 {% block subcontainer %}
 <!--TODO css for diff -->
-<style>
-.repo-refs { border: 1px solid #D4D4D4; padding: 10px }    
-.margin-left-10 { margin-left: 10px }
-.c_diff_stat_filename { font-size: 15px; font-weight: 600 }
-.c_diff_file_filename { margin: 10px; font-size: 18px; font-weight: 800 }
-.c_add_line { background-color: #cfc; }
-.c_remove_line { background-color: #fdd; }
-</style>
-<div>
-    <h4 style="margin: 10px"><a href="/{{user_name}}/{{repo_name}}/compare/master/">{{repo_name}}</a> /
-        <span id="i_repo_path"></span>
-        <span>分支比较</span>
-        {% if is_repo_member %}
-        <div id="i_merge_pullrequest" class="pull-right hide">
-            <a id="i_merge" class="muted" data-original-title=" 直接合并分支代码" rel="tooltip" href="javascript: void(0)"><button type="button" class="btn btn-success">合并分支代码</button></a>
-            <a class="muted" data-original-title=" 出于礼貌，提前合并目标分支代码，减少对方合并时出现冲突的可能性" rel="tooltip" href="/{{user_name}}/{{repo_name}}/pull/new/{{user_name}}:{{from_refs}}...{{user_name}}:{{to_refs}}/"><button type="button" class="btn btn-primary">创建合并请求</button></a>
-        </div>
+  <header class="header">
+      <h1 class="heading">
+        <a href="/{{user_name}}/{{repo_name}}/compare/master/">{{repo_name}}</a> /
+          <span id="i_repo_path"></span>
+          <span>分支比较</span>
+          {% if is_repo_member %}
+          <div id="i_merge_pullrequest" class="pull-right hide">
+              <a id="i_merge" class="muted" data-original-title=" 直接合并分支代码" rel="tooltip" href="javascript: void(0)"><button type="button" class="btn btn-success">合并分支代码</button></a>
+              <a class="muted" data-original-title=" 出于礼貌，提前合并目标分支代码，减少对方合并时出现冲突的可能性" rel="tooltip" href="/{{user_name}}/{{repo_name}}/pull/new/{{user_name}}:{{from_refs}}...{{user_name}}:{{to_refs}}/"><button type="button" class="btn btn-primary">创建合并请求</button></a>
+          </div>
         {% endif %}
-    </h4>
-    <!--compare-->
-    <div class="row" style="margin-top: 20px">
-        <div class="span10">
-            <div class="span4 repo-refs">
-                <span>分支：</span>
-                <select id="id_source_refs" class="span3">
-                    {% for branch in refs_meta.branches %}
-                    <option value="{{ branch }}" {%if branch == from_refs %} selected="selected" {%endif%}>{{ branch }}</option>
-                    {% endfor %}
-                    {% if from_refs not in refs_meta.branches%}
-                    <option value="{{ from_refs }}" selected="selected">{{ from_refs }}</option>
-                    {% endif %}
-                </select>
-            </div>
-            <div class="span0">
-                <i class="icon-random"></i>
-            </div>
-            <div class="span4 repo-refs">
-                <span>分支：</span>
-                <select id="id_desc_refs" class="span3">
-                    {% for branch in refs_meta.branches %}
-                    <option value="{{ branch }}" {%if branch == to_refs %} selected="selected" {%endif%}>{{ branch }}</option>
-                    {% endfor %}
-                    {% if to_refs not in refs_meta.branches%}
-                    <option value="{{ to_refs }}" selected="selected">{{ to_refs }}</option>
-                    {% endif %}
-                </select>
-            </div>
-        </div>
+      </h1>
+  </header>
+
+  <!--compare-->
+  <div class="repo-refs-container colspan well">
+    <div class="repo-refs span">
+      <span>分支：</span>
+      <select id="id_source_refs" class="select2">
+        {% for branch in refs_meta.branches %}
+          <option value="{{ branch }}" {%if branch == from_refs %} selected="selected" {%endif%}>{{ branch }}</option>
+        {% endfor %}
+        {% if from_refs not in refs_meta.branches%}
+          <option value="{{ from_refs }}" selected="selected">{{ from_refs }}</option>
+        {% endif %}
+      </select>
     </div>
-</div>          
+    <div class="span chevron"><i class="icon-random"></i></div>
+    <div class="span4 repo-refs">
+        <span>分支：</span>
+        <select id="id_desc_refs" class="select2">
+            {% for branch in refs_meta.branches %}
+            <option value="{{ branch }}" {%if branch == to_refs %} selected="selected" {%endif%}>{{ branch }}</option>
+            {% endfor %}
+            {% if to_refs not in refs_meta.branches%}
+            <option value="{{ to_refs }}" selected="selected">{{ to_refs }}</option>
+            {% endif %}
+        </select>
+    </div>
+  </div>
+
 <div id="i_commits_diff" class="span10" style="margin-top: 20px"></div>
 <div id="i_merge_result" class="span10 hide" style="margin-top: 20px">
     <pre id="i_merge_output" class="shell" style="margin-bottom: 15px"></pre>

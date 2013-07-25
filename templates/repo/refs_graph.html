@@ -1,22 +1,13 @@
 {% extends "repo/repo.html" %}
 {% block subcontainer %}
 <!--TODO refactor-->
-<style>
-.c_terminal { background:#333;padding:10px;color:#fff;text-align:left;overflow:auto;clear:both;font-family: Consolas,monospace }
-.c_terminal p { margin: 0px;font-family: Consolas,monospace }
-.c_terminal .c_commit_hash { color: #50547a; }
-.c_terminal .c_date_relative { color: green; }
-.c_terminal .c_author { color: gray; }
-.c_terminal .c_refs { color: yellow; }
-</style>
-    <header class="header clearfix">
-        {% include "repo/branch_nav.html" %}
-    </header>
+<header class="header clearfix">
+    {% include "repo/branch_nav.html" %}
+</header>
     <div id="i_log_graph" class="c_terminal"></div>
 {% endblock %}
 {% block subjs %}
 <script>
-<!--TODO btn btn-mini, branch and tag list -->
 $(function(){
     $.post('/{{user_name}}/{{repo_name}}/log/graph/{{ refs }}/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
         var htmls = [];
@@ -62,7 +53,7 @@ $(function(){
                 new_log_graph_splits.push('<span class="c_commit_hash">' + commit_hash + '</span>');
                 new_log_graph_splits.push(log_graph_line.substring(indexOfs[2], indexOfs[3]));
                 new_log_graph_splits.push('<span class="c_date_relative">' + date_relative + '</span>');
-                new_log_graph_splits.push(log_graph_line.substring(indexOfs[4]+1, indexOfs[5]));
+                new_log_graph_splits.push('<span class="c_commit">' + log_graph_line.substring(indexOfs[4]+1, indexOfs[5]) + '</span>');
                 if(indexOfs[6] > indexOfs[5] && indexOfs[7] > indexOfs[6]) {
                     author = log_graph_line.substring(indexOfs[5], indexOfs[6]);
                     if(author.lastIndexOf(' ') == author.length-1) {
@@ -70,7 +61,7 @@ $(function(){
                     }
                     lastBlank = author.lastIndexOf(' ') + 1;
                     real_author = author.substring(lastBlank);
-                    new_log_graph_splits.push(author.substring(0, lastBlank) + '<a href="/' + real_author + '/"><span class="c_author">' + real_author + '</span></a> ');
+                    new_log_graph_splits.push(author.substring(0, lastBlank) + '<a href="/' + real_author + '/">' + real_author + '</a> ');
                     refs = log_graph_line.substring(indexOfs[6], indexOfs[7]+1);
                     if(refs[0] == '(' && refs[refs.length-1] == ')') {
                         var refs_splits = [];
@@ -84,7 +75,7 @@ $(function(){
                             if(split != 'HEAD') {
                                 refs_splits.push('<a href="/{{user_name}}/{{repo_name}}/tree/' + split + '/"><span class="label ' + label_class + '">' + split + '</span></a>');
                             } else {
-                                refs_splits.push('<span class="label">' + split + '</span>');
+                                refs_splits.push('<span class="label label-success">' + split + '</span>');
                             }
                         }
                         refs = '(' + refs_splits.join(', ') + ')';
