@@ -79,29 +79,23 @@
                     <dl class="url colspan">
                         <dt class="btn-group span">
                             {% if is_repo_member %}
-                                <span class="first"><a id="ssh_fork" class="url-select btn">SSH</a></span>
+                                <a id="ssh_fork" class="url-select btn first">SSH</a></span>
                             {% endif %}
-                                <span class="middle"><a id="http_fork" class="active url-select btn">HTTP</a></span>
+                                <a id="http_fork" class="active url-select btn middle">HTTP</a></span>
                             {% if repo.auth_type == 0 %}
-                                <span class="middle"><a id="git_fork" class="url-select btn">GIT</a></span>
+                                <a id="git_fork" class="url-select btn middle">GIT</a></span>
                             {% endif %}
                         </dt>
-                        <dd class="url-holder btn-group span">
+                        <dd class="url-holder btn-group span" style="position: relative;">
                             <!--as input and click then select all-->
                             {% if is_repo_member %}
-                            <span class="middle">
-                                <span class="url-data btn" id="url"><span class="url-git">git</span>@<span class="url-gitshell">gitshell.com</span>:<span class="url-username">{{user_name}}</span>/<span class="url-repo-name">{{repo_name}}</span>.git</span>
-                            </span>
+                              <span class="btn middle" id="url-data"><span class="url-git">git</span>@<span class="url-gitshell">gitshell.com</span>:<span class="url-username">{{user_name}}</span>/<span class="url-repo-name">{{repo_name}}</span>.git</span>
                             {% elif repo.auth_type == 0 %}
-                            <span class="middle">
-                                <span class="url-data btn"><span class="url-git">https://</span><span class="url-gitshell">{{user_name}}@gitshell.com</span>/<span class="url-username">{{user_name}}</span>/<span class="url-repo-name">{{repo_name}}</span>.git</span>
-                            </span>
+                              <span class="url-data btn middle"><span class="url-git">https://</span><span class="url-gitshell">{{user_name}}@gitshell.com</span>/<span class="url-username">{{user_name}}</span>/<span class="url-repo-name">{{repo_name}}</span>.git</span>
                             {% endif %}
                             <!--TODO clipboard jsipboard, try to using button? -->
-                            <span class="last">
-                                <span class="clipboard url-select btn"><a class="url-js-copy"><i class="icon-copy"></i>复制</a></span>
-                            </span>
-                            <span class="meta url-info">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>
+                              <a href="#" class="clipboard url-select btn last" id="url-js-copy"><i class="icon-copy"></i>复制</a>
+                            <span class="span" id="url-info">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>
                         </dd>
                     </dl>
                 {% endif %}
@@ -133,8 +127,36 @@
 {% endblock %}
 
 {% block js %}
+<script src="/static/js/zclip.min.js"></script>
 <script>
 $(function(){
+
+    $("#ssh_fork, #http_fork, #git_fork").bind({
+      click: function(e) {
+        e.preventDefault();
+        $(this).addClass("active").siblings().removeClass("active");
+        switch(this.id) {
+          case "ssh_fork":
+            $('#url-data').html('<span class="url-git">git</span>@<span class="url-gitshell">gitshell.com</span>:<span class="url-username">{{user_name}}</span>/<span class="repo-name">{{repo_name}}</span>.git');
+            $('#url-info').html('读写');
+            break;
+          case "http_fork":
+            $('#url-data').html('<span class="url-http">https</span>://<span class="url-gitshell">gitshell.com</span>/<span class="url-username">{{user_name}}/<span class="url-reponame">{{repo_name}}</span>.git');
+            $('#url-info').html('读写');
+            break;
+          case "git_fork":
+            $('#url-data').html('<span class="url-git">git</span>://<span class="url-gitshell">gitshell.com</span>/{{user_name}}</span>/<span class="url-reponame">{{repo_name}}</span>.git');
+            $('#url-info').html('只读');
+            break;
+        };
+      }
+    });
+
+    $("#url-js-copy").zclip({
+      path: "/static/js/ZeroClipboard.swf",
+      copy: function() { return $("#url-data").html(); }
+    });
+
     $('.repo-actions-bar .watch').click(function() {
         $.post('/{{user_name}}/{{repo_name}}/watch/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             window.location = window.location;
@@ -178,26 +200,16 @@ $(function(){
         $('.c_repo_action').tooltip({
             selector: "a[rel=tooltip]"
         });
-        $('#id_ssh_fork').mouseover(function(event) {
-            $('#id_git_url').html('<input class="input-xlarge focused" value="git@gitshell.com:{{user_name}}/{{repo_name}}.git"/>');
-            $('#id_read_write').html('读写');
-        });
-        $('#id_http_fork').mouseover(function(event) {
-            $('#id_git_url').html('<input class="input-xlarge focused" value="https://gitshell.com/{{user_name}}/{{repo_name}}.git"/>');
-            $('#id_read_write').html('读写');
-        });
-        $('#id_git_fork').mouseover(function(event) {
-            $('#id_git_url').html('<input class="input-xlarge focused" value="git://gitshell.com/{{user_name}}/{{repo_name}}.git"/>');
-            $('#id_read_write').html('只读');
-        });
+
+    $('.repo-admin-edit').hide();
+    $('.repo-summary > .description').hover(
+        function(){
+            $('.repo-admin-edit').show();
+        },function(){
             $('.repo-admin-edit').hide();
-            $('.repo-summary > .description').hover(
-                function(){
-                    $('.repo-admin-edit').show();
-                },function(){
-                    $('.repo-admin-edit').hide();
-                }
-            );
+        }
+    );
+
 });
 </script>
 {% block subjs %}{% endblock %}

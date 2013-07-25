@@ -113,7 +113,7 @@ $(function(){
 if(Object.keys(last12hours_commit).length > 0) {
     $('#id_paraent_day_container').show();
     var day_chart = new Highcharts.Chart({
-        chart: { renderTo: 'id_day_container', type: 'area'},title: {text: ''},
+        chart: { renderTo: 'id_day_container', type: 'area', shadow: false, plotShadow: false, reflow: false },title: {text: ''},
         yAxis: { title: { text: '提交次数' } },
         xAxis: { categories: last12hoursAsCat },
         plotOptions: { area: { dataLabels: { enabled: true }, enableMouseTracking: false } },
