@@ -270,11 +270,11 @@ class GitHandler():
     
     def _ls_tree_check_output(self, commit_hash, path):
         command = '/usr/bin/git ls-tree %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
-        result = {}
+        tree = {}; dirs = []; files = []
         try:
-            raw_result = check_output(command, shell=True)
-            max = 200
-            for line in raw_result.split("\n"):
+            raw_output = check_output(command, shell=True)
+            max = 500
+            for line in raw_output.split("\n"):
                 array = self.blank_p.split(line, 3) 
                 if len(array) >= 4:
                     relative_path = array[3]
@@ -284,12 +284,16 @@ class GitHandler():
                         relative_path = relative_path + '/'
                     relative_path = self._oct_utf8_decode(relative_path)
                     if self._repo_file_path_check(relative_path):
-                        result[relative_path] = array[1:3]
+                        tree[relative_path] = [relative_path] + array[1:3]
+                        if array[1] == 'tree':
+                            dirs.append(relative_path)
+                        else:
+                            files.append(relative_path)
                 if(max <= 0):
                     break
                 max = max - 1
             quote_relative_paths = []
-            for relative_path in result.keys():
+            for relative_path in tree.keys():
                 quote_relative_paths.append(pipes.quote(relative_path))
             if len(path.split('/')) < 50:
                 pre_path = path
@@ -306,10 +310,16 @@ class GitHandler():
                     if len(meta_splits) < 3:
                         continue
                     (unixtime, author_name, last_commit_message) = meta_splits
-                    result[relative_path].append(unixtime)
-                    result[relative_path].append(author_name)
-                    result[relative_path].append(last_commit_message)
-            return result
+                    tree[relative_path].append(unixtime)
+                    tree[relative_path].append(author_name)
+                    tree[relative_path].append(last_commit_message)
+            dirs.sort()
+            files.sort()
+            ordered_tree = []
+            for file_path in dirs + files:
+                tree_item = tree[file_path]
+                ordered_tree.append(tree_item)
+            return ordered_tree
         except Exception, e:
             logger.exception(e)
         return None

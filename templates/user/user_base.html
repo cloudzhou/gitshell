@@ -133,7 +133,7 @@ $(function(){
         }
         disabled_watch = true;
         $.ajax({
-            url: '/ajax/network/watch/{{ gsuser.username }}/',
+            url: '/ajax/user/watch/{{ gsuser.username }}/',
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',
@@ -159,7 +159,7 @@ $(function(){
         }
         disabled_watch = true;
         $.ajax({
-            url: '/ajax/network/unwatch/{{ gsuser.username }}/',
+            url: '/ajax/user/unwatch/{{ gsuser.username }}/',
             type: 'POST',
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
             dataType: 'json',

@@ -265,7 +265,7 @@ def recommend_delete(request, user_name, recommend_id):
 
 @login_required
 @require_http_methods(["POST"])
-def network_watch(request, user_name):
+def watch(request, user_name):
     response_dictionary = {'result': 'success'}
     gsuserprofile = GsuserManager.get_userprofile_by_name(user_name)
     if gsuserprofile is None:
@@ -278,7 +278,7 @@ def network_watch(request, user_name):
 
 @login_required
 @require_http_methods(["POST"])
-def network_unwatch(request, user_name):
+def unwatch(request, user_name):
     response_dictionary = {'result': 'success'}
     gsuserprofile = GsuserManager.get_userprofile_by_name(user_name)
     if gsuserprofile is None:
