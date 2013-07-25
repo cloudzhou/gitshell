@@ -1,4 +1,5 @@
 {% extends "repo/repo.html" %}
+{% block container_class_name %} repo setting{% endblock %}
 {% block subcontainer %}
 <header class="header">
   <h1 class="heading">仓库设置</h1>
@@ -40,59 +41,90 @@
                         <a data-dismiss="alert" class="close">×</a>
                         <strong>出错了！</strong> <span id="id_error_message">{{ error }}</span>
                     </div>
-                    <div class="form-actions">
-                        <button id="id_edit_submit" class="btn btn-primary" type="submit">确定</button>
+                    <div class="control-group">
+                      <div class="controls form-actions">
+                          <button id="id_edit_submit" class="btn btn-primary" type="submit">确定</button>
+                          <p class="text-warning">公开：包括源代码公开；半公开：除了源代码之外公开；私有：对外不公开</p>
+                      </div>
                     </div>
-                    <span class="muted">公开：包括源代码公开；半公开：除了源代码之外公开；私有：对外不公开</span>
                 </fieldset>
             </form>
 
-    <table class="table table-striped">
-        <tbody>
-            <tr class="span1">
-                <td><!--img src="/static/img/dropbox_logo.ico"/--><strong>Dropbox 及时备份</strong>：</td>
-                {% if repo.dropbox_sync == 1 %}
-                <td>
-                    {% if repo.dropbox_url == '' %}
-                    <span class="label label-important">Dropbox 正在同步中... 请三分钟之后再来围观</span>
-                    {% else %}
-                    <a target="_blank" href="{{ repo.dropbox_url }}">{{ repo.dropbox_url }}</a>
-                    {% endif %}
-                </td>
-                <td>
-                    <button class="disable_dropbox_sync btn btn-mini btn-danger">禁止</button>
-                </td>
-                {% else %}
-                <td><span>仓库将近乎及时地备份在 Dropbox，加入本地 Dropbox 后可以直接 git clone，不能公开该地址</span></td>
-                <td>
-                    <button class="enable_dropbox_sync btn btn-mini btn-primary">启用</button>
-                </td>
-                {% endif %}
-            </tr>
-            <tr class="span1">
-                <td><strong>Deploy URL</strong>：</td>
-                {% if repo.deploy_url and repo.deploy_url != '' %}
-                <td>https://{{repo.deploy_url}}@gitshell.com/{{user_name}}/{{repo_name}}.git</td>
-                <td>
-                    <button class="generate_deploy_url btn btn-mini btn-warning">重新生成</button>
-                    <button class="forbid_dploy_url btn btn-mini btn-danger">禁止</button>
-                </td>
-                {% else %}
-                <td><span>deploy url 是 git 只读、不需要权限验证的 clone 地址，用于发布、部署，不能公开该地址</span></td>
-                <td>
-                    <button class="generate_deploy_url btn btn-mini btn-primary">生成</button>
-                </td>
-                {% endif %}
-            </tr>
-        </tbody>
-    </table>
-    <a href="/{{user_name}}/{{repo_name}}/delete/"><button class="btn btn-mini btn-danger">删除该仓库</button></a>
-    <a href="/{{user_name}}/{{repo_name}}/collaborator/"><button class="btn btn-mini btn-danger">管理协同者</button></a>
+            <div id="setting-toggler"><a href="#">更多设置</a></div>
+            <div class="more-settings">
+
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <td><!--img src="/static/img/dropbox_logo.ico"/--><strong>Dropbox 及时备份</strong>：</td>
+                            {% if repo.dropbox_sync == 1 %}
+                            <td>
+                                {% if repo.dropbox_url == '' %}
+                                <span class="label label-important">Dropbox 正在同步中... 请三分钟之后再来围观</span>
+                                {% else %}
+                                <a target="_blank" href="{{ repo.dropbox_url }}">{{ repo.dropbox_url }}</a>
+                                {% endif %}
+                            </td>
+                            <td class="actions">
+                                <button class="disable_dropbox_sync btn btn-mini">禁止</button>
+                            </td>
+                            {% else %}
+                            <td><span>仓库将近乎及时地备份在 Dropbox，加入本地 Dropbox 后可以直接 git clone，不能公开该地址</span></td>
+                            <td>
+                                <button class="enable_dropbox_sync btn btn-mini btn-primary">启用</button>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td><strong>Deploy URL</strong>：</td>
+                            {% if repo.deploy_url and repo.deploy_url != '' %}
+                            <td>https://{{repo.deploy_url}}@gitshell.com/{{user_name}}/{{repo_name}}.git</td>
+                            <td class="actions">
+                                <button class="generate_deploy_url btn btn-mini">重新生成</button>
+                                <button class="forbid_dploy_url btn btn-mini">禁止</button>
+                            </td>
+                            {% else %}
+                            <td><span>deploy url 是 git 只读、不需要权限验证的 clone 地址，用于发布、部署，不能公开该地址</span></td>
+                            <td class="actions">
+                                <button class="generate_deploy_url btn btn-mini btn-primary">生成</button>
+                            </td>
+                            {% endif %}
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="well destroy">
+                  <a href="/{{user_name}}/{{repo_name}}/delete/"><button class="btn btn-mini btn-danger">删除该仓库</button></a>
+                  <a href="/{{user_name}}/{{repo_name}}/collaborator/"><button class="btn btn-mini">管理协同者</button></a>
+                </div>
+          </div>
+
 </div>
 {% endblock %}
 {% block subjs %}
 <script>
 $(function(){
+    $(".more-settings").hide();
+
+    $(".more-settings").find(".actions").css("opacity",0);
+
+    $(".more-settings").find(".table tr").bind({
+      mouseover: function() { $(this).find(".actions").fadeTo(0, 1); },
+      mouseout: function() { $(this).find(".actions").fadeTo(0, 0); }
+    });
+
+    $("#setting-toggler").click(
+      function() {
+        $(this).next(".more-settings").toggle();
+        return false;
+      }
+    );
+
+    $(".disable_dropbox_sync, .forbid_dploy_url").bind({
+      mouseover: function() { $(this).addClass("btn-danger"); }, 
+      mouseout: function() { $(this).removeClass("btn-danger"); }
+    });
+
     $('.c_unixtime').each(function(index){ 
         $(this).html(moment(new Date($(this).html()*1000)).fromNow());
         $(this).show();
@@ -148,5 +180,6 @@ $(function(){
         }
         return true;
     });
+
 });
 </script>{% endblock %}
