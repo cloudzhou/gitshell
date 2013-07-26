@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
 {% block css %}
-    {% if current == 'blob' %}
-        <link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet'>
-        <link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet'>
-    {% endif %}
+  {% if current == 'blob' %}
+    <link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet'>
+    <link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet'>
+  {% endif %}
 {% endblock %}
 
 {% block container_class_name %} bubble bubble-flat repo{% endblock %}

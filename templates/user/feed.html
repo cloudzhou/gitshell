@@ -128,7 +128,7 @@ $(function(){
                 }
                 $('#feeds_container').append(html.join(''));
                 if(ordered_date.length == 0) {
-                    $('#feeds_container').append('还没有 feed 信息，请多关注活跃开发者或者仓库');
+                  $('#feeds_container').append('<p>还没有 feed 信息，请多关注活跃开发者或者仓库</p>');
                 }
                 $('#feeds_loading').remove()
             }
