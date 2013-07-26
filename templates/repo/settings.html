@@ -50,7 +50,7 @@
                 </fieldset>
             </form>
 
-            <div id="setting-toggler"><a href="#">更多设置</a></div>
+            <div id="setting-toggler"><a href="#">收起</a></div>
             <div class="more-settings">
 
                 <table class="table">
@@ -104,7 +104,6 @@
 {% block subjs %}
 <script>
 $(function(){
-    $(".more-settings").hide();
 
     $(".more-settings").find(".actions").css("opacity",0);
 
@@ -115,7 +114,13 @@ $(function(){
 
     $("#setting-toggler").click(
       function() {
-        $(this).next(".more-settings").toggle();
+        var moreSettings = $(".more-settings");
+        $(this).next(moreSettings).toggle();
+        if( moreSettings.is(":hidden") ) {
+          $(this).children().text("更多设置");
+        } else {
+          $(this).children().text("收起");
+        }
         return false;
       }
     );

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load gstools %}
+{% block body_class %} class="welcome"{% endblock %}
 {% block container_class_name %} index{% endblock %}
 {% block container %}
 
@@ -13,6 +14,7 @@
         </div>
     </div>
 
+    <div class="container">
     <ul class="welcome-details horizontal-list">
         <li>
             <h2 class="heading">专注于 git 托管</h2>
@@ -23,22 +25,11 @@
             <p>Gitshell 适合于小团队基于git的快速迭代开发;仓库协同开发,issues,commit,视图统计;加入社交,快速获知,让每个成员置身开发中</p>
         </li>
         <li>
-            <h2 class="heading">良好的社区氛围</h2>
-            <p>开放的开发社区,<a href="/cloudzhou/gitshell/">Gitshell</a>仓库 <a href="/cloudzhou/gitshell/issues/">issues</a> 公开;技能,评价,git pull请求,mail通知;对“噪音”零容忍,我们相信自由来自于自律</p>
-        </li>
-        <li>
             <h2 class="heading">Dropbox实时备份</h2>
             <p>Gitshell是第一个支持Dropbox实时备份的Git代码托管服务，及时，安全。</p>
         </li>
-        <li>
-            <h2 class="heading">一键导入Github仓库</h2>
-            <p>假如您有Github的仓库,可以直接关联，并且自动导入您在GitHub的所有仓库。</p>
-        </li>
-        <li>
-            <h2 class="heading">工具化</h2>
-            <p>在 web 端即可创建、删除分支，标签，查看分支生成图，分支比较、直接合并。</p>
-        </li>
     </ul>
+  </div>
 
 {% endblock %}
 

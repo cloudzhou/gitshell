@@ -67,12 +67,12 @@
 
             {% if current == 'index' %}
             <div class="description well">
-                <p>{{repo.desc|truncatechars:80}} <a href="#README.md">Read More</a></p>
+              <p>{{repo.desc|truncatechars:80}} <a href="#README.md">Read More</a></p>
             </div>
     
             <div class="url-container clearfix visible">
                 {% if repo.status != 0 %}
-                    <p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
+                  <p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
                 {% endif %}
                 {% if has_fork_right %}
                     <dl class="url colspan">
@@ -85,15 +85,15 @@
                                 <a id="git_fork" class="url-select btn middle">GIT</a></span>
                             {% endif %}
                         </dt>
-                        <dd class="url-holder btn-group span" style="position: relative;">
+                        <dd class="url-holder btn-group span">
                             <!--as input and click then select all-->
                             {% if is_repo_member %}
-                              <span class="btn middle" id="url-data"><span class="url-git">git</span>@<span class="url-gitshell">gitshell.com</span>:<span class="url-username">{{user_name}}</span>/<span class="url-repo-name">{{repo_name}}</span>.git</span>
+                              <input class="btn middle" id="url-data" type="text" value="git@gitshell.com:{{user_name}}/{{repo_name}}.git" readonly="readonly">
                             {% elif repo.auth_type == 0 %}
-                              <span class="url-data btn middle"><span class="url-git">https://</span><span class="url-gitshell">{{user_name}}@gitshell.com</span>/<span class="url-username">{{user_name}}</span>/<span class="url-repo-name">{{repo_name}}</span>.git</span>
+                              <input class="btn middle" id="url-data" type="text" value="https://{{user_name}}@gitshell.com/{{user_name}}/{{repo_name}}.git" readonly="readonly"></span>
                             {% endif %}
                             <!--TODO clipboard jsipboard, try to using button? -->
-                              <a href="#" class="clipboard url-select btn last" id="url-js-copy"><i class="icon-copy"></i>复制</a>
+                              <a href="#" class="clipboard url-select btn last" id="url-js-copy">复制</a>
                             <span class="span" id="url-info">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>
                         </dd>
                     </dl>
@@ -126,7 +126,8 @@
 {% endblock %}
 
 {% block js %}
-<script src="/static/js/zclip.min.js"></script>
+<script type="text/javascript" src="http://www.steamdev.com/zclip/js/jquery.zclip.min.js"></script>
+<script type="text/javascript" src="http://www.steamdev.com/zclip/js/jquery.snippet.min.js"></script>
 <script>
 $(function(){
 
@@ -136,24 +137,39 @@ $(function(){
         $(this).addClass("active").siblings().removeClass("active");
         switch(this.id) {
           case "ssh_fork":
-            $('#url-data').html('<span class="url-git">git</span>@<span class="url-gitshell">gitshell.com</span>:<span class="url-username">{{user_name}}</span>/<span class="repo-name">{{repo_name}}</span>.git');
-            $('#url-info').html('读写');
+            $('#url-data').val('git@gitshell.com:{{user_name}}/{{repo_name}}.git');
+            $('#url-info').text('读写');
             break;
           case "http_fork":
-            $('#url-data').html('<span class="url-http">https</span>://<span class="url-gitshell">gitshell.com</span>/<span class="url-username">{{user_name}}/<span class="url-reponame">{{repo_name}}</span>.git');
-            $('#url-info').html('读写');
+            $('#url-data').val('https://gitshell.com/{{user_name}}/{{repo_name}}.git');
+            $('#url-info').text('读写');
             break;
           case "git_fork":
-            $('#url-data').html('<span class="url-git">git</span>://<span class="url-gitshell">gitshell.com</span>/{{user_name}}</span>/<span class="url-reponame">{{repo_name}}</span>.git');
-            $('#url-info').html('只读');
+            $('#url-data').html('git@gitshell.com/{{user_name}}/{{repo_name}}.git');
+            $('#url-info').text('只读');
             break;
         };
       }
     });
 
-    $("#url-js-copy").zclip({
+    $("#url-data").bind({
+      click: function() {
+        $(this).addClass("selected").select();
+      }
+    });
+
+    $("body").bind({
+      click: function(e) {
+        if(e.target.id != "url-data") {
+          $("#url-data").removeClass("selected");
+        }
+      }
+    });
+
+    $("#copy-btn").zclip({
       path: "/static/js/ZeroClipboard.swf",
-      copy: function() { return $("#url-data").html(); }
+      //path: "http://davidwalsh.name/demo/ZeroClipboard.swf",
+      copy: function() { return $("#url-data").val(); }
     });
 
     $('.repo-actions-bar .watch').click(function() {
@@ -161,21 +177,25 @@ $(function(){
             window.location = window.location;
         });
     });
+
     $('.repo-actions-bar .unwatch').click(function() {
         $.post('/{{user_name}}/{{repo_name}}/unwatch/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             window.location = window.location;
         });
     });
+
     $('.repo-actions-bar .star').click(function() {
         $.post('/{{user_name}}/{{repo_name}}/star/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             window.location = window.location;
         });
     });
+
     $('.repo-actions-bar .unstar').click(function() {
         $.post('/{{user_name}}/{{repo_name}}/unstar/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             window.location = window.location;
         });
     });
+
     $('.repo-actions-bar .fork').click(function() {
         $.post('/{{user_name}}/{{repo_name}}/fork/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             window.location = '/{{user.username}}/{{repo_name}}/';
@@ -196,9 +216,10 @@ $(function(){
     $('.branches .dropdown-toggle').click(function(event) {
         $('#i_git_url').select();
     });
-        $('.c_repo_action').tooltip({
-            selector: "a[rel=tooltip]"
-        });
+
+    $('.c_repo_action').tooltip({
+        selector: "a[rel=tooltip]"
+    });
 
     $('.repo-admin-edit').hide();
     $('.repo-summary > .description').hover(

@@ -4,13 +4,13 @@
 
 <!--create issue-->
 {% block subcontainer %}
-    <header class="header">
-        <h1 class="heading">Issues</h1>
-    </header>
-    <div class="btn-group clearfix">
+    <header class="header clearfix">
+      <h1 class="heading pull-left">Issues</h1>
+      <div class="btn-group clearfix pull-right">
         {%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn btn-mini first">更新</a>{%else%}<span class="btn btn-mini btn-disable first">更新</span>{%endif%}
         {%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn btn-mini last">创建</a>{%else%}<span class="btn btn-mini btn-disable last">创建</span>{%endif%}
-    </div>
+      </div>
+    </header>
     {% for issue in issues %}
     <div class="issue colspan">
         <figure class="avatar span">
