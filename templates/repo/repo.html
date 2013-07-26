@@ -93,7 +93,7 @@
                               <input class="btn middle" id="url-data" type="text" value="https://{{user_name}}@gitshell.com/{{user_name}}/{{repo_name}}.git" readonly="readonly"></span>
                             {% endif %}
                             <!--TODO clipboard jsipboard, try to using button? -->
-                              <a href="#" class="clipboard url-select btn last" id="url-js-copy">复制</a>
+                              <a href="#" class="clipboard url-select btn last hide" id="url-js-copy">复制</a>
                             <span class="span" id="url-info">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>
                         </dd>
                     </dl>
