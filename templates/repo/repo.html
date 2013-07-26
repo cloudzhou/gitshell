@@ -145,7 +145,7 @@ $(function(){
             $('#url-info').text('读写');
             break;
           case "git_fork":
-            $('#url-data').html('git@gitshell.com/{{user_name}}/{{repo_name}}.git');
+            $('#url-data').val('git@gitshell.com/{{user_name}}/{{repo_name}}.git');
             $('#url-info').text('只读');
             break;
         };
