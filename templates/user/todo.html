@@ -9,7 +9,7 @@
                     <a href="#" id="id_sceneAdd_button" class="btn btn-primary" type="submit">添加新的情景</a>
                     <a href="#" id="id_sceneCancel_button" class="btn" type="submit">取消</a>
         </div>
-        <div id="id_todoAdd_div" class="todo-category">
+        <div id="id_todoAdd_div" class="todo-category" style="margin-bottom: 10px">
                     <div class="btn-group dropdown">
                         <a href="#" data-toggle="dropdown" class="btn dropdown-toggle">@{{scene.name}}<i class="icon-caret-down"></i></a>
                         <div class="dropdown-menu">
@@ -97,21 +97,21 @@ $(function(){
         }
     });
     function init_todo(todo_id, todo_text) {
-        var todo = '<div id="id_todo_' + todo_id + '" class="cl_todo todo-item" data="' + todo_id + '"> ' +
+        var todo = '<div id="id_todo_' + todo_id + '" class="todo-item cl_todo cleafix ui-draggable ui-droppable" data="' + todo_id + '"> ' +
                     '<div class="drag-todo"><a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序" class="pull-left fade"><i class="icon-reorder"></i></a> ' +
                     '<input class="cl_todo_check" type="checkbox" value=""></div>' +
                     '<div class=""><p class="cl_todo_text">' + todo_text + '</p></div> ' +
-                    '<div class="cl_todo_control">' +
-                    '<a class="go_top cl_control muted" title="置顶" href="javascript: void(0)"><i class="icon-long-arrow-up"></i></a>' +
-                    '<a class="go_down cl_control muted" title="置底" href="javascript: void(0)"><i class="icon-long-arrow-down"></i></a>' +
-                    '<a class="remove_todo cl_control muted" title="删除" href="javascript: void(0)"><i class="icon-remove"></i></a>' +
+                    '<div class="cl_todo_control btn-group pull-right hide fade" style="opacity: 0; display: block;">' +
+                    '<a class="go_top cl_control first btn btn-mini" title="置顶" href="javascript: void(0)"><i class="icon-long-arrow-up"></i></a>' +
+                    '<a class="go_down cl_control middle btn btn-mini" title="置底" href="javascript: void(0)"><i class="icon-long-arrow-down"></i></a>' +
+                    '<a class="remove_todo cl_control last btn btn-mini" title="删除" href="javascript: void(0)"><i class="icon-remove"></i></a>' +
                     '</div></div>';
         return todo;
     }
     function init_todone(todo_id, todo_text) {
-        var todone = '<div id="id_todone_' + todo_id + '" class="cl_todone" data="' + todo_id + '">' +
-                     '<input class="cl_todone_check" type="checkbox" value="' + todo_id + '" checked>' +
-                     '<span class="cl_todone_text"> ' + todo_text + '</span></div>';
+        var todone = '<div id="id_todone_' + todo_id + '" class="cl_todone todo-item" data="' + todo_id + '">' +
+                     '<div class="drag-todo"><input class="cl_todone_check" type="checkbox" value="' + todo_id + '" checked></div>' +
+                     '<div class=""><span class="cl_todo_text"> ' + todo_text + '</span></div></div>';
         return todone;
     }
     function add_todo(todo_text) {
@@ -194,7 +194,7 @@ $(function(){
         update_scene_meta()
     }
     function done_todo(todo_id){
-        var todo_text = $('#id_todo_'+todo_id).children('.cl_todo_text').text();
+        var todo_text = $('#id_todo_'+todo_id).find('.cl_todo_text').text();
         $.post('/home/todo/'+ {{scene.id}} +'/done_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todo_id}, function(json){
             var result_todo_id = json.todo_id;
             if(result_todo_id != 0) {
@@ -214,7 +214,7 @@ $(function(){
     });
     $('.cl_todone_check').live('click', function (e) {
         var todone_id = $(this).parents('.cl_todone').attr('data');
-        var todone_text = $('#id_todone_'+todone_id).children('.cl_todone_text').text();
+        var todone_text = $('#id_todone_'+todone_id).find('.cl_todo_text').text();
         $.post('/home/todo/'+ {{scene.id}} +'/doing_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todone_id}, function(json){
             var result_todo_id = json.todo_id;
             if(result_todo_id != 0) {
