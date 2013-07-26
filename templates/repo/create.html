@@ -3,15 +3,16 @@
 {% block container_class_name %} repo{% endblock %}
 {% block container %}
 <header class="header repo-create">
-    <h1 class="heading">创建仓库</h1>
-    <p class="ssh-setting">提交代码需要<a href="/settings/sshpubkey/">设置SSH公钥</a></p>
+  <h1 class="heading">创建仓库</h1>
+  <p class="ssh-setting">提交代码需要<a href="/settings/sshpubkey/">设置SSH公钥</a></p>
 </header>
+
 <div class="inner-container repo-create">
-        <ul class="nav nav-tabs">
-            <li id="id-choose-direct-create" class="left-choose-repo active"><a href="#direct-create" data-toggle="tab">直接创建仓库</a></li>
-            <li id="id-choose-via-github" class="left-choose-repo"><a href="#via-github" data-toggle="tab">关联 GitHub 导入</a></li>
-            <li id="id-choose-via-git-url" class="left-choose-repo"><a href="#via-git-url" data-toggle="tab">从 URL 导入</a></li>
-        </ul>
+  <ul class="nav nav-tabs">
+    <li id="id-choose-direct-create" class="left-choose-repo active"><a href="#direct-create" data-toggle="tab">直接创建仓库</a></li>
+    <li id="id-choose-via-github" class="left-choose-repo"><a href="#via-github" data-toggle="tab">关联 GitHub 导入</a></li>
+    <li id="id-choose-via-git-url" class="left-choose-repo"><a href="#via-git-url" data-toggle="tab">从 URL 导入</a></li>
+  </ul>
         {% if thirdpartyUser and thirdpartyUser.init == 0 %}
             <div class="alert alert-error">
                 <p>来自 GitHub 的用户，我们尝试导入您 GitHub 账户的用户名和邮箱信息，</p><p>不过看来一些信息已经存在了，所以我们随机生成用户名或者邮箱。</p>
@@ -85,7 +86,7 @@
 
             <div id="id-via-github" class="cl-right-create-repo hide">
                 {% if thirdpartyUser %}
-                    <legend class="repo-title">选择以下的仓库进行导入:{%if thirdpartyUser%}<span class="muted">({{thirdpartyUser.tp_username}})</span>{%endif%}<button id="id-refresh-repo" class="pull-right btn btn-mini">刷新</button></h4>
+                    <h2 class="repo-title well">选择以下的仓库进行导入:{%if thirdpartyUser%}<span class="muted">({{thirdpartyUser.tp_username}})</span>{%endif%}<button id="id-refresh-repo" class="pull-right btn btn-mini">刷新</button></h2>
                     <div id="id-repos-loading"><img src="/static/img/loading.gif">正在连接 GitHub...</div>
                     <div id="id-github-repos"></div>
                 {% else %}
