@@ -78,9 +78,9 @@
                     <dl class="url colspan">
                         <dt class="btn-group span">
                             {% if is_repo_member %}
-                                <a id="ssh_fork" class="url-select btn first">SSH</a></span>
+                                <a id="ssh_fork" class="active url-select btn first">SSH</a></span>
                             {% endif %}
-                                <a id="http_fork" class="active url-select btn middle">HTTP</a></span>
+                                <a id="http_fork" class="url-select btn middle">HTTP</a></span>
                             {% if repo.auth_type == 0 %}
                                 <a id="git_fork" class="url-select btn middle">GIT</a></span>
                             {% endif %}
@@ -145,7 +145,7 @@ $(function(){
             $('#url-info').text('读写');
             break;
           case "git_fork":
-            $('#url-data').html('git@gitshell.com/{{user_name}}/{{repo_name}}.git');
+            $('#url-data').val('git@gitshell.com/{{user_name}}/{{repo_name}}.git');
             $('#url-info').text('只读');
             break;
         };
