@@ -11,8 +11,10 @@
             <p class="content">{{issue.content}}</p>
             <p class="meta clearfix">
                 <span class="assiged">
-                    <a href="/{{issue.user_id}}/">{{issue.user_id}}</a>
+                    <img src="https://gravatar.com/avatar/{{ issue.reporter_imgurl}}?s=20" alt="{{issue.username}}">
+                    <a href="/{{issue.username}}/">{{issue.username}}</a>
                     <span>&rarr;</span>
+                    <img src="https://gravatar.com/avatar/{{ issue.assiged_imgurl}}?s=20" alt="{{issue.assiged}}">
                     <a href="/{{issue.assigned}}/">{{issue.assigned}}</a>
                 </span>
                 <span class="unixtime">{{issue.modify_time}}</span>
@@ -36,7 +38,7 @@
                         <a href="/{{issue_comment.user_id}}/">{{issue_comment.user_id}}</a>
                         <span class="unixtime">{{issue_comment.create_time}}</span>
                         <a class="c_ref_comment" href="javascript:void(0)" value="{{issue_comment.user_id}}">回复</a>
-                        <a class="c_rm_comment" value="{{issue_comment.id}}" href="javascript:void(0)">删除</a>
+                        <a class="c_rm_comment hide" value="{{issue_comment.id}}" href="javascript:void(0)">删除</a>
                     </p>
                 </div>
             </div>
@@ -64,8 +66,8 @@
         <figure class="avatar">
             <img src="https://gravatar.com/avatar/{{user_name}}?s=32" alt="{{user_name}}">
         </figure>
-        <div class="info">
-            {{ IssueCommentForm.content }}
+        <div id="i_comment_content" class="info">
+            {{ issueCommentForm.content }}
             <button id="i_submit" class="btn btn-primary" type="submit">发表评论</button>
             <p class="meta">不可修改，严谨发言</p>
         </div>
@@ -85,7 +87,7 @@ $(function(){
         }
     });
     {% endif %}
-    $('.issue').live('mouseover mouseout', function(event) {
+    $('.comment').live('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
             var issues_user_name = $(this).attr('data-user-name');
             if('{{user.username}}' == '{{user_name}}' || issues_user_name == '{{user.username}}') {
@@ -99,7 +101,7 @@ $(function(){
         $('.c_create_issues_btn').hide();
         $('#id_issues_condition').show();
     });
-    $('.c_rm_rf_comment').click(function(){
+    $('.c_rm_comment').click(function(){
         var comment_id = $(this).attr('value');
         $.ajax({
             url: '/{{user_name}}/{{repo_name}}/issues/comment/delete/' + comment_id + '/',
@@ -114,16 +116,12 @@ $(function(){
             },
         });
     });
-    $('.c_rm_rf_comment').blur(function(){
+    $('.c_rm_comment').blur(function(){
         setTimeout(
             function(event) {
                 $(this).hide();
             }
         , 300);
-    });
-    $('.c_rm_comment').click(function(){
-        $(this).next().show();
-        $(this).next().focus();
     });
     $('#i_submit').mouseover(function(){
         $('#i_comment_content').show();

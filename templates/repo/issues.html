@@ -14,7 +14,7 @@
     {% for issue in issues %}
     <div class="issue colspan">
         <figure class="avatar span">
-            <img src="https://gravatar.com/avatar/{{ issue.user_id }}/?s=35" alt="{{issue.user_id}}">
+            <img src="https://gravatar.com/avatar/{{issue.reporter_imgurl}}/?s=35" alt="{{issue.reporter_imgurl}}">
         </figure>
         <div class="data span clearfix">
             <h4 class="heading">
@@ -26,7 +26,7 @@
             {% else %}
                 <a href="javascript: void(0)" rel="tooltip"><i class="icon-ellipsis-vertical"></i></a>
             {% endif %}
-            <span class="unixtime date">{%if orderby == 'modify_time'%}{{issue.modify_time}}{%else%}{{issue.create_time}}{%endif%}</span>
+            <span class="unixtime hide date">{%if orderby == 'modify_time'%}{{issue.modify_time}}{%else%}{{issue.create_time}}{%endif%}</span>
         </div>
     </div>
     {% endfor %}
@@ -37,10 +37,16 @@
     <footer class="footer">
         <nav class="pagination">
             <ul class="nav">
-                <li><a id="i_index_page" href="javascript:void(0)"><i class="icon-home"></i>首页</a></li>
+                {% if hasPre %}
+                <li><a href="/{{user_name}}/{{repo_name}}/issues/"><i class="icon-home"></i>首页</a></li>
                 <li><a id="i_pre_page" href="javascript:void(0)">前一页</a></li>
+                {% endif %}
+                {% if hasPre or hasNext %}
                 <li class="active">第{{page}}页</li>
+                {% endif %}
+                {% if hasNext %}
                 <li><a id="i_next_page" href="javascript:void(0)">后一页</a></li>
+                {% endif %}
             </ul>
         </nav>
     </footer>

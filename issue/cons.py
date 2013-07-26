@@ -26,13 +26,21 @@ REV_PRIORITIES = {1: '紧急', 2: '高', 3: '普通', 4: '低'}
 
 def conver_issues(raw_issues, username_map, reponame_map):
     issues = []
+    user_ids = []
+    for raw_issue in raw_issues:
+        if raw_issue.user_id not in user_ids:
+            user_ids.append(raw_issue.user_id)
+        if raw_issue.assigned not in user_ids:
+            user_ids.append(raw_issue.assigned)
+    userprofiles = GsuserManager.list_userprofile_by_ids(user_ids)
+    userprofile_dict = dict((x.id, x) for x in userprofiles)
     for raw_issue in raw_issues:
         issue = {}
         issue['id'] = raw_issue.id
         issue['subject'] = raw_issue.subject
         issue['content'] = raw_issue.content
         if raw_issue.user_id in username_map:
-            issue['user_id'] = username_map[raw_issue.user_id]
+            issue['username'] = username_map[raw_issue.user_id]
         issue['tracker'] = REV_TRACKERS[raw_issue.tracker]
         issue['status'] = REV_STATUSES[raw_issue.status]
         if raw_issue.assigned in username_map:
@@ -43,6 +51,8 @@ def conver_issues(raw_issues, username_map, reponame_map):
         issue['modify_time'] = time.mktime(raw_issue.modify_time.timetuple())
         issue['comment_count'] = raw_issue.comment_count
         issue['repo_id'] = raw_issue.repo_id
+        issue['reporter_imgurl'] = userprofile_dict[raw_issue.user_id].imgurl
+        issue['assigned_imgurl'] = userprofile_dict[raw_issue.assigned].imgurl
         if raw_issue.repo_id in reponame_map:
             issue['reponame'] = reponame_map[raw_issue.repo_id]
         issues.append(issue)
