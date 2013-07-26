@@ -141,7 +141,7 @@ def validate_email(request, token):
             validate_result = 'user_exists'
     else:
         validate_result = 'token_expired'
-    response_dictionary = {'current': current, 'validate_result' : validate_result}
+    response_dictionary = {'current': current, 'validate_result': validate_result}
     return render_to_response('settings/validate_email.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

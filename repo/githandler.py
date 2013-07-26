@@ -26,7 +26,7 @@ class GitHandler():
     def repo_ls_tree(self, repo_path, commit_hash, path):
         (commit_hash, path) = self._all_to_utf8(commit_hash, path)
         if not self._path_check_chdir(repo_path, commit_hash, path):
-            return None
+            return {}
         path = self._get_quote_path(path)
         stage_file = self._get_stage_file(repo_path, commit_hash, path)
         result = self._read_load_stage_file(stage_file)
@@ -39,7 +39,7 @@ class GitHandler():
     def repo_cat_file(self, repo_path, commit_hash, path):
         (commit_hash, path) = self._all_to_utf8(commit_hash, path)
         if not self._path_check_chdir(repo_path, commit_hash, path):
-            return None
+            return ''
         path = self._get_quote_path(path)
         if path.startswith('./'):
             path = path[2:]
@@ -64,12 +64,12 @@ class GitHandler():
             return result
         except Exception, e:
             logger.exception(e)
-        return None
+        return ''
     
     def repo_log_file(self, repo_path, from_commit_hash, commit_hash, log_size, path):
         (from_commit_hash, commit_hash, path) = self._all_to_utf8(from_commit_hash, commit_hash, path)
         if not self._path_check_chdir(repo_path, commit_hash, path) or not re.match('^\w+$', from_commit_hash):
-            return None
+            return {}
         path = self._get_quote_path(path)
         between_commit_hash = from_commit_hash + '...' + commit_hash
         stage_file = self._get_stage_file(repo_path, between_commit_hash, str(log_size) + '|' + path)
@@ -86,7 +86,7 @@ class GitHandler():
             context = 3
         (pre_commit_hash, commit_hash, path) = self._all_to_utf8(pre_commit_hash, commit_hash, path)
         if not self._path_check_chdir(repo_path, commit_hash, path) or not re.match('^\w+$', pre_commit_hash):
-            return None
+            return {}
         path = self._get_quote_path(path)
         stage_file = self._get_diff_stage_file(repo_path, pre_commit_hash, commit_hash, context, path)
         stage_file = stage_file + '.diff'
@@ -266,7 +266,7 @@ class GitHandler():
             return commits
         except Exception, e:
             logger.exception(e)
-        return None
+        return []
     
     def _ls_tree_check_output(self, commit_hash, path):
         command = '/usr/bin/git ls-tree %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
@@ -326,7 +326,7 @@ class GitHandler():
             return {'tree': ordered_tree, 'has_readme': has_readme, 'readme_file': readme_file}
         except Exception, e:
             logger.exception(e)
-        return None
+        return {}
 
     def _get_diff_stage_file(self, repo_path, pre_commit_hash, commit_hash, context, path):
         (username, reponame) = repo_path.split('/')[-2:]
@@ -350,7 +350,7 @@ class GitHandler():
                 logger.exception(e)
             finally:
                 json_data.close()
-        return None
+        return {}
 
     def _dumps_write_stage_file(self, result, stage_file):
         if result is None:

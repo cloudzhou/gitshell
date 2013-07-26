@@ -85,7 +85,7 @@
 
             <div id="id-via-github" class="cl-right-create-repo hide">
                 {% if thirdpartyUser %}
-                    <legend class="repo-title">选择以下的仓库进行导入:{%if thirdpartyUser%}<span class="muted">({{thirdpartyUser.tp_username}})</span>{%endif%}<button id="id-refresh-repo" class="pull-right btn btn-mini">刷新</button></h4>
+                    <legend class="repo-title">选择以下的仓库进行导入: {%if thirdpartyUser%}<span class="muted">({{thirdpartyUser.tp_username}})</span>{%endif%}<button id="id-refresh-repo" class="pull-right btn btn-mini">刷新</button></legend>
                     <div id="id-repos-loading"><img src="/static/img/loading.gif">正在连接 GitHub...</div>
                     <div id="id-github-repos"></div>
                 {% else %}

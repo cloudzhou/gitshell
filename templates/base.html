@@ -29,7 +29,6 @@
                         <li><a href="/{{user.username}}/repo/">我的仓库</a></li>
                     {% else %}
                         <li><a href="/join/">工作台</a></li>
-                        <li><a href="/join/">我的仓库</a></li>
                     {% endif %}
                     <li {%if mainnav == 'explore'%}class="active"{%endif%}><a href="/explore/">浏览</a></li>
                     {% if not user.is_authenticated %}

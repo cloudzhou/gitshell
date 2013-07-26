@@ -118,7 +118,7 @@ def ls_tree(request, user_name, repo_name, refs, path, current):
         if path == '.' or path.endswith('/'):
             tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
     readme_md = None
-    if tree['has_readme']:
+    if tree and 'has_readme' in tree and tree['has_readme']:
         readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, path + '/' + tree['readme_file'])
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'readme_md': readme_md}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
@@ -1185,6 +1185,8 @@ def _conver_repos(raw_repos, map_users):
     return repos_vo
 
 def _fillwith_commits(commits):
+    if not commits:
+        return
     for commit in commits:
         userprofile = GsuserManager.get_userprofile_by_name(commit['author'])
         if userprofile:
