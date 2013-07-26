@@ -350,7 +350,7 @@ class GitHandler():
                 logger.exception(e)
             finally:
                 json_data.close()
-        return {}
+        return None
 
     def _dumps_write_stage_file(self, result, stage_file):
         if result is None:
