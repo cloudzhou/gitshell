@@ -2,7 +2,6 @@
 
 {% block bubble_inner_class_name %} issues{% endblock %}
 
-
 {% block subcontainer %}
 	<nav class="sidebar">
 		{% include "repo/condition.html" %}
@@ -12,25 +11,30 @@
 		<header class="header">
 			<h1 class="heading">Gitshell Issues</h1>
 			<ul class="btn-group sort">
-				<li><a href="/{{user_name}}/{{repo_name}}/issues/create/0/" class="btn btn-mini btn-primary">创建 issues</a></li>
+        <li><a href="/{{user_name}}/{{repo_name}}/issues/create/" class="btn btn-mini btn-success">新建</a></li>
 				<li class="leader">排序:</li>
-				<li class="first">{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn btn-mini first">更新</a>{%else%}<span class="btn btn-mini btn-disable">更新</span>{%endif%}</li>
-				<li class="last">{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn btn-mini last">创建</a>{%else%}<span class="btn btn-mini btn-disable">创建</span>{%endif%}</li>
+        <li>{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn btn-mini first">更新</a>{%else%}<span class="btn btn-mini btn-disable first">更新</span>{%endif%}</li>
+        <li>{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn btn-mini last">创建</a>{%else%}<span class="btn btn-mini btn-disable last">创建</span>{%endif%}</li>
 			</ul>
 		</header>
 		{% for issue in issues %}
 		<div class="issue">
 			<figure class="avatar span">
-				<img src="https://gravatar.com/avatar/{{ issue.user_id }}/?s=35" alt="{{issue.user_id}}">
+        <img src="https://gravatar.com/avatar/{{issue.reporter_imgurl}}/?s=35" alt="{{issue.reporter_imgurl}}">
 			</figure>
 			<div class="data">
 				<p class="title">
-					<span class="issue-id">#{{issue.id}}</span>
-					<a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/" class="txt">{{issue.subject|truncatechars:100}}</a>
+          <span class="issue-id">#{{issue.id}}</span>
+          <a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/" class="txt">{{issue.subject|truncatechars:100}}</a>
 				</p>
 				<div class="meta">
 					<span>作者:<a href="/{{ user.username }}/">{{ issue.user_id }}</a></span>
-					<span class="unixtime date">{%if orderby == 'modify_time'%}{{issue.modify_time}}{%else%}{{issue.create_time}}{%endif%}</span>
+          {% if user.id == repo.user_id %}
+              <a href="javascript: void(0)" rel="tooltip" data-original-title="拖动到上面做属性更改"><i class="icon-ellipsis-vertical"></i></a>
+          {% else %}
+              <a href="javascript: void(0)" rel="tooltip"><i class="icon-ellipsis-vertical"></i></a>
+          {% endif %}
+          <span class="unixtime hide date">{%if orderby == 'modify_time'%}{{issue.modify_time}}{%else%}{{issue.create_time}}{%endif%}</span>
 				</div>
 			</div>
 		</div>
@@ -38,90 +42,95 @@
 		{% if not issues %}
 			<div class="issue"><p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有Issues，或者没有查看Issues权限，半公开和私有项目需要申请成为成员才能查看Issues</p></div>
 		{% endif %}
-		<footer class="footer">
-			<nav class="pagination">
-				<p class="nav">
-					<a id="i_index_page" href="javascript:void(0)"><i class="icon-home"></i>首页</a>
-					<a id="i_pre_page" href="javascript:void(0)">前一页</a>
-					<a class="active">第{{page}}页</span>
-					<a id="i_next_page" href="javascript:void(0)">后一页</a>
-				</p>
-			</nav>
-		</footer>
+
+    <footer class="footer">
+      <nav class="pagination">
+        <ul class="nav">
+          {% if hasPre %}
+          <li><a href="/{{user_name}}/{{repo_name}}/issues/"><i class="icon-home"></i>首页</a></li>
+          <li><a id="i_pre_page" href="javascript:void(0)">前一页</a></li>
+          {% endif %}
+          {% if hasPre or hasNext %}
+          <li class="active">第{{page}}页</li>
+          {% endif %}
+          {% if hasNext %}
+          <li><a id="i_next_page" href="javascript:void(0)">后一页</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </footer>
 	</section>
 
 {% endblock %}
 
 {% block subjs %}
-	<!--script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script-->
-	<script src="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.21/jquery-ui.min.js"></script>
-	<!--script src="http://lib.sinaapp.com/js/jquery-ui/1.8.11/jquery-ui.min.js"></script-->
-	<script>
-		$(function(){
-			var current_attrs = {{current_attrs|safe}};
-			$('#i_index_page').click(function(){ 
-					current_attrs['page'] = 0;
-					location_cons()
-			});
-			$('#i_pre_page').click(function(){ 
-					current_attrs['page'] = current_attrs['page'] - 1;
-					location_cons()
-			});
-			$('#i_next_page').click(function(){ 
-					current_attrs['page'] = current_attrs['page'] + 1;
-					location_cons()
-			});
-			$('#i_create_time').click(function(){ 
-					current_attrs['orderby'] = 'create_time';
-					location_cons()
-			});
-			$('#i_modify_time').click(function(){ 
-					current_attrs['orderby'] = 'modify_time';
-					location_cons()
-			});
-			$('.issues_attr').click(function(){ 
-					var keyValue = $(this).attr('value').split("___")
-					if(keyValue[0] == 'assigned' && keyValue[1] == '所有') {
-							keyValue[1] = '0';
-					}
-					current_attrs[keyValue[0]] = keyValue[1];
-					location_cons()
-			});
-			location_cons = function() {
-					window.location = "/{{user_name}}/{{repo_name}}/issues/list/"+ current_attrs['assigned'] +"/"+ current_attrs['tracker'] +"/"+ current_attrs['status'] +"/"+ current_attrs['priority'] +"/"+ current_attrs['orderby'] +"/"+ current_attrs['page'] +"/";
-			}
-			$('.c_unixtime').each(function(index){ 
-					$(this).html(moment(new Date($(this).html()*1000)).fromNow());
-					$(this).show();
-			});
-			$('.c_issue').tooltip({
-				selector: "a[rel=tooltip]"
-			})
-			$('.c_drag_setting').draggable({
-					cursor: 'move',
-					revert: true
-			});
-			$('.issues_attr').droppable({
-					accept: '.c_drag_setting',
-					hoverClass: 'issues_attr_hovered',
-					drop: handleIssueDrop
-			});
-			function handleIssueDrop(event, ui){
-					var issue_id = ui.draggable.attr('value');
-					var issue_attr = $(this).attr('value');
-					$.ajax({
-							url: '/{{user_name}}/{{repo_name}}/issues/update/' + issue_id + '/' + issue_attr + '/',
-							type: 'POST',
-							data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-							dataType: 'json',
-							timeout: 10000,
-							error: function(){
-							},
-							success: function(json){
-									location_cons()
-							},
-					});
-			}
-		});
-	</script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.21/jquery-ui.min.js"></script>
+    <script>
+        $(function(){
+            var current_attrs = {{current_attrs|safe}};
+            $('#i_index_page').click(function(){ 
+                    current_attrs['page'] = 0;
+                    location_cons()
+            });
+            $('#i_pre_page').click(function(){ 
+                    current_attrs['page'] = current_attrs['page'] - 1;
+                    location_cons()
+            });
+            $('#i_next_page').click(function(){ 
+                    current_attrs['page'] = current_attrs['page'] + 1;
+                    location_cons()
+            });
+            $('#i_create_time').click(function(){ 
+                    current_attrs['orderby'] = 'create_time';
+                    location_cons()
+            });
+            $('#i_modify_time').click(function(){ 
+                    current_attrs['orderby'] = 'modify_time';
+                    location_cons()
+            });
+            $('.issues_attr').click(function(){ 
+                    var keyValue = $(this).attr('value').split("___")
+                    if(keyValue[0] == 'assigned' && keyValue[1] == '所有') {
+                            keyValue[1] = '0';
+                    }
+                    current_attrs[keyValue[0]] = keyValue[1];
+                    location_cons()
+            });
+            location_cons = function() {
+                    window.location = "/{{user_name}}/{{repo_name}}/issues/list/"+ current_attrs['assigned'] +"/"+ current_attrs['tracker'] +"/"+ current_attrs['status'] +"/"+ current_attrs['priority'] +"/"+ current_attrs['orderby'] +"/"+ current_attrs['page'] +"/";
+            }
+            $('.c_unixtime').each(function(index){ 
+                    $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+                    $(this).show();
+            });
+            $('.c_issue').tooltip({
+                selector: "a[rel=tooltip]"
+            })
+            $('.c_drag_setting').draggable({
+                    cursor: 'move',
+                    revert: true
+            });
+            $('.issues_attr').droppable({
+                    accept: '.c_drag_setting',
+                    hoverClass: 'issues_attr_hovered',
+                    drop: handleIssueDrop
+            });
+            function handleIssueDrop(event, ui){
+                    var issue_id = ui.draggable.attr('value');
+                    var issue_attr = $(this).attr('value');
+                    $.ajax({
+                            url: '/{{user_name}}/{{repo_name}}/issues/update/' + issue_id + '/' + issue_attr + '/',
+                            type: 'POST',
+                            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+                            dataType: 'json',
+                            timeout: 10000,
+                            error: function(){
+                            },
+                            success: function(json){
+                                    location_cons()
+                            },
+                    });
+            }
+        });
+    </script>
 {% endblock %}

@@ -14,6 +14,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate as auth_authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
+from gitshell.objectscache.models import CacheKey
 from gitshell.gsuser.Forms import LoginForm, JoinForm, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
 from gitshell.gsuser.models import Recommend, Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
 from gitshell.gsuser.middleware import MAIN_NAVS
@@ -21,6 +22,7 @@ from gitshell.repo.models import RepoManager
 from gitshell.stats.models import StatsManager
 from gitshell.feed.feed import FeedAction
 from gitshell.stats import timeutils
+from gitshell.settings import logger
 from gitshell.feed.views import get_feeds_as_json
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo
@@ -32,33 +34,25 @@ def user(request, user_name):
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     recommendsForm = RecommendsForm()
     repos = RepoManager.list_unprivate_repo_by_userId(gsuser.id, 0, 10)
-    raw_recommends = GsuserManager.list_recommend_by_userid(gsuser.id, 0, 20)
-    recommends = __conver_to_recommends_vo(raw_recommends)
-
-    feedAction = FeedAction()
-    raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
-    raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
-    raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 10)
-    watch_repo_ids = [int(x[0]) for x in raw_watch_repos]
-    watch_user_ids = [int(x[0]) for x in raw_watch_users]
-    bewatch_user_ids = [int(x[0]) for x in raw_bewatch_users]
-    watch_repos_map = RepoManager.merge_repo_map(watch_repo_ids)
-    watch_users_map = GsuserManager.map_users(watch_user_ids)
-    bewatch_users_map = GsuserManager.map_users(bewatch_user_ids)
-    watch_repos = [watch_repos_map[x] for x in watch_repo_ids if x in watch_repos_map]
-    watch_users = [watch_users_map[x] for x in watch_user_ids if x in watch_users_map]
-    bewatch_users = [bewatch_users_map[x] for x in bewatch_user_ids if x in bewatch_users_map]
 
     now = datetime.now()
     last30days = timeutils.getlast30days(now)
     last30days_commit = get_last30days_commit(gsuser)
 
     feedAction = FeedAction()
+
+    raw_watch_repos = feedAction.get_watch_repos(gsuser.id, 0, 10)
+    watch_repo_ids = [int(x[0]) for x in raw_watch_repos]
+    watch_repos_map = RepoManager.merge_repo_map(watch_repo_ids)
+    watch_repos = [watch_repos_map[x] for x in watch_repo_ids if x in watch_repos_map]
+
     pri_user_feeds = feedAction.get_pri_user_feeds(gsuser.id, 0, 10)
     pub_user_feeds = feedAction.get_pub_user_feeds(gsuser.id, 0, 10)
     feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
 
-    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'repos': repos, 'watch_repos': watch_repos, 'watch_users': watch_users, 'bewatch_users': bewatch_users, 'last30days': last30days, 'last30days_commit': last30days_commit, 'feeds_as_json': feeds_as_json, 'recommends': recommends}
+    star_repos = RepoManager.list_star_repo(gsuser.id, 0, 20)
+
+    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'repos': repos, 'watch_repos': watch_repos, 'star_repos': star_repos, 'last30days': last30days, 'last30days_commit': last30days_commit, 'feeds_as_json': feeds_as_json}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/user.html',
                           response_dictionary,
@@ -123,6 +117,18 @@ def watch_user(request, user_name):
     response_dictionary = {'mainnav': 'user', 'watch_users': watch_users, 'bewatch_users': bewatch_users}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/watch_user.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def star_repo(request, user_name):
+    gsuser = GsuserManager.get_user_by_name(user_name)
+    if gsuser is None:
+        raise Http404
+    gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
+    star_repos = RepoManager.list_star_repo(gsuser.id, 0, 500)
+    response_dictionary = {'mainnav': 'user', 'star_repos': star_repos}
+    response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
+    return render_to_response('user/star_repo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
@@ -249,7 +255,7 @@ def recommend_delete(request, user_name, recommend_id):
 
 @login_required
 @require_http_methods(["POST"])
-def network_watch(request, user_name):
+def watch(request, user_name):
     response_dictionary = {'result': 'success'}
     gsuserprofile = GsuserManager.get_userprofile_by_name(user_name)
     if gsuserprofile is None:
@@ -262,7 +268,7 @@ def network_watch(request, user_name):
 
 @login_required
 @require_http_methods(["POST"])
-def network_unwatch(request, user_name):
+def unwatch(request, user_name):
     response_dictionary = {'result': 'success'}
     gsuserprofile = GsuserManager.get_userprofile_by_name(user_name)
     if gsuserprofile is None:
@@ -382,6 +388,15 @@ def join(request, step):
             user_by_email = GsuserManager.get_user_by_email(email)
             user_by_username = GsuserManager.get_user_by_name(username)
             if user_by_email is None and user_by_username is None:
+                client_ip = _get_client_ip(request)
+                cache_join_client_ip_count = cache.get(CacheKey.JOIN_CLIENT_IP % client_ip)
+                if cache_join_client_ip_count is None:
+                    cache_join_client_ip_count = 0
+                if not client_ip.startswith('192.168.') and client_ip != '127.0.0.1':
+                    cache_join_client_ip_count = cache_join_client_ip_count + 1
+                    cache.set(CacheKey.JOIN_CLIENT_IP % client_ip, cache_join_client_ip_count)
+                    if cache_join_client_ip_count < 6 and _create_user_and_authenticate(request, username, email, password):
+                        return HttpResponseRedirect('/join/3/')
                 cache.set(random_hash + '_email', email)
                 cache.set(random_hash + '_username', username)
                 cache.set(random_hash + '_password', password)
@@ -402,25 +417,8 @@ def join(request, step):
         password = cache.get(step + '_password')
         if email is None or username is None or password is None or not email_re.match(email) or not re.match("^\w+$", username) or username in MAIN_NAVS:
             return HttpResponseRedirect('/join/4/')
-        user = None
-        try:
-            user = User.objects.create_user(username, email, password)
-        except IntegrityError:
-            print 'user IntegrityError'
-        if user is not None and user.is_active:
-            user = auth_authenticate(username=user.username, password=password)
-            if user is not None and user.is_active:
-                auth_login(request, user)
-                cache.delete(step + '_email')
-                cache.delete(step + '_username')
-                cache.delete(step + '_password')
-                userprofile = Userprofile()
-                userprofile.id = user.id
-                userprofile.username = user.username
-                userprofile.email = user.email
-                userprofile.imgurl = hashlib.md5(user.email.lower()).hexdigest()
-                userprofile.save()
-                return HttpResponseRedirect('/join/3/')
+        if _create_user_and_authenticate(request, username, email, password):
+            return HttpResponseRedirect('/join/3/')
         else:
             error = u'请检查用户名，密码是否正确，注意大小写和前后空格。'
     response_dictionary = {'step': step, 'error': error, 'joinForm': joinForm}
@@ -476,10 +474,22 @@ def resetpassword(request, step):
                           context_instance=RequestContext(request))
 
 def get_common_user_dict(request, gsuser, gsuserprofile):
+    feedAction = FeedAction()
+    raw_watch_users = feedAction.get_watch_users(gsuser.id, 0, 10)
+    raw_bewatch_users = feedAction.get_bewatch_users(gsuser.id, 0, 10)
+    watch_user_ids = [int(x[0]) for x in raw_watch_users]
+    bewatch_user_ids = [int(x[0]) for x in raw_bewatch_users]
+    watch_users_map = GsuserManager.map_users(watch_user_ids)
+    bewatch_users_map = GsuserManager.map_users(bewatch_user_ids)
+    watch_users = [watch_users_map[x] for x in watch_user_ids if x in watch_users_map]
+    bewatch_users = [bewatch_users_map[x] for x in bewatch_user_ids if x in bewatch_users_map]
+    raw_recommends = GsuserManager.list_recommend_by_userid(gsuser.id, 0, 20)
+    recommends = __conver_to_recommends_vo(raw_recommends)
+
     is_watched_user = False
     if request.user.is_authenticated():
         is_watched_user = RepoManager.is_watched_user(request.user.id, gsuser.id)
-    return {'gsuser': gsuser, 'gsuserprofile': gsuserprofile, 'is_watched_user': is_watched_user}
+    return {'gsuser': gsuser, 'gsuserprofile': gsuserprofile, 'watch_users': watch_users, 'bewatch_users': bewatch_users, 'recommends': recommends, 'is_watched_user': is_watched_user, 'show_common': True}
 
 def get_last30days_commit(gsuser):
     now = datetime.now()
@@ -493,5 +503,33 @@ def __conver_to_recommends_vo(raw_recommends):
     users_map = GsuserManager.map_users(user_ids)
     recommends_vo = [x.to_recommend_vo(users_map) for x in raw_recommends]
     return recommends_vo
+
+def _create_user_and_authenticate(request, username, email, password):
+    user = None
+    try:
+        user = User.objects.create_user(username, email, password)
+    except IntegrityError, e:
+        logger.exception(e)
+        return False
+    if user is not None and user.is_active:
+        user = auth_authenticate(username=user.username, password=password)
+        if user is not None and user.is_active:
+            auth_login(request, user)
+            userprofile = Userprofile()
+            userprofile.id = user.id
+            userprofile.username = user.username
+            userprofile.email = user.email
+            userprofile.imgurl = hashlib.md5(user.email.lower()).hexdigest()
+            userprofile.save()
+            return True
+    return False
+
+def _get_client_ip(request):
+    x_forwarded_for = request.META.get('X-Forwarded-For')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 # TODO note: add email unique support ! UNIQUE KEY `email` (`email`) #

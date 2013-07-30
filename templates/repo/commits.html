@@ -1,25 +1,29 @@
 {% extends "repo/repo.html" %}
 
 {% block css %}
-	<link href="/static/css/app/highlight/github.css" rel="stylesheet">
+    <link href="/static/less/app/highlight/github.css" rel="stylesheet">
 {% endblock %}
 
 {% block bubble_inner_class_name %} commits{% endblock %}
 
 {% block subcontainer %}
+    <!--TODO html error -->
+    <header class="header clearfix">
+        {% include "repo/branch_nav.html" %}
+    </header>
 
-		{% for commit_attrs in commits %}
-			<div class="commit colspan">
-				<div class="commiter user-plugin span">
-					<figure class="avatar"><img src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=30" alt="{{ gsuser.username }}"></figure>
-					<div class="info">
-						<p class="msg"><a href="#">{{ commit_attrs.commit_message|truncatechars:80 }}</a></p>
-						<p class="meta"><a href="/{{ commit_attrs.author }}/">{{ commit_attrs.author }}</a> <span class="date unixtime">{{ commit_attrs.committer_date }}</span></p>
-					</div>
-				</div>
-				<span class="hash span"><a href="#" class="btn label-mini btn-info">{{ commit_attrs.commit_hash }}</a></span>
-			</div>
-		{% endfor %}
+    {% for commit in commits %}
+        <div class="commit colspan">
+            <div class="commiter user-plugin span">
+                <figure class="avatar"><img src="https://gravatar.com/avatar/{{commit.author_imgurl}}?s=30" alt="{{commit.author}}"></figure>
+                <div class="info">
+                    <p class="msg"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/">{{commit.commit_message|truncatechars:80}}</a></p>
+                    <p class="meta"><a href="/{{commit.author}}/">{{commit.author}}</a> <span class="date unixtime">{{commit.committer_date}}</span></p>
+                </div>
+            </div>
+            <span class="hash span"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/" class="btn label-mini btn-info">{{commit.commit_hash}}</a></span>
+        </div>
+    {% endfor %}
 
 		{% if not commits %}
 			<div class="commit">
@@ -47,70 +51,67 @@
 {% endblock %}
 
 {% block subjs %}
-	<script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script>
-	<script>
-	$(function(){
-			set_path_href = function() {
-					var base_href_path = '/{{user_name}}/{{repo_name}}/commits/{{refs}}/';
-					var path = '{{path}}';
-					if(path == '.') {
-							return;
-					}
-					var paths = path.split('/');
-					path_href_html = '';
-					for(x in paths) {
-							subpath = paths[x];
-							if(subpath == '') {
-									break;
-							}
-							base_href_path = (base_href_path + subpath + '/');
-							if(path.substr(-1) === "/") {
-									if(x != (paths.length-2)) {
-											path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
-									} else {
-											path_href_html = (path_href_html + ' ' + subpath + ' /');
-									}
-							} else {
-									if(x != (paths.length-1)) {
-											path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
-									} else {
-											path_href_html = (path_href_html + ' ' + subpath);
-									}
-							}
-					}
-					$('#i_repo_path').html(path_href_html);
-			};
-			set_path_href();
-			$('.c_diff_commit').click(function() {
-					commit_hash = $(this).attr('value');
-					pre_commit_hash = $(this).closest('tr').next().next().find('.c_diff_commit').attr('value')
-					if(pre_commit_hash === undefined) {
-							return
-					}
-					label = $('#i_label_' + commit_hash).text()
-					if(label == '+') {
-							pre_html = $('#i_pre_' + commit_hash).html()
-							if(pre_html != '') {
-									$('#i_label_' + commit_hash).text('-')
-									$('#i_diff_' + commit_hash).show();
-									return
-							}
-							$.ajax({
-									url: '/{{user_name}}/{{repo_name}}/diff/' + pre_commit_hash + '/' + commit_hash + '/{{path}}',
-									type: 'POST',
-									data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-									dataType: 'json',
-									timeout: 10000,
-									error: function(){
-									},
-									success: function(json){
-											$('#i_pre_' + commit_hash).html('<pre><code class="diff">' + json.diff + '</code></pre>');
-											$('pre code').each(function(i, e) { hljs.highlightBlock(e) });
-									},
-							});
-					} else {
-					}
-			});
-	});
-	</script>
+<script>
+$(function(){
+    set_path_href = function() {
+        var base_href_path = '/{{user_name}}/{{repo_name}}/commits/{{refs}}/';
+        var path = '{{path}}';
+        if(path == '.') {
+            return;
+        }
+        var paths = path.split('/');
+        path_href_html = '';
+        for(x in paths) {
+            subpath = paths[x];
+            if(subpath == '') {
+                break;
+            }
+            base_href_path = (base_href_path + subpath + '/');
+            if(path.substr(-1) === "/") {
+                if(x != (paths.length-2)) {
+                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+                } else {
+                    path_href_html = (path_href_html + ' ' + subpath + ' /');
+                }
+            } else {
+                if(x != (paths.length-1)) {
+                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+                } else {
+                    path_href_html = (path_href_html + ' ' + subpath);
+                }
+            }
+        }
+        $('#repo-path').html(path_href_html);
+    };
+    set_path_href();
+    <!--TODO add compare diff-->
+    var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
+    $('.c_diff_commit').click(function() {
+        commit_hash = $(this).attr('value');
+        pre_commit_hash = $(this).closest('tr').next().next().find('.c_diff_commit').attr('value')
+        if(pre_commit_hash === undefined) {
+            return
+        }
+        label = $('#i_label_' + commit_hash).text()
+        if(label == '+') {
+            pre_html = $('#i_pre_' + commit_hash).html()
+            if(pre_html != '') {
+                $('#i_label_' + commit_hash).text('-')
+                $('#i_diff_' + commit_hash).show();
+                return
+            }
+            repoComparer.from_refs = pre_commit_hash;
+            repoComparer.to_refs = commit_hash;
+            repoComparer.path = '{{path}}';
+            repoComparer.loadDiff($('#i_pre_' + commit_hash), null, function() {
+                $('#i_label_' + commit_hash).text('-');
+                $('#i_diff_' + commit_hash).show();
+            });
+        } else {
+            $('#i_label_' + commit_hash).text('+')
+            $('#i_diff_' + commit_hash).hide();
+        }
+    });
+});
+</script>
 {% endblock %}

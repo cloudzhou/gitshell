@@ -1,0 +1,122 @@
+{% extends "repo/repo.html" %}
+
+{% block bubble_inner_class_name %} cloner{% endblock %}
+
+<!--TODO where to place this-->
+{% block bubbleheader %}
+    <header class="header">
+        <h1 class="heading">衍生仓库树</h1>
+    </header>
+{% endblock %}
+
+{% block subcontainer %}
+            {%for fork_repos in fork_repos_tree%}
+                {%for fork_repo in fork_repos%}
+                    <div class="user-plugin repo-{{forloop.parentloop.counter}}">
+                        <figure class="avatar">
+                            <img src="https://gravatar.com/avatar/{{fork_repo.imgurl}}?s=40" alt="{{ fork_repo.username }}">
+                        </figure>
+                        <div class="info">
+                            <p class="name">
+                                <a class="c_img_{{forloop.parentloop.counter}}" href="/{{fork_repo.username}}/{{fork_repo.name}}/">{{fork_repo.username}}</a>
+                            </p>
+                            <p class="meta extra-info" title="{{fork_repo.desc}}">{{fork_repo.desc|truncatechars:40}}</p>
+                        </div>
+                        <ul class="actions horizontal-list">
+                            <li><a href="javascript:void(0)" rel="tooltip" data-original-title="commit {{ fork_repo.commit }}次数" class="label"><i class="icon-time"></i><span>{{ fork_repo.commit }}</span></a></li>
+                            <li><a href="javascript:void(0)" rel="tooltip" data-original-title="watch {{ fork_repo.watch }}次数" class="label"><i class="icon-star"></i><span>{{ fork_repo.watch }}</span></a></li>
+                            <li><a href="javascript:void(0)" rel="tooltip" data-original-title="fork {{ fork_repo.fork }}次数" class="label"><i class="icon-code-fork"></i><span>{{ fork_repo.fork }}</span></a></li>
+                        </ul>
+                    </div>
+                {%endfor%}
+            {%endfor%}
+
+            <header class="header">
+                <h1 class="heading">标星用户</h1>
+            </header>
+
+            {% if star_users %}
+                <div class="stars">
+                {%for star_user in star_users%}
+                    <div class="member">
+                        <div class="user-plugin">
+                            <figure class="avatar">
+                                <img src="https://gravatar.com/avatar/{{ star_user.imgurl }}?s=40" alt="{{star_user.username}}">
+                            </figure>
+                            <div class="info">
+                                <p class="name">
+                                    <a href="/{{star_user.username}}/">{{star_user.username}}</a>
+                                    {%if star_user.nickname%}
+                                        <span>({{star_user.nickname}})</span>
+                                    {%endif%}
+                                    {%if star_user.tweet%}
+                                        <span class="tweet" title="{{star_user.tweet}}">{{star_user.tweet|truncatechars:20}}</span>
+                                    {%endif%}
+                                </p>
+                                <p class="meta">
+                                    <span><i class="icon-time"></i><span class="unixtime">{{star_user.date_joined}}</span>加入</span>
+                                    <span class="divider"></span>
+                                    <span><i class="icon-map-marker"></i><span class="unixtime">{{star_user.last_login}}</span>登录</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {%endfor%}
+                </div>
+            {% else %}
+                <p class="info text-error">还没有任何标星用户.</p>
+            {% endif %}
+
+            <header class="header">
+                <h1 class="heading">关注用户</h1>
+            </header>
+
+            {% if watch_users %}
+                <div class="watchers">
+                {%for watch_user in watch_users%}
+                    <div class="member">
+                        <div class="user-plugin">
+                            <figure class="avatar">
+                                <img src="https://gravatar.com/avatar/{{ watch_user.imgurl }}?s=40" alt="{{watch_user.username}}">
+                            </figure>
+                            <div class="info">
+                                <p class="name">
+                                    <a href="/{{watch_user.username}}/">{{watch_user.username}}</a>
+                                    {%if watch_user.nickname%}
+                                        <span>({{watch_user.nickname}})</span>
+                                    {%endif%}
+                                    {%if watch_user.tweet%}
+                                        <span class="tweet" title="{{watch_user.tweet}}">{{watch_user.tweet|truncatechars:20}}</span>
+                                    {%endif%}
+                                </p>
+                                <p class="meta">
+                                    <span><i class="icon-time"></i><span class="unixtime">{{watch_user.date_joined}}</span>加入</span>
+                                    <span class="divider"></span>
+                                    <span><i class="icon-map-marker"></i><span class="unixtime">{{watch_user.last_login}}</span>登录</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {%endfor%}
+                </div>
+            {% else %}
+                <p class="info text-error">还没有任何关注用户.</p>
+            {% endif %}
+{% endblock %}
+
+{% block subjs %}
+    <script>
+        $(function(){
+
+            $('.actions').tooltip({
+                selector: "a[rel=tooltip]"
+            });
+
+            var bubbleLeftColHeight = $('.bubble-col:eq(0)').height(), bubbleRightColHeight = $('.bubble-col:eq(1)').height();
+            var bubbleInnerHeight = (bubbleLeftColHeight < bubbleRightColHeight) ? bubbleRightColHeight : bubbleLeftColHeight;
+
+            $('.bubble-col > .bubble-inner').height(bubbleInnerHeight);
+
+        });
+    </script>
+{% endblock %}

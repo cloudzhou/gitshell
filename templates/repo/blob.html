@@ -1,0 +1,85 @@
+{% extends "repo/repo.html" %}
+{% block bubble_inner_class_name %} files{% endblock %}
+
+<!--TODO refactor all-->
+{% block subcontainer %}
+<div class="file-list">
+    <header class="header clearfix">
+        {% include "repo/branch_nav.html" %}
+        <span class="pull-right">
+            <a class="btn btn-mini" href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}">Commits</a>
+            <a class="btn btn-mini" href="/{{user_name}}/{{repo_name}}/raw/blob/{{refs}}/{{path}}">Raw</a>
+        </span>
+    </header>
+    <style>
+    #i_source_code .container:before, #i_source_code .container:after {
+        content: "";
+        display: none;
+    }
+    </style>
+    <div id="i_source_code">
+        {% if not blob and blob != '' %}
+            没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码
+        {% else %}
+            {% if is_markdown %}
+                <pre id="id_markdown_content" style="margin-top: 12px">{{ blob }}</pre>
+            {% else %}
+                <pre class="brush: {{ brush }}; ">{{ blob }}</pre>
+            {% endif %}
+        {% endif %}
+    </div>          
+</div>
+{% endblock %}
+{% block subjs %}
+<script src='/static/js/app/syntaxhighlighter/shCore.js' type='text/javascript'></script>
+<script src='/static/js/app/syntaxhighlighter/shAutoloader.js' type='text/javascript'></script>
+<script src='/static/js/app/syntaxhighlighter/shBrush{{ lang }}.js' type='text/javascript'></script>
+{% if is_markdown %}
+<script src="/static/js/Markdown.Converter.js"></script>
+<script src="/static/js/Markdown.Editor.js"></script>
+<script src="/static/js/Markdown.Sanitizer.js"></script>
+{% endif %}
+<script>
+$(function(){
+    set_path_href = function() {
+        var base_href_path = '/{{user_name}}/{{repo_name}}/tree/{{refs}}/';
+        var path = '{{path}}';
+        if(path == '.') {
+            return;
+        }
+        var paths = path.split('/');
+        path_href_html = '';
+        for(x in paths) {
+            subpath = paths[x];
+            if(subpath == '') {
+                break;
+            }
+            base_href_path = (base_href_path + subpath + '/');
+            if(path.substr(-1) === "/") {
+                if(x != (paths.length-2)) {
+                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+                } else {
+                    path_href_html = (path_href_html + ' ' + subpath + ' /');
+                }
+            } else {
+                if(x != (paths.length-1)) {
+                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+                } else {
+                    path_href_html = (path_href_html + ' ' + subpath);
+                }
+            }
+        }
+        $('#repo-path').html(path_href_html);
+    };
+    set_path_href();
+{% if is_markdown %}
+    var converter = new Markdown.getSanitizingConverter();
+    var html = converter.makeHtml($('#id_markdown_content').html());
+    $('#id_markdown_content').html(html);
+    $('#id_markdown_content').show();
+{% else %}
+    SyntaxHighlighter.all();
+{% endif %}
+});
+</script>
+{% endblock %}

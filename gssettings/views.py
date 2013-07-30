@@ -12,19 +12,21 @@ from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, Userprof
 
 @login_required
 def profile(request):
+    current = 'profile'
     thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
     userprofileForm = UserprofileForm(instance = request.userprofile)
     if request.method == 'POST':
         userprofileForm = UserprofileForm(request.POST, instance = request.userprofile)
         if userprofileForm.is_valid():
             userprofileForm.save()
-    response_dictionary = {'userprofileForm': userprofileForm, 'thirdpartyUser': thirdpartyUser}
+    response_dictionary = {'current': current, 'userprofileForm': userprofileForm, 'thirdpartyUser': thirdpartyUser}
     return render_to_response('settings/profile.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def changepassword(request):
+    current = 'changepassword'
     changepasswordForm = ChangepasswordForm()
     error = u''
     if request.method == 'POST':
@@ -40,13 +42,14 @@ def changepassword(request):
                 error = u'确定原密码正确？'
         else:
             error = u'输入正确的密码'
-    response_dictionary = {'changepasswordForm': changepasswordForm, 'error': error}
+    response_dictionary = {'current': current, 'changepasswordForm': changepasswordForm, 'error': error}
     return render_to_response('settings/changepassword.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def sshpubkey(request):
+    current = 'sshpubkey'
     sshpubkeyForm = SshpubkeyForm()
     doSshpubkeyForm = DoSshpubkeyForm()
     error = u''
@@ -77,8 +80,7 @@ def sshpubkey(request):
         else:
             error = u'确定公钥标识非空，且公钥拷贝正确，典型公钥位置：~/.ssh/id_rsa.pub'
             
-    response_dictionary = {'sshpubkeyForm': sshpubkeyForm, 'doSshpubkeyForm': doSshpubkeyForm, 'error': error,
-                        'userPubkey_all': list(userPubkey_all)}
+    response_dictionary = {'current': current, 'sshpubkeyForm': sshpubkeyForm, 'doSshpubkeyForm': doSshpubkeyForm, 'error': error, 'userPubkey_all': list(userPubkey_all)}
     return render_to_response('settings/sshpubkey.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -99,29 +101,33 @@ def sshpubkey_remove(request):
 
 @login_required
 def notif(request):
-    response_dictionary = {'hello_world': 'hello world'}
+    current = 'notif'
+    response_dictionary = {'current': current, 'hello_world': 'hello world'}
     return render_to_response('settings/notif.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def thirdparty(request):
+    current = 'thirdparty'
     thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
-    response_dictionary = {'thirdpartyUser': thirdpartyUser}
+    response_dictionary = {'current': current, 'thirdpartyUser': thirdpartyUser}
     return render_to_response('settings/thirdparty.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def change_username_email(request):
+    current = 'change_username_email'
     thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
-    response_dictionary = {'thirdpartyUser': thirdpartyUser}
+    response_dictionary = {'current': current, 'thirdpartyUser': thirdpartyUser}
     return render_to_response('settings/change_username_email.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def validate_email(request, token):
+    current = 'validate_email'
     validate_result = 'success'
     email = cache.get(token + '_email')
     if email is not None:
@@ -135,14 +141,15 @@ def validate_email(request, token):
             validate_result = 'user_exists'
     else:
         validate_result = 'token_expired'
-    response_dictionary = {'validate_result' : validate_result}
+    response_dictionary = {'current': current, 'validate_result': validate_result}
     return render_to_response('settings/validate_email.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def destroy(request):
-    response_dictionary = {'hello_world': 'hello world'}
+    current = 'destroy'
+    response_dictionary = {'current': current, 'hello_world': 'hello world'}
     return render_to_response('settings/destroy.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -151,4 +158,6 @@ def key_to_fingerprint(pubkey):
     key = base64.b64decode(pubkey)
     fp_plain = hashlib.md5(key).hexdigest()
     return ':'.join(a+b for a,b in zip(fp_plain[::2], fp_plain[1::2]))    
+
+
 

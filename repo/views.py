@@ -1,34 +1,38 @@
 # -*- coding: utf-8 -*-  
-import os, re
-import shutil, copy
+import os, re, sys
 import json, time, urllib
-from datetime import datetime
-from datetime import timedelta
+import shutil, copy, random
+from datetime import datetime, timedelta
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.shortcuts import render_to_response
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from django.utils.html import escape
-from gitshell.feed.feed import FeedAction
+from django.forms.models import model_to_dict
+from gitshell.feed.feed import AttrKey, FeedAction
 from gitshell.feed.models import FeedManager
-from gitshell.repo.Forms import RepoForm, RepoIssuesForm, IssuesComment, RepoIssuesCommentForm, RepoMemberForm
+from gitshell.repo.Forms import RepoForm, RepoMemberForm
 from gitshell.repo.githandler import GitHandler
-from gitshell.repo.models import Repo, RepoManager, Issues, PullRequest, PULL_STATUS
-from gitshell.repo.cons import TRACKERS, STATUSES, PRIORITIES, TRACKERS_VAL, STATUSES_VAL, PRIORITIES_VAL, ISSUES_ATTRS, conver_issues, conver_issue_comments, conver_repos
+from gitshell.repo.models import Repo, RepoManager, PullRequest, PULL_STATUS
 from gitshell.gsuser.models import GsuserManager
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
-from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, PULLREQUEST_REPO_PATH
+from gitshell.settings import SECRET_KEY, REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, PULLREQUEST_REPO_PATH, logger
 from gitshell.daemon.models import EventManager
+from gitshell.objectscache.models import CacheKey
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.gsuser.middleware import KEEP_REPO_NAME
-from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo
+from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo, dropbox_share_direct
 
+lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml', 'go': 'Go'}
+brush_aliases = {'AppleScript': 'applescript', 'AS3': 'actionscript3', 'Bash': 'shell', 'ColdFusion': 'coldfusion', 'Cpp': 'cpp', 'CSharp': 'csharp', 'Css': 'css', 'Delphi': 'delphi', 'Diff': 'diff', 'Erlang': 'erlang', 'Groovy': 'groovy', 'JavaFX': 'javafx', 'Java': 'java', 'JScript': 'javascript', 'Perl': 'perl', 'Php': 'php', 'Plain': 'plain', 'PowerShell': 'powershell', 'Python': 'python', 'Ruby': 'ruby', 'Sass': 'sass', 'Scala': 'scala', 'Sql': 'sql', 'Vb': 'vb', 'Xml': 'xml', 'Go': 'go'}
+PULLREQUEST_COMMIT_MESSAGE_TMPL = 'Merge branch %s of https://gitshell.com/%s/%s/ into %s, see https://gitshell.com/%s/%s/pull/%s/, %s'
 @login_required
 def user_repo(request, user_name):
     return user_repo_paging(request, user_name, 0)
@@ -65,85 +69,126 @@ def user_repo_paging(request, user_name, pagenum):
         userprofile.prirepo = prirepo
         userprofile.save()
 
-    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_list': repo_list, 'repo_feed_map': repo_feed_map}
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'gsuser': user, 'gsuserprofile': userprofile, 'repo_list': repo_list, 'repo_feed_map': repo_feed_map}
     return render_to_response('repo/user_repo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @repo_permission_check
 def repo(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'index'
-    return repo_ls_tree(request, user_name, repo_name, refs, path, current)
+    refs = None; path = '.'; current = 'index'
+    return ls_tree(request, user_name, repo_name, refs, path, current)
 
 @repo_permission_check
-def repo_default_tree(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'tree'
-    return repo_ls_tree(request, user_name, repo_name, refs, path, current)
+def tree_default(request, user_name, repo_name):
+    refs = None; path = '.'; current = 'tree'
+    return ls_tree(request, user_name, repo_name, refs, path, current)
     
 @repo_permission_check
-def repo_tree(request, user_name, repo_name, refs, path):
+def tree(request, user_name, repo_name, refs, path):
     current = 'tree'
-    return repo_ls_tree(request, user_name, repo_name, refs, path, current)
+    return ls_tree(request, user_name, repo_name, refs, path, current)
 
 @repo_permission_check
-def repo_raw_tree(request, user_name, repo_name, refs, path):
+@repo_source_permission_check
+def raw_blob(request, user_name, repo_name, refs, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path.endswith('/'):
         raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
     return HttpResponse(blob, content_type="text/plain")
 
-lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml'}
-brush_aliases = {'AppleScript': 'applescript', 'AS3': 'actionscript3', 'Bash': 'shell', 'ColdFusion': 'coldfusion', 'Cpp': 'cpp', 'CSharp': 'csharp', 'Css': 'css', 'Delphi': 'delphi', 'Diff': 'diff', 'Erlang': 'erlang', 'Groovy': 'groovy', 'JavaFX': 'javafx', 'Java': 'java', 'JScript': 'javascript', 'Perl': 'perl', 'Php': 'php', 'Plain': 'plain', 'PowerShell': 'powershell', 'Python': 'python', 'Ruby': 'ruby', 'Sass': 'sass', 'Scala': 'scala', 'Sql': 'sql', 'Vb': 'vb', 'Xml': 'xml'}
 @repo_permission_check
-def repo_ls_tree(request, user_name, repo_name, refs, path, current):
+def ls_tree(request, user_name, repo_name, refs, path, current):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
     if path is None or path == '':
         path = '.'
-    gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
+    gitHandler = GitHandler()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
-    is_tree = True ; tree = {} ; blob = u''; lang = 'Plain'; brush = 'plain'
-    if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
+    tree = {}
+    if repo.status == 0 and (repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user)):
         if path == '.' or path.endswith('/'):
             tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
-        else:
-            is_tree = False
-            paths = path.split('.')
-            if len(paths) > 0:
-                suffix = paths[-1]
-                if suffix in lang_suffix and lang_suffix[suffix] in brush_aliases:
-                    lang = lang_suffix[suffix]
-                    brush = brush_aliases[lang]
-            blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
-    is_markdown = path.endswith('.markdown') or path.endswith('.md') or path.endswith('.mkd')
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'blob': blob, 'is_tree': is_tree, 'lang': lang, 'brush': brush, 'is_markdown': is_markdown}
+    readme_md = None
+    if tree and 'has_readme' in tree and tree['has_readme']:
+        readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, path + '/' + tree['readme_file'])
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'readme_md': readme_md}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/tree.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def repo_default_commits(request, user_name, repo_name):
-    refs = 'master'; path = '.'
-    return repo_commits(request, user_name, repo_name, refs, path)
+def blob(request, user_name, repo_name, refs, path):
+    current = 'blob'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or path is None or path == '':
+        raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
+    abs_repopath = repo.get_abs_repopath()
+    gitHandler = GitHandler()
+    commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
+    blob = u''; lang = 'Plain'; brush = 'plain'
+    if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
+        paths = path.split('.')
+        if len(paths) > 0:
+            suffix = paths[-1]
+            if suffix in lang_suffix and lang_suffix[suffix] in brush_aliases:
+                lang = lang_suffix[suffix]
+                brush = brush_aliases[lang]
+        blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
+    is_markdown = path.endswith('.markdown') or path.endswith('.md') or path.endswith('.mkd')
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'blob': blob, 'lang': lang, 'brush': brush, 'is_markdown': is_markdown}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/blob.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
     
 @repo_permission_check
-def repo_commits(request, user_name, repo_name, refs, path):
+def commit(request, user_name, repo_name, commit_hash):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True)
+    path = '.'; current = 'commits'
+    gitHandler = GitHandler()
+    commits = gitHandler.repo_log_file(repo.get_abs_repopath(), '0000000', commit_hash, 1, path)
+    _fillwith_commits(commits)
+    commit = None
+    if len(commits) > 0:
+        commit = commits[0]
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'commit_hash': commit_hash, 'commit': commit}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/commit.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+    
+@repo_permission_check
+def commits_default(request, user_name, repo_name):
+    refs = None; path = '.'
+    return commits(request, user_name, repo_name, refs, path)
+    
+@repo_permission_check
+def commits(request, user_name, repo_name, refs, path):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
     if path is None or path == '':
         path = '.'
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
-    commits = gitHandler.repo_log_file(abs_repopath, commit_hash, '0000000', path)
+    commits = gitHandler.repo_log_file(abs_repopath, '0000000', commit_hash, 50, path)
+    _fillwith_commits(commits)
     response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'path': path, 'commits': commits}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/commits.html',
@@ -151,11 +196,104 @@ def repo_commits(request, user_name, repo_name, refs, path):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def repo_pulls(request, user_name, repo_name):
-    refs = 'master'; path = '.'
+def commits_log(request, user_name, repo_name, from_commit_hash, to_commit_hash):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    gitHandler = GitHandler()
+    abs_repopath = repo.get_abs_repopath()
+    refs_meta = gitHandler.repo_ls_refs(repo, abs_repopath)
+
+    orgi_from_commit_hash = from_commit_hash
+    orgi_to_commit_hash = to_commit_hash
+    from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_commit_hash)
+    to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_commit_hash)
+    commits = gitHandler.repo_log_file(abs_repopath, from_commit_hash, to_commit_hash, 50, '.')
+    _fillwith_commits(commits)
+    response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'orgi_from_commit_hash': orgi_from_commit_hash, 'orgi_to_commit_hash': orgi_to_commit_hash, 'from_commit_hash': from_commit_hash, 'to_commit_hash': to_commit_hash, 'commits': commits, 'refs_meta': refs_meta}
+    return json_httpResponse(response_dictionary)
+
+@repo_permission_check
+def branches_default(request, user_name, repo_name):
+    return branches(request, user_name, repo_name, None)
+
+@repo_permission_check
+def branches(request, user_name, repo_name, refs):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
+    response_dictionary = {'mainnav': 'repo', 'current': 'branches'}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/branches.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
+def tags_default(request, user_name, repo_name):
+    return tags(request, user_name, repo_name, None)
+
+@repo_permission_check
+def tags(request, user_name, repo_name, refs):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
+    response_dictionary = {'mainnav': 'repo', 'current': 'tags'}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/tags.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
+def compare_default(request, user_name, repo_name):
+    return compare_master(request, user_name, repo_name, 'master')
+
+@repo_permission_check
+def compare_master(request, user_name, repo_name, refs):
+    return compare_commit(request, user_name, repo_name, refs, 'master')
+
+@repo_permission_check
+def compare_commit(request, user_name, repo_name, from_refs, to_refs):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    refs = _get_current_refs(request.user, repo, None, True)
+    gitHandler = GitHandler()
+    abs_repopath = repo.get_abs_repopath()
+    from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_refs)
+    to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_refs)
+    refs_meta = gitHandler.repo_ls_refs(repo, abs_repopath)
+    response_dictionary = {'mainnav': 'repo', 'current': 'compare', 'from_refs': from_refs, 'to_refs': to_refs, 'from_commit_hash': from_commit_hash, 'to_commit_hash': to_commit_hash, 'refs_meta': refs_meta}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/compare.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
+@login_required
+@require_http_methods(["POST"])
+def merge(request, user_name, repo_name, source_refs, desc_refs):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or not RepoManager.is_repo_member(repo, request.user):
+        raise Http404
+    merge_commit_message = 'Merge branch %s into %s, by %s' % (source_refs, desc_refs, '@' + str(request.user.username))
+    if request.user.id != repo.user_id:
+        merge_commit_message = merge_commit_message + ', @' + repo.username
+    gitHandler = GitHandler()
+    (returncode, output) = gitHandler.merge_pull_request(repo, repo, source_refs, desc_refs, merge_commit_message)
+    merge_output_split = '----------- starting merge -----------'
+    if merge_output_split in output:
+        output = output.split(merge_output_split)[1].strip()
+    RepoManager.delete_repo_commit_version(repo)
+    return json_httpResponse({'source_refs': source_refs, 'desc_refs': desc_refs, 'returncode': returncode, 'output': output, 'result': 'success'})
+
+@repo_permission_check
+def pulls(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'
     pullRequests = RepoManager.list_pullRequest_by_descRepoId(repo.id)
     response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequests': pullRequests}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
@@ -165,30 +303,30 @@ def repo_pulls(request, user_name, repo_name):
 
 @login_required
 @repo_permission_check
-def repo_default_pull_new(request, user_name, repo_name):
+def pull_new_default(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
     source_username = user_name
     source_refs = 'master'
     desc_username = user_name
     desc_refs = 'master'
     if user_name != request.user.username:
-        repo = RepoManager.get_repo_by_name(user_name, repo_name)
-        if repo is None:
-            raise Http404
         child_repo = RepoManager.get_childrepo_by_user_forkrepo(request.user, repo)
         if child_repo is not None:
             source_username = child_repo.username
             source_refs = 'master'
-    return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+    return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
 
 @login_required
 @repo_permission_check
-def repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
-    refs = 'master'; path = '.'
+def pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
     desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
     if repo is None or source_repo is None or desc_repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'
 
     # pull action
     if request.method == 'POST':
@@ -199,15 +337,15 @@ def repo_pull_new(request, user_name, repo_name, source_username, source_refs, d
         title = request.POST.get('title', '')
         desc = request.POST.get('desc', '')
         if source_repo == '' or source_refs == '' or desc_repo == '' or desc_refs == '' or title == '' or '/' not in source_repo or '/' not in desc_repo:
-            return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+            return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         if not RepoManager.is_allowed_refsname_pattern(source_refs) or not RepoManager.is_allowed_refsname_pattern(desc_refs):
-            return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+            return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         (source_username, source_reponame) = source_repo.split('/', 1)
         (desc_username, desc_reponame) = desc_repo.split('/', 1)
         source_pull_repo = RepoManager.get_repo_by_name(source_username, source_reponame)
         desc_pull_repo = RepoManager.get_repo_by_name(desc_username, desc_reponame)
-        if not __has_pull_right(request, source_pull_repo, desc_pull_repo):
-            return repo_pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
+        if not _has_pull_right(request, source_pull_repo, desc_pull_repo):
+            return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         pullRequest = PullRequest.create(request.user.id, desc_pull_repo.user_id, source_pull_repo.user_id, source_pull_repo.id, source_refs, desc_pull_repo.user_id, desc_pull_repo.id, desc_refs, title, desc, 0, PULL_STATUS.NEW)
         pullRequest.save()
         pullRequest.fillwith()
@@ -215,19 +353,19 @@ def repo_pull_new(request, user_name, repo_name, source_username, source_refs, d
         FeedManager.feed_pull_change(pullRequest, pullRequest.status)
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
 
-    pull_repo_list = __list_pull_repo(request, repo)
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list}
+    pull_repo_list = _list_pull_repo(request, repo)
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_new.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def repo_pull_show(request, user_name, repo_name, pullRequest_id):
-    refs = 'master'; path = '.'
+def pull_show(request, user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'
     pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     
     response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequest': pullRequest}
@@ -238,59 +376,79 @@ def repo_pull_show(request, user_name, repo_name, pullRequest_id):
 
 @repo_permission_check
 @require_http_methods(["POST"])
-def repo_pull_commit(request, user_name, repo_name, pullRequest_id):
-    refs = 'master'; path = '.'
-    args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
-    if args is None:
-        return json_httpResponse({'commits': commits, 'result': 'failed'})
-    (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
+def pull_commits(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name); path = '.'
+    source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
+    desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
+    if repo is None or source_repo is None or desc_repo is None:
+        return json_httpResponse({'commits': {}, 'result': 'failed'})
+    if not _has_pull_right(request, source_repo, desc_repo):
+        return json_httpResponse({'commits': {}, 'result': 'failed'})
 
     gitHandler = GitHandler()
     # prepare pullrequest
-    gitHandler.prepare_pull_request(pullRequest, source_repo, desc_repo)
+    gitHandler.prepare_pull_request(source_repo, desc_repo)
+    pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.username, desc_repo.name)
 
-    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), pullRequest.source_refname)
-    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), pullRequest.desc_refname)
-    commits = gitHandler.repo_log_file(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, path)
-    return json_httpResponse({'commits': commits, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
+    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), source_refs)
+    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), desc_refs)
+    commits = gitHandler.repo_log_file(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, 50, '.')
+    _fillwith_commits(commits)
+    return json_httpResponse({'commits': commits, 'source_refs': source_refs, 'desc_refs': desc_refs, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
     
 @repo_permission_check
 @require_http_methods(["POST"])
-def repo_pull_diff(request, user_name, repo_name, pullRequest_id):
-    refs = 'master'; path = '.'
-    args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
-    if args is None:
-        return json_httpResponse({'commits': commits, 'result': 'failed'})
-    (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
+def pull_diff(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs, context):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
+    desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
+    if repo is None or source_repo is None or desc_repo is None:
+        return json_httpResponse({'diff': {}, 'result': 'failed'})
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'
+    if not _has_pull_right(request, source_repo, desc_repo):
+        return json_httpResponse({'diff': {}, 'result': 'failed'})
 
     gitHandler = GitHandler()
     # prepare pullrequest
-    gitHandler.prepare_pull_request(pullRequest, source_repo, desc_repo)
+    gitHandler.prepare_pull_request(source_repo, desc_repo)
+    pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.username, desc_repo.name)
 
-    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), pullRequest.source_refname)
-    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), pullRequest.desc_refname)
-    diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
-    if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
-        diff = gitHandler.repo_diff(pullrequest_repo_path, desc_repo_refs_commit_hash, source_repo_refs_commit_hash, path)
-    return json_httpResponse({'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
+    source_repo_refs_commit_hash = gitHandler.get_commit_hash(source_repo, source_repo.get_abs_repopath(), source_refs)
+    desc_repo_refs_commit_hash = gitHandler.get_commit_hash(desc_repo, desc_repo.get_abs_repopath(), desc_refs)
+    diff = gitHandler.repo_diff(pullrequest_repo_path, source_repo_refs_commit_hash, desc_repo_refs_commit_hash, context, '.')
+    for x in diff['detail']:
+        mode = x['mode']
+        filename = x['filename']
+        filetype = 'tree' if filename.endswith('/') else 'blob'
+        fileusername = desc_repo.username
+        filereponame = desc_repo.name
+        filerefs = desc_refs
+        if mode == 'delete':
+            fileusername = source_repo.username
+            filereponame = source_repo.name
+            filerefs = source_refs
+        filepath = '/%s/%s/%s/%s/%s' % (fileusername, filereponame, filetype, filerefs, filename)
+        x['filepath'] = filepath
+    return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': path, 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success', 'context': context})
 
 @repo_permission_check
 @login_required
 @require_http_methods(["POST"])
-def repo_pull_merge(request, user_name, repo_name, pullRequest_id):
-    refs = 'master'; path = '.'
+def pull_merge(request, user_name, repo_name, pullRequest_id):
     args = _get_repo_pull_args(user_name, repo_name, pullRequest_id)
     if args is None:
-        return json_httpResponse({'commits': commits, 'result': 'failed'})
+        return json_httpResponse({'returncode': 128, 'output': 'merge failed', 'result': 'failed'})
     (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
+    if not _has_pull_right(request, source_repo, desc_repo):
+        return json_httpResponse({'result': 'failed'})
+    if desc_repo is None or desc_repo.user_id != request.user.id:
         return json_httpResponse({'result': 'failed'})
     source_refs = pullRequest.source_refname
     desc_refs = pullRequest.desc_refname
     gitHandler = GitHandler()
     pullrequest_user = GsuserManager.get_user_by_id(pullRequest.pull_user_id)
-    (returncode, output) = gitHandler.merge_pull_request(pullRequest, source_repo, desc_repo, source_refs, desc_refs, pullrequest_user)
+    merge_commit_message = PULLREQUEST_COMMIT_MESSAGE_TMPL % (source_refs, source_repo.username, source_repo.name, desc_refs, desc_repo.username, desc_repo.name, pullRequest.id, '@' + str(pullrequest_user.username))
+    (returncode, output) = gitHandler.merge_pull_request(source_repo, desc_repo, source_refs, desc_refs, merge_commit_message)
     pullRequest.status = PULL_STATUS.MERGED
     if returncode != 0:
         pullRequest.status = PULL_STATUS.MERGED_FAILED
@@ -306,8 +464,7 @@ def repo_pull_merge(request, user_name, repo_name, pullRequest_id):
 @repo_permission_check
 @login_required
 @require_http_methods(["POST"])
-def repo_pull_reject(request, user_name, repo_name, pullRequest_id):
-    refs = 'master'; path = '.'
+def pull_reject(request, user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
         return json_httpResponse({'result': 'failed'})
@@ -323,8 +480,7 @@ def repo_pull_reject(request, user_name, repo_name, pullRequest_id):
 @repo_permission_check
 @login_required
 @require_http_methods(["POST"])
-def repo_pull_close(request, user_name, repo_name, pullRequest_id):
-    refs = 'master'; path = '.'
+def pull_close(request, user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
         return json_httpResponse({'result': 'failed'})
@@ -353,265 +509,50 @@ def _get_repo_pull_args(user_name, repo_name, pullRequest_id):
     
 @repo_permission_check
 @require_http_methods(["POST"])
-def repo_diff(request, user_name, repo_name, pre_commit_hash, commit_hash, path):
+def diff_default(request, user_name, repo_name, pre_commit_hash, commit_hash, context):
+    return diff(request, user_name, repo_name, pre_commit_hash, commit_hash, context, '.')
+
+@repo_permission_check
+@require_http_methods(["POST"])
+def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, context, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
     if path is None or path == '':
         path = '.'
+    diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
-    diff = u'+++没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码'
+    refs_meta = gitHandler.repo_ls_refs(repo, abs_repopath)
+
+    orgi_from_commit_hash = from_commit_hash
+    orgi_to_commit_hash = to_commit_hash
+    from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_commit_hash)
+    to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_commit_hash)
     if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
-        diff = gitHandler.repo_diff(abs_repopath, pre_commit_hash, commit_hash, path)
-    return json_httpResponse({'diff': diff})
+        diff = gitHandler.repo_diff(abs_repopath, from_commit_hash, to_commit_hash, context, path)
+        for x in diff['detail']:
+            mode = x['mode']
+            filename = x['filename']
+            filetype = 'tree' if filename.endswith('/') else 'blob'
+            filerefs = orgi_to_commit_hash
+            if mode == 'delete':
+                filerefs = orgi_from_commit_hash
+            filepath = '/%s/%s/%s/%s/%s' % (user_name, repo_name, filetype, filerefs, filename)
+            x['filepath'] = filepath
+    diff['orgi_from_commit_hash'] = orgi_from_commit_hash
+    diff['orgi_to_commit_hash'] = orgi_to_commit_hash
+    diff['from_commit_hash'] = from_commit_hash
+    diff['to_commit_hash'] = to_commit_hash
+    diff['refs_meta'] = refs_meta
+    return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': path, 'diff': diff})
 
 @repo_permission_check
-def issues(request, user_name, repo_name):
-    return issues_list(request, user_name, repo_name, '0', '0', '0', '0', 'modify_time', 0)
- 
-@repo_permission_check
-def issues_list(request, user_name, repo_name, assigned, tracker, status, priority, orderby, page):
-    refs = 'master'; path = '.'; current = 'issues'
+def collaborator(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    user_id = request.user.id
-    member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
-    member_ids.insert(0, repo.user_id)
-    if user_id != repo.user_id and user_id in member_ids:
-        member_ids.remove(user_id)
-        member_ids.insert(0, user_id)
-    members = GsuserManager.list_user_by_ids(member_ids)
-    assigneds = [o.username for o in members]
-    assigneds.insert(0, '0')
-    if assigned is None:
-        assigned = assigneds[0]
-    assigned_id = 0
-    assigned_user = GsuserManager.get_user_by_name(assigned)
-    if assigned_user is not None and assigned in assigneds:
-        assigned_id = assigned_user.id
-    tracker = int(tracker); status = int(status); priority = int(priority); page = int(page)
-    current_attrs = { 'assigned': str(assigned), 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': str(orderby), 'page': page }
-    raw_issues = []
-    page_size = 50
-    offset = page*page_size
-    row_count = page_size + 1
-    if assigned_id == 0 and tracker == 0 and status == 0 and priority == 0:
-        raw_issues = RepoManager.list_issues(repo.id, orderby, offset, row_count)
-    else:
-        assigned_ids = member_ids if assigned_id == 0 else [assigned_id]
-        trackeres = TRACKERS_VAL if tracker == 0 else [tracker]
-        statuses = STATUSES_VAL if status == 0 else [status]
-        priorities = PRIORITIES_VAL if priority == 0 else [priority] 
-        raw_issues = RepoManager.list_issues_cons(repo.id, assigned_ids, trackeres, statuses, priorities, orderby, offset, row_count)
-    reporter_ids = [o.user_id for o in raw_issues]
-    reporters = GsuserManager.list_user_by_ids(list(set(reporter_ids)-set(member_ids)))
-    username_map = {}
-    for member in members:
-        username_map[member.id] = member.username
-    for reporter in reporters:
-        username_map[reporter.id] = reporter.username
-    issues = conver_issues(raw_issues, username_map, {repo.id: repo.name})
-
-    hasPre = False ; hasNext = False
-    if page > 0:
-        hasPre = True 
-    if len(issues) > page_size:
-        hasNext = True
-        issues.pop()
-    
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page, 'current_attrs': current_attrs, 'issues': issues, 'hasPre': hasPre, 'hasNext': hasNext}
-    response_dictionary.update(ISSUES_ATTRS)
-    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/issues.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-@repo_permission_check
-def issues_default_show(request, user_name, repo_name, issues_id):
-    return issues_show(request, user_name, repo_name, issues_id, None)
-
-@repo_permission_check
-def issues_show(request, user_name, repo_name, issues_id, page):
-    refs = 'master'; path = '.'; current = 'issues'
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    raw_issue = RepoManager.get_issues(repo.id, issues_id)
-    if raw_issue is None:
-        raise Http404
-    repoIssuesCommentForm = RepoIssuesCommentForm()
-    if request.method == 'POST' and request.user.is_authenticated():
-        issuesComment = IssuesComment() 
-        issuesComment.issues_id = issues_id
-        issuesComment.user_id = request.user.id
-        repoIssuesCommentForm = RepoIssuesCommentForm(request.POST, instance = issuesComment)
-        if repoIssuesCommentForm.is_valid():
-            cid = repoIssuesCommentForm.save().id
-            FeedManager.notif_issue_comment_at(request.user.id, cid, repoIssuesCommentForm.cleaned_data['content'])
-            raw_issue.comment_count = raw_issue.comment_count + 1
-            raw_issue.save()
-            return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, issues_id))
-    issues_id = int(issues_id)
-    username_map = {}
-    users = GsuserManager.list_user_by_ids([raw_issue.user_id, raw_issue.assigned])
-    for user in users:
-        username_map[user.id] = user.username
-    issue = conver_issues([raw_issue], username_map, {repo.id: repo.name})[0]
-    
-    page_size = 50
-    total_count = issue['comment_count']
-    total_page = issue['comment_count'] / page_size
-    if issue['comment_count'] != 0 and issue['comment_count'] % page_size == 0:
-        total_page = total_page - 1
-    if page is None or int(page) > total_page:
-        page = total_page
-    else:
-        page = int(page)
-    user_img_map = {}
-    issue_comments = []
-    if total_count > 0:
-        offset = page*page_size
-        row_count = page_size
-        raw_issue_comments = RepoManager.list_issues_comment(issues_id, offset, row_count)
-        user_ids = [o.user_id for o in raw_issue_comments]
-        users = GsuserManager.list_user_by_ids(user_ids)
-        userprofiles = GsuserManager.list_userprofile_by_ids(user_ids)
-        for user in users:
-            username_map[user.id] = user.username
-        for userprofile in userprofiles:
-            user_img_map[userprofile.id] = userprofile.imgurl 
-        issue_comments = conver_issue_comments(raw_issue_comments, username_map, user_img_map)
-
-    member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
-    member_ids.insert(0, repo.user_id)
-    if raw_issue.user_id != repo.user_id and request.user.id in member_ids:
-        member_ids.remove(request.user.id)
-        member_ids.insert(0, request.user.id)
-    members = GsuserManager.list_user_by_ids(member_ids)
-    assigneds = [o.username for o in members]
-
-    has_issues_modify_right = __has_issues_modify_right(request, raw_issue, repo)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'repoIssuesCommentForm': repoIssuesCommentForm, 'page': page, 'total_page': range(0, total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority, 'has_issues_modify_right': has_issues_modify_right}
-    response_dictionary.update(ISSUES_ATTRS)
-    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/issues_show.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-@login_required
-@repo_permission_check
-def issues_create(request, user_name, repo_name, issues_id):
-    refs = 'master'; path = '.'; current = 'issues'
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    has_issues_modify = False
-    repoIssuesForm = RepoIssuesForm()
-    issues = Issues()
-    orgi_issue = None
-    if issues_id != 0:
-        issues = RepoManager.get_issues(repo.id, issues_id)
-        orgi_issue = copy.copy(issues)
-        has_issues_modify = __has_issues_modify_right(request, issues, repo)
-        if not has_issues_modify: 
-            issues = Issues()
-            orgi_issue = None
-        repoIssuesForm = RepoIssuesForm(instance = issues)
-    repoIssuesForm.fill_assigned(repo)
-    error = u''
-    if request.method == 'POST':
-        issues.user_id = request.user.id
-        issues.repo_id = repo.id
-        repoIssuesForm = RepoIssuesForm(request.POST, instance = issues)
-        repoIssuesForm.fill_assigned(repo)
-        if repoIssuesForm.is_valid():
-            nid = repoIssuesForm.save().id
-            FeedManager.notif_issue_at(request.user.id, nid, repoIssuesForm.cleaned_data['subject'] + ' ' + repoIssuesForm.cleaned_data['content'])
-            FeedManager.feed_issue_change(request.user, repo, orgi_issue, nid)
-            return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
-        else:
-            error = u'issues 内容不能为空'
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'repoIssuesForm': repoIssuesForm, 'error': error, 'issues_id': issues_id, 'has_issues_modify': has_issues_modify}
-    response_dictionary.update(ISSUES_ATTRS)
-    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/issues_create.html',
-                          response_dictionary,
-                          context_instance=RequestContext(request))
-
-@login_required
-@repo_permission_check
-@require_http_methods(["POST"])
-def issues_delete(request, user_name, repo_name, issue_id):
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    issues = RepoManager.get_issues(repo.id, issue_id)
-    if issues is not None:
-        if __has_issues_modify_right(request, issues, repo):
-            issues.visibly = 1
-            issues.save()
-    return json_httpResponse({'result': 'ok'})
-
-@login_required
-@repo_permission_check
-@require_http_methods(["POST"])
-def issues_update(request, user_name, repo_name, issue_id, attr):
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    issues = RepoManager.get_issues(repo.id, issue_id)
-    if issues is None:
-        raise Http404
-    has_issues_modify = __has_issues_modify_right(request, issues, repo)
-    if not has_issues_modify:
-        return json_failed()
-    orgi_issue = copy.copy(issues)
-    (key, value) = attr.split('___', 1)
-    if key == 'assigned':
-        user = GsuserManager.get_user_by_name(value)
-        if user is not None:
-            repoMember = RepoManager.get_repo_member(repo.id, user.id)
-            if repoMember is not None:
-                issues.assigned = repoMember.user_id
-                issues.save()
-                FeedManager.feed_issue_change(request.user, repo, orgi_issue, issues.id)
-        return json_ok()
-    value = int(value)
-    if key == 'tracker':
-        issues.tracker = value
-    elif key == 'status':
-        issues.status = value
-    elif key == 'priority':
-        issues.priority = value
-    issues.save()
-    FeedManager.feed_issue_change(request.user, repo, orgi_issue, issues.id)
-    return json_ok()
-
-@login_required
-@repo_permission_check
-@require_http_methods(["POST"])
-def issues_comment_delete(request, user_name, repo_name, comment_id):
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    issues_comment = RepoManager.get_issues_comment(comment_id)
-    if issues_comment is not None:
-        issues = RepoManager.get_issues(repo.id, issues_comment.issues_id)
-        if issues is not None and __has_issues_comments_modify_right(request, issues_comment, repo):
-            issues_comment.visibly = 1
-            issues_comment.save()
-            issues.comment_count = issues.comment_count - 1
-            issues.save()
-    return json_ok()
-
-@repo_permission_check
-def repo_network(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'network'
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'collaborator'
     error = u''
     repoMemberForm = RepoMemberForm()
     if request.method == 'POST' and request.user.is_authenticated():
@@ -637,16 +578,16 @@ def repo_network(request, user_name, repo_name):
     members_vo = [merge_user_map[o] for o in member_ids]
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/network.html',
+    return render_to_response('repo/collaborator.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def repo_clone_watch(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'branches'
+def pulse(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'pulse'
     raw_fork_repos_tree = []
     fork_repo_id = repo.fork_repo_id
     if fork_repo_id != 0:
@@ -659,19 +600,20 @@ def repo_clone_watch(request, user_name, repo_name):
     fork_me_repos = RepoManager.list_fork_repo(repo.id)
     raw_fork_repos_tree.append(fork_me_repos)
     fork_repos_tree = change_to_vo(raw_fork_repos_tree)
+    star_users = RepoManager.list_star_user(repo.id, 0, 20)
     watch_users = RepoManager.list_watch_user(repo.id)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'fork_repos_tree': fork_repos_tree, 'watch_users': watch_users, 'test': {1, 1}}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'fork_repos_tree': fork_repos_tree, 'star_users': star_users, 'watch_users': watch_users}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/clone_watch.html',
+    return render_to_response('repo/pulse.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @repo_permission_check
-def repo_stats(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'stats'
+def stats(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'stats'
     userprofile = GsuserManager.get_userprofile_by_id(repo.user_id)
     now = datetime.now()
     last12hours = timeutils.getlast12hours(now)
@@ -714,6 +656,120 @@ def repo_stats(request, user_name, repo_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@repo_permission_check
+@login_required
+def settings(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        raise Http404
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'settings'; error = u''
+    repoForm = RepoForm(instance = repo)
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'repoForm': repoForm, 'error': error}
+    if request.method == 'POST':
+        repoForm = RepoForm(request.POST, instance = repo)
+        if not repoForm.is_valid():
+            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，选择好语言和可见度，active、watch、recommend、repo是保留的名称。'
+            return __response_edit_repo_error(request, response_dictionary, error)
+        name = repoForm.cleaned_data['name']
+        if not RepoManager.is_allowed_reponame_pattern(name):
+            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，active、watch、recommend、repo是保留的名称。'
+            return __response_edit_repo_error(request, response_dictionary, error)
+        repo = repoForm.save()
+        RepoManager.check_export_ok_file(repo)
+        return HttpResponseRedirect('/%s/%s/' % (repo.username, repo.name))
+
+    if repo.dropbox_sync == 1 and (repo.dropbox_url is None or repo.dropbox_url == ''):
+        dropbox_url = dropbox_share_direct('repositories/%s/%s_%s.git' % (repo.username, repo.id, repo.name))
+        if dropbox_url is not None and dropbox_url != '':
+            repo.dropbox_url = dropbox_url
+            repo.save()
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/settings.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
+@login_required
+@require_http_methods(["POST"])
+def generate_deploy_url(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        return json_httpResponse({'result': 'failed'})
+    random_hash = '%032x' % random.getrandbits(128)
+    repo.deploy_url = random_hash
+    repo.save()
+    return json_httpResponse({'result': 'success'})
+
+@repo_permission_check
+@login_required
+@require_http_methods(["POST"])
+def forbid_dploy_url(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        return json_httpResponse({'result': 'failed'})
+    repo.deploy_url = ''
+    repo.save()
+    return json_httpResponse({'result': 'success'})
+
+@repo_permission_check
+@login_required
+@require_http_methods(["POST"])
+def enable_dropbox_sync(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        return json_httpResponse({'result': 'failed'})
+    repo.dropbox_sync = 1
+    repo.last_push_time = datetime.now()
+    if repo.dropbox_url is None or repo.dropbox_url == '':
+        dropbox_url = dropbox_share_direct('repositories/%s/%s_%s.git' % (repo.username, repo.id, repo.name))
+        repo.dropbox_url = dropbox_url
+    repo.save()
+    return json_httpResponse({'result': 'success'})
+
+@repo_permission_check
+@login_required
+@require_http_methods(["POST"])
+def disable_dropbox_sync(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        return json_httpResponse({'result': 'failed'})
+    repo.dropbox_sync = 0
+    repo.last_push_time = datetime.now()
+    repo.save()
+    return json_httpResponse({'result': 'success'})
+
+def list_latest_push_repo(request, last_push_time_str):
+    secret_key = request.GET.get('secret_key')
+    if secret_key != SECRET_KEY:
+        return json_httpResponse({'result': 'failed'})
+    timedelta_value = 0
+    if re.match('\d+[sMdwmy]', last_push_time_str):
+        timedelta_value = int(last_push_time_str[0:-1])
+    if last_push_time_str.endswith('s'):
+        push_timedelta = timedelta(seconds=-timedelta_value)
+    elif last_push_time_str.endswith('M'):
+        push_timedelta = timedelta(minutes=-timedelta_value)
+    elif last_push_time_str.endswith('d'):
+        push_timedelta = timedelta(days=-timedelta_value)
+    elif last_push_time_str.endswith('w'):
+        push_timedelta = timedelta(weeks=-timedelta_value)
+    elif last_push_time_str.endswith('m'):
+        push_timedelta = timedelta(days=-timedelta_value*30)
+    elif last_push_time_str.endswith('y'):
+        push_timedelta = timedelta(days=-timedelta_value*365)
+    last_push_time = datetime.now() + push_timedelta
+    repos = RepoManager.list_repo_by_last_push_time(last_push_time)
+    repos_as_view = []
+    for repo in repos:
+        repo_as_view = {}
+        repo_as_view['id'] = repo.id
+        repo_as_view['username'] = repo.username
+        repo_as_view['name'] = repo.name
+        repo_as_view['dropbox_sync'] = repo.dropbox_sync
+        repo_as_view['visibly'] = repo.visibly
+        repos_as_view.append(repo_as_view)
+    return json_httpResponse({'result': 'success', 'latest_push_repos': repos_as_view})
+
 def change_to_vo(raw_fork_repos_tree):
     user_ids = []
     for raw_fork_repos in raw_fork_repos_tree:
@@ -722,27 +778,108 @@ def change_to_vo(raw_fork_repos_tree):
     fork_repos_tree = []
     user_map = GsuserManager.map_users(user_ids)
     for raw_fork_repos in raw_fork_repos_tree:
-        fork_repos_tree.append(conver_repos(raw_fork_repos, user_map))
+        fork_repos_tree.append(_conver_repos(raw_fork_repos, user_map))
     return fork_repos_tree
 
 @repo_permission_check
 @require_http_methods(["POST"])
-def repo_refs(request, user_name, repo_name):
+def log_graph(request, user_name, repo_name, refs):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    abs_repopath = repo.get_abs_repopath()
+    gitHandler = GitHandler()
+    refs_meta = gitHandler.repo_ls_refs(repo, abs_repopath)
+
+    orgi_commit_hash = refs
+    commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
+    log_graph = gitHandler.repo_log_graph(repo, abs_repopath, commit_hash)
+    log_graph['orgi_commit_hash'] = orgi_commit_hash
+    log_graph['commit_hash'] = commit_hash
+    log_graph['refs_meta'] = refs_meta
+    response_dictionary = {'user_name': user_name, 'repo_name': repo_name}
+    response_dictionary.update(log_graph)
+    return json_httpResponse(response_dictionary)
+    
+@repo_permission_check
+def refs_graph_default(request, user_name, repo_name):
+    refs = None
+    return refs_graph(request, user_name, repo_name, refs)
+
+@repo_permission_check
+def refs_graph(request, user_name, repo_name, refs):
+    current = 'refs_graph'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        raise Http404
+    refs = _get_current_refs(request.user, repo, refs, True)
+    response_dictionary = {'mainnav': 'repo', 'current': current}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/refs_graph.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
+@require_http_methods(["POST"])
+def refs_branch_create(request, user_name, repo_name, branch, base_branch):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        return json_httpResponse({'returncode': 128, 'result': 'failed'})
+    gitHandler = GitHandler()
+    if gitHandler.create_branch(repo, branch, base_branch):
+        return json_httpResponse({'returncode': 0, 'result': 'success'})
+    return json_httpResponse({'returncode': 128, 'result': 'failed'})
+
+@repo_permission_check
+@require_http_methods(["POST"])
+def refs_branch_delete(request, user_name, repo_name, branch):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        return json_httpResponse({'returncode': 128, 'result': 'failed'})
+    gitHandler = GitHandler()
+    if gitHandler.delete_branch(repo, branch):
+        return json_httpResponse({'returncode': 0, 'result': 'success'})
+    return json_httpResponse({'returncode': 128, 'result': 'failed'})
+
+@repo_permission_check
+@require_http_methods(["POST"])
+def refs_tag_create(request, user_name, repo_name, tag, base_branch):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        return json_httpResponse({'returncode': 128, 'result': 'failed'})
+    gitHandler = GitHandler()
+    if gitHandler.create_tag(repo, tag, base_branch):
+        return json_httpResponse({'returncode': 0, 'result': 'success'})
+    return json_httpResponse({'returncode': 128, 'result': 'failed'})
+
+@repo_permission_check
+@require_http_methods(["POST"])
+def refs_tag_delete(request, user_name, repo_name, tag):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        return json_httpResponse({'returncode': 128, 'result': 'failed'})
+    gitHandler = GitHandler()
+    if gitHandler.delete_tag(repo, tag):
+        return json_httpResponse({'returncode': 0, 'result': 'success'})
+    return json_httpResponse({'returncode': 128, 'result': 'failed'})
+
+@repo_permission_check
+@require_http_methods(["POST"])
+def refs(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'branches': [], 'tags': []})
     repopath = repo.get_abs_repopath()
 
     gitHandler = GitHandler()
-    branches_refs = gitHandler.repo_ls_branches(repo, repopath)
-    tags_refs = gitHandler.repo_ls_tags(repo, repopath)
-    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'branches': branches_refs, 'tags': tags_refs}
+    refs_meta = gitHandler.repo_ls_refs(repo, repopath)
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'refs_meta': refs_meta}
     return json_httpResponse(response_dictionary)
 
 @repo_permission_check
 @login_required
 @require_http_methods(["POST"])
-def repo_fork(request, user_name, repo_name):
+def fork(request, user_name, repo_name):
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name}
     has_error = False
     message = 'success'
@@ -777,40 +914,56 @@ def repo_fork(request, user_name, repo_name):
 @repo_permission_check
 @login_required
 @require_http_methods(["POST"])
-def repo_watch(request, user_name, repo_name):
+def watch(request, user_name, repo_name):
     response_dictionary = {'result': 'success'}
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         message = u'仓库不存在'
         return json_httpResponse({'result': 'failed', 'message': message})
-    if not RepoManager.watch_repo(request.userprofile, repo):
+    if not RepoManager.watch_repo(request.user, request.userprofile, repo):
         message = u'关注失败，关注数量超过限制或者仓库不允许关注'
         return json_httpResponse({'result': 'failed', 'message': message})
     return json_httpResponse(response_dictionary)
 
+@repo_permission_check
 @login_required
 @require_http_methods(["POST"])
-def repo_unwatch_by_id(request, repo_id):
-    response_dictionary = {'result': 'success'}
-    repo = RepoManager.get_rawrepo_by_id(repo_id)
-    if repo is None:
-        message = u'仓库不存在'
-        return json_httpResponse({'result': 'failed', 'message': message})
-    if not RepoManager.unwatch_repo(request.userprofile, repo):
-        message = u'取消关注失败，可能仓库未被关注'
-        return json_httpResponse({'result': 'failed', 'message': message})
-    return json_httpResponse(response_dictionary)
-
-@login_required
-@require_http_methods(["POST"])
-def repo_unwatch(request, user_name, repo_name):
+def unwatch(request, user_name, repo_name):
     response_dictionary = {'result': 'success'}
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         message = u'仓库不存在'
         return json_httpResponse({'result': 'failed', 'message': message})
-    if not RepoManager.unwatch_repo(request.userprofile, repo):
+    if not RepoManager.unwatch_repo(request.user, request.userprofile, repo):
         message = u'取消关注失败，可能仓库未被关注'
+        return json_httpResponse({'result': 'failed', 'message': message})
+    return json_httpResponse(response_dictionary)
+
+@repo_permission_check
+@login_required
+@require_http_methods(["POST"])
+def star(request, user_name, repo_name):
+    response_dictionary = {'result': 'success'}
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        message = u'仓库不存在'
+        return json_httpResponse({'result': 'failed', 'message': message})
+    if not RepoManager.star_repo(request.user.id, repo.id):
+        message = u'标星失败，标星数量超过限制或者仓库不允许标星'
+        return json_httpResponse({'result': 'failed', 'message': message})
+    return json_httpResponse(response_dictionary)
+
+@repo_permission_check
+@login_required
+@require_http_methods(["POST"])
+def unstar(request, user_name, repo_name):
+    response_dictionary = {'result': 'success'}
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        message = u'仓库不存在'
+        return json_httpResponse({'result': 'failed', 'message': message})
+    if not RepoManager.unstar_repo(request.user.id, repo.id):
+        message = u'取消标星失败，可能仓库未被标星'
         return json_httpResponse({'result': 'failed', 'message': message})
     return json_httpResponse(response_dictionary)
 
@@ -906,32 +1059,9 @@ def __is_url_valid(url):
         validator(url)
         return True
     except ValidationError, e:
-        print e
+        logger.exception(e)
     return False
     
-@repo_permission_check
-@login_required
-def edit(request, user_name, repo_name):
-    error = u''
-    repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    repoForm = RepoForm(instance = repo)
-    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error}
-    if request.method == 'POST':
-        repoForm = RepoForm(request.POST, instance = repo)
-        if not repoForm.is_valid():
-            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，选择好语言和可见度，active、watch、recommend、repo是保留的名称。'
-            return __response_edit_repo_error(request, response_dictionary, error)
-        name = repoForm.cleaned_data['name']
-        if not RepoManager.is_allowed_reponame_pattern(name):
-            error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，active、watch、recommend、repo是保留的名称。'
-            return __response_edit_repo_error(request, response_dictionary, error)
-        repo = repoForm.save()
-        RepoManager.check_export_ok_file(repo)
-        return HttpResponseRedirect('/%s/%s/' % (repo.username, repo.name))
-    return render_to_response('repo/edit.html', response_dictionary, context_instance=RequestContext(request))
-
 def __response_edit_repo_error(request, response_dictionary, error):
     response_dictionary['error'] = error
     return render_to_response('repo/edit.html', response_dictionary, context_instance=RequestContext(request))
@@ -948,6 +1078,7 @@ def delete(request, user_name, repo_name):
     gsuser = GsuserManager.get_userprofile_by_id(request.user.id)
     if request.method == 'POST':
         repo.visibly = 1
+        repo.last_push_time = datetime.now()
         gsuser.used_quote = gsuser.used_quote - repo.used_quote
         if gsuser.used_quote < 0:
             gsuser.used_quote = 0
@@ -987,17 +1118,25 @@ def fulfill_gitrepo(repo, remote_git_url):
     RepoManager.check_export_ok_file(repo)
 
 def get_common_repo_dict(request, repo, user_name, repo_name, refs):
+    gitHandler = GitHandler()
+    refs_meta = gitHandler.repo_ls_refs(repo, repo.get_abs_repopath())
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)
+    is_stared_repo = RepoManager.is_stared_repo(request.user.id, repo.id)
+    is_forked_repo = False
     is_repo_member = RepoManager.is_repo_member(repo, request.user)
     is_owner = (repo.user_id == request.user.id)
+    is_branch = (refs in refs_meta['branches'])
+    is_tag = (refs in refs_meta['tags'])
+    is_commit = (not is_branch and not is_tag)
     has_fork_right = (repo.auth_type == 0 or is_repo_member)
     has_pull_right = is_owner
     if not is_owner:
         child_repo = RepoManager.get_repo_by_forkrepo(request.user.username, repo)
         if child_repo is not None:
+            is_forked_repo = True
             has_pull_right = True
     repo_pull_new_count = RepoManager.count_pullRequest_by_descRepoId(repo.id, PULL_STATUS.NEW)
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count}
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_stared_repo': is_stared_repo, 'is_forked_repo': is_forked_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'is_branch': is_branch, 'is_tag': is_tag, 'is_commit': is_commit, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta}
 
 @login_required
 def list_github_repos(request):
@@ -1008,14 +1147,22 @@ def list_github_repos(request):
     repos_json_str = github_list_repo(access_token)
     return HttpResponse(repos_json_str, mimetype='application/json')
 
-def __list_pull_repo(request, repo):
-    pull_repo_list = RepoManager.list_parent_repo(repo, 10)
+def _list_pull_repo(request, repo):
+    raw_pull_repo_list = RepoManager.list_parent_repo(repo, 10)
     child_repo = RepoManager.get_childrepo_by_user_forkrepo(request.user, repo)
     if child_repo is not None:
-        pull_repo_list = [child_repo] + pull_repo_list
+        raw_pull_repo_list = [child_repo] + raw_pull_repo_list
+    pull_repo_list = [x for x in raw_pull_repo_list if _has_repo_pull_right(request, x)]
     return pull_repo_list
 
-def __has_pull_right(request, source_pull_repo, desc_pull_repo):
+def _has_repo_pull_right(request, repo):
+    if repo is None:
+        return False
+    if repo.auth_type != 0 and not RepoManager.is_repo_member(repo, request.user):
+        return False
+    return True
+
+def _has_pull_right(request, source_pull_repo, desc_pull_repo):
     if source_pull_repo is None or desc_pull_repo is None:
         return False
     if source_pull_repo.auth_type != 0 and not RepoManager.is_repo_member(source_pull_repo, request.user):
@@ -1024,15 +1171,49 @@ def __has_pull_right(request, source_pull_repo, desc_pull_repo):
         return False
     return True
 
-def __has_issues_modify_right(request, issues, repo):
-    return issues is not None and (request.user.id == issues.user_id or request.user.id == repo.user_id)
+def _conver_repos(raw_repos, map_users):
+    repos_vo = []
+    for raw_repo in raw_repos:
+        repo_dict = model_to_dict(raw_repo, fields=[field.name for field in Repo._meta.fields])
+        repo_dict['id'] = raw_repo.id
+        repo_dict['create_time'] = time.mktime(raw_repo.create_time.timetuple())
+        repo_dict['modify_time'] = time.mktime(raw_repo.modify_time.timetuple())
+        if raw_repo.user_id in map_users:
+            repo_dict['username'] = map_users[raw_repo.user_id]['username']
+            repo_dict['imgurl'] = map_users[raw_repo.user_id]['imgurl']
+        repos_vo.append(repo_dict) 
+    return repos_vo
 
-def __has_issues_comments_modify_right(request, issues_comment, repo):
-    return issues is not None and (request.user.id == issues_comment.user_id or request.user.id == repo.user_id)
+def _fillwith_commits(commits):
+    if not commits:
+        return
+    for commit in commits:
+        userprofile = GsuserManager.get_userprofile_by_name(commit['author'])
+        if userprofile:
+            commit['author_imgurl'] = userprofile.imgurl
+        else:
+            commit['author_imgurl'] = '000000'
+
+def _get_current_refs(user, repo, refs, update_to_cache):
+    gitHandler = GitHandler()
+    refs_meta = gitHandler.repo_ls_refs(repo, repo.get_abs_repopath())
+    if refs and refs not in refs_meta['branches'] and refs not in refs_meta['tags']:
+        return 'master'
+    feedAction = FeedAction()
+    repo_refs = feedAction.get_repo_attr(repo.id, AttrKey.REFS)
+    if refs and RepoManager.is_allowed_refsname_pattern(refs):
+        if refs != repo_refs and update_to_cache:
+            feedAction.set_repo_attr(repo.id, AttrKey.REFS, refs)
+        return refs
+    if repo_refs:
+        return repo_refs
+    feedAction.set_repo_attr(repo.id, AttrKey.REFS, 'master')
+    return 'master'
 
 def json_ok():
     return json_httpResponse({'result': 'ok'})
 
 def json_failed():
     return json_httpResponse({'result': 'failed'})
+
 

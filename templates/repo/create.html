@@ -1,126 +1,103 @@
 {% extends "base.html" %}
-{% block css %}
-<style>
-#id_captcha_1 {display:block;margin-top:10px;}
-.repo-create-form .control-label { width: 60px; }
-.repo-create-form .controls {margin-left:80px }
-.repo-title { border-bottom: 1px solid #eeeeee; padding-bottom: 10px; margin-bottom: 15px }
-</style>
-{% endblock %}
+
+{% block container_class_name %} repo{% endblock %}
 {% block container %}
-<div class="page-header">
-        <h1>:-),  创建仓库
-        <small>提交代码需要<a href="/settings/sshpubkey/">设置SSH公钥</a></small></h1>
-</div>
-<div class="row">
-    <div class="span">
-    <div class="tabbable tabs-left">
-              <ul class="nav nav-tabs">
-                <li id="id-choose-direct-create" class="left-choose-repo active"><a href="#direct-create" data-toggle="tab">直接创建仓库</a></li>
-                <li id="id-choose-via-github" class="left-choose-repo"><a href="#via-github" data-toggle="tab">关联 GitHub 导入</a></li>
-                <li id="id-choose-via-git-url" class="left-choose-repo"><a href="#via-git-url" data-toggle="tab">从 URL 导入</a></li>
-              </ul>
-            </div>
-            </div>
-    <div class="span7" style="margin-left: 0px">
+<header class="header repo-create">
+  <h1 class="heading">创建仓库</h1>
+  <p class="ssh-setting">提交代码需要<a href="/settings/sshpubkey/">设置SSH公钥</a></p>
+</header>
+
+<div class="inner-container repo-create">
+  <ul class="nav nav-tabs">
+    <li id="id-choose-direct-create" class="left-choose-repo active"><a href="#direct-create" data-toggle="tab">直接创建仓库</a></li>
+    <li id="id-choose-via-github" class="left-choose-repo"><a href="#via-github" data-toggle="tab">关联 GitHub 导入</a></li>
+    <li id="id-choose-via-git-url" class="left-choose-repo"><a href="#via-git-url" data-toggle="tab">从 URL 导入</a></li>
+  </ul>
         {% if thirdpartyUser and thirdpartyUser.init == 0 %}
-        <div class="alert alert-error">
-            <p>来自 GitHub 的用户，我们尝试导入您 GitHub 账户的用户名和邮箱信息，</p><p>不过看来一些信息已经存在了，所以我们随机生成用户名或者邮箱。</p>
-            <p>所以，强烈推荐您通过这里 -&gt; <a href="/settings/change_username_email/"><button class="btn btn-danger btn-small">修改用户名或者邮箱。</button></a></p>
-        </div>
+            <div class="alert alert-error">
+                <p>来自 GitHub 的用户，我们尝试导入您 GitHub 账户的用户名和邮箱信息，</p><p>不过看来一些信息已经存在了，所以我们随机生成用户名或者邮箱。</p>
+                <p>所以，强烈推荐您通过这里 -&gt; <a href="/settings/change_username_email/"><button class="btn btn-danger btn-small">修改用户名或者邮箱。</button></a></p>
+            </div>
         {% else %}
-        <div id="id-direct-create" class="cl-right-create-repo">
-            <form id="id_repo_create_form" class="repo-create-form form-horizontal" action="" method="post">
-                {% csrf_token %}
-                <fieldset id="id-source-repo-meta" class="hide">
-                    <h4 class="repo-title" style="">来源仓库：</h4>
-                    <div class="control-group" style="margin-bottom: 5px">
-                        <label for="id_git_url" class="control-label">Git URL</label>
-                        <div class="controls">
-                            <input id="id_git_url" type="text" name="remote_git_url" maxlength="128" class="input-xxlarge" placeholder="https://github.com/twitter/bootstrap.git (只支持 HTTP 和 Git 协议，以 http(s)://，git:// 开头)">
+        <div class="tab-content">
+            <div id="id-direct-create" class="cl-right-create-repo">
+                <form id="id_repo_create_form" class="repo-create-form form-horizontal" action="" method="post">
+                    {% csrf_token %}
+                    <fieldset>
+                    <div id="id-source-repo-meta" class="hide">
+                        <h3 class="repo-title">来源仓库：</h3>
+                        <div class="control-group">
+                            <label for="id_git_url" class="control-label">Git URL</label>
+                            <div class="controls"><input id="id_git_url" type="text" name="remote_git_url" maxlength="128" class="input-xxlarge" placeholder="https://github.com/twitter/bootstrap.git (只支持 HTTP 和 Git 协议，以 http(s)://，git:// 开头)"></div>
+                        </div>
+                        <div class="control-group">
+                            <label for="id_is_private" class="control-label"></label>
+                            <div class="controls">
+                                <label class="checkbox"><input type="checkbox" name="is_private" id="id_is_private"> 私有仓库</label>
+                            </div>
+                        </div>
+                        <div class="control-group source-repo-auth hide">
+                            <label for="id_remote_username" class="control-label">用户名</label>
+                            <div class="controls"><input id="id_remote_username" type="text" name="remote_username" maxlength="64" class="input-xlarge" placeholder="源仓库用户名"></div>
+                        </div>
+                        <div class="control-group source-repo-auth hide">
+                            <label for="id_remote_password" class="control-label">密码</label>
+                            <div class="controls"><input id="id_remote_password" type="text" name="remote_password" maxlength="64" class="input-xlarge" placeholder="源仓库密码"></div>
+                        </div>
+                        <div class="control-group">
+                            <div class="controls"><div class="alert">由于国内的网络环境，初始化仓库可能需要一段很长的时间，请耐心等候... （不支持大于10M项目）</div></div>
                         </div>
                     </div>
-                    <div class="control-group">
-                        <label for="id_is_private" class="control-label"></label>
-                        <div class="controls">
-                            <label class="checkbox">
-                                <input type="checkbox" name="is_private" id="id_is_private"> 私有仓库
-                            </label>
+
+                        <h3 class="repo-title">新的仓库：</h3>
+                        <div class="control-group">
+                            <label for="id_name" class="control-label">仓库名称</label>
+                            <div class="controls">{{ repoForm.name }}<span id="id_reponame_exist" class="hide">该仓库名已经存在或者不符合规范</span></div>
                         </div>
-                    </div>
-                    <div class="control-group source-repo-auth hide">
-                        <label for="id_remote_username" class="control-label">用户名</label>
-                        <div class="controls">
-                            <input id="id_remote_username" type="text" name="remote_username" maxlength="64" class="input-xlarge" placeholder="源仓库用户名">
+                        <div class="control-group">
+                            <label for="id_desc" class="control-label">简介</label>
+                            <div class="controls">{{ repoForm.desc }}</div>
                         </div>
-                    </div>
-                    <div class="control-group source-repo-auth hide">
-                        <label for="id_remote_password" class="control-label">密码</label>
-                        <div class="controls">
-                            <input id="id_remote_password" type="text" name="remote_password" maxlength="64" class="input-xlarge" placeholder="源仓库密码">
+                        <div class="control-group">
+                            <label for="id_lang" class="control-label">语言选择</label>
+                            <div class="controls">{{ repoForm.lang }}</div>
                         </div>
-                    </div>
-                    <div class="alert">由于国内的网络环境，初始化仓库可能需要一段很长的时间，请耐心等候... （不支持大于10M项目）</div>
-                    <h4 class="repo-title" style="">新的仓库：</h4>
-                </fieldset>
-                <fieldset>
-                    <div class="control-group">
-                        <label for="id_name" class="control-label">仓库名称</label>
-                        <div class="controls">
-                            {{ repoForm.name }}
-                        <code id="id_reponame_exist" class="hide">该仓库名已经存在或者不符合规范</code>
+                        <div id="id_other_lang_group" class="control-group" style="display: none">
+                            <label for="id_other_lang" class="control-label">其他语言</label>
+                            <div class="controls"><input type="text" maxlength="16" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder=""></div>
                         </div>
-                    </div>
-                    <div class="control-group">
-                        <label for="id_desc" class="control-label">简介</label>
-                        <div class="controls">
-                            {{ repoForm.desc }}
+                        <div class="control-group">
+                            <label for="id_auth_type" class="control-label">可见度</label>
+                            <div class="controls">{{ repoForm.auth_type }}</div>
                         </div>
-                    </div>
-                    <div class="control-group">
-                        <label for="id_lang" class="control-label">语言选择</label>
-                        <div class="controls">
-                            {{ repoForm.lang }}
+                        <div id="id_error" class="alert {% if not error %}hide{% endif %}">
+                            <a data-dismiss="alert" class="close"><i class="icon-close"></i></a>
+                            <p><strong>出错了！</strong><span id="id_error_message">{{ error }}</span></p>
                         </div>
-                    </div>
-                    <div id="id_other_lang_group" class="control-group" style="display: none">
-                        <label for="id_other_lang" class="control-label">其他语言</label>
-                        <div class="controls">
-                            <input type="text" maxlength="16" value="" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder="哇！难道你发明了新的语言:-)">
+                        <div class="control-group">
+                            <div class="controls">
+                                <button id="id_edit_submit" class="btn btn-primary" type="submit">确定</button>
+                                <p class="text-warning">公开：包括源代码公开；半公开：除了源代码之外公开；私有：对外不公开</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="control-group">
-                        <label for="id_auth_type" class="control-label">可见度</label>
-                        <div class="controls">
-                            {{ repoForm.auth_type }}
-                        </div>
-                    </div>
-                    <div id="id_error" class="alert {% if not error %}hide{% endif %}">
-                        <a data-dismiss="alert" class="close">×</a>
-                        <strong>出错了！</strong> <span id="id_error_message">{{ error }}</span>
-                    </div>
-                    <div class="form-actions">
-                        <button id="id_edit_submit" class="btn btn-primary" type="submit">确定</button>
-                    </div>
-                    <span class="muted">公开：包括源代码公开；半公开：除了源代码之外公开；私有：对外不公开</span>
-                </fieldset>
-            </form>
-        </div>
-        <div id="id-via-github" class="cl-right-create-repo hide">
-            {% if thirdpartyUser %}
-                    <h4 class="repo-title" style="">选择以下的仓库进行导入： {%if thirdpartyUser%}<span class="muted">({{thirdpartyUser.tp_username}})</span>{%endif%}<button id="id-refresh-repo" class="pull-right btn btn-mini">刷新</button></h4>
-                    <div id="id-repos-loading" style="margin-left: 10px"><img src="/static/img/loading.gif">&nbsp;&nbsp;正在连接 GitHub...</div>
-                    <div id="id-github-repos">
-                    </div>
-            {% else %}
-                {% if apply_error %}
-                    <p class="alert">{{ apply_error }}</p>
-                    <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/"><button class="btn btn-small btn-success">退出当前 GitHub 账户，选择其他账户再次进行关联</button></a>
+                    </fieldset>
+                </form>
+            </div>
+
+            <div id="id-via-github" class="cl-right-create-repo hide">
+                {% if thirdpartyUser %}
+                    <h2 class="repo-title well">选择以下的仓库进行导入:{%if thirdpartyUser%}<span class="muted">({{thirdpartyUser.tp_username}})</span>{%endif%}<button id="id-refresh-repo" class="pull-right btn btn-mini">刷新</button></h2>
+                    <div id="id-repos-loading"><img src="/static/img/loading.gif">正在连接 GitHub...</div>
+                    <div id="id-github-repos"></div>
                 {% else %}
-                您还没有关联 GitHub 账户，请点击这里 <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/"><button class="btn btn-small btn-success">进行关联</button></a>，关联之后可以直接使用 GitHub 帐号登录
+                    {% if apply_error %}
+                        <p class="alert">{{ apply_error }}</p>
+                        <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/" class="btn btn-small btn-success">退出当前 GitHub 账户，选择其他账户再次进行关联</a>
+                    {% else %}
+                        <p class="connect-github">您还没有关联 GitHub 账户，请点击这里 <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/" class="btn btn-small btn-success">进行关联</a>，关联之后可以直接使用 GitHub 帐号登录</p>
+                    {% endif %}
                 {% endif %}
-            {% endif %}
-        </div>
+            </div>
         {% endif %}
     </div>
 </div>

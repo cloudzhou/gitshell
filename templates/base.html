@@ -69,7 +69,8 @@
 			</div>
 		</div>
 
-		{% block repo_header %}{% endblock %}
+    <!--TODO repo_header ?-->
+    {% block repo_header %}{% endblock %}
 
 		<div id="container" class="{% block container_class_name %}{% endblock %}">
 			{% block container %}{% endblock %}
@@ -91,8 +92,17 @@
 			</div>
 		</footer>
 
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-		<script src="/static/js/bootstrap.min.js"></script>
+    <!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>-->
+    <script src="/static/js/jquery-1.7.2.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/select2.min.js"></script>
+    <script src='/static/js/app/underscore/underscore-min.js'></script>
+    <script src='/static/js/app/underscore/underscore.string.min.js'></script>
+    <script> _.mixin(_.str.exports()) </script>
+    <script src="/static/js/moment.min.js"></script>
+    <script src="/static/js/moment.zh-cn.js"></script>
+    <script src='/static/js/gitshell-template.js?timestamp=1373609013'></script>
+    <script src='/static/js/gitshell.js?timestamp=1373609013'></script>
 		<script>
 			$(function(){
 
@@ -103,7 +113,7 @@
 
 				$('.dropdown-toggle').dropdown();
 
-				$("#username").on({
+				$("#username").bind({
 					mouseover: function(){
 						$(this).find(".userid").show();
 					},
@@ -120,12 +130,11 @@
 			_gaq.push(['_setAccount', 'UA-33142900-1']);
 			_gaq.push(['_trackPageview']);
 
-			(function() {
-				var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-				ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-				var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-			})();
-		</script>
-	</body>
+      (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+  </body>
 </html>
-

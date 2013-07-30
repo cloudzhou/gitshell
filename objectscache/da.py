@@ -3,6 +3,7 @@ import base64
 from django.core.cache import cache
 from django.db import connection, transaction
 from gitshell.objectscache.models import Count
+from gitshell.settings import logger
 from django.db.models.signals import post_save, post_delete
 import time
 
@@ -13,14 +14,15 @@ table_ptkey_field = {
     'gsuser_userprofile': 'id',
     'keyauth_userpubkey': 'user_id',
     'keyvalue_keyvalue': 'user_id',
-    'repo_commithistory': 'repo_id',
-    'repo_forkhistory': 'repo_id',
-    'repo_issues': 'repo_id',
-    'repo_issuescomment': 'issues_id',
     'repo_repo': 'user_id',
     'repo_repomember': 'repo_id',
+    'repo_star': 'user_id',
+    'repo_commithistory': 'repo_id',
+    'repo_forkhistory': 'repo_id',
     'repo_watchhistory': 'user_id',
     'repo_pullrequest': 'desc_repo_id',
+    'issue_issue': 'repo_id',
+    'issue_issuecomment': 'issue_id',
     'stats_statsrepo': 'repo_id',
     'stats_statsuser': 'user_id',
     'todolist_scene': 'user_id',
@@ -78,19 +80,9 @@ rawsql = {
         'select * from repo_repomember where visibly = 0 and repo_id = %s order by modify_time asc',
     'repomember_s_ruid':
         'select * from repo_repomember where visibly = 0 and repo_id = %s and user_id = %s limit 0, 1',
-    # repo_issues #
-    'repoissues_l_cons_modify':
-        'select * from repo_issues where visibly = 0 and repo_id = %s order by modify_time desc limit %s, %s',
-    'repoissues_l_cons_create':
-        'select * from repo_issues where visibly = 0 and repo_id = %s order by create_time desc limit %s, %s',
-    'repoissues_l_assigned_modify':
-        'select * from repo_issues where visibly = 0 and assigned = %s order by status, modify_time desc limit %s, %s',
-    'repoissues_l_assigned_create':
-        'select * from repo_issues where visibly = 0 and assigned = %s order by status, create_time desc limit %s, %s',
-    'repoissues_s_id':
-        'select * from repo_issues where visibly = 0 and repo_id = %s and id = %s limit 0,1',
-    'issuescomment_l_issuesId':
-        'select * from repo_issuescomment where visibly = 0 and issues_id = %s order by create_time asc limit %s, %s',
+    # repo_repo #
+    'repo_l_last_push_time':
+        'select * from repo_repo where last_push_time >= %s limit 0, 5000',
     # repo_forkhistory #
     'forkhistory_l_repoId':
         'select * from repo_forkhistory where visibly = 0 and repo_id = %s order by modify_time desc limit 0, 50',
@@ -101,6 +93,28 @@ rawsql = {
         'select * from repo_watchhistory where visibly = 0 and user_id = %s and watch_user_id = %s limit 0, 1',
     'watchhistory_s_repo':
         'select * from repo_watchhistory where visibly = 0 and user_id = %s and watch_repo_id = %s limit 0, 1',
+    # repo_star #
+    'star_l_userId':
+        'select * from repo_star where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
+    'star_l_repoId':
+        'select * from repo_star where visibly = 0 and star_repo_id = %s order by modify_time desc limit %s, %s',
+    'star_s_user':
+        'select * from repo_star where visibly = 0 and user_id = %s and star_user_id = %s limit 0, 1',
+    'star_s_repo':
+        'select * from repo_star where visibly = 0 and user_id = %s and star_repo_id = %s limit 0, 1',
+    # issue_issue #
+    'issue_l_cons_modify':
+        'select * from issue_issue where visibly = 0 and repo_id = %s order by modify_time desc limit %s, %s',
+    'issue_l_cons_create':
+        'select * from issue_issue where visibly = 0 and repo_id = %s order by create_time desc limit %s, %s',
+    'issue_l_assigned_modify':
+        'select * from issue_issue where visibly = 0 and assigned = %s order by status, modify_time desc limit %s, %s',
+    'issue_l_assigned_create':
+        'select * from issue_issue where visibly = 0 and assigned = %s order by status, create_time desc limit %s, %s',
+    'issue_s_id':
+        'select * from issue_issue where visibly = 0 and repo_id = %s and id = %s limit 0,1',
+    'issuecomment_l_issueId':
+        'select * from issue_issuecomment where visibly = 0 and issue_id = %s order by create_time asc limit %s, %s',
     # stats #
     'statsrepo_s_hash_id':
         'select * from stats_statsrepo where repo_id = %s and hash_id = %s limit 0, 1',
@@ -154,8 +168,8 @@ def __get(model, pkid, only_visibly):
         cache.add(id_key, obj)
         return obj
     except Exception, e:
-        print 'exception: %s' % e
-        return None
+        logger.exception(e)
+    return None
 
 def get_many(model, pkids):
     return __get_many(model, pkids, True)
@@ -181,8 +195,7 @@ def __get_many(model, pkids, only_visibly):
             else:
                 objects = model.objects.filter(id__in=uncache_ids)
         except Exception, e:
-            print 'exception: %s' % e
-            pass
+            logger.exception(e)
         __add_many(table, objects)
         many_objects.extend(objects)
     objects_map = dict([(x.id, x) for x in many_objects])
@@ -219,8 +232,8 @@ def queryraw(model, rawsql_id, parameters):
     try:
         return list(model.objects.raw(rawsql[rawsql_id], parameters))
     except Exception, e:
-        print 'exception: %s' % e
-        return []
+        logger.exception(e)
+    return []
     
 def count(model, pt_id, rawsql_id, parameters):
     table = model._meta.db_table

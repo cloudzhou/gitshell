@@ -1,12 +1,12 @@
-import random, re, json, time
+import random, re, json, time, sys
 import httplib, urllib, hashlib
 from datetime import datetime
-import base64, hashlib
+import base64, hashlib, urlparse
 from django.db import IntegrityError
 from django.contrib.auth import authenticate as auth_authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, UserManager, check_password
 from gitshell.gsuser.models import Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
-from gitshell.settings import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, DROPBOX_APP_KEY, DROPBOX_APP_SECRET
+from gitshell.settings import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, DROPBOX_APP_KEY, DROPBOX_APP_SECRET, DROPBOX_ACCESS_TOKEN, DROPBOX_ACCESS_TOKEN_SECRET, logger
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36'
 
@@ -24,7 +24,7 @@ def github_oauth_access_token(code):
             access_token = str(response['access_token'])
             return access_token
     except Exception, e:
-        print 'exception: %s' % e
+        logger.exception(e)
     finally:
         if github_connection: github_connection.close()
     return '' 
@@ -53,7 +53,7 @@ def github_get_thirdpartyUser(access_token):
             thirdpartyUser.github_user_info = github_user_info
             return thirdpartyUser
     except Exception, e:
-        print 'exception: %s' % e
+        logger.exception(e)
     finally:
         if github_connection: github_connection.close()
     return None
@@ -86,8 +86,8 @@ def github_authenticate(thirdpartyUser):
             thirdpartyUser.user_type = ThirdpartyUser.GITHUB
             thirdpartyUser.id = create_user.id
             thirdpartyUser.save()
-    except IntegrityError:
-        print 'user IntegrityError'
+    except IntegrityError, e:
+        logger.exception(e)
     return create_user
 
 # https://api.github.com/user/repos?type=public&sort=pushed&access_token=17f605153e39f01f55062f2b4b719e9a14f13821
@@ -103,7 +103,7 @@ def github_list_repo(access_token):
             json_str = response.read()
             return json_str
     except Exception, e:
-        print 'exception: %s' % e
+        logger.exception(e)
     finally:
         if github_connection: github_connection.close()
     return '{}'
@@ -131,7 +131,7 @@ def dropbox_request_token_pair():
             if 'oauth_token' in key_value_dict and 'oauth_token_secret' in key_value_dict:
                 return (key_value_dict['oauth_token'][0], key_value_dict['oauth_token_secret'][0])
     except Exception, e:
-        print 'exception: %s' % e
+        logger.exception(e)
     finally:
         if dropbox_connection: dropbox_connection.close()
     return ('', '')
@@ -144,7 +144,8 @@ def dropbox_authorize_url(oauth_token):
 def dropbox_access_token_pair():
     (request_token, request_token_secret) = dropbox_request_token_pair()
     authorize_url = dropbox_authorize_url(request_token)
-    # 'open authorize url and click allow button: ' + authorize_url
+    logger.info('open authorize url and click allow button: ' + authorize_url)
+    sys.stdin.readline()
     dropbox_connection = None
     try:
         dropbox_connection = httplib.HTTPSConnection('api.dropbox.com', 443, timeout=10)
@@ -158,7 +159,7 @@ def dropbox_access_token_pair():
             if 'oauth_token' in key_value_dict and 'oauth_token_secret' in key_value_dict and 'uid' in key_value_dict:
                 return (key_value_dict['oauth_token'][0], key_value_dict['oauth_token_secret'][0])
     except Exception, e:
-        print 'exception: %s' % e
+        logger.exception(e)
     finally:
         if dropbox_connection: dropbox_connection.close()
     return ('', '')
@@ -175,14 +176,19 @@ def dropbox_share(access_token, access_token_secret, share_path):
         dropbox_connection.request('GET', share_url, {}, headers)
         response = dropbox_connection.getresponse()
         if response.status == 200:
-            result = response.read()
-            print result
+            json_str = response.read()
+            response = json.loads(json_str)
+            dropbox_url = str(response['url'])
+            return dropbox_url
     except Exception, e:
-        print 'exception: %s' % e
+        logger.exception(e)
     finally:
         if dropbox_connection: dropbox_connection.close()
     return ''
 
+def dropbox_share_direct(share_path):
+    return dropbox_share(DROPBOX_ACCESS_TOKEN, DROPBOX_ACCESS_TOKEN_SECRET, share_path)
+    
 def _timestamp():
     return str(int(time.time()))
 

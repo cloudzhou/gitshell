@@ -27,6 +27,12 @@ def repo_source_permission_check(function):
         if len(args) >= 2:
             user_name = args[0]
             repo_name = args[1]
+            repo = RepoManager.get_repo_by_name(user_name, repo_name)
+            if repo is None:
+                return HttpResponseRedirect('/help/error/')
+            if repo.auth_type != 0:
+                if not RepoManager.is_repo_member(repo, request.user):
+                    return HttpResponseRedirect('/help/error/')
         return function(request, *args, **kwargs)
     wrap.__doc__=function.__doc__
     wrap.__name__=function.__name__

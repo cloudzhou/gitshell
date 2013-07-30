@@ -8,10 +8,12 @@ from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.views.decorators.http import require_http_methods
 from gitshell.feed.feed import FeedAction, PositionKey, AttrKey
 from gitshell.feed.models import Feed, FeedManager
-from gitshell.repo.models import RepoManager, IssuesComment
-from gitshell.repo.cons import conver_issues
+from gitshell.repo.models import RepoManager, Repo
+from gitshell.issue.models import IssueManager, Issue, IssueComment
+from gitshell.issue.cons import conver_issues
 from gitshell.gsuser.models import GsuserManager
 from gitshell.todolist.views import todo
 from gitshell.viewtools.views import json_httpResponse, obj2dict
@@ -100,7 +102,7 @@ def issues(request, page):
     page_size = 50
     offset = page*page_size
     row_count = page_size + 1
-    raw_issues = RepoManager.list_assigned_issues(request.user.id, 'modify_time', offset, row_count)
+    raw_issues = IssueManager.list_assigned_issues(request.user.id, 'modify_time', offset, row_count)
     username_map = {}
     reponame_map = {}
     for raw_issue in raw_issues:
@@ -126,39 +128,7 @@ def issues(request, page):
     return render_to_response('user/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
-@login_required
-def doissues(request):
-    action = request.POST.get('action', '')
-    comment = request.POST.get('comment', '')
-    repo_id = request.POST.get('repo_id', '')
-    issues_id = request.POST.get('issues_id', '')
-    if action == '' or repo_id == '' or issues_id == '':
-        response_dictionary = {'result': 'failed'}
-        return json_httpResponse(response_dictionary)
-    repo = RepoManager.get_repo_by_id(int(repo_id))
-    issues = RepoManager.get_issues(int(repo_id), int(issues_id))
-    if issues is None or issues.user_id != request.user.id:
-        response_dictionary = {'result': 'failed'}
-        return json_httpResponse(response_dictionary)
-    orgi_issue = copy.copy(issues)
-    if action == 'fixed':
-        issues.status = 4
-    elif action == 'close':
-        issues.status = 5
-    elif action == 'reject':
-        issues.status = 6
-    if comment != '':
-        issuesComment = IssuesComment() 
-        issuesComment.issues_id = issues.id
-        issuesComment.user_id = request.user.id
-        issuesComment.content = comment
-        issuesComment.save()
-        issues.comment_count = issues.comment_count + 1
-    issues.save()
-    FeedManager.feed_issue_change(request.user, repo, orgi_issue, issues.id)
-    response_dictionary = {'result': 'sucess'}
-    return json_httpResponse(response_dictionary)
-        
+
 @login_required
 def explore(request):
     current = 'explore'
@@ -276,7 +246,7 @@ def _fillwith_issue_event(request, feeds, usernames, userIds):
     for feed in feeds:
         if not feed.is_issue_event():
             continue
-        issue = RepoManager.get_issues_by_id(feed.relative_id)
+        issue = IssueManager.get_issue_by_id(feed.relative_id)
         if issue is not None:
             repo = RepoManager.get_repo_by_id(issue.repo_id)
             issue.username = repo.username

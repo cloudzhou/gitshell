@@ -1,53 +1,44 @@
 {% extends "user/home_base.html" %}
-{% block css %}
-<style>
-.cl_merge_repo_branch a { color: #999999 }
-</style>
-{% endblock %}
+
+{% block container_class_name %} user{% endblock %}
 {% block subcontainer %}
-<div class="row" style="">
-    <div id='pull_container' class="span12">
-        <table class="table table-striped">
-            <thead class="fixed">
-                <th width="35%">标题</th>
-                <th width="33%">合并分支</th>
-                <th width="32%">描述
-                    <div class="btn-group pull-right">
-                        <button id="id_pull_merge" class="btn btn-mini btn-primary">需要我合并的请求</button>
-                        <button id="id_pull_request" class="btn btn-mini">我发出的</button>
-                    </div>
-                </th>
-            </thead>
-        <tbody>
+    <div id='pull_container'>
+        <div class="header clearfix">
+          <div class="btn-group pull-right">
+            <button id="id_pull_merge" class="btn btn-mini btn-primary first">需要我合并的请求</button>
+            <button id="id_pull_request" class="btn btn-mini last">我发出的</button>
+          </div>
+        </div>
         {% if pullRequests %}
-            {% for pullRequest in pullRequests %}
-                <tr>
-                    <td><a style="font-size: 15px; font-weight: 500" href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/pull/{{pullRequest.id}}/">#{{pullRequest.id}} {{pullRequest.short_title}}</a>&nbsp;<a class="muted" href="/{{pullRequest.pull_user.username}}/">[{{pullRequest.pull_user.username}}]</a> <span class="label {{pullRequest.status_label}}">{{pullRequest.status_view}}</span></td>
-                    <td class="cl_merge_repo_branch"><a href="/{{pullRequest.source_repo.username}}/">{{pullRequest.source_repo.username}}</a>/<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/">{{pullRequest.source_refname}}</a> -&gt; <a href="/{{pullRequest.desc_repo.username}}/">{{pullRequest.desc_repo.username}}</a>/<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/">{{pullRequest.desc_refname}}</a></td>
-                    <td>{{pullRequest.short_desc}}</td>
-                </tr>
-            {% endfor %}
+					{% for pullRequest in pullRequests %}
+          <div class="well pull">
+            <div class="heading clearfix btn">
+              <h3>
+                <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/pull/{{pullRequest.id}}/" class="id">[{{pullRequest.id}}]{{pullRequest.short_title}}</a>
+                <span class="label label-mini {{pullRequest.status_label}}">{{pullRequest.status_view}}</span>
+              </h3>
+              <p class="pull-right">来自:<a class="puller" href="/{{pullRequest.pull_user.username}}/">{{pullRequest.pull_user.username}}</a></p>
+            </div>
+          <div class="meta">
+            <span class="branches"><span class="btn"><a href="/{{pullRequest.source_repo.username}}/">{{pullRequest.source_repo.username}}</a>/<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/" class="repo-name">{{pullRequest.source_refname}}</a></span><span class="btn"><a href="/{{pullRequest.desc_repo.username}}/">{{pullRequest.desc_repo.username}}</a>/<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/" class="repo-name">{{pullRequest.desc_refname}}</a></span></span>
+            <p>{{pullRequest.short_desc}}</p>
+          </div>
+        </div>
+					{% endfor %}
         {% else %}
-        <tr>
-            <td colspan="4">您还没有发起 Pull Request</td>
-        </tr>
+        <div class="well pull">
+					<p class="text-info">您还没有发起 Pull Request</p>
+        </div>
         {% endif %}
-        </tbody>
-        </table>
     </div>
-    <div>
-    </div>
-</div>
 {% endblock %}
+
 {% block js %}
+<script src="/static/js/moment.min.js"></script>
+<script src="/static/js/moment.zh-cn.js"></script>
 <script>
-/*global jQuery, window */
 $(function(){
     moment.lang('zh-cn');
-    $('.c_unixtime').each(function(index){ 
-        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-        $(this).show();
-    });
     $('#id_pull_merge').click(function(){
         window.location.href = '/home/pull/';
     });

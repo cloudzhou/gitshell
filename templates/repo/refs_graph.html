@@ -1,0 +1,98 @@
+{% extends "repo/repo.html" %}
+{% block subcontainer %}
+<!--TODO refactor-->
+<header class="header clearfix">
+    {% include "repo/branch_nav.html" %}
+</header>
+    <div id="i_log_graph" class="c_terminal"></div>
+{% endblock %}
+{% block subjs %}
+<script>
+$(function(){
+    $.post('/{{user_name}}/{{repo_name}}/log/graph/{{ refs }}/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        var htmls = [];
+        var log_graph = json.log_graph;
+        var log_graph_lines = log_graph.split('\n');
+        var left_split_chars = [' - ', '(', ')'];
+        var right_split_chars = [' - ', '(', ')'];
+        for(x in log_graph_lines) {
+            var indexOfs = [];
+            var log_graph_line = log_graph_lines[x];
+            indexOfs.push(0);
+            for(i = 0; i < log_graph_line.length; i++) {
+                var c = log_graph_line[i];
+                if(c.match(/[A-Za-z0-9]+/g)) {
+                    indexOfs.push(i);
+                    break;
+                }
+            }
+            pre_indexOf = i;
+            for(y in left_split_chars) {
+                var indexOf = log_graph_line.indexOf(left_split_chars[y], pre_indexOf+1);
+                if(indexOf > 0) {
+                    indexOfs.push(indexOf);
+                    pre_indexOf = indexOf
+                    continue
+                }
+                indexOfs.push(-1);
+            }
+            for(z in right_split_chars) {
+                var indexOf = log_graph_line.lastIndexOf(right_split_chars[z]);
+                if(indexOf > 0) {
+                    indexOfs.push(indexOf);
+                    continue
+                }
+                indexOfs.push(-1);
+            }
+            if(indexOfs[1] > 0 && indexOfs[2] > indexOfs[1] && indexOfs[4] > indexOfs[3] && indexOfs[5] > 0) {
+                var new_log_graph_splits = [];
+                var commit_hash = log_graph_line.substring(indexOfs[1], indexOfs[2]);
+                var date_relative = log_graph_line.substring(indexOfs[3], indexOfs[4]+1);
+                var author = '';
+                new_log_graph_splits.push(log_graph_line.substring(indexOfs[0], indexOfs[1]));
+                new_log_graph_splits.push('<span class="c_commit_hash">' + commit_hash + '</span>');
+                new_log_graph_splits.push(log_graph_line.substring(indexOfs[2], indexOfs[3]));
+                new_log_graph_splits.push('<span class="c_date_relative">' + date_relative + '</span>');
+                new_log_graph_splits.push('<span class="c_commit">' + log_graph_line.substring(indexOfs[4]+1, indexOfs[5]) + '</span>');
+                if(indexOfs[6] > indexOfs[5] && indexOfs[7] > indexOfs[6]) {
+                    author = log_graph_line.substring(indexOfs[5], indexOfs[6]);
+                    if(author.lastIndexOf(' ') == author.length-1) {
+                        author = author.substring(0, author.length-1);
+                    }
+                    lastBlank = author.lastIndexOf(' ') + 1;
+                    real_author = author.substring(lastBlank);
+                    new_log_graph_splits.push(author.substring(0, lastBlank) + '<a href="/' + real_author + '/">' + real_author + '</a> ');
+                    refs = log_graph_line.substring(indexOfs[6], indexOfs[7]+1);
+                    if(refs[0] == '(' && refs[refs.length-1] == ')') {
+                        var refs_splits = [];
+                        var refs_array = refs.substring(1, refs.length-1).split(',');
+                        for(x in refs_array) {
+                            var split = refs_array[x].replace(/^\s+|\s+$/g,'');
+                            var label_class = 'label-info';
+                            if(json.refs_meta.tags.indexOf(split) >= 0) {
+                                label_class = 'label-warning';
+                            }
+                            if(split != 'HEAD') {
+                                refs_splits.push('<a href="/{{user_name}}/{{repo_name}}/tree/' + split + '/"><span class="label ' + label_class + '">' + split + '</span></a>');
+                            } else {
+                                refs_splits.push('<span class="label label-success">' + split + '</span>');
+                            }
+                        }
+                        refs = '(' + refs_splits.join(', ') + ')';
+                    }
+                    new_log_graph_splits.push('<span class="c_refs">' + refs + '</span>');
+                } else {
+                    author = log_graph_line.substring(indexOfs[5]);
+                    lastBlank = author.lastIndexOf(' ') + 1;
+                    real_author = author.substring(lastBlank);
+                    new_log_graph_splits.push(author.substring(0, lastBlank) + '<a href="/' + real_author + '/"><span class="c_author">' + real_author + '</span></a>');
+                }
+                log_graph_line = new_log_graph_splits.join('')
+            }
+            htmls.push('<p>' + log_graph_line + '</p>');
+        }
+        $('#i_log_graph').html(htmls.join(''));
+    });
+});
+</script>
+{% endblock %}

@@ -1,7 +1,7 @@
 {% extends "repo/repo.html" %}
 
 {% block css %}
-	<link href="/static/less/app/highlight/github.css" rel="stylesheet">
+  <link href="/static/less/app/highlight/github.css" rel="stylesheet">
 {% endblock %}
 
 {% block bubble_inner_class_name %} files{% endblock %}
@@ -12,27 +12,15 @@
 
 {% block subcontainer %}
 
+
 	{% if is_tree %}
 		<div class="tree" id="resize-container">
 			<nav class="file-browser" id="file-browser">
-				<div class="branches dropdown">
-					<a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle">
-						<span class="branch">
-							<i class="icon-code-fork"></i>
-							<span class="branch-name">{{ refs }}</span>
-						</span>
-						<span class="caret"><i class="icon-caret-down"></i></span>
-					</a>
-					<ul class="dropdown-menu nav nav-list">
-						<li class="master"><a href="/repo/{{branch}}/"><span>master</span></a></li>
-						<li><a href="/repo/{{branch}}/"><span>template_yuwen_0522</span></a></li>
-						<li><a href="/repo/{{branch}}/"><span>blueStyle</span></a></li>
-						<li class="active"><a href="/repo/{{branch}}/"><i class="icon-ok"></i><span>flatUI</span></a></li>
-					</ul>
-				</div>
+        {% include "repo/branch_nav.html" %}
+        <!--<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="btn btn-mini">Commits</a>-->
 				<ul class="nav nav-list">
-					{% for file, attrs in tree.items %}
-						{% if attrs.0 == 'tree' %}
+          {% for file, attrs in tree.items %}
+						{% if attrs.1 == 'tree' %}
 						<li class="tree-node">
 							<span class="fold"><figure class="file-icon dir"><img src="/static/img/file_dir.png" alt="dir"></figure>{{ file }}</i></span>
 							<ul class="nav nav-list">
@@ -83,26 +71,28 @@
 						{% for file, attrs in tree.items %}
 							<tr>
 								<td class="file-name">
-									{% if current == 'index' %}
-										<a href="tree/{{ refs }}/{{ file }}" title="{{ file }}">{{ file }}</a>
-									{% else %}
-										<a href="{{ file }}" title="{{ file }}">{{ file }}</a>
-									{% endif %}
+                  <a href="/{{user_name}}/{{repo_name}}/{%if file_attrs.1 == 'tree'%}tree{%else%}blob{%endif%}/{{refs}}/{%if path != '.' %}{{path}}{%endif%}{{file_attrs.0}}" title="{{file_attrs.0}}">{{file_attrs.0}}</a>
 								</td>
 								<td class="commit-info">
-									{% if attrs.4|length > 80 %}
-										<a href="#" data-toggle="popover" data-content="{{attrs.4}}" data-placement="bottom" class="commit">{{ attrs.4|truncatechars:80 }}</a>
-									{% else %}
-										<a href="#" class="commit">{{ attrs.4 }}</a>
-									{% endif %}
-									<a href="/{{attrs.3}}/" class="commiter">@{{attrs.3}}</a>
+                  {% if file_attrs.5|length > 80 %}
+                    <a href="javascript:void(0)" data-toggle="popover" data-content="{{file_attrs.5}}" data-placement="bottom" class="commit">{{file_attrs.5|truncatechars:80}}</a>
+                  {% else %}
+                    <a href="javascript:void(0)" class="commit">{{file_attrs.5}}</a>
+                  {% endif %}
+                  <a href="/{{file_attrs.4}}/" class="commiter">@{{file_attrs.4}}</a>
 								<td class="date">
-									<span class="date unixtime">{{ attrs.2 }}</span></td>
+                  <span class="date unixtime">{{file_attrs.3}}</span></td>
 								</td>
 							</tr>
 						{% endfor %}
 					</tbody>
 				</table>
+        <!-- TODO readme -->
+          <!--{% if readme_md %}
+          <div id="README.md" class="readme">
+            <pre id="id_readme_md">{{readme_md}}</pre>
+          </div>
+          {% endif %}-->
 			</div>
 
     {% else %}
@@ -122,111 +112,59 @@
 		</div>
     {% endif %}
 
+
 {% endblock %}
 
 {% block subjs %}
 
-	{% if not is_tree %}
-		<script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script>
-	{% endif %}
-	{% if is_markdown %}
-		<script src="/static/js/Markdown.Converter.js"></script>
-		<script src="/static/js/Markdown.Editor.js"></script>
-		<script src="/static/js/Markdown.Sanitizer.js"></script>
-	{% endif %}
-	<script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
-	<script src="/static/js/jquery-ui-1.10.3.custom.min.js"></script>
-	<script src="/static/js/treeview.js"></script>
-	<script>
-		$(function(){
-
-			// File browser resizable & treeview
-			$("#file-browser").resizable({
-				handles: "e",
-				grid: 10,
-				minWidth: 200,
-				maxWidth: 300
-			});
-
-			$("#file-browser > .nav").treeview({ 
-				collapsed: true,
-				animated: "fast",
-				unique: true
-			});
-
-			$("#file-browser").bind("resize",
-				function(event, ui){
-					var fileBrowserWidth = $("#file-browser").width();
-					$("#source").css("margin-left", fileBrowserWidth);
-				}
-			);
-
-			// Color Scheme
-			var switchToggle = $("#switch-toggle"), themes = $("#themes");
-			switchToggle.click(
-				function(e){ 
-					e.preventDefault(); 
-					themes.slideToggle(100);
-				}
-			);
-
-			// Bootstrap/popover
-			$('[data-toggle="popover"]').hover(
-				function(){
-					$(this).popover('show');
-				}, function(){
-					$(this).popover('hide');
-				}
-			);
-
-		});
-	</script>
-
+{% if readme_md %}
+<script src="/static/js/Markdown.Converter.js"></script>
+<script src="/static/js/Markdown.Editor.js"></script>
+<script src="/static/js/Markdown.Sanitizer.js"></script>
+{% endif %}
 <script>
-	$(function(){
-			set_path_href = function() {
-					var base_href_path = '/{{user_name}}/{{repo_name}}/tree/{{refs}}/';
-					var path = '{{path}}';
-					if(path == '.') {
-							return;
-					}
-					var paths = path.split('/');
-					path_href_html = '';
-					for(x in paths) {
-							subpath = paths[x];
-							if(subpath == '') {
-							}
-							base_href_path = (base_href_path + subpath + '/');
-							if(path.substr(-1) === "/") {
-									if(x != (paths.length-2)) {
-											path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
-									} else {
-											path_href_html = (path_href_html + ' ' + subpath + ' /');
-									}
-							} else {
-									if(x != (paths.length-1)) {
-											path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
-									} else {
-											path_href_html = (path_href_html + ' ' + subpath);
-									}
-							}
-					}
-					$('#i_repo_path').html(path_href_html);
-			};
-			set_path_href();
-	{% if not is_tree and not is_markdown %}
-			$('pre code').each(function(i, e) {hljs.highlightBlock(e)});
-	{% endif %}
-	{% if is_markdown %}
-			var converter = new Markdown.getSanitizingConverter();
-			var html = converter.makeHtml($('#id_markdown_content').html());
-			$('#id_markdown_content').html(html);
-			$('#id_markdown_content').show();
-	{% endif %}
+$(function(){
+    set_path_href = function() {
+        var base_href_path = '/{{user_name}}/{{repo_name}}/tree/{{refs}}/';
+        var path = '{{path}}';
+        if(path == '.') {
+            return;
+        }
+        var paths = path.split('/');
+        path_href_html = '';
+        for(x in paths) {
+            subpath = paths[x];
+            if(subpath == '') {
+                break;
+            }
+            base_href_path = (base_href_path + subpath + '/');
+            if(path.substr(-1) === "/") {
+                if(x != (paths.length-2)) {
+                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+                } else {
+                    path_href_html = (path_href_html + ' ' + subpath + ' /');
+                }
+            } else {
+                if(x != (paths.length-1)) {
+                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+                } else {
+                    path_href_html = (path_href_html + ' ' + subpath);
+                }
+            }
+        }
+        $('#repo-path').html(path_href_html);
+    };
+    set_path_href();
 
-
-
-	});
+    // TODO readme_md area
+    {% if readme_md %}
+        var converter = new Markdown.getSanitizingConverter();
+        var html = converter.makeHtml($('#id_readme_md').html());
+        $('#id_readme_md').html(html);
+    {% endif %}
+    $('[data-toggle="popover"]').popover({ animation: false });
+});
 </script>
 
 {% endblock %}
+

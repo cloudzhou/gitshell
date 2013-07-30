@@ -3,45 +3,45 @@
 {% block bubble_inner_class_name %} pulls{% endblock %}
 
 {% block subcontainer %}
-	<header class="header">
-		<h1 class="heading">合并请求</h1>
-	</header>
+    <header class="header">
+        <h1 class="heading">合并请求</h1>
+    </header>
 
-	{% if pullRequests %}
-		<table class="table">
-			<colgroup>
-				<col width="16%">
-				<col width="49%">
-				<col width="10%">
-				<col width="15%">
-				<col width="10%">
-			</colgroup>
-			<tbody>
-				{% for pullRequest in pullRequests %}
-					<tr>
-						<td class="title">
-							<a href="/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/">#{{pullRequest.id}} {{pullRequest.short_title}}</a>
-						</td>
-						<td class="branch">
-							<span class="master">
-								<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/">{{pullRequest.desc_refname}}</a>
-							</span>
-							<i class="icon-long-arrow-left"></i>
-							<span class="sub-branch">
-								<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/">{{pullRequest.source_refname}}</a>
-							</span>
-						</td>
-						<td class="description">{{pullRequest.short_desc}}</td>
-						<td class="puller">
-							<img src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=16" alt="{{ gsuser.username }}"><a class="meta" href="/{{pullRequest.pull_user.username}}/">{{pullRequest.pull_user.username}}</a>
-						</td>
-						<td class="status"><span class="label label-mini {{pullRequest.status_label}}">{{pullRequest.status_view}}</span></td>
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	{% else %}
-		<p class="text-error">当前仓库还没有 Pull Request。<a href="/{{ user_name }}/{{ repo_name }}/pull/new/" class="btn btn-success"><i class="octicon octicon-git-pull-request"></i>合并请求</a></p>
-	{% endif %}
+    {% if pullRequests %}
+        <table class="table">
+            <colgroup>
+                <col width="16%">
+                <col width="49%">
+                <col width="10%">
+                <col width="15%">
+                <col width="10%">
+            </colgroup>
+            <tbody>
+                {% for pullRequest in pullRequests %}
+                    <tr>
+                        <td class="title">
+                            <a href="/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/">#{{pullRequest.id}} {{pullRequest.short_title}}</a>
+                        </td>
+                        <td class="branch">
+                            <span class="master">
+                                <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/">{{pullRequest.desc_refname}}</a>
+                            </span>
+                            <i class="icon-long-arrow-left"></i>
+                            <span class="sub-branch">
+                                <a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/">{{pullRequest.source_refname}}</a>
+                            </span>
+                        </td>
+                        <td class="description">{{pullRequest.short_desc}}</td>
+                        <td class="puller">
+                            <img src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=16" alt="{{ gsuser.username }}"><a class="meta" href="/{{pullRequest.pull_user.username}}/">{{pullRequest.pull_user.username}}</a>
+                        </td>
+                        <td class="status"><span class="label label-mini {{pullRequest.status_label}}">{{pullRequest.status_view}}</span></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-error">当前仓库还没有 Pull Request。<a href="/{{ user_name }}/{{ repo_name }}/pull/new/" class="btn btn-success"><i class="octicon octicon-git-pull-request"></i>合并请求</a></p>
+    {% endif %}
 
 {% endblock %}

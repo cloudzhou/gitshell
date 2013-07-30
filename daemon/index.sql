@@ -15,11 +15,12 @@ create index repo_forkid on repo_repo (visibly, fork_repo_id)
 
 create index commithistory_rid_cid_idx on repo_commithistory (visibly, repo_id, commit_id);
 create index repomember_rid_uid on repo_repomember (visibly, repo_id, user_id);
-create index issues_cons_mtime_idx on repo_issues (visibly, repo_id, assigned, tracker, status, priority, modify_time desc);
-create index issues_rid_mtime_idx on repo_issues (visibly, repo_id, modify_time desc);
-create index issues_assigned_status_mtime_idx on repo_issues (visibly, assigned, status, modify_time desc);
 
-create index issuescomment_iid_ctime_idx on repo_issuescomment (visibly, issues_id, create_time asc);
+create index issue_cons_mtime_idx on issue_issue (visibly, repo_id, assigned, tracker, status, priority, modify_time desc);
+create index issue_rid_mtime_idx on issue_issue (visibly, repo_id, modify_time desc);
+create index issue_assigned_status_mtime_idx on issue_issue (visibly, assigned, status, modify_time desc);
+create index issuecomment_iid_ctime_idx on issue_issuecomment (visibly, issue_id, create_time asc);
+
 create index forkhistory_rid_mtime_idx on repo_forkhistory (visibly, repo_id, modify_time desc);
 create index watchhistory_rid_mtime_idx on repo_watchhistory (visibly, watch_repo_id, modify_time desc);
 create index scene_uid_idx on todolist_scene (visibly, user_id)
@@ -31,3 +32,16 @@ alter table repo_repo add `username` varchar(30) NOT NULL after `fork_repo_id`;
 update gsuser_userprofile as t1 inner join auth_user as t2 on t1.id = t2.id set t1.username = t2.username, t1.email = t2.email;
 update repo_repo as t1 inner join auth_user as t2 on t1.user_id = t2.id set t1.username = t2.username;
 
+alter table repo_repo add `star` INT NOT NULL DEFAULT 0 after `watch`;
+alter table repo_repo add `deploy_url` varchar(40) NULL after `member`;
+alter table repo_repo add `dropbox_sync` INT NOT NULL DEFAULT 0 after `deploy_url`;
+alter table repo_repo add `dropbox_url` varchar(64) NULL after `dropbox_sync`;
+alter table repo_repo add `last_push_time` datetime NOT NULL after `dropbox_url`;
+
+update repo_repo set star = 0;
+update repo_repo set deploy_url = '';
+update repo_repo set dropbox_sync = 0;
+update repo_repo set dropbox_url = '';
+update repo_repo set last_push_time = now();
+
+create index repo_last_push_time_idx on repo_repo (last_push_time DESC);

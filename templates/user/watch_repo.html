@@ -1,37 +1,29 @@
 {% extends "user/user_base.html" %}
 {% block left_sub_container %}
-        <div class="page-header" style="padding-bottom: 2px; margin-bottom: 10px;">
-            <h2>关注仓库</h2>
-        </div>
-        <div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th class="span2">仓库</th>
-                        <th class="span5">简介</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for watch_repo in watch_repos %}
-                    <tr class="cl_watch_repo_tr" data-repo-id="{{watch_repo.id}}">
-                        <td><a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a></td>
-                        <td>
-                            {{watch_repo.desc}}
-                        <span class="pull-right">
-                            <span style="display: none" id="id_repo_{{watch_repo.id}}" data-repo-id="{{watch_repo.id}}" class="label-unwatch label label-warning">取消关注 x</span> 
-                            {% if watch_repo.visibly != 0 %}
-                            <span class="label label-important">已经删除</span> 
-                            {% endif %}
-                            {% if watch_repo.auth_type == 2 %}
-                            <span class="label label-inverse">私有仓库</span>
-                            {% endif %}
-                        </span>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="span left">
+        <div class="item watched-repos">
+        <h2 class="heading">关注仓库</h2>
+        <ul class="list">
+        {% for watch_repo in watch_repos %}
+            <li class="cl_watch_repo_tr" data-repo-id="{{watch_repo.id}}">
+                <h3 class="heading">
+                    <a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a>
+                </h3>
+                <p>{{watch_repo.desc}}</p>
+                <div class="actions">
+                    <span id="id_repo_{{watch_repo.id}}" data-repo-id="{{watch_repo.id}}" class="btn btn-mini btn-warning btn-unwatch">取消关注</span> 
+                    {% if watch_repo.visibly != 0 %}
+                        <span class="label label-mini label-important">已经删除</span> 
+                    {% endif %}
+                    {% if watch_repo.auth_type == 2 %}
+                        <span class="label label-mini label-inverse">私有仓库</span>
+                    {% endif %}
+                </div>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
 {% endblock %}
 {% block subjs %}
 <script>
@@ -46,9 +38,10 @@ $(function(){
             $('#id_repo_'+repo_id).hide();
         }
     });
-    $('.label-unwatch').click(function(){
-        var repo_id = $(this).attr('data-repo-id');
-        var action_url = '/ajax/repo/' + repo_id + '/unwatch/';
+    $('.button-unwatch').click(function(){
+        var repo_username = $(this).attr('data-repo-username');
+        var repo_name = $(this).attr('data-repo-name');
+        var action_url = '/' + repo_username + '/' + repo_name + '/unwatch/';
         $.ajax({
             url: action_url,
             type: 'POST',

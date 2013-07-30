@@ -2,13 +2,11 @@
 import os, time, re
 from django.db import models
 from django.core.cache import cache
-from gitshell.objectscache.models import BaseModel
-from gitshell.objectscache.da import query, query_first, queryraw, execute, count, get, get_many, get_version, get_sqlkey
-from gitshell.objectscache.da import get_raw, get_raw_many
+from gitshell.objectscache.models import BaseModel, CacheKey
+from gitshell.objectscache.da import query, query_first, queryraw, execute, count, get, get_many, get_version, get_sqlkey, get_raw, get_raw_many
 from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
-from gitshell.objectscache.models import CacheKey
 from gitshell.gsuser.middleware import KEEP_REPO_NAME
 
 class Repo(BaseModel):
@@ -23,8 +21,14 @@ class Repo(BaseModel):
 
     commit = models.IntegerField(default=0)
     watch = models.IntegerField(default=0)
+    star = models.IntegerField(default=0)
     fork = models.IntegerField(default=0)
     member = models.IntegerField(default=0)
+
+    deploy_url = models.CharField(max_length=40, null=True)
+    dropbox_sync = models.IntegerField(default=0)
+    dropbox_url = models.CharField(max_length=64, null=True)
+    last_push_time = models.DateTimeField(auto_now=True, null=True)
 
     status = models.IntegerField(default=0) 
 
@@ -102,6 +106,11 @@ class CommitHistory(BaseModel):
         repo = RepoManager.get_repo_by_id(self.repo_id)
         return repo.username
 
+class Star(BaseModel):
+    user_id = models.IntegerField(default=0)
+    star_repo_id = models.IntegerField(default=0)
+    star_user_id = models.IntegerField(default=0)
+
 class WatchHistory(BaseModel):
     user_id = models.IntegerField(default=0)
     watch_repo_id = models.IntegerField(default=0)
@@ -168,32 +177,6 @@ class PullRequest(BaseModel):
         self.status_view = PULL_STATUS.VIEW_MAP[self.status]
         self.status_label = PULL_STATUS.LABEL_MAP[self.status]
 
-class Issues(BaseModel):
-    repo_id = models.IntegerField()
-    user_id = models.IntegerField()
-    subject = models.CharField(max_length=128, default='')
-    tracker = models.IntegerField(default=0)
-    status = models.IntegerField(default=0) 
-    assigned = models.IntegerField(default=0)
-    priority = models.IntegerField(default=0)
-    category = models.CharField(max_length=16, default='')
-    content = models.CharField(max_length=1024, default='')
-    comment_count = models.IntegerField(default=0)
-
-    # field without database
-    username = ''
-    reponame = ''
-
-class IssuesComment(BaseModel):
-    issues_id = models.IntegerField()
-    user_id = models.IntegerField()
-    vote = models.IntegerField(default=0)
-    content = models.CharField(max_length=512, default='') 
-
-    # field without database
-    username = ''
-    reponame = ''
-
 class RepoManager():
 
     @classmethod
@@ -205,6 +188,10 @@ class RepoManager():
     def list_unprivate_repo_by_userId(self, user_id, offset, row_count):
         repoes = query(Repo, user_id, 'repo_l_unprivate_userId', [user_id, offset, row_count])
         return repoes
+
+    @classmethod
+    def list_repo_by_last_push_time(self, last_push_time):
+        return query(Repo, None, 'repo_l_last_push_time', [last_push_time])
 
     @classmethod
     def list_repo_by_ids(self, ids):
@@ -337,63 +324,6 @@ class RepoManager():
         return False
 
     @classmethod
-    def list_issues_cons(self, repo_id, assigned_ids, trackers, statuses, priorities, orderby, offset, row_count):
-        # diff between multi filter and single filter
-        rawsql_id = 'issues.list_issues_cons'
-        parameters = [
-            ','.join(str(x) for x in assigned_ids),
-            ','.join(str(x) for x in trackers),
-            ','.join(str(x) for x in statuses),
-            ','.join(str(x) for x in priorities),
-            orderby, offset, row_count]
-        version = get_version(Issues, repo_id)
-        sqlkey = get_sqlkey(version, rawsql_id, parameters)
-        value = cache.get(sqlkey)
-        if value is not None:
-            return get_many(Issues, value)
-        issues = Issues.objects.filter(visibly=0).filter(repo_id=repo_id).filter(assigned__in=assigned_ids).filter(tracker__in=trackers).filter(status__in=statuses).filter(priority__in=priorities).order_by('-'+orderby)[offset : offset+row_count]
-        issues_ids = [x.id for x in issues]
-        cache.add(sqlkey, issues_ids)
-        return list(issues)
-
-    @classmethod
-    def list_issues(self, repo_id, orderby, offset, row_count):
-        rawsql_id = 'repoissues_l_cons_modify'
-        if orderby == 'create_time':
-            rawsql_id = 'repoissues_l_cons_create'
-        repoissues = query(Issues, repo_id, rawsql_id, [repo_id, offset, row_count]) 
-        return repoissues
-
-    @classmethod
-    def list_assigned_issues(self, assigned, orderby, offset, row_count):
-        rawsql_id = 'repoissues_l_assigned_modify'
-        if orderby == 'create_time':
-            rawsql_id = 'repoissues_l_assigned_create'
-        repoissues = query(Issues, None, rawsql_id, [assigned, offset, row_count]) 
-        return repoissues
-
-    @classmethod
-    def get_issues_by_id(self, issues_id):
-        return get(Issues, issues_id)
-
-    @classmethod
-    def get_issues(self, repo_id, issues_id):
-        issues = query(Issues, repo_id, 'repoissues_s_id', [repo_id, issues_id])
-        if len(issues) > 0:
-            return issues[0]
-        return None
-
-    @classmethod
-    def get_issues_comment(self, comment_id):
-        issues_comment = get(IssuesComment, comment_id)
-        return issues_comment
-
-    @classmethod
-    def list_issues_comment(self, issues_id, offset, row_count):
-        issuesComments = query(IssuesComment, issues_id, 'issuescomment_l_issuesId', [issues_id, offset, row_count]) 
-        return issuesComments
-
-    @classmethod
     def list_fork_repo(self, repo_id):
         forkRepos = query(Repo, None, 'repo_l_forkRepoId', [repo_id]) 
         repo_ids = [o.id for o in forkRepos]
@@ -406,6 +336,74 @@ class RepoManager():
             if repo_id in repo_map:
                 order_repos.append(repo_map[repo_id])
         return order_repos
+
+    @classmethod
+    def list_star_repo(self, user_id, offset, row_count):
+        stars = query(Star, user_id, 'star_l_userId', [user_id, offset, row_count])
+        repos = []
+        for x in stars:
+            repo = RepoManager.get_repo_by_id(x.star_repo_id)
+            if repo is None or repo.visibly == 1:
+                x.visibly = 1
+                x.save()
+                continue
+            repos.append(repo)
+        return repos
+
+    @classmethod
+    def list_star_user(self, repo_id, offset, row_count):
+        stars = query(Star, None, 'star_l_repoId', [repo_id, offset, row_count])
+        userprofiles = []
+        for x in stars:
+            user = GsuserManager.get_user_by_id(x.user_id)
+            userprofile = GsuserManager.get_userprofile_by_id(x.user_id)
+            if userprofile is None or userprofile.visibly == 1:
+                x.visibly = 1
+                x.save()
+                continue
+            userprofile.date_joined = time.mktime(user.date_joined.timetuple())
+            userprofile.last_login = time.mktime(user.last_login.timetuple())
+            userprofiles.append(userprofile)
+        return userprofiles
+
+    @classmethod
+    def is_stared_repo(self, user_id, repo_id):
+        repo = RepoManager.get_repo_by_id(repo_id)
+        if repo is None:
+            return False
+        star = query_first(Star, user_id, 'star_s_repo', [user_id, repo_id])
+        return star is not None
+
+    @classmethod
+    def star_repo(self, user_id, repo_id):
+        repo = RepoManager.get_repo_by_id(repo_id)
+        if repo is None:
+            return False
+        star = query_first(Star, user_id, 'star_s_repo', [user_id, repo_id])
+        if star is None:
+            star = Star()
+            star.user_id = user_id
+            star.star_user_id = 0
+            star.star_repo_id = repo_id
+            star.save()
+            repo.star = repo.star + 1
+            repo.save()
+        return True
+
+    @classmethod
+    def unstar_repo(self, user_id, repo_id):
+        repo = RepoManager.get_repo_by_id(repo_id)
+        if repo is None:
+            return False
+        star = query_first(Star, user_id, 'star_s_repo', [user_id, repo_id])
+        if star is not None:
+            star.visibly = 1
+            star.save()
+            repo.star = repo.star - 1
+            if repo.star < 0:
+                repo.star = 0
+            repo.save()
+        return True
 
     @classmethod
     def list_watch_user(self, repo_id):
@@ -481,10 +479,9 @@ class RepoManager():
         return True
 
     @classmethod
-    def watch_repo(self, userprofile, watch_repo):
+    def watch_repo(self, user, userprofile, watch_repo):
         if watch_repo.auth_type == 2:
-            member = self.get_repo_member(watch_repo.id, userprofile.id)
-            if member == None:
+            if not self.is_repo_member(watch_repo, user):
                 return False
         if userprofile.watchrepo >= 100:
             return False
@@ -508,7 +505,7 @@ class RepoManager():
         return True
 
     @classmethod
-    def unwatch_repo(self, userprofile, watch_repo):
+    def unwatch_repo(self, user, userprofile, watch_repo):
         watchHistorys = query(WatchHistory, userprofile.id, 'watchhistory_s_repo', [userprofile.id, watch_repo.id])
         watchHistory = None
         if len(watchHistorys) > 0:
@@ -614,13 +611,16 @@ class RepoManager():
 
     @classmethod
     def is_allowed_reponame_pattern(self, name):
-        if name is None or name == '':
+        if name is None or name == '' or len(name) > 1024:
             return False
         if re.match('^[a-zA-Z0-9_\-]+$', name) and not name.startswith('-') and name not in KEEP_REPO_NAME:
             return True
         return False
 
+    @classmethod
     def is_allowed_refsname_pattern(self, name):
+        if name is None or name == '' or len(name) > 1024:
+            return False
         if re.match('^[a-zA-Z0-9_\-\.]+$', name) and not name.startswith('-'):
             return True
         return False
@@ -680,3 +680,5 @@ class PULL_STATUS:
         3 : 'label-important',
         4 : 'label-inverse',
     }
+
+

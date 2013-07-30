@@ -17,3 +17,4 @@ class Select(models.Model):
 class CacheKey:
     REPO_COMMIT_VERSION = 'repo.commit_version_%s'
     REPO_META = 'repo.meta_%s_%s'
+    JOIN_CLIENT_IP = 'join.client_ip.%s'

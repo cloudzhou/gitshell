@@ -18,6 +18,7 @@ FEED_TYPE = {
 }
 LAST_POSITION = 'lp'
 USER_ATTR = 'ua'
+REPO_ATTR = 'ra'
 
 class PositionKey:
     # user
@@ -40,6 +41,7 @@ class PositionKey:
 class AttrKey:
     # key-value
     SCENE_ID = 'scene_id'
+    REFS = 'refs'
 
 """ all method about feed and redis """
 class FeedAction():
@@ -185,6 +187,14 @@ class FeedAction():
     def set_user_attr(self, user_id, attrKey, value):
         key = '%s:%s:%s' % ('u', user_id, attrKey)
         self.redis.hset(USER_ATTR, key, value)
+
+    def get_repo_attr(self, repo_id, attrKey):
+        key = '%s:%s:%s' % ('r', repo_id, attrKey)
+        return self.redis.hget(REPO_ATTR, key)
+
+    def set_repo_attr(self, repo_id, attrKey, value):
+        key = '%s:%s:%s' % ('r', repo_id, attrKey)
+        self.redis.hset(REPO_ATTR, key, value)
 
     """ remove repo feed """
     def delete_repo_feed(self, repo_id):

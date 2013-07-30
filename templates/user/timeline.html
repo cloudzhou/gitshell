@@ -3,7 +3,9 @@
 {% block container_class_name %} home{% endblock %}
 
 {% block subcontainer %}
-	<div id="feeds_container" class="timeline"></div>
+    <div id="feeds_container" class="timeline">
+        <img id='feeds_loading' style="margin-left: 50px" src='/static/img/loading.gif'>
+    </div>
 {% endblock %}
 
 {% block js %}
@@ -80,16 +82,16 @@ $(function(){
                 html = []
                 for(x in ordered_date) {
                     feed_date = ordered_date[x];
-										html.push('<section class="feedtime"><header class="header"><h1 class="date"> ' + feed_date.substring(3) + ' </h1></header><div class="feedtime-container"><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt=""><a href="/{{ user.username }}/">{{ user.username }}</a>...</figure>');
+                                        html.push('<section class="feedtime"><header class="header"><h1 class="date"> ' + feed_date.substring(3) + ' </h1></header><div class="feedtime-container"><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt=""><a href="/{{ user.username }}/">{{ user.username }}</a>...</figure>');
                     for(y in ordered_date_reponame[ordered_date[x]]) {
                         feed_reponame = ordered_date_reponame[ordered_date[x]][y];
                         if(feed_reponame.indexOf('#') != 0) {
-													html.push('<dl class="item"><dt class="leader">commit on <a href="#">' + feed_reponame + '</a></dt><dd>');
+                                                    html.push('<dl class="item"><dt class="leader">commit on <a href="#">' + feed_reponame + '</a></dt><dd>');
                             for(z in display_feeds_map[feed_date][feed_reponame]) {
                                 commit = display_feeds_map[feed_date][feed_reponame][z].relative_obj;
-																html.push('<p><a href="/{{ user.username }}/' + feed_reponame + '/" class="hash">' + commit.commit_hash + '</a>' + commit.subject + ' <span class="date pull-right">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></p>');
+                                                                html.push('<p><a href="/{{ user.username }}/' + feed_reponame + '/" class="hash">' + commit.commit_hash + '</a>' + commit.subject + ' <span class="date pull-right">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></p>');
                             }
-														html.push('</dd></dl>');
+                                                        html.push('</dd></dl>');
                         } else {
                             feed = display_feeds_map[feed_date][feed_reponame][0];
                             if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
@@ -126,7 +128,7 @@ $(function(){
                             }
                         }
                     }
-										html.push('</section></div>')
+                                        html.push('</section></div>')
                 }
                 $('#feeds_container').append(html.join(''));
                 if(ordered_date.length == 0) {

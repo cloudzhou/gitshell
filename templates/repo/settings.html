@@ -1,0 +1,190 @@
+{% extends "repo/repo.html" %}
+{% block container_class_name %} repo setting{% endblock %}
+{% block subcontainer %}
+<header class="header">
+  <h1 class="heading">仓库设置</h1>
+</header>
+            <form class="form-horizontal" action="" method="post">
+                {% csrf_token %}
+                <fieldset>
+                    <div class="control-group">
+                        <label for="id_name" class="control-label">仓库名称</label>
+                        <div class="controls">
+                            {{ repoForm.name }}
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="id_desc" class="control-label">简介</label>
+                        <div class="controls">
+                            {{ repoForm.desc }}
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="id_lang" class="control-label">语言选择</label>
+                        <div class="controls">
+                            {{ repoForm.lang }}
+                        </div>
+                    </div>
+                    <div id="id_other_lang_group" class="control-group" style="display: none">
+                        <label for="id_other_lang" class="control-label">其他语言</label>
+                        <div class="controls">
+                            <input type="text" maxlength="16" value="" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder="哇！难道你发明了新的语言:-)">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="id_auth_type" class="control-label">可见度</label>
+                        <div class="controls">
+                            {{ repoForm.auth_type }}
+                        </div>
+                    </div>
+                    <div id="id_error" class="alert {% if not error %}hide{% endif %}">
+                        <a data-dismiss="alert" class="close">×</a>
+                        <strong>出错了！</strong> <span id="id_error_message">{{ error }}</span>
+                    </div>
+                    <div class="control-group">
+                      <div class="controls form-actions">
+                          <button id="id_edit_submit" class="btn btn-primary" type="submit">确定</button>
+                          <p class="text-warning">公开：包括源代码公开；半公开：除了源代码之外公开；私有：对外不公开</p>
+                      </div>
+                    </div>
+                </fieldset>
+            </form>
+
+            <div id="setting-toggler"><a href="#">收起</a></div>
+            <div class="more-settings">
+
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <td><!--img src="/static/img/dropbox_logo.ico"/--><strong>Dropbox 及时备份</strong>：</td>
+                            {% if repo.dropbox_sync == 1 %}
+                            <td>
+                                {% if repo.dropbox_url == '' %}
+                                <span class="label label-important">Dropbox 正在同步中... 请三分钟之后再来围观</span>
+                                {% else %}
+                                <a target="_blank" href="{{ repo.dropbox_url }}">{{ repo.dropbox_url }}</a>
+                                {% endif %}
+                            </td>
+                            <td class="actions">
+                                <button class="disable_dropbox_sync btn btn-mini">禁止</button>
+                            </td>
+                            {% else %}
+                            <td><span>仓库将近乎及时地备份在 Dropbox，加入本地 Dropbox 后可以直接 git clone，不能公开该地址</span></td>
+                            <td>
+                                <button class="enable_dropbox_sync btn btn-mini btn-primary">启用</button>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td><strong>Deploy URL</strong>：</td>
+                            {% if repo.deploy_url and repo.deploy_url != '' %}
+                            <td>https://{{repo.deploy_url}}@gitshell.com/{{user_name}}/{{repo_name}}.git</td>
+                            <td class="actions">
+                                <button class="generate_deploy_url btn btn-mini">重新生成</button>
+                                <button class="forbid_dploy_url btn btn-mini">禁止</button>
+                            </td>
+                            {% else %}
+                            <td><span>deploy url 是 git 只读、不需要权限验证的 clone 地址，用于发布、部署，不能公开该地址</span></td>
+                            <td class="actions">
+                                <button class="generate_deploy_url btn btn-mini btn-primary">生成</button>
+                            </td>
+                            {% endif %}
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="well destroy">
+                  <a href="/{{user_name}}/{{repo_name}}/delete/"><button class="btn btn-mini btn-danger">删除该仓库</button></a>
+                  <a href="/{{user_name}}/{{repo_name}}/collaborator/"><button class="btn btn-mini">管理协同者</button></a>
+                </div>
+          </div>
+
+</div>
+{% endblock %}
+{% block subjs %}
+<script>
+$(function(){
+
+    $(".more-settings").find(".actions").css("opacity",0);
+
+    $(".more-settings").find(".table tr").bind({
+      mouseover: function() { $(this).find(".actions").fadeTo(0, 1); },
+      mouseout: function() { $(this).find(".actions").fadeTo(0, 0); }
+    });
+
+    $("#setting-toggler").click(
+      function() {
+        var moreSettings = $(".more-settings");
+        $(this).next(moreSettings).toggle();
+        if( moreSettings.is(":hidden") ) {
+          $(this).children().text("更多设置");
+        } else {
+          $(this).children().text("收起");
+        }
+        return false;
+      }
+    );
+
+    $(".disable_dropbox_sync, .forbid_dploy_url").bind({
+      mouseover: function() { $(this).addClass("btn-danger"); }, 
+      mouseout: function() { $(this).removeClass("btn-danger"); }
+    });
+
+    $('.c_unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+        $(this).show();
+    });
+    $('.generate_deploy_url').click(function(){
+        $.post('/{{user_name}}/{{repo_name}}/generate_deploy_url/', {csrfmiddlewaretoken: $('meta[name=csrf-token]').attr("content")}, function(json){
+            window.location.href = window.location.href;
+        });
+    });
+    $('.forbid_dploy_url').click(function(){
+        $.post('/{{user_name}}/{{repo_name}}/forbid_dploy_url/', {csrfmiddlewaretoken: $('meta[name=csrf-token]').attr("content")}, function(json){
+            window.location.href = window.location.href;
+        });
+    });
+    $('.enable_dropbox_sync').click(function(){
+        $.post('/{{user_name}}/{{repo_name}}/enable_dropbox_sync/', {csrfmiddlewaretoken: $('meta[name=csrf-token]').attr("content")}, function(json){
+            window.location.href = window.location.href;
+        });
+    });
+    $('.disable_dropbox_sync').click(function(){
+        $.post('/{{user_name}}/{{repo_name}}/disable_dropbox_sync/', {csrfmiddlewaretoken: $('meta[name=csrf-token]').attr("content")}, function(json){
+            window.location.href = window.location.href;
+        });
+    });
+    var edit_init = function() {
+        $('#id_name').addClass('input-xlarge');
+        $('#id_desc').addClass('input-xlarge');
+        $('#id_lang').addClass('input-xlarge');
+        $('#id_name').attr('readonly', 'readonly');
+        $('#id_desc').attr('placeholder', '必填，提供什么功能，解决什么问题');
+    },
+    change_other_lang = function() {
+        if($('#id_lang option:selected').val() == 'other') {
+            $('#id_other_lang_group').show();
+        } else {
+            $('#id_other_lang_group').hide();
+        }
+    };
+    $('#id_lang').click(change_other_lang);
+    edit_init();
+    $('#id_edit_submit').click(function() {
+        var error_messages = [];
+        if($('#id_name').val() == '' || !$('#id_name').val().match(/[A-Za-z0-9_-]+/g)) {
+            error_messages.push('仓库名不能为空，只能是[A-Za-z0-9_-]以内的字符');
+        }
+        if($('#id_desc').val() == '') {
+            error_messages.push('介绍内容不能为空');
+        }
+        if(error_messages.length != 0) {
+            $('#id_error_message').html(error_messages.join('， '));
+            $('#id_error').show();
+            return false;
+        }
+        return true;
+    });
+
+});
+</script>{% endblock %}

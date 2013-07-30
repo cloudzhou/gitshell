@@ -31,225 +31,229 @@
 			</dl>
 		</nav>
 
-		<section id="id_help" class="main bubble bubble-flat">
-				<section>
-					<h2 id="about" class="heading">关于</h2>
-					<p>www.gitshell.com 是一个技术至上的社区，域名注册于2012/03/09，第一行代码写于2012/03/17 22:17:30，此后每天不断的添加代码，每周六日是最为主要的开发时间。作为一个开发者，我非常热爱开源，对开源的认识从安装没有显卡驱动的redhat9.0开始（我还记得当时的激动），从此慢慢学习，也希望能回馈开源世界。程序员应该是一个伟大的称号，因为我们能作出对他人有用的产品，希望gitshell是其中的一个。
-						为了避免各种不可用的说明，先说明一下，<mark>gitshell 只支持 Google Chrome, Mozilla Firefox, Apple Safari,Opera等现代浏览器</mark>。 </p>
-				</section>
-				<section>
-					<h2 id="mission">愿景</h2>
-					<p>gitshell 为优秀的开发者提供一个安全，稳定的社区，从这里展示获取代码，分享想法，相互学习，提高开发水平。</p>
-				</section>
-				<section>
-					<h2 id="faq" class="heading">FAQ</h2>
-					<dl class="faq">
-						<dt>gitshell 是什么？</dt>
-						<dd class="well">gitshell 是一个使用git版本控制系统的项目，类似github（假如语言和网速对你都没有问题，推荐使用github），提供clone，push，pull，branch管理等。gitshell和git-shell命令很像，并且shell在linux有“外壳”的意思，而这个网站，就是提供git的一个“外壳”，这就是名字的由来。</dd>
-						<dt>为什么会有 gitshell？</dt>
-						<dd class="well">作为一个程序员，有一天我忽然意识到，以前写的很多代码在各种变迁中不断丢失，虽然那些代码不一定有多少价值，但就像作家一样，留下每一份手稿是一件有意义的事情。在使用 github，bitbucket 过程中，觉得速度不够理想（特别是有一次github不能访问了，当然不是github本身的原因），就想建立一个自己用的git repository，所以深入了解git，在本机搭建环境，慢慢的就想，为什么不做一个公开的git托管，服务于开发者，于是有了gitshell。</dd>
-						<dt>gitshell 能做什么？</dt>
-						<dd class="well">gitshell 专注于git的托管，欢迎短小精悍的开源代码，特别鼓励原创性的。营造一个良好的开发者社区，信奉 KISS 原则，认为 code wins arguments。我期待有更多有趣的东西。</dd>
-						<dt>gitshell 的未来？</dt>
-						<dd class="well">我希望gitshell能长久运营下去，并且一步步健壮和丰满起来。</dd>
-						<dt>gitshell 的架构？</dt>
-						<dd class="well">git使用haproxy，openssh-gitshell-patch，nginx，uwsgi，redis，memcached, beanstalkd, django，mysql，架构是不断变化的，而这里不一定保持更新，我会在以后的文章里详细介绍架构。</dd>
-						<dt>gitshell 限制？</dt>
-						<dd class="well">由于提供git托管的技术要求和资源消耗比普通网站高，为了多数开发者能正常使用，对git操作有一些限制，目前gitshell并不支持超大型的项目，这一块可能是最容易让人迷惑的，所有的gitshell用户务必了解这一点。</dd>
-					</dl>
-					<h3 class="heading">除了介绍可以做什么，有必要说说不能做什么。</h3>
-					<p>为了保持社区的良好氛围，gitshell明确规则：</p>
-					<ul class="list unstyled">
-						<li>可以google的问题不要问，注意提问的技巧，“赞，顶，邀请码，发我邮箱”…这些词汇不能出现。</li>
-						<li>低碳环保，不要把gitshell当成任何文件的备份，不要当成网盘。这里只允许代码相关的，不欢迎大量的二进制文件。如果有不合适的文件内容出现，那很有可能会被删除。</li>
-						<li>与人和善，任何人身攻击，粗话，风花雪月，政治话题，贴图，无意义信息都不在讨论范围之内，这些话题都有对应的地方，但不是这里，这里只和开发者相关。</li>
-						<li>违反了上述规则，有对应的惩罚措施，严重至帐号的禁用，我并不想有这种情况。</li>
-					</ul>
-				</section>
-				<section>
-					<h2 id="contact" class="heading">联系方式</h2>
-					<p>邮件是古老而有效的联系方式，有任何问题都欢迎通过<a href="mailto:support@gitshell.com">support@gitshell.com</a> 沟通。
-		除此以外，官方微博 <img src="/static/img/sina_logo.png"><a target="_blank" href="http://weibo.com/gitshell">http://weibo.com/gitshell</a> 也是一个很好的途径。
-		如果你需要与gitshell开发者沟通，联系 <a href="mailto: azhoulinux@gmail.com">azhoulinux@gmail.com</a>。</p>
-				</section>
-				<section>
-					<h2 id="join_login" class="heading">注册·登录</h2>
-					<p>gitshell 注册·登录都是通过邮箱，作为一种古老而有效的工具，我们非常推荐通过邮箱沟通，所以邮箱是您的唯一账户ID，此外需要选择一个用户名，为了沟通的稳定和一致性，用户名也是固定不可修改的，全站使用ssl加密协议，如果您细心观察，可以看到我们在客户端进行加密传输密码，服务端不可逆再次加密，所以绝对不会保存您的原始密码，无从获取用户原始密码，也从来不会索取用户密码。
-		安全来自于意识，保护用户密码，保持一定复杂度，定期更改，可以有效的防止“坏人”。</p>
-				</section>
-				<section>
-					<h2 id="sshkey" class="heading">管理ssh key</h2>
-					<p>ssh 公钥密钥对是一切安全的基础，就像第一道防盗门。gitshell出于安全的考虑，一概通过ssh协议交换数据，保护好ssh密钥是一个程序员应该有的安全意识，希望您通过1password之类的工具妥善保存，此外最好能定期的更新密钥。</p>
-					<p class="text-warning">多人共用密钥是严格不支持的！</p>
-					<p>如果您第一次使用，按照以下的方式配置ssh密码：</p>
-					<h4 class="heading">快速入门:</h4>
-					<p>如果您使用任何类unix系统，第一次配置 ssh 公钥密钥，请按照步骤，复制黑色背景字符，在终端执行命令，和编辑文件</p>
-					<ol>
-						<li>
-							<p>执行以下命令，生成 ssh 密钥, 保存在 <span class="label text-bold">~/.ssh/gitshell.com_rsa</span></p>
-							<pre class="well"><code>ssh-keygen -t rsa  -N '' -f ~/.ssh/gitshell.com_rsa;</code></pre>
-						</li>
-						<li>
-							<p>编辑 ssh 客户端配置文件 <span class="label">~/.ssh/config</span>，使用您熟悉的编辑器，在后面添加</p>
-							<pre class="well">
-								<code>
+        <section id="id_help" class="main bubble bubble-flat">
+                <section>
+                    <h2 id="about" class="heading">关于</h2>
+                    <p>www.gitshell.com 是一个技术至上的社区，域名注册于2012/03/09，第一行代码写于2012/03/17 22:17:30，此后每天不断的添加代码，每周六日是最为主要的开发时间。作为一个开发者，我非常热爱开源，对开源的认识从安装没有显卡驱动的redhat9.0开始（我还记得当时的激动），从此慢慢学习，也希望能回馈开源世界。程序员应该是一个伟大的称号，因为我们能作出对他人有用的产品，希望gitshell是其中的一个。
+                        为了避免各种不可用的说明，先说明一下，<mark>gitshell 只支持 Google Chrome, Mozilla Firefox, Apple Safari,Opera等现代浏览器</mark>。 </p>
+                </section>
+                <section>
+                    <h2 id="mission">愿景</h2>
+                    <p>gitshell 为优秀的开发者提供一个安全，稳定的社区，从这里展示获取代码，分享想法，相互学习，提高开发水平。</p>
+                </section>
+                <section>
+                    <h2 id="faq" class="heading">FAQ</h2>
+                    <dl class="faq">
+                        <dt>gitshell 是什么？</dt>
+                        <dd class="well">gitshell 是一个使用git版本控制系统的项目，类似github（假如语言和网速对你都没有问题，推荐使用github），提供clone，push，pull，branch管理等。gitshell和git-shell命令很像，并且shell在linux有“外壳”的意思，而这个网站，就是提供git的一个“外壳”，这就是名字的由来。</dd>
+                        <dt>为什么会有 gitshell？</dt>
+                        <dd class="well">作为一个程序员，有一天我忽然意识到，以前写的很多代码在各种变迁中不断丢失，虽然那些代码不一定有多少价值，但就像作家一样，留下每一份手稿是一件有意义的事情。在使用 github，bitbucket 过程中，觉得速度不够理想（特别是有一次github不能访问了，当然不是github本身的原因），就想建立一个自己用的git repository，所以深入了解git，在本机搭建环境，慢慢的就想，为什么不做一个公开的git托管，服务于开发者，于是有了gitshell。</dd>
+                        <dt>gitshell 能做什么？</dt>
+                        <dd class="well">gitshell 专注于git的托管，欢迎短小精悍的开源代码，特别鼓励原创性的。营造一个良好的开发者社区，信奉 KISS 原则，认为 code wins arguments。我期待有更多有趣的东西。</dd>
+                        <dt>gitshell 的未来？</dt>
+                        <dd class="well">我希望gitshell能长久运营下去，并且一步步健壮和丰满起来。</dd>
+                        <dt>gitshell 的架构？</dt>
+                        <dd class="well">git使用haproxy，openssh-gitshell-patch，nginx，uwsgi，redis，memcached, beanstalkd, django，mysql，架构是不断变化的，而这里不一定保持更新，我会在以后的文章里详细介绍架构。</dd>
+                        <dt>gitshell 限制？</dt>
+                        <dd class="well">由于提供git托管的技术要求和资源消耗比普通网站高，为了多数开发者能正常使用，对git操作有一些限制，目前gitshell并不支持超大型的项目，这一块可能是最容易让人迷惑的，所有的gitshell用户务必了解这一点。</dd>
+                    </dl>
+                    <h3 class="heading">除了介绍可以做什么，有必要说说不能做什么。</h3>
+                    <p>为了保持社区的良好氛围，gitshell明确规则：</p>
+                    <ul class="list unstyled">
+                        <li>可以google的问题不要问，注意提问的技巧，“赞，顶，邀请码，发我邮箱”…这些词汇不能出现。</li>
+                        <li>低碳环保，不要把gitshell当成任何文件的备份，不要当成网盘。这里只允许代码相关的，不欢迎大量的二进制文件。如果有不合适的文件内容出现，那很有可能会被删除。</li>
+                        <li>与人和善，任何人身攻击，粗话，风花雪月，政治话题，贴图，无意义信息都不在讨论范围之内，这些话题都有对应的地方，但不是这里，这里只和开发者相关。</li>
+                        <li>违反了上述规则，有对应的惩罚措施，严重至帐号的禁用，我并不想有这种情况。</li>
+                    </ul>
+                </section>
+                <section>
+                    <h2 id="contact" class="heading">联系方式</h2>
+                    <p>邮件是古老而有效的联系方式，有任何问题都欢迎通过<a href="mailto:support@gitshell.com">support@gitshell.com</a> 沟通。
+        除此以外，官方微博 <img src="/static/img/sina_logo.png"><a target="_blank" href="http://weibo.com/gitshell">http://weibo.com/gitshell</a> 也是一个很好的途径。
+        如果你需要与gitshell开发者沟通，联系 <a href="mailto: azhoulinux@gmail.com">azhoulinux@gmail.com</a>。</p>
+                </section>
+                <section>
+                    <h2 id="join_login" class="heading">注册·登录</h2>
+                    <p>gitshell 注册·登录都是通过邮箱，作为一种古老而有效的工具，我们非常推荐通过邮箱沟通，所以邮箱是您的唯一账户ID，此外需要选择一个用户名，为了沟通的稳定和一致性，用户名也是固定不可修改的，全站使用ssl加密协议，如果您细心观察，可以看到我们在客户端进行加密传输密码，服务端不可逆再次加密，所以绝对不会保存您的原始密码，无从获取用户原始密码，也从来不会索取用户密码。
+        安全来自于意识，保护用户密码，保持一定复杂度，定期更改，可以有效的防止“坏人”。</p>
+                </section>
+                <section>
+                    <h2 id="sshkey" class="heading">管理ssh key</h2>
+                    <p>ssh 公钥密钥对是一切安全的基础，就像第一道防盗门。gitshell出于安全的考虑，一概通过ssh协议交换数据，保护好ssh密钥是一个程序员应该有的安全意识，希望您通过1password之类的工具妥善保存，此外最好能定期的更新密钥。</p>
+                    <p class="text-warning">多人共用密钥是严格不支持的！</p>
+                    <p>如果您第一次使用，按照以下的方式配置ssh密码：</p>
+                    <h4 class="heading">快速入门:</h4>
+                    <p>如果您使用任何类unix系统，第一次配置 ssh 公钥密钥，请按照步骤，复制黑色背景字符，在终端执行命令，和编辑文件</p>
+                    <ol>
+                        <li>
+                            <p>执行以下命令，生成 ssh 密钥, 保存在 <span class="label text-bold">~/.ssh/gitshell.com_rsa</span></p>
+                            <pre class="well"><code>ssh-keygen -t rsa  -N '' -f ~/.ssh/gitshell.com_rsa;</code></pre>
+                        </li>
+                        <li>
+                            <p>编辑 ssh 客户端配置文件 <span class="label">~/.ssh/config</span>，使用您熟悉的编辑器，在后面添加</p>
+                            <pre class="well">
+                                <code>
 Host gitshell.com
   User {{ user.username }}
   IdentityFile ~/.ssh/gitshell.com_rsa
   PreferredAuthentications publickey</code>
-							</pre>
-						</li>
-						<li>
-							<p>查看 ssh 公钥，使用 cat 命令，或者用编辑器打开</p>
-							<pre class="well"><code>cat ~/.ssh/gitshell.com_rsa.pub</code></pre>
-						</li>
-						<li><p>请复制 ssh 公钥的文本内容，点击<a target="_blank" href="/settings/sshpubkey/">ssh public key 管理</a>，输入标识保存公钥</p></li>
-						<li><p>ssh 公钥配置之后就可以长期使用了，请保护好 <span class="label">~/.ssh/gitshell.com_rsa</span> 密钥。点击<a target="_blank" href="/{{ user.username }}/repo/create/">创建仓库</a>，详细仓库说明有助于推广</p></li>
-						<li>
-							<p>你已经可以使用 gitshell 来托管代码了，以下是示范的操作，详细信息请<a href="/help/#learn">开始git的学习</a></p>
-							<pre class="well">
-								<code>
+                            </pre>
+                        </li>
+                        <li>
+                            <p>查看 ssh 公钥，使用 cat 命令，或者用编辑器打开</p>
+                            <pre class="well"><code>cat ~/.ssh/gitshell.com_rsa.pub</code></pre>
+                        </li>
+                        <li><p>请复制 ssh 公钥的文本内容，点击<a target="_blank" href="/settings/sshpubkey/">ssh public key 管理</a>，输入标识保存公钥</p></li>
+                        <li><p>ssh 公钥配置之后就可以长期使用了，请保护好 <span class="label">~/.ssh/gitshell.com_rsa</span> 密钥。点击<a target="_blank" href="/{{ user.username }}/repo/create/">创建仓库</a>，详细仓库说明有助于推广</p></li>
+                        <li>
+                            <p>你已经可以使用 gitshell 来托管代码了，以下是示范的操作，详细信息请<a href="/help/#learn">开始git的学习</a></p>
+                            <pre class="well">
+                                <code>
 $ git clone git@gitshell.com:your_name/repo_name
 $ cd repo_name;
 $ vim README.md
 $ git add README.md
 $ git commit -m "init README.md" .
 $ git push -u origin master</code>
-							</pre>
-						</li>
-						<li>
-							<p>配置 <span class="text-bold">user.name</span>, <span class="text-bold">user.mail</span> ，两者对后台统计，信息push有重要的作用，选择您注册的用户名和email按照下面配置</p>
-								{% if user.is_authenticated %}
-								<pre class="well">
-									<code>
+                            </pre>
+                        </li>
+                        <li>
+                            <p>配置 <span class="text-bold">user.name</span>, <span class="text-bold">user.mail</span> ，两者对后台统计，信息push有重要的作用，选择您注册的用户名和email按照下面配置</p>
+                                {% if user.is_authenticated %}
+                                <pre class="well">
+                                    <code>
 $ git config --global user.name "{{ user.username }}"
 $ git config --global user.email "{{ user.email }}"</code>
-								</pre>
-								{% else %}
-									<pre class="well">
-										<code>
+                                </pre>
+                                {% else %}
+                                    <pre class="well">
+                                        <code>
 $ git config --global user.name "your_name"
 $ git config --global user.email "your_email"</code>
-									</pre>
-								{% endif %}
-								<p class="text-warning">如果不想 global，在每个仓库里面执行 git config ，去掉 --global 参数</p>
-								</li>
-								<li><p>感谢您走完整个配置流程，如果遇到任何问题，直接联系 <a href="mailto: support@gitshell.com">support@gitshell.com</a>，或者官方微博 <a target="_blank" href="http://weibo.com/gitshell">http://weibo.com/gitshell</a></p></li>
-							</ol>
-						</section>
-						<section>
-							<h2 id="repo" class="heading">管理仓库</h2>
-							<dl>
-								<dt>仓库是开发的基础容器，一切活动都源于仓库。如果您想让别人知道您的仓库，最好是</dt>
-								<dd>
-									<ol>
-										<li>良好的命名，简单概要。</li>
-										<li>适当的注释，让人知道您的仓库做什么的，解决什么问题。</li>
-										<li>最重要的当然是不断的开发成为优秀的项目。</li>
-									</ol>
-								</dd>
-							</dl>
-							<p class="text-error">仓库除了代码之外，其他的数据都是被严格限制的，您务必理解这一点。</p>
-						</section>
-						<section>
-							<h2 id="code" class="heading">clone·push·pull代码</h2>
-								<pre class="well">
-									<code>
+                                    </pre>
+                                {% endif %}
+                                <p class="text-warning">如果不想 global，在每个仓库里面执行 git config ，去掉 --global 参数</p>
+                                </li>
+                                <li><p>感谢您走完整个配置流程，如果遇到任何问题，直接联系 <a href="mailto: support@gitshell.com">support@gitshell.com</a>，或者官方微博 <a target="_blank" href="http://weibo.com/gitshell">http://weibo.com/gitshell</a></p></li>
+                            </ol>
+                        </section>
+                        <section>
+                            <h2 id="repo" class="heading">管理仓库</h2>
+                            <dl>
+                                <dt>仓库是开发的基础容器，一切活动都源于仓库。如果您想让别人知道您的仓库，最好是</dt>
+                                <dd>
+                                    <ol>
+                                        <li>良好的命名，简单概要。</li>
+                                        <li>适当的注释，让人知道您的仓库做什么的，解决什么问题。</li>
+                                        <li>最重要的当然是不断的开发成为优秀的项目。</li>
+                                    </ol>
+                                </dd>
+                            </dl>
+                            <p class="text-error">仓库除了代码之外，其他的数据都是被严格限制的，您务必理解这一点。</p>
+                        </section>
+                        <section>
+                            <h2 id="code" class="heading">clone·push·pull代码</h2>
+                                <pre class="well">
+                                    <code>
 $ git clone git@gitshell.com:your/repo
 $ cd repo; vim README.md
 $ git add README.md
 $ git commit -m "init README.md"
 $ git push -u origin master
 $ git pull</code>
-								</pre>
-						</section>
-						<section>
-							<h2 id="group" class="heading">协同开发</h2>
-							<dl>
-								<dt>gitshell 提供了多个成员共同开发仓库的协同方式，区别于企业级开发，目前的权限没有那么严格的界定，仓库所属者拥有最高的管理权，其余成员权限等同，需要注意的是，所有成员对仓库有完全的读写权限。作为群体开发，你需要知道：</dt>
-								<dd>
-									<ol>
-										<li>尽可能的不要给别人造成麻烦。</li>
-										<li>拥有一个良好的 commit 记录。</li>
-										<li>保持代码结构的干净，清晰，和所有成员做好沟通工作。</li>
-									</ol>
-								</dd>
-							</dl>
-						</section>
-						<section>
-							<h2 id="learn" class="heading">从实践中学习</h2>
-							<p>你要学习游泳，先把自己推下水吧。</p>
-						</section>
-						<section>
-							<h2 id="error" class="heading">出错代码</h2>
-							<dl>
-								<dt>很不幸让你看到这里，以下是常见的错误代码:</dt>
-								<dd class="http-error">
-									<h3 id="404" class="heading">404 资源找不到:</h3>
-									<p>你想要的东西我找了404次都没有找到</p>
-									<h3 id="500" class="heading">500 内部错误代码:</h3>
-									<p>系统内部出现了500个错误，如果是能重现的行为，请联系 support@gitshell.com，此致敬礼！</p>
-								</dd>
-							</dl>
-						</section>
-						<section>
-							<h2 id="resource" class="heading">git外部学习资源</h2>
-							<ul class="list unstyled">
-								<li><span class="leader">Git Official Site</span><a target="_blank" href="http://book.git-scm.com/">http://book.git-scm.com/</a></li>
-								<li><span class="leader">Git Community Book 中文版</span><a target="_blank" href="http://gitbook.liuhui998.com/index.html">http://gitbook.liuhui998.com/index.html</a></li>
-								<li><span class="leader">Pro Git 简体中文版</span><a target="_blank" href="http://github.danmarner.com/">http://github.danmarner.com/</a></li>
-								<li><span class="leader">Git权威指南 相关blog</span><a target="_blank" href="http://www.worldhello.net/">http://www.worldhello.net/</a></li>
-								<li><span class="leader">Markdown 语法</span><a target="_blank" href="http://qingbo.net/picky/502-markdown-syntax.html">http://qingbo.net/picky/502-markdown-syntax.html</a></li>
-								<li><span class="leader">假如你没什么事情可以做了，还可以看看</span><a target="_blank" href="http://cloudzhou.org">http://cloudzhou.org</a></li>
-							</ul>
-						</section>
-						<section class="privacy">
-							<h2 id="service" class="heading">服务条款</h2>
-							<dl>
-								<dt>用户在使用gitshell服务时必须符合中国有关法规，不得在使用中制作、复制、发布、传播以下信息：</dt>
-								<dd>
-									<ol>
-										<li>违反宪法确定的基本原则的；</li>
-										<li>危害国家安全，泄露国家秘密，颠覆国家政权，破坏国家统一的；</li>
-										<li>损害国家荣誉和利益的；</li>
-										<li>煽动民族仇恨、民族歧视，破坏民族团结的；</li>
-										<li>破坏国家宗教政策，宣扬邪教和封建迷信的；</li>
-										<li>散布谣言，扰乱社会秩序，破坏社会稳定的；</li>
-										<li>散布淫秽、色情、赌博、暴力、恐怖或者教唆犯罪的；</li>
-										<li>侮辱或者诽谤他人，侵害他人合法权益的；</li>
-										<li>煽动非法集会、结社、游行、示威、聚众扰乱社会秩序的；</li>
-										<li>以非法民间组织名义活动的；</li>
-										<li>含有法律、行政法规禁止的其他内容的。</li>
-									</ol>
-								</dd>
-								<dt>免责协议：</dt>
-								<dd class="text-warning">用户须明白，本服务仅依其当前所呈现的状况提供，本服务涉及到互联网及移动通讯等服务，可能会受到各个环节不稳定因素的影响。因此服务存在因上述不可抗力、计算机病毒或黑客攻击、系统不稳定、用户所在位置、用户关机、GSM网络、互联网络、通信线路原因等造成的服务中断或不能满足用户要求的风险。开通服务的用户须承担以上风险，本公司和合作公司对服务之及时性、安全性、准确性不作担保，对因此导致用户不能发送和接受阅读消息、或传递错误，个人设定之时效、未予储存或其他问题不承担任何责任。
-			（为什么放在最后，因为绝大多数人不会认真看到这里的:)）</dd>
-							</dl>
-						</section>
-			</section>
+                                </pre>
+                        </section>
+                        <section>
+                            <h2 id="group" class="heading">协同开发</h2>
+                            <dl>
+                                <dt>gitshell 提供了多个成员共同开发仓库的协同方式，区别于企业级开发，目前的权限没有那么严格的界定，仓库所属者拥有最高的管理权，其余成员权限等同，需要注意的是，所有成员对仓库有完全的读写权限。作为群体开发，你需要知道：</dt>
+                                <dd>
+                                    <ol>
+                                        <li>尽可能的不要给别人造成麻烦。</li>
+                                        <li>拥有一个良好的 commit 记录。</li>
+                                        <li>保持代码结构的干净，清晰，和所有成员做好沟通工作。</li>
+                                    </ol>
+                                </dd>
+                            </dl>
+                        </section>
+                        <section>
+                            <h2 id="learn" class="heading">从实践中学习</h2>
+                            <p>你要学习游泳，先把自己推下水吧。</p>
+                        </section>
+                        <section>
+                            <h2 id="error" class="heading">出错代码</h2>
+                            <dl>
+                                <dt>很不幸让你看到这里，以下是常见的错误代码:</dt>
+                                <dd class="http-error">
+                                    <h3 id="404" class="heading">404 资源找不到:</h3>
+                                    <p>你想要的东西我找了404次都没有找到</p>
+                                    <h3 id="500" class="heading">500 内部错误代码:</h3>
+                                    <p>系统内部出现了500个错误，如果是能重现的行为，请联系 support@gitshell.com，此致敬礼！</p>
+                                </dd>
+                            </dl>
+                        </section>
+                        <section>
+                            <h2 id="resource" class="heading">git外部学习资源</h2>
+                            <ul class="list unstyled">
+                                <li><span class="leader">Git Official Site</span><a target="_blank" href="http://book.git-scm.com/">http://book.git-scm.com/</a></li>
+                                <li><span class="leader">Git Community Book 中文版</span><a target="_blank" href="http://gitbook.liuhui998.com/index.html">http://gitbook.liuhui998.com/index.html</a></li>
+                                <li><span class="leader">Pro Git 简体中文版</span><a target="_blank" href="http://github.danmarner.com/">http://github.danmarner.com/</a></li>
+                                <li><span class="leader">Git权威指南 相关blog</span><a target="_blank" href="http://www.worldhello.net/">http://www.worldhello.net/</a></li>
+                                <li><span class="leader">Markdown 语法</span><a target="_blank" href="http://qingbo.net/picky/502-markdown-syntax.html">http://qingbo.net/picky/502-markdown-syntax.html</a></li>
+                                <li><span class="leader">假如你没什么事情可以做了，还可以看看</span><a target="_blank" href="http://blog.gitshell.com">http://blog.gitshell.com/</a></li>
+                            </ul>
+                        </section>
+                        <section class="privacy">
+                            <h2 id="service" class="heading">服务条款</h2>
+                            <dl>
+                                <dt>用户在使用gitshell服务时必须符合中国有关法规，不得在使用中制作、复制、发布、传播以下信息：</dt>
+                                <dd>
+                                    <ol>
+                                        <li>违反宪法确定的基本原则的；</li>
+                                        <li>危害国家安全，泄露国家秘密，颠覆国家政权，破坏国家统一的；</li>
+                                        <li>损害国家荣誉和利益的；</li>
+                                        <li>煽动民族仇恨、民族歧视，破坏民族团结的；</li>
+                                        <li>破坏国家宗教政策，宣扬邪教和封建迷信的；</li>
+                                        <li>散布谣言，扰乱社会秩序，破坏社会稳定的；</li>
+                                        <li>散布淫秽、色情、赌博、暴力、恐怖或者教唆犯罪的；</li>
+                                        <li>侮辱或者诽谤他人，侵害他人合法权益的；</li>
+                                        <li>煽动非法集会、结社、游行、示威、聚众扰乱社会秩序的；</li>
+                                        <li>以非法民间组织名义活动的；</li>
+                                        <li>含有法律、行政法规禁止的其他内容的。</li>
+                                    </ol>
+                                </dd>
+                                <dt>免责协议：</dt>
+                                <dd class="text-warning">用户须明白，本服务仅依其当前所呈现的状况提供，本服务涉及到互联网及移动通讯等服务，可能会受到各个环节不稳定因素的影响。因此服务存在因上述不可抗力、计算机病毒或黑客攻击、系统不稳定、用户所在位置、用户关机、GSM网络、互联网络、通信线路原因等造成的服务中断或不能满足用户要求的风险。开通服务的用户须承担以上风险，本公司和合作公司对服务之及时性、安全性、准确性不作担保，对因此导致用户不能发送和接受阅读消息、或传递错误，个人设定之时效、未予储存或其他问题不承担任何责任。
+            （为什么放在最后，因为绝大多数人不会认真看到这里的:)）</dd>
+                            </dl>
+                        </section>
+            </section>
 
-	</section>
+    </section>
 {% endblock %}
 
 {% block js %}
-	<script>
-		$(function(){
-			if(window.location.hash) {
-				$(window).scrollTop($(window).scrollTop() - 50);
-			}
-			$(document.body).delegate("a","click",function(){
-				var hrefStr = $(this).attr("href");
-				var reg = /.*#[a-z_A-Z]+$/;
-				var isHash= reg.test(hrefStr);
-				if(isHash){
-					var hashStr =$(this).attr('href'); 
-					var hashIds = hashStr.match(/#[a-z_A-Z]+$/);
-					var pos = $(hashIds[0]).offset();
-					$(window).scrollTop(pos.top - 50);
-					return false;
-				}
-			});
-		});
-	</script>
+    <script>
+        $(function(){
+            $('a').click(function(){
+                var hrefStr = $(this).attr("href");
+                var reg = /.*#[a-zA-Z0-9_]+$/;
+                var isHash = reg.test(hrefStr);
+                if(isHash){
+                    var hashIds = hrefStr.match(/#[a-z_A-Z]+$/);
+                    var hashId = hashIds[0];
+                    window.location.hash = hashId;
+                    var pos = $(hashId).offset();
+                    $(window).scrollTop(pos.top - 70);
+                    return false;
+                }
+            });
+            setTimeout(function() {
+                if(window.location.hash) {
+                    var pos = $(window.location.hash).offset();
+                    $(window).scrollTop(pos.top - 70);
+                }
+            }, 1);
+        });
+    </script>
 {% endblock %}

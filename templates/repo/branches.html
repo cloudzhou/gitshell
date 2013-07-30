@@ -1,0 +1,37 @@
+{% extends "repo/repo.html" %}
+{% block subcontainer %}
+<!--TODO refactor add create delete branch tag-->
+<h2 class="heading">Branches</h2>
+<div id="i_branches"></div>
+{% endblock %}
+{% block subjs %}
+<script>
+$(function(){
+    $.post('/{{user_name}}/{{repo_name}}/refs/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        var html = [];
+        var detail_commit = json.refs_meta.detail_commit;
+        var branches = json.refs_meta.branches;
+        var current_refs = '{{refs}}';
+        html.push('<table class="table table-striped"><tbody>');
+        for(x in branches) {
+            html.push('<tr>');
+            var branch = branches[x];
+            var commit = detail_commit[branch];
+            html.push('<td class="branch-name"><h2 class="heading"><a href="/{{user_name}}/{{repo_name}}/tree/' + branch + '">' + branch + '</a></h2></td>');
+            html.push('<td class="meta"><span class="muted">由' + commit.author + '<span class="c_unixtime">' + commit.committer_date + '</span>提交: ' + commit.commit_message + '</span></td>');
+            html.push('<td class="actions">');
+            html.push('<a href="/{{user_name}}/{{repo_name}}/refs/graph/' + branch + '/" class="btn">Graph</a>');
+            html.push('<a href="/{{user_name}}/{{repo_name}}/compare/' + branch + '/" class="btn btn-success">Compare</a>');
+            html.push('</td>');
+            html.push('</tr>');
+        }
+        html.push('</tbody></table>');
+        $('#i_branches').html(html.join(''));
+        $('.c_unixtime').each(function(index){ 
+            $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+            $(this).show();
+        });
+    });
+});
+</script>
+{% endblock %}
