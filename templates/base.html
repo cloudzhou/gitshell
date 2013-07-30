@@ -3,25 +3,23 @@
 	<head>
 		<meta charset="utf-8">
 		<title>{% block title %}gitshell - 你的代码托管{% endblock %}</title>
-		<meta content="width=device-width, initial-scale=1.0" name="viewport">
 		<meta content="GitShell 专注git代码托管, 项目开发, 个人技能" name="description">
 		<meta content="gitshell" name="author">
-		<link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
-		<link href="/static/less/gitshell.less" rel="stylesheet/less" type="text/css">
-		<script>
-			less = {
-				env: "development"
-			}
-		</script>
-		<script src="/static/js/less-1.4.0.min.js"></script>
+		<link href="/static/less/gitshell.less" rel="stylesheet/less" media="all">
 		{% block css %}{% endblock %}
+		<script src="/static/js/less-1.4.0.min.js"></script>
+    <script>
+      less = { 
+        env: 'development' 
+      }
+    </script>
 		<link rel="shortcut icon" href="/static/img/favicon.ico">
 	</head>
-	<body>
-		<header class="navbar">
-			<nav class="navbar-inner container">
+  <body class="{% block body_class_name %}{% endblock %}">
+		<div class="navbar">
+			<div class="container">
 				<a class="brand" href="/">GitShell</a>
-				<ul class="nav global">
+				<ul class="nav main-nav">
 					{% if user.is_authenticated %}
 						<li><a href="#">工作台</a></li>
 					{% else %}
@@ -30,19 +28,19 @@
 					<li {%if mainnav == 'explore'%}class="active"{%endif%}><a href="/explore/">浏览仓库</a></li>
 					<li {%if mainnav == 'help'%}class="active"{%endif%}><a href="/help/">帮助</a></li>
 				</ul>
-				<ul class="nav account">
-					{% if user.is_authenticated %}
-						<li class="notification"><a href="#" class="label label-warning">6</a></li>
+        {% if user.is_authenticated %}
+          <ul class="nav userbar">
+						<li class="msgs"><a href="#" class="label label-warning">6</a></li>
 						<li class="dropdown{%if mainnav == 'user'%} active{%endif%}">
 							<a href="/{{ user.username }}/" class="user dropdown-toggle" data-toggle="dropdown" data-target="#">
 								<img class="avatar" src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=35" alt="{{ user.username }}">
 							</a>
 							<div class="dropdown-menu" role="menu" aria-labelladby="dLable">
 								<div class="info">
-									<header class="header">
-										<h1 class="heading"><a href="/{{ user.username }}/" id="username">{{ user.username }}<i class="userid"><img src="/static/img/icons/id-user.png" alt=""></i></a></h1>
+									<div class="header">
+										<h2 class="heading"><a href="/{{ user.username }}/" id="username">{{ user.username }}<i class="userid"><img src="/static/img/icons/id-user.png" alt=""></i></a></h1>
 										<p class="email">{{ user.email }}</p>
-									</header>
+									</div>
 									<ul class="unstyledList repo-count">
 										<li>
 											<h4>仓库数<span class="used">{{userprofile.get_total_repo}}</span><span class="divider">/</span><span class="capacity">100</span></h4>
@@ -64,20 +62,18 @@
 								</ul>
 							</div>
 						</li>
+          </ul>
 					{% else %}
-					<li class="welcome-msg">
-						<p>请<a href="/login/"{%if mainnav == 'login'%}class="active"{%endif%}>登录</a>,或者<a href="/join/0/"{%if mainnav == 'eoin'%}class="active"{%endif%}>注册</a>
-					</li>
+            <p class="welcome-msg">请<a href="/login/"{%if mainnav == 'login'%}class="active"{%endif%}>登录</a>,或者<a href="/join/0/"{%if mainnav == 'eoin'%}class="active"{%endif%}>注册</a></p>
 					{% endif %}
-				</ul>
-			</nav>
-		</header>
+			</div>
+		</div>
 
 		{% block repo_header %}{% endblock %}
 
-		<section id="container" class="{% block container_class_name %}{% endblock %}">
+		<div id="container" class="{% block container_class_name %}{% endblock %}">
 			{% block container %}{% endblock %}
-		</section>
+		</div>
 
 		<footer id="footer">
 			<div class="container">
