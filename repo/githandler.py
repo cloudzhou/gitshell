@@ -1,6 +1,6 @@
 #!/python
 # -*- coding: utf-8 -*-
-import os, re, pipes, sys, traceback
+import os, re, pipes, sys, traceback, codecs
 import time, json, hashlib, shutil
 from django.core.cache import cache
 from subprocess import check_output, Popen, PIPE
@@ -45,7 +45,7 @@ class GitHandler():
             path = path[2:]
         file_type = path.split('.')[-1]
         if file_type in BINARY_FILE_TYPE:
-            return "二进制文件"
+            return u'二进制文件'
         stage_file = self._get_stage_file(repo_path, commit_hash, path)
         result = self._read_load_stage_file(stage_file)
         if result is not None:
@@ -341,15 +341,14 @@ class GitHandler():
         return stage_file
         
     def _read_load_stage_file(self, stage_file):
-        if os.path.exists(stage_file):
-            try:
-                json_data = open(stage_file)
+        if not os.path.exists(stage_file):
+            return None
+        try:
+            with codecs.open(stage_file, encoding='utf-8', mode='r') as json_data:
                 result = json.load(json_data)
                 return result
-            except Exception, e:
-                logger.exception(e)
-            finally:
-                json_data.close()
+        except Exception, e:
+            logger.exception(e)
         return None
 
     def _dumps_write_stage_file(self, result, stage_file):
@@ -361,16 +360,15 @@ class GitHandler():
         if not os.path.exists(stage_file_tmp_path):
             os.makedirs(stage_file_tmp_path)
         try:
-            stage_file_w = open(stage_file_tmp, 'w')
-            stage_file_w.write(json.dumps(result))
-            stage_file_w.flush()
-            shutil.move(stage_file_tmp, stage_file)
+            with codecs.open(stage_file_tmp, encoding='utf-8', mode='w') as stage_file_w:
+                stage_file_w.write(json.dumps(result))
+                stage_file_w.flush()
+                shutil.move(stage_file_tmp, stage_file)
         except Exception, e:
             logger.exception(e)
         finally:
             if os.path.exists(stage_file_tmp):
                 os.remove(stage_file_tmp)
-            stage_file_w.close()
 
     def _get_quote_path(self, path):
         path = ''.join(c for c in path if ord(c) >= 32 and ord(c) != 127)
@@ -512,22 +510,23 @@ class GitHandler():
 
     def _append_refs_and_put_dict(self, dirpath, refs_array, commit_hash_dict):
         for refs in os.listdir(dirpath):
-            if self._is_allowed_path(refs):
-                if len(refs_array) >= 100:
-                    return
-                if refs in refs_array:
-                    continue
-                refs_array.append(refs)
-                refs_path = '%s/%s' % (dirpath, refs)
-                f = None
-                try:
-                    f = open(refs_path, 'r')
-                    commit_hash = f.read(40)
-                    if re.match('^\w+$', commit_hash):
-                        commit_hash_dict[refs] = commit_hash
-                finally:
-                    if f != None:
-                        f.close()
+            if not self._is_allowed_path(refs):
+                continue
+            if len(refs_array) >= 100:
+                return
+            if refs in refs_array:
+                continue
+            refs_array.append(refs)
+            refs_path = '%s/%s' % (dirpath, refs)
+            f = None
+            try:
+                f = open(refs_path, 'r')
+                commit_hash = f.read(40)
+                if re.match('^\w+$', commit_hash):
+                    commit_hash_dict[refs] = commit_hash
+            finally:
+                if f != None:
+                    f.close()
     
     def _is_allowed_paths(self, paths):
         for path in paths:
