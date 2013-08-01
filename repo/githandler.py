@@ -1,6 +1,6 @@
 #!/python
 # -*- coding: utf-8 -*-
-import os, re, pipes, sys, traceback
+import os, re, pipes, sys, traceback, codecs
 import time, json, hashlib, shutil
 from django.core.cache import cache
 from subprocess import check_output, Popen, PIPE
@@ -361,7 +361,8 @@ class GitHandler():
         if not os.path.exists(stage_file_tmp_path):
             os.makedirs(stage_file_tmp_path)
         try:
-            stage_file_w = open(stage_file_tmp, 'w')
+            stage_file_w = codecs.open(stage_file_tmp, encoding='utf-8', mode='w')
+            logger.error(result)
             stage_file_w.write(json.dumps(result))
             stage_file_w.flush()
             shutil.move(stage_file_tmp, stage_file)
@@ -370,7 +371,8 @@ class GitHandler():
         finally:
             if os.path.exists(stage_file_tmp):
                 os.remove(stage_file_tmp)
-            stage_file_w.close()
+            if stage_file_w:
+                stage_file_w.close()
 
     def _get_quote_path(self, path):
         path = ''.join(c for c in path if ord(c) >= 32 and ord(c) != 127)

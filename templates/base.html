@@ -21,19 +21,22 @@
 				<a class="brand" href="/">GitShell</a>
 				<ul class="nav main-nav">
 					{% if user.is_authenticated %}
-						<li><a href="#">工作台</a></li>
+            <li><a href="/home/">工作台</a></li>
+            <li><a href="/{{user.username}}/repo/">我的仓库</a></li>
 					{% else %}
-						<li><a href="/join/">工作台</a></li>
+            <li><a href="/join/">工作台</a></li>
 					{% endif %}
 					<li {%if mainnav == 'explore'%}class="active"{%endif%}><a href="/explore/">浏览仓库</a></li>
 					<li {%if mainnav == 'help'%}class="active"{%endif%}><a href="/help/">帮助</a></li>
 				</ul>
         {% if user.is_authenticated %}
           <ul class="nav userbar">
-						<li class="msgs"><a href="#" class="label label-warning">6</a></li>
+            {% if userprofile.unread_message > 0 %}
+              <li class="msgs"><a href="/home/notif/" class="label label-warning">{{userprofile.unread_message}}</a></li>
+            {% endif %}
 						<li class="dropdown{%if mainnav == 'user'%} active{%endif%}">
 							<a href="/{{ user.username }}/" class="user dropdown-toggle" data-toggle="dropdown" data-target="#">
-								<img class="avatar" src="https://gravatar.com/avatar/{{ gsuserprofile.imgurl }}?s=35" alt="{{ user.username }}">
+								<img class="avatar" src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=35" alt="{{ user.username }}">
 							</a>
 							<div class="dropdown-menu" role="menu" aria-labelladby="dLable">
 								<div class="info">
