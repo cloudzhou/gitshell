@@ -3,12 +3,11 @@
     <head>
         <meta charset="utf-8">
         <title>{% block title %}gitshell - 专注于 git 托管{% endblock %}</title>
-        <meta content="width=device-width, initial-scale=1.0" name="viewport">
         <meta content="Gitshell 专注git代码托管, 团队协同，项目开发" name="description">
         <meta content="gitshell" name="author">
         <meta name="csrf-token" content="{{csrf_token}}">
         <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
-        <link href="/static/less/gitshell.less" rel="stylesheet/less" type="text/css">
+        <link href="/static/css/gitshell.css" rel="stylesheet" type="text/css">
         <!-- TODO why script here ? -->
         <script>
             less = {
@@ -109,27 +108,10 @@
         </footer>
 
 
-        <script src="/static/js/jquery-1.7.2.min.js"></script>
-        <script src="/static/js/bootstrap.min.js"></script>
-        <script src="/static/js/select2.min.js"></script>
-        <script src='/static/js/app/underscore/underscore-min.js'></script>
-        <script src='/static/js/app/underscore/underscore.string.min.js'></script>
+        <script src="/static/js/application.js"></script>
+        <script src="/static/js/plugins.js"></script>
         <script type="text/javascript"> _.mixin(_.str.exports()) </script>
-        <script src="/static/js/moment.min.js"></script>
-        <script src="/static/js/moment.zh-cn.js"></script>
-        <script src='/static/js/gitshell-template.js?timestamp=1373609013' type='text/javascript'></script>
-        <script src='/static/js/gitshell.js?timestamp=1373609013' type='text/javascript'></script>
         <!--TODO refactor js-->
-        <script>
-            moment.lang('zh-cn');
-            $(function(){
-                $('.unixtime').each(function(index){ 
-                    $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-                    $(this).show();
-                });
-                $('.dropdown-toggle').dropdown();
-            });
-        </script>
         {% block js %}{% endblock %}
         <script>
             var _gaq = _gaq || [];
