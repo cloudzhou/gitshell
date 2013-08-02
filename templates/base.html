@@ -8,7 +8,17 @@
         <meta content="gitshell" name="author">
         <meta name="csrf-token" content="{{csrf_token}}">
         <link href="/static/less/app/font-awesome/css/font-awesome.min.css?timestamp={{gitshell.timestamp}}" rel="stylesheet" type="text/css">
+        {% if gitshell.mode == 'run' %}
         <link href="/static/less/min/gitshell.min.css?timestamp={{gitshell.timestamp}}" rel="stylesheet" type="text/css">
+        {% else %}
+        <link href="/static/less/gitshell.less" rel="stylesheet/less" type="text/css">
+        <script>
+            less = {
+                env: "development"
+            }
+        </script>
+        <script src="/static/js/less-1.4.0.min.js"></script>
+        {% endif %}
         {% block css %}{% endblock %}
         <link rel="shortcut icon" href="/static/img/favicon.ico">
     </head>
@@ -102,7 +112,12 @@
 
 
         <script src="/static/js/min/lib.min.js?timestamp={{gitshell.timestamp}}"></script>
+        {% if gitshell.mode == 'run' %}
         <script src="/static/js/min/gitshell.min.js?timestamp={{gitshell.timestamp}}"></script>
+        {% else %}
+        <script src="/static/js/gitshell-template.js"></script>
+        <script src="/static/js/gitshell.js"></script>
+        {% endif %}
         {% block js %}{% endblock %}
         <script>
             var _gaq = _gaq || [];
