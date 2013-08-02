@@ -44,7 +44,7 @@
                         </p>
                     </div>
                     {% if member_vo.username != user_name %}
-                        <a href="javascript:void(0)" class="c_rm_member c_rm_rf_member delete-member"><i class="icon-trash"></i></a>
+                        <a href="javascript:void(0)" class="c_rm_member delete-member" value="{{member_vo.username}}"><i class="icon-trash"></i></a>
                     {% endif %}
                 </div>
             </div>
@@ -65,13 +65,6 @@ $(function(){
         $('#id_username').focus();
     });
     $('.c_rm_member').click(function(event) {
-        $(this).next().show();
-        $(this).next().focus();
-    });
-    $('.c_rm_rf_member').blur(function(event) {
-        $(this).hide()
-    });
-    $('.c_rm_rf_member').click(function(event) {
         $('#id_username').val($(this).attr('value'));
         $('#id_action').val('remove_member');
         $('#id_submit_form').submit()
@@ -83,13 +76,6 @@ $(function(){
                 $('#i_add_member').show();
             }
         , 300);
-    });
-    $('.c_tr').live('mouseover mouseout', function(event) {
-        if (event.type == 'mouseover') {
-            $(this).find('.c_rm_member').show();
-        } else {
-            $(this).find('.c_rm_member').hide();
-        }
     });
 });
 </script>
