@@ -9,6 +9,7 @@ from gitshell.gsuser.models import GsuserManager, Userprofile
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
 from gitshell.objectscache.da import da_post_save
+from gitshell.settings import TIMESTAMP
 
 MAIN_NAVS = ['index', 'stats', 'skills', 'home', 'login', 'logout', 'join', 'resetpassword', 'help', 'settings', 'private', 'captcha', 'ajax', 'explore', 'error']
 KEEP_REPO_NAME = ['active', 'watch', 'recommend', 'repo']
@@ -56,6 +57,11 @@ def userprofile(request):
     else:
         userprofile = Userprofile()
     return {'userprofile': userprofile }
+
+def gitshell(request):
+    return {'gitshell': {
+                'timestamp': TIMESTAMP,
+            }}
 
 def mainnav(request):
     path = request.path

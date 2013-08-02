@@ -2,8 +2,7 @@
 
 {% block css %}
     {% if current == 'blob' %}
-        <link href='/static/less/app/syntaxhighlighter/shCore.css' rel='stylesheet'>
-        <link href='/static/less/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet'>
+        <link href='/static/less/min/syntaxhighlighter.min.css?timestamp={{gitshell.timestamp}}' rel='stylesheet'>
     {% endif %}
 {% endblock %}
 

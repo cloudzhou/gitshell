@@ -3,6 +3,7 @@
 import os
 import ConfigParser
 from string import Template
+import time
 if __name__ == '__main__':
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     if os.path.exists('env.ini'):
@@ -12,6 +13,7 @@ if __name__ == '__main__':
             config = ConfigParser.RawConfigParser()
             config.readfp(open('env.ini'))
             items = dict(config.items('env'))
+            items['timestamp'] = str(time.time())
             fr = open('settings.tmpl', 'r')
             fw = open('settings.py', 'w')
             properties_tmpl = fr.read()

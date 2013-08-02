@@ -7,15 +7,8 @@
         <meta content="Gitshell 专注git代码托管, 团队协同，项目开发" name="description">
         <meta content="gitshell" name="author">
         <meta name="csrf-token" content="{{csrf_token}}">
-        <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
-        <link href="/static/less/gitshell.less" rel="stylesheet/less" type="text/css">
-        <!-- TODO why script here ? -->
-        <script>
-            less = {
-                env: "development"
-            }
-        </script>
-        <script src="/static/js/less-1.4.0.min.js"></script>
+        <link href="/static/less/app/font-awesome/css/font-awesome.min.css?timestamp={{gitshell.timestamp}}" rel="stylesheet" type="text/css">
+        <link href="/static/less/min/gitshell.min.css?timestamp={{gitshell.timestamp}}" rel="stylesheet" type="text/css">
         {% block css %}{% endblock %}
         <link rel="shortcut icon" href="/static/img/favicon.ico">
     </head>
@@ -108,27 +101,8 @@
         </footer>
 
 
-        <script src="/static/js/jquery-1.7.2.min.js"></script>
-        <script src="/static/js/bootstrap.min.js"></script>
-        <script src="/static/js/select2.min.js"></script>
-        <script src='/static/js/app/underscore/underscore-min.js'></script>
-        <script src='/static/js/app/underscore/underscore.string.min.js'></script>
-        <script type="text/javascript"> _.mixin(_.str.exports()) </script>
-        <script src="/static/js/moment.min.js"></script>
-        <script src="/static/js/moment.zh-cn.js"></script>
-        <script src='/static/js/gitshell-template.js?timestamp=1373609013' type='text/javascript'></script>
-        <script src='/static/js/gitshell.js?timestamp=1373609013' type='text/javascript'></script>
-        <!--TODO refactor js-->
-        <script>
-            moment.lang('zh-cn');
-            $(function(){
-                $('.unixtime').each(function(index){ 
-                    $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-                    $(this).show();
-                });
-                $('.dropdown-toggle').dropdown();
-            });
-        </script>
+        <script src="/static/js/min/lib.min.js?timestamp={{gitshell.timestamp}}"></script>
+        <script src="/static/js/min/gitshell.min.js?timestamp={{gitshell.timestamp}}"></script>
         {% block js %}{% endblock %}
         <script>
             var _gaq = _gaq || [];

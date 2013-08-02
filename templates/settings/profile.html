@@ -69,9 +69,7 @@
 {% endblock %}
 
 {% block js %}
-<script src="/static/js/Markdown.Converter.js"></script>
-<script src="/static/js/Markdown.Editor.js"></script>
-<script src="/static/js/Markdown.Sanitizer.js"></script>
+<script src="/static/js/min/markdown.min.js?timestamp={{gitshell.timestamp}}"></script>
 <script>
 /*global jQuery, window */
 $(function(){

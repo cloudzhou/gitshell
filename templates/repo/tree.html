@@ -1,7 +1,6 @@
 {% extends "repo/repo.html" %}
 
 {% block css %}
-    <link href="/static/less/app/highlight/github.css" rel="stylesheet">
 {% endblock %}
 
 {% block bubble_inner_class_name %} files{% endblock %}
@@ -66,9 +65,7 @@
 
 {% block subjs %}
 {% if readme_md %}
-<script src="/static/js/Markdown.Converter.js"></script>
-<script src="/static/js/Markdown.Editor.js"></script>
-<script src="/static/js/Markdown.Sanitizer.js"></script>
+<script src="/static/js/min/markdown.min.js?timestamp={{gitshell.timestamp}}"></script>
 {% endif %}
 <script>
 $(function(){
