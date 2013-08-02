@@ -238,9 +238,13 @@ class GitHandler():
     def _repo_load_log_file(self, from_commit_hash, commit_hash, log_size, path):
         commits = []
         between_commit_hash = commit_hash
+        
+        path_in_git = ''
+        if path != '' and path != '.':
+            path_in_git = '-- ' + path
         if from_commit_hash is not None and not from_commit_hash.startswith('0000000'):
             between_commit_hash = from_commit_hash + '...' + commit_hash
-        command = '/usr/bin/git log -%s --pretty="%%h______%%p______%%t______%%an______%%cn______%%ct|%%s" %s -- %s | /usr/bin/head -c 524288' % (log_size, between_commit_hash, path)
+        command = '/usr/bin/git log -%s --pretty="%%h______%%p______%%t______%%an______%%cn______%%ct|%%s" %s %s | /usr/bin/head -c 524288' % (log_size, between_commit_hash, path_in_git)
         try:
             raw_result = check_output(command, shell=True)
             for line in raw_result.split('\n'):
