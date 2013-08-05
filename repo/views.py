@@ -119,7 +119,7 @@ def ls_tree(request, user_name, repo_name, refs, path, current):
             tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
     readme_md = None
     if tree and 'has_readme' in tree and tree['has_readme']:
-        readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, path + '/' + tree['readme_file'])
+        readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, tree['readme_file'])
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'readme_md': readme_md}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/tree.html',

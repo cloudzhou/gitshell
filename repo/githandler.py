@@ -283,9 +283,9 @@ class GitHandler():
             for line in raw_output.split("\n"):
                 array = self.blank_p.split(line, 3) 
                 if len(array) >= 4:
-                    relative_path = array[3]
+                    abs_path = array[3]; relative_path = abs_path
                     if path != '.':
-                        relative_path = relative_path[len(path):]
+                        relative_path = abs_path[len(path):]
                     if array[1] == 'tree':
                         relative_path = relative_path + '/'
                     relative_path = self._oct_utf8_decode(relative_path)
@@ -294,11 +294,11 @@ class GitHandler():
                         tree[relative_path]['relative_path'] = relative_path
                         tree[relative_path]['type'] = array[1]
                         tree[relative_path]['commit_hash'] = array[2]
-                        tree[relative_path]['filename'] = array[3]
-                        filename_lower = array[3].lower()
-                        if filename_lower == 'readme.md' or filename_lower == '/readme.mkd':
+                        tree[relative_path]['abs_path'] = abs_path
+                        filename_lower = relative_path.lower()
+                        if filename_lower == 'readme.md' or filename_lower == 'readme.mkd':
                             has_readme = True
-                            readme_file = relative_path
+                            readme_file = abs_path
                         if array[1] == 'tree':
                             dirs.append(relative_path)
                         else:
