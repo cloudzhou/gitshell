@@ -14,10 +14,10 @@
     {% for commit in commits %}
         <div class="commit colspan">
             <div class="commiter user-plugin span">
-                <figure class="avatar"><img src="https://gravatar.com/avatar/{{commit.author_imgurl}}?s=30" alt="{{commit.author}}"></figure>
+                <figure class="avatar"><img src="https://gravatar.com/avatar/{{commit.author_imgurl}}?s=30" alt="{{commit.author_name}}"></figure>
                 <div class="info">
                     <p class="msg"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/">{{commit.commit_message|truncatechars:80}}</a></p>
-                    <p class="meta"><a href="/{{commit.author}}/">{{commit.author}}</a> <span class="date unixtime">{{commit.committer_date}}</span></p>
+                    <p class="meta"><a href="/{{commit.author_name}}/">{{commit.author_name}}</a> <span class="date unixtime">{{commit.committer_date}}</span></p>
                 </div>
             </div>
             <span class="hash span"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/" class="btn label-mini btn-info">{{commit.commit_hash}}</a></span>

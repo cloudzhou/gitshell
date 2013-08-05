@@ -6,6 +6,8 @@ from django.core.cache import cache
 from subprocess import check_output, Popen, PIPE
 from chardet.universaldetector import UniversalDetector
 from gitshell.objectscache.models import CacheKey
+from gitshell.gsuser.models import GsuserManager
+from gitshell.repo.models import RepoManager
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.settings import PULLREQUEST_REPO_PATH, logger
 """
@@ -244,28 +246,28 @@ class GitHandler():
             path_in_git = '-- ' + path
         if from_commit_hash is not None and not from_commit_hash.startswith('0000000'):
             between_commit_hash = from_commit_hash + '...' + commit_hash
-        command = '/usr/bin/git log -%s --pretty="%%h______%%p______%%t______%%an______%%cn______%%ct|%%s" %s %s | /usr/bin/head -c 524288' % (log_size, between_commit_hash, path_in_git)
+        command = '/usr/bin/git log -%s --pretty="%%h|%%p|%%t|%%an|%%ae|%%at|%%cn|%%ce|%%ct|%%s" %s %s | /usr/bin/head -c 524288' % (log_size, between_commit_hash, path_in_git)
         try:
             raw_result = check_output(command, shell=True)
             for line in raw_result.split('\n'):
-                ars = line.split('|', 1)
-                if len(ars) != 2:
+                ars = line.split('|', 9)
+                if len(ars) != 10:
                     continue
-                attr, commit_message = ars
-                attrs = attr.split('______', 6)
-                if len(attrs) != 6:
-                    continue
-                (commit_hash, parent_commit_hash, tree_hash, author, committer, committer_date) = (attrs)
+                (commit_hash, parent_commit_hash, tree_hash, author_name, author_email, author_date, committer_name, committer_email, committer_date, commit_message) = (ars)
                 commit = {
                     'commit_hash': commit_hash,
                     'parent_commit_hash': parent_commit_hash,
                     'tree_hash': tree_hash,
-                    'author': author,
-                    'committer': committer,
+                    'author_name': author_name,
+                    'author_email': author_email,
+                    'author_date': author_date,
+                    'committer_name': committer_name,
+                    'committer_email': committer_email,
                     'committer_date': committer_date,
                     'commit_message': commit_message,
                 }
                 commit['parent_commit_hash'] = parent_commit_hash.split(' ')
+                self._set_real_author_committer_name(commit)
                 commits.append(commit)
             return commits
         except Exception, e:
@@ -288,9 +290,13 @@ class GitHandler():
                         relative_path = relative_path + '/'
                     relative_path = self._oct_utf8_decode(relative_path)
                     if self._repo_file_path_check(relative_path):
-                        tree[relative_path] = [relative_path] + array[1:3]
-                        relative_path_lower = relative_path.lower()
-                        if relative_path_lower == 'readme.md' or relative_path_lower == 'readme.mkd':
+                        tree[relative_path] = {}
+                        tree[relative_path]['relative_path'] = relative_path
+                        tree[relative_path]['type'] = array[1]
+                        tree[relative_path]['commit_hash'] = array[2]
+                        tree[relative_path]['filename'] = array[3]
+                        filename_lower = array[3].lower()
+                        if filename_lower == 'readme.md' or filename_lower == '/readme.mkd':
                             has_readme = True
                             readme_file = relative_path
                         if array[1] == 'tree':
@@ -307,30 +313,52 @@ class GitHandler():
                 pre_path = path
                 if path == '.':
                     pre_path = ''
-                last_commit_command = 'for i in %s; do echo -n "$i|"; git log %s -1 --pretty="%%ct %%an %%s" -- "%s$i" | /usr/bin/head -c 524288; done' % (' '.join(quote_relative_paths), commit_hash, pre_path)
+                last_commit_command = 'for i in %s; do echo -n "$i|"; git log %s -1 --pretty="%%at|%%an|%%ae|%%s" -- "%s$i" | /usr/bin/head -c 524288; done' % (' '.join(quote_relative_paths), commit_hash, pre_path)
                 last_commit_output = check_output(last_commit_command, shell=True)
                 for last_commit in last_commit_output.split('\n'):
-                    splits = last_commit.split('|', 1)
-                    if len(splits) < 2:
+                    splits = last_commit.split('|', 4)
+                    if len(splits) < 5:
                         continue
                     relative_path = splits[0]
-                    meta_splits = splits[1].split(' ', 2)
-                    if len(meta_splits) < 3:
-                        continue
-                    (unixtime, author_name, last_commit_message) = meta_splits
-                    tree[relative_path].append(unixtime)
-                    tree[relative_path].append(author_name)
-                    tree[relative_path].append(last_commit_message)
+                    tree[relative_path]['author_time'] = splits[1]
+                    tree[relative_path]['author_name'] = splits[2]
+                    tree[relative_path]['author_email'] = splits[3]
+                    tree[relative_path]['last_commit_message'] = splits[4]
             dirs.sort()
             files.sort()
             ordered_tree = []
             for file_path in dirs + files:
                 tree_item = tree[file_path]
+                self._set_real_author_name(tree_item)
                 ordered_tree.append(tree_item)
             return {'tree': ordered_tree, 'has_readme': has_readme, 'readme_file': readme_file}
         except Exception, e:
             logger.exception(e)
         return {}
+
+    def _set_real_author_name(self, item):
+        if 'author_name' not in item or 'author_email' not in item:
+            return
+        author_name = item['author_name']
+        author_email = item['author_email']
+        item['real_author_name'] = author_name
+        user = GsuserManager.get_user_by_email(author_email)
+        if user:
+            item['real_author_name'] = user.username
+
+    def _set_real_committer_name(self, item):
+        if 'committer_name' not in item or 'committer_email' not in item:
+            return
+        committer_name = item['committer_name']
+        committer_email = item['committer_email']
+        item['real_committer_name'] = committer_name
+        user = GsuserManager.get_user_by_email(committer_email)
+        if user:
+            item['real_committer_name'] = user.username
+
+    def _set_real_author_committer_name(self, commit):
+        self._set_real_author_name(commit)
+        self._set_real_committer_name(commit)
 
     def _get_diff_stage_file(self, repo_path, pre_commit_hash, commit_hash, context, path):
         (username, reponame) = repo_path.split('/')[-2:]
@@ -469,26 +497,28 @@ class GitHandler():
         refs_detail_commit = {}
         refses = commit_hash_dict.keys()
         try:
-            last_commit_command = 'for i in %s; do echo -n "$i|"; git log "$i" -1 --pretty="%%h______%%p______%%t______%%an______%%cn______%%ct|%%s" | /usr/bin/head -c 524288; done' % (' '.join(refses))
+            last_commit_command = 'for i in %s; do echo -n "$i|"; git log "$i" -1 --pretty="%%h|%%p|%%t|%%an|%%ae|%%at|%%cn|%%ce|%%ct|%%s" | /usr/bin/head -c 524288; done' % (' '.join(refses))
             last_commit_output = check_output(last_commit_command, shell=True)
             for line in last_commit_output.split('\n'):
-                ars = line.split('|', 2)
-                if len(ars) != 3:
+                ars = line.split('|', 10)
+                if len(ars) != 11:
                     continue
-                refs, attr, commit_message = ars
-                attrs = attr.split('______', 6)
-                if len(attrs) != 6:
-                    continue
-                (commit_hash, parent_commit_hash, tree_hash, author, committer, committer_date) = (attrs)
-                refs_detail_commit[refs] = {
+                (refs, commit_hash, parent_commit_hash, tree_hash, author_name, author_email, author_date, committer_name, committer_email, committer_date, commit_message) = (ars)
+                refs_commit = {
                     'commit_hash': commit_hash,
+                    'parent_commit_hash': parent_commit_hash,
                     'tree_hash': tree_hash,
-                    'author': author,
-                    'committer': committer,
+                    'author_name': author_name,
+                    'author_email': author_email,
+                    'author_date': author_date,
+                    'committer_name': committer_name,
+                    'committer_email': committer_email,
                     'committer_date': committer_date,
                     'commit_message': commit_message,
                 }
-                refs_detail_commit[refs]['parent_commit_hash'] = parent_commit_hash.split(' ')
+                refs_commit['parent_commit_hash'] = parent_commit_hash.split(' ')
+                self._set_real_author_committer_name(refs_commit)
+                refs_detail_commit[refs] = refs_commit
         except Exception, e:
             logger.exception(e)
         meta['detail_commit'] = refs_detail_commit

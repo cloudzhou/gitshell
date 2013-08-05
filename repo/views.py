@@ -1188,7 +1188,7 @@ def _fillwith_commits(commits):
     if not commits:
         return
     for commit in commits:
-        userprofile = GsuserManager.get_userprofile_by_name(commit['author'])
+        userprofile = GsuserManager.get_userprofile_by_name(commit['author_name'])
         if userprofile:
             commit['author_imgurl'] = userprofile.imgurl
         else:

@@ -18,7 +18,7 @@ $(function(){
             var branch = branches[x];
             var commit = detail_commit[branch];
             html.push('<td class="branch-name"><h2 class="heading"><a href="/{{user_name}}/{{repo_name}}/tree/' + branch + '">' + branch + '</a></h2></td>');
-            html.push('<td class="meta"><span class="muted">由' + commit.author + '<span class="c_unixtime">' + commit.committer_date + '</span>提交: ' + commit.commit_message + '</span></td>');
+            html.push('<td class="meta"><span class="muted">由 ' + commit.committer_name + ' <span class="c_unixtime">' + commit.committer_date + '</span>提交: ' + commit.commit_message + '</span></td>');
             html.push('<td class="actions">');
             html.push('<a href="/{{user_name}}/{{repo_name}}/refs/graph/' + branch + '/" class="btn">Graph</a>');
             html.push('<a href="/{{user_name}}/{{repo_name}}/compare/' + branch + '/" class="btn btn-success">Compare</a>');

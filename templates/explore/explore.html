@@ -103,7 +103,7 @@
                                                                     subject = subject.substring(0, 20) + '...';
                                                                 }
                                 html.push('<div class="event_feed user-plugin">');
-                                                                html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=35"></figure>')
+                                                                html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author_name] + '?s=35"></figure>')
                                                                 html.push('<div class="info"><p class="name">' + '<a href="/'+ commit.user_name + '/' + commit.repo_name +'/">' + commit.repo_name + '</a><span class="subject">#' + subject + '<span></p><p class="meta">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</p></div>')
                                 html.push('</div>');
                             } else if(feed.feed_type == 1) {
