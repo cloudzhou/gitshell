@@ -6,10 +6,10 @@
     {% if commit %}
         <div class="commit colspan">
             <div class="commiter user-plugin span">
-                <figure class="avatar"><img src="https://gravatar.com/avatar/{{commit.author_imgurl}}?s=30" alt="{{commit.author_name}}"></figure>
+                <figure class="avatar"><img src="https://gravatar.com/avatar/{{commit.author_imgurl}}?s=30" alt="{{commit.committer_name}}"></figure>
                 <div class="info">
                     <p class="msg"><a href="#">{{commit.commit_message|truncatechars:80}}</a></p>
-                    <p class="meta"><a href="/{{commit.author_name}}/">{{commit.author_name}}</a> <span class="date unixtime">{{commit.committer_date}}</span></p>
+                    <p class="meta"><a href="/{{commit.real_committer_name}}/">{{commit.committer_name}}</a> <span class="date unixtime">{{commit.committer_date}}</span></p>
                 </div>
             </div>
             {% for parent_commit_hash in commit.parent_commit_hash %}

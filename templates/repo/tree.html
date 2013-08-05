@@ -44,7 +44,11 @@
                     {% else %}
                         <a href="javascript:void(0)" class="commit">{{file_attrs.last_commit_message}}</a>
                     {% endif %}
-                    <a href="/{{file_attrs.author_name}}/" class="commiter">@{{file_attrs.author_name}}</a>
+                    {% if file_attrs.real_author_name == '' %}
+                    <span>@{{file_attrs.author_name}}</span>
+                    {% else %}
+                    <a href="/{{file_attrs.real_author_name}}/" class="commiter">@{{file_attrs.author_name}}</a>
+                    {% endif %}
                 <td class="date">
                     <span class="date unixtime">{{file_attrs.author_time}}</span></td>
                 </td>

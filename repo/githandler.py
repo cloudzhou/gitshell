@@ -341,8 +341,12 @@ class GitHandler():
             return
         author_name = item['author_name']
         author_email = item['author_email']
-        item['real_author_name'] = author_name
+        item['real_author_name'] = ''
         user = GsuserManager.get_user_by_email(author_email)
+        if user:
+            item['real_author_name'] = user.username
+            return
+        user = GsuserManager.get_user_by_name(author_name)
         if user:
             item['real_author_name'] = user.username
 
@@ -351,8 +355,12 @@ class GitHandler():
             return
         committer_name = item['committer_name']
         committer_email = item['committer_email']
-        item['real_committer_name'] = committer_name
+        item['real_committer_name'] = ''
         user = GsuserManager.get_user_by_email(committer_email)
+        if user:
+            item['real_committer_name'] = user.username
+            return
+        user = GsuserManager.get_user_by_name(committer_name)
         if user:
             item['real_committer_name'] = user.username
 
