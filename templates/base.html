@@ -3,7 +3,6 @@
     <head>
         <meta charset="utf-8">
         <title>{% block title %}Gitshell - 专注于 git 托管{% endblock %}</title>
-        <meta content="width=device-width, initial-scale=1.0" name="viewport">
         <meta content="Gitshell 专注git代码托管, 团队协同，项目开发" name="description">
         <meta content="Gitshell" name="author">
         <meta name="csrf-token" content="{{csrf_token}}">
@@ -33,9 +32,9 @@
                     {% else %}
                         <li><a href="/join/">工作台</a></li>
                     {% endif %}
-                    <li {%if mainnav == 'explore'%}class="active"{%endif%}><a href="/explore/">浏览</a></li>
+                    <li><a href="/explore/" {%if mainnav == 'explore'%}class="active"{%endif%}>浏览</a></li>
                     {% if not user.is_authenticated %}
-                    <li {%if mainnav == 'help'%}class="active"{%endif%}><a href="/help/">帮助</a></li>
+                    <li><a href="/help/" {%if mainnav == 'help'%}class="active"{%endif%}>帮助</a></li>
                     {% endif %}
                 </ul>
                 <ul class="nav account">
