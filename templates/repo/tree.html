@@ -12,11 +12,10 @@
 
 {% block subcontainer %}
 
-
 		<div class="tree" id="resize-container">
 			<nav class="file-browser" id="file-browser">
         {% include "repo/branch_nav.html" %}
-        <!--<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="btn btn-mini">Commits</a>-->
+        {#<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="btn btn-mini">Commits</a>#}
 				<ul class="nav nav-list">
           {% for file_attrs in tree.tree %}
           {%if file_attrs.1 == 'tree'%}
