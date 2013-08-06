@@ -7,39 +7,111 @@
 {% block container %}
     <!--TODO refactor FIX timeline error -->
     <section class="colspan">
-            <section class="activity span">
-                <header class="header">
-                    <h1 class="heading">活跃仓库列表</h1>
-                </header>
-                {%for repo in repos%}
-                  <div class="c_repo user-plugin">
-                      <figure class="avatar">
-                        <img src="https://gravatar.com/avatar/{{userimgurl_dict|keyvalue:repo.user_id}}?s=35">
-                      </figure>
-                      <div class="info">
-                        <div class="name">{{forloop.counter}}. <a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
-                          <a href="/{{username_dict|keyvalue:repo.user_id}}/{{repo.name}}/">{{repo.name}}</a>
-                        </div>
-                        <div class="meta">
-                          <p>{{repo.desc}}</p>
-                          <p>创建于 {{repo.create_time|date:'y/m/d'}}，最近更新 {{repo.modify_time|date:'y/m/d'}}</p>
-                        </div>
-                        <div class="actions btn-group">
-                          <a data-original-title="提交次数" rel="tooltip" class="c_repo_attr first btn btn-mini" href="javascript:void(0)"><i class="icon-time"></i>{{repo.commit}}</a>
-                          <a data-original-title="关注数量" rel="tooltip" class="c_repo_attr middle btn btn-mini" href="javascript:void(0)"><i class="icon-eye-open"></i>{{repo.watch}}</a>
-                          <a data-original-title="衍生次数" rel="tooltip" class="c_repo_attr last btn btn-mini" href="javascript:void(0)"><i class="icon-code-fork"></i>{{repo.fork}}</a>
-                        </div>
-                      </div>
-                  </div>
-                {%endfor%}
-            </section>
-            <section class="recently span">
-                <header class="header">
-                    <h1 class="heading">最新提交信息</h1>
-                </header>
-                <div id='feeds_container'>
-                    <img id='feeds_loading' src='/static/img/loading.gif'>
-                </div>
-            </section>
+      <section class="recently span">
+          <header class="header">
+            <h1 class="heading">最新动态</h1>
+          </header>
+          <div id='feeds_container'>
+            <img id='feeds_loading' src='/static/img/loading.gif'>
+          </div>
+      </section>
+      <section class="activity span">
+          <header class="header">
+              <h1 class="heading">活跃仓库列表</h1>
+          </header>
+          {%for repo in repos%}
+            <div class="c_repo clearfix">
+              <div class="name"><a href="/{{username_dict|keyvalue:repo.user_id}}/">{{username_dict|keyvalue:repo.user_id}}</a> / 
+                <a href="/{{username_dict|keyvalue:repo.user_id}}/{{repo.name}}/">{{repo.name}}</a>
+              </div>
+            </div>
+          {%endfor%}
+      </section>
     </section>
 {% endblock %}
+<<<<<<< HEAD
+=======
+
+{% block js %}
+    <script src="/static/js/moment.min.js"></script>
+    <script src="/static/js/moment.zh-cn.js"></script>
+    <script>
+        $(function(){
+            moment.lang('zh-cn');
+            var orgi_feeds = {{ feeds_as_json|safe }}
+            var sorted_feeds = []
+            var do_orgi_feeds = function() {
+                all_ids = []
+                all_feeds = []
+                for (x in orgi_feeds) {
+                    all_feeds = all_feeds.concat(orgi_feeds[x]);
+                } 
+                all_feeds.sort(function(a,b) {
+                    return a[1] - b[1];
+                })
+                var i = 0;
+                var pre_feed_id = 0;
+                for (x in all_feeds) {
+                    feed_id = all_feeds[x][0]
+                    if(pre_feed_id != feed_id) {
+                        i++;
+                        all_ids.push(feed_id);
+                    }
+                    pre_feed_id = feed_id
+                    if(i >= 100) { break; }
+                }
+                all_ids_str = all_ids.join('_');
+                $.ajax({
+                    url: '/ajax/feed/ids/',
+                    type: 'POST',
+                    data: {'ids_str': all_ids_str, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                    dataType: 'json',
+                    timeout: 10000,
+                    error: function(){
+                        //alert('');
+                    },
+                    success: function(json){
+                        ordered_date = []
+                        ordered_date_reponame = {}
+                        display_feeds_map = {}
+                        feeds = json.feeds
+                        gravatar_dict = json.gravatar_dict
+                        feeds.sort(function(a,b) {
+                          return b.committer_date - a.committer_date;
+                        })
+                        html = []
+                        for(x in feeds) {
+                            feed = feeds[x];
+                            if(feed.relative_obj === undefined) {
+                                continue;
+                            }
+                            if(feed.feed_type == 0) {
+                                commit = feed.relative_obj
+                                  subject = commit.subject;
+                                  if(subject.length >= 60) {
+                                      subject = subject.substring(0, 60) + '...';
+                                  }
+                                  html.push('<div class="latest-commit event_feed user-plugin">');
+                                  html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=20"></figure>');
+                                  html.push('<div class="info">' + '<a href="/' + commit.user_name + '/">' + commit.user_name + '</a><span class="subject" title="' + subject + '">' + subject + '</span> at <a href="/'+ commit.user_name + '/' + commit.repo_name +'/">' + commit.repo_name + '</a><time class="meta" pudate="pudate">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</time></div>');
+                                  html.push('</div>');
+                            } else if(feed.feed_type == 1) {
+                            }
+                        }
+                        $('#feeds_container').append(html.join(''));
+                        if(feeds.length == 0) {
+                            $('#feeds_container').append('还没有最新提交信息，等，等等，等等');
+                        }
+                        $('#feeds_loading').remove()
+                    }
+                });
+            };
+            do_orgi_feeds();
+            $('.c_repo').tooltip({
+              selector: "a[rel=tooltip]"
+            });
+
+        });
+    </script>
+{% endblock %}
+>>>>>>> b80c3a0eea27469bb3531950c29331e2d1db8309

@@ -35,26 +35,26 @@
                 </div>
                 <ul class="actions horizontal-list">
                     <li class="first">
-                        {% if user.username == gsuser.username %}
-                            <a href="/{{ gsuser.username }}/repo/">
-                                <span class="link">{{ gsuserprofile.pubrepo|add:gsuserprofile.prirepo }}</span></a><br>
-                        {% else %}
-                            <a href="/{{ gsuser.username }}/repo/">
-                                <span class="link">{{ gsuserprofile.pubrepo }}</span></a><br>
-                        {% endif %}
-                            <span class="muted">仓库</span>
+                      {% if user.username == gsuser.username %}
+                        <a href="/{{ gsuser.username }}/repo/">
+                          <span class="link">{{ gsuserprofile.pubrepo|add:gsuserprofile.prirepo }}</span></a>
+                      {% else %}
+                        <a href="/{{ gsuser.username }}/repo/">
+                          <span class="link">{{ gsuserprofile.pubrepo }}</span></a><br>
+                      {% endif %}
+                          <span class="muted">仓库</span>
                     </li>
                     <li class="middle">
-                        <a href="/{{ gsuser.username }}/watch/repo/"><span class="link">{{ gsuserprofile.watchrepo }}</span></a><br>
-                        <span class="muted">关注仓库</span>
+                      <a href="/{{ gsuser.username }}/watch/repo/"><span class="link">{{ gsuserprofile.watchrepo }}</span></a>
+                      <span class="muted">关注仓库</span>
                     </li>
                     <li class="middle">
-                        <a href="/{{ gsuser.username }}/watch/user/"><span class="link">{{ gsuserprofile.watch }}</span></a><br>
-                        <span class="muted">关注</span>
+                      <a href="/{{ gsuser.username }}/watch/user/"><span class="link">{{ gsuserprofile.watch }}</span></a>
+                      <span class="muted">关注</span>
                     </li>
                     <li class="last">
-                        <a href="/{{ gsuser.username }}/watch/user/"><span class="link">{{ gsuserprofile.be_watched }}</span></a></br>
-                        <span class="muted">被关注</span>
+                      <a href="/{{ gsuser.username }}/watch/user/"><span class="link">{{ gsuserprofile.be_watched }}</span></a>
+                      <span class="muted">被关注</span>
                     </li>
                 </ul>
                 
@@ -113,6 +113,16 @@
                             {% endfor %}
                         </div>
                     </div>
+
+                    {#<div class="item c_user_stats hide">
+                        <h2 class="heading">统计<a href="/stats/gsuser.username/" class="more">more</a></h2>
+                        <div class="c_user_stats">
+                            <div id="figure-a" class="figure lg">
+                              <div id="id_month_container" class="user_chart"></div>
+                            </div>
+                        </div>
+                      </div>#}
+
                 </div>
                 {% endif %}
             </div>
@@ -179,7 +189,39 @@ $(function(){
                 $('#id_alert_message').html(json.message);
             },
         })
-    })
+    });
+
+    {#
+    var last30days = {{last30days}};
+    var last30daysAsCat = [];
+    for(x in last30days) {
+        last30daysAsCat.push(new Date(last30days[x]*1000).getDate());
+    }
+    last30daysAsCat.reverse()
+    var last30days_commit = {{last30days_commit}};
+    var last30daysAsData = [];
+    for(x in last30days) {
+        if(last30days[x] in last30days_commit) {
+            last30daysAsData.push(last30days_commit[last30days[x]]);
+            continue;
+        }
+        last30daysAsData.push(0);
+    }
+    last30daysAsData.reverse();
+
+    if(Object.keys(last30days_commit).length > 0) {
+        $('.c_user_stats').show();
+        var month_chart = new Highcharts.Chart({
+            chart: { renderTo: 'id_month_container', type: 'line'},title: {text: ''},
+            yAxis: { title: { text: '' } },
+            plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
+            xAxis: { categories: last30daysAsCat },
+            series: [{ name: '1 月提交', data: last30daysAsData }]
+        });
+    }
+    #}
+
+
 });
 </script>
     {% block subjs %}{% endblock %}

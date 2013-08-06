@@ -4,10 +4,10 @@
 {% block subcontainer %}
 
 <div class="colspan">
-    <div id="feeds_container">
-            <figure id="feeds_loading">
-                <img id='feeds_loading' src='/static/img/loading.gif'>
-            </figure>
+    <div id="feeds_container" class="feeds">
+      <figure id="feeds_loading">
+          <img id='feeds_loading' src='/static/img/loading.gif'>
+      </figure>
     </div>
 </div>
 
@@ -74,7 +74,7 @@ $(function(){
                 html = []
                 for(x in ordered_date) {
                     feed_date = ordered_date[x];
-                    html.push('<div class="date"><h1> ' + feed_date.substring(3) + ' </h1></div>');
+                    html.push('<section class="feedtime"><header class="header"><h1 class="date"> ' + feed_date.substring(3) + ' </h1></header>');
                     for(y in display_feeds_map[feed_date]) {
                         feed = display_feeds_map[feed_date][y];
                         if(feed.relative_obj === undefined) {
@@ -83,8 +83,8 @@ $(function(){
                         if(feed.feed_type == 0) {
                             commit = feed.relative_obj
                             html.push('<div class="event_feed user-plugin">');
-                                                        html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=35"></figure><div class="info"><p class="name"><a href="/' + commit.author + '/" class="author">' + commit.author + '</a>')
-                                                        html.push('<a href="/'+ commit.user_name + '/' + commit.repo_name +'/">' + commit.repo_name + '</a><span class="subject">' + commit.subject + '</span></p><p class="meta"><span class="date">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></p></div>')
+                            html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=18"></figure><div class="info"><a href="/' + commit.author + '/" class="author">' + commit.author + '</a>');
+                            html.push('<span class="subject">' + commit.subject + '</span>at <a href="/'+ commit.user_name + '/' + commit.repo_name +'/" class="repo-name">' + commit.repo_name + '</a>' + '<time class="date" pubdate="pubdate">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</time></div>');
                             html.push('</div>');
                         } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
                             issue = feed.relative_obj;
@@ -99,8 +99,8 @@ $(function(){
                                 detail = feed.first_refname;
                             }
                             html.push('<div class="event_feed user-plugin">');
-                                                        html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=35"></figure><div class="info"><p class="name"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/" class="author">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>')
-                                                        html.push(action + '<span class="subject">#' + issue.id + '</span> on <a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a> ' + detail + '<a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a></p><p class="meta"><span class="date">' + moment(new Date(issue.create_time*1000)).fromNow() + '</span></p></div>')
+                            html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=18"></figure><div class="info"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/" class="author">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>');
+                            html.push(action + '<span class="subject">#' + issue.id + '</span> on <a href="/'+ issue.username + '/' + issue.reponame +'/" class="repo-name">' + issue.reponame + '</a> ' + detail + '<a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a><time class="date" pubdate="pubdate">' + moment(new Date(issue.create_time*1000)).fromNow() + '</time></div>');
                             html.push('</div>');
                         } else if(feed.feed_type >= 100 && feed.feed_type <= 105) {
                             var pullRequest = feed.relative_obj;
@@ -119,11 +119,12 @@ $(function(){
                                 action = 'comment on pull request';
                             }
                             html.push('<div class="event_feed user-plugin">');
-                                                        html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=35" alt=""></figure><div class="info"><p class="name"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a></p><p class="meta"')
-                                                        html.push(action + '<span class="subject">#' + pullRequest.id + '</span> on <a href="/'+ pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name +'/">' + pullRequest.desc_repo_name + '</a><a href="/'+pullRequest.desc_repo_username+'/'+pullRequest.desc_repo_name+'/pull/'+pullRequest.id+'/">#' + pullRequest.id + ' ' + pullRequest.short_title + '</a><span class="date">' + moment(new Date(pullRequest.create_time*1000)).fromNow() + '</span></p></div>')
+                            html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=18" alt=""></figure><div class="info"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>');
+                            html.push(action + '<span class="subject">#' + pullRequest.id + '</span> on <a href="/'+ pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name +'/" class="repo-name">' + pullRequest.desc_repo_name + '</a><a href="/'+pullRequest.desc_repo_username+'/'+pullRequest.desc_repo_name+'/pull/'+pullRequest.id+'/">#' + pullRequest.id + ' ' + pullRequest.short_title + '</a><time class="date" pubdate="pubdate">' + moment(new Date(pullRequest.create_time*1000)).fromNow() + '</time></div>')
                             html.push('</div>');
                         }
                     }
+                    html.push('</section>');
                     padding_top = 15;
                 }
                 $('#feeds_container').append(html.join(''));
@@ -135,13 +136,6 @@ $(function(){
         });
     };
     do_orgi_feeds();
-    $('.feedtime').live('mouseover mouseout', function(event) {
-        if (event.type == 'mouseover') {
-            $(this).css('background-color', '#D9EDF7');
-        } else {
-            $(this).css('background-color', '#FFFFFF');
-        }
-    });
 });
 </script>
 {% endblock %}

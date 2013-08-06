@@ -5,7 +5,7 @@
     <div id='pull_container'>
         <div class="header clearfix">
           <div class="btn-group pull-right">
-            <button id="id_pull_merge" class="btn btn-mini btn-primary first">需要我合并的请求</button>
+            <button id="id_pull_merge" class="btn btn-mini btn-disable first">需要我合并的请求</button>
             <button id="id_pull_request" class="btn btn-mini last">我发出的</button>
           </div>
         </div>
@@ -27,7 +27,7 @@
 					{% endfor %}
         {% else %}
         <div class="well pull">
-					<p class="text-info">您还没有发起 Pull Request</p>
+					<p class="alert alert-info">您还没有发起 Pull Request</p>
         </div>
         {% endif %}
     </div>
