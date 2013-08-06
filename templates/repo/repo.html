@@ -2,8 +2,8 @@
 
 {% block css %}
   {% if current == 'blob' %}
-    <link href='/static/css/app/syntaxhighlighter/shCore.css' rel='stylesheet'>
-    <link href='/static/css/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet'>
+      <link href='/static/less/app/syntaxhighlighter/shCore.css' rel='stylesheet'>
+      <link href='/static/less/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet'>
   {% endif %}
 {% endblock %}
 
@@ -166,11 +166,10 @@ $(function(){
       }
     });
 
-    $("#copy-btn").zclip({
-      path: "/static/js/ZeroClipboard.swf",
-      //path: "http://davidwalsh.name/demo/ZeroClipboard.swf",
-      copy: function() { return $("#url-data").val(); }
-    });
+//    $("#copy-btn").zclip({
+//      path: "/static/js/ZeroClipboard.swf",
+//      copy: function() { return $("#url-data").val(); }
+//    });
 
     $('.repo-actions-bar .watch').click(function() {
         $.post('/{{user_name}}/{{repo_name}}/watch/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){

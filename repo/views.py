@@ -664,6 +664,7 @@ def settings(request, user_name, repo_name):
         raise Http404
     refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'settings'; error = u''
     repoForm = RepoForm(instance = repo)
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'repoForm': repoForm, 'error': error}
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
         if not repoForm.is_valid():
@@ -682,7 +683,6 @@ def settings(request, user_name, repo_name):
         if dropbox_url is not None and dropbox_url != '':
             repo.dropbox_url = dropbox_url
             repo.save()
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'repoForm': repoForm, 'error': error}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/settings.html',
                           response_dictionary,
@@ -1185,6 +1185,8 @@ def _conver_repos(raw_repos, map_users):
     return repos_vo
 
 def _fillwith_commits(commits):
+    if not commits:
+        return
     for commit in commits:
         userprofile = GsuserManager.get_userprofile_by_name(commit['author'])
         if userprofile:
