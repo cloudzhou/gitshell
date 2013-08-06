@@ -184,7 +184,7 @@ class GitHandler():
         refs_meta = self.repo_ls_refs(repo, repo.get_abs_repopath())
         if branch in refs_meta['branches'] or base_branch not in refs_meta['branches']:
             return False
-        args = ['/bin/bash', '/usr/bin/git', 'branch', branch, base_branch]
+        args = ['/usr/bin/git', 'branch', branch, base_branch]
         return self._run_command_on_repo_and_flush(repo, args)
 
     def create_tag(self, repo, tag, base_branch):
@@ -193,7 +193,7 @@ class GitHandler():
         refs_meta = self.repo_ls_refs(repo, repo.get_abs_repopath())
         if tag in refs_meta['tags'] or base_branch not in refs_meta['branches']:
             return False
-        args = ['/bin/bash', '/usr/bin/git', 'tag', tag, base_branch]
+        args = ['/usr/bin/git', 'tag', tag, base_branch]
         return self._run_command_on_repo_and_flush(repo, args)
 
     def delete_branch(self, repo, branch):
@@ -202,20 +202,20 @@ class GitHandler():
         refs_meta = self.repo_ls_refs(repo, repo.get_abs_repopath())
         if branch not in refs_meta['branches']:
             return False
-        args = ['/bin/bash', '/usr/bin/git', 'branch', '-D', branch]
+        args = ['/usr/bin/git', 'branch', '-D', branch]
         return self._run_command_on_repo_and_flush(repo, args)
 
     def delete_tag(self, repo, tag):
         if not self._is_allowed_path(tag):
             return False
         refs_meta = self.repo_ls_refs(repo, repo.get_abs_repopath())
-        if tag not in refs_meta['branches']:
+        if tag not in refs_meta['tags']:
             return False
-        args = ['/bin/bash', '/usr/bin/git', 'tag', '-d', tag]
+        args = ['/usr/bin/git', 'tag', '-d', tag]
         return self._run_command_on_repo_and_flush(repo, args)
 
     def update_server_info(self, repo):
-        args = ['/bin/bash', '/usr/bin/git', 'update-server-info']
+        args = ['/usr/bin/git', 'update-server-info']
         return self._run_command_on_repo(repo, args)
 
     def _run_command_on_repo_and_flush(self, repo, args):
@@ -696,7 +696,15 @@ class GitHandler():
             filediff['linediff'] = linediff
             filediff['filename'] = filename
             detail.append(filediff)
-
+        diff['changedfiles_count'] = len(numstat)
+        total_add_line = 0; total_delete_line = 0;
+        for item in numstat:
+            total_add_line = total_add_line + int(item[0])
+            total_delete_line = total_delete_line + int(item[1])
+        abs_change_line = total_add_line - total_delete_line
+        diff['total_add_line'] = total_add_line
+        diff['total_delete_line'] = total_delete_line
+        diff['abs_change_line'] = abs_change_line
         return diff
 
 if __name__ == '__main__':

@@ -820,10 +820,22 @@ def refs_graph(request, user_name, repo_name, refs):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
+def refs_create(request, user_name, repo_name, refs):
+    current = 'branches'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or not RepoManager.is_repo_member(repo, request.user):
+        raise Http404
+    response_dictionary = {'mainnav': 'repo', 'current': current}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/refs_create.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
 @require_http_methods(["POST"])
 def refs_branch_create(request, user_name, repo_name, branch, base_branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
+    if repo is None or not RepoManager.is_repo_member(repo, request.user):
         return json_httpResponse({'returncode': 128, 'result': 'failed'})
     gitHandler = GitHandler()
     if gitHandler.create_branch(repo, branch, base_branch):
@@ -834,7 +846,7 @@ def refs_branch_create(request, user_name, repo_name, branch, base_branch):
 @require_http_methods(["POST"])
 def refs_branch_delete(request, user_name, repo_name, branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
+    if repo is None or not RepoManager.is_repo_member(repo, request.user) or branch == 'master':
         return json_httpResponse({'returncode': 128, 'result': 'failed'})
     gitHandler = GitHandler()
     if gitHandler.delete_branch(repo, branch):
@@ -845,7 +857,7 @@ def refs_branch_delete(request, user_name, repo_name, branch):
 @require_http_methods(["POST"])
 def refs_tag_create(request, user_name, repo_name, tag, base_branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
+    if repo is None or not RepoManager.is_repo_member(repo, request.user):
         return json_httpResponse({'returncode': 128, 'result': 'failed'})
     gitHandler = GitHandler()
     if gitHandler.create_tag(repo, tag, base_branch):
@@ -856,7 +868,7 @@ def refs_tag_create(request, user_name, repo_name, tag, base_branch):
 @require_http_methods(["POST"])
 def refs_tag_delete(request, user_name, repo_name, tag):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
+    if repo is None or not RepoManager.is_repo_member(repo, request.user):
         return json_httpResponse({'returncode': 128, 'result': 'failed'})
     gitHandler = GitHandler()
     if gitHandler.delete_tag(repo, tag):
