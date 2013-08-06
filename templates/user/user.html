@@ -8,15 +8,6 @@
         <ul id="id_lastest_active" class="list"></ul>
     </div>
 
-    <div class="item c_user_stats">
-        <h2 class="heading">统计<a href="/stats/{{gsuser.username}}/" class="more">more</a></h2>
-        <div class="c_user_stats">
-            <div id="figure-a" class="figure lg">
-                <div id="id_month_container" class="user_chart"></div>
-                <div class="muted">统计最近一月 <strong>commit</strong> 次数 异步统计，仅供参考</div>
-            </div>
-        </div>
-    </div>
 
     <ul class="nav nav-tabs heading" id="repo-tab">
         <li><a href="#repos" data-toggle="tab">仓库</a></li>
@@ -136,7 +127,7 @@ $(function(){
                     if(feed.feed_type == 0) {
                         commit = feed.relative_obj;
                         feed_date_str = moment(new Date(commit.committer_date*1000)).fromNow();
-                                                html.push('<li><h3 class="heading"><a href="/' + commit.user_name + '/' + commit.repo_name + '/">' + commit.repo_name + '</a></h3><p>' + commit.subject + ' <span class="modified">' + feed_date_str + '</span></p></li>');
+                        html.push('<li><span>' + commit.subject + '</span> at <a href="/' + commit.user_name + '/' + commit.repo_name + '/">' + commit.repo_name + '</a>' + ' <time class="modified" pubdate="pubdate">' + feed_date_str + '</time></li>');
                     } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
                         issue = feed.relative_obj;
                         action = 'create issue';
@@ -149,7 +140,7 @@ $(function(){
                             action = 'change issue';
                             detail = feed.first_refname;
                         }
-                                                html.push('<li><h3 class="heading"><a href="/' + issue.username + '/' + issue.reponame + '/">' + issue.reponame + '</a></h3><p>' + action + ' #' + issue.id + ' on <a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></p><p>' + detail + '<a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a> <span class="date">' + moment(new Date(issue.create_time*1000)).fromNow() + '</span></p></li>')
+                        html.push('<li><span>' + action + ' #' + ' on <a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></span><time class="date" pubdate="pubdate">' + moment(new Date(issue.create_time*1000)).fromNow() + '</time></li>')
                     }
                 }
                 $('#id_lastest_active').html(html.join(''));
@@ -161,32 +152,6 @@ $(function(){
     };
     do_orgi_feeds();
 
-    var last30days = {{last30days}};
-    var last30daysAsCat = [];
-    for(x in last30days) {
-        last30daysAsCat.push(new Date(last30days[x]*1000).getDate());
-    }
-    last30daysAsCat.reverse()
-    var last30days_commit = {{last30days_commit}};
-    var last30daysAsData = [];
-    for(x in last30days) {
-        if(last30days[x] in last30days_commit) {
-            last30daysAsData.push(last30days_commit[last30days[x]]);
-            continue;
-        }
-        last30daysAsData.push(0);
-    }
-    last30daysAsData.reverse();
-if(Object.keys(last30days_commit).length > 0) {
-    $('.c_user_stats').show();
-    var month_chart = new Highcharts.Chart({
-        chart: { renderTo: 'id_month_container', type: 'line'},title: {text: ''},
-        yAxis: { title: { text: '提交次数' } },
-        plotOptions: { line: { dataLabels: { enabled: true }, enableMouseTracking: false } },
-        xAxis: { categories: last30daysAsCat },
-        series: [{ name: '1 月提交', data: last30daysAsData }]
-    });
-}
 });
 </script>
 {% endblock %}

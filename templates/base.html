@@ -9,7 +9,6 @@
         <meta name="csrf-token" content="{{csrf_token}}">
         <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
         <link href="/static/less/gitshell.less" rel="stylesheet/less" type="text/css">
-        <!-- TODO why script here ? -->
         <script>
             less = {
                 env: "development"
@@ -31,9 +30,9 @@
                         <li><a href="/join/">工作台</a></li>
                         <li><a href="/join/">我的仓库</a></li>
                     {% endif %}
-                    <li {%if mainnav == 'explore'%}class="active"{%endif%}><a href="/explore/">浏览</a></li>
+                    <li><a href="/explore/" {%if mainnav == 'explore'%}class="active"{%endif%}>浏览</a></li>
                     {% if not user.is_authenticated %}
-                    <li {%if mainnav == 'help'%}class="active"{%endif%}><a href="/help/">帮助</a></li>
+                    <li><a href="/help/" {%if mainnav == 'help'%}class="active"{%endif%}>帮助</a></li>
                     {% endif %}
                 </ul>
                 <ul class="nav account">
@@ -121,14 +120,21 @@
         <script src='/static/js/gitshell.js?timestamp=1373609013' type='text/javascript'></script>
         <!--TODO refactor js-->
         <script>
-            moment.lang('zh-cn');
-            $(function(){
-                $('.unixtime').each(function(index){ 
-                    $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-                    $(this).show();
-                });
-                $('.dropdown-toggle').dropdown();
+          moment.lang('zh-cn');
+          $(function(){
+            $('body').contents().filter(
+              function(){
+                return this.nodeType == 8;
+              }
+            ).remove();
+
+            $('.unixtime').each(function(index){ 
+                $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+                $(this).show();
             });
+
+            $('.dropdown-toggle').dropdown();
+          });
         </script>
         {% block js %}{% endblock %}
         <script>
