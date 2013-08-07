@@ -23,7 +23,7 @@ $(function(){
             var branch = branches[x];
             var commit = detail_commit[branch];
             html.push('<td class="branch-name"><h2 class="heading"><a href="/{{user_name}}/{{repo_name}}/tree/' + branch + '">' + branch + '</a></h2></td>');
-            html.push('<td class="meta"><span class="muted">由 ' + commit.committer_name + ' <span class="c_unixtime">' + commit.committer_date + '</span>提交: ' + commit.commit_message + '</span></td>');
+            html.push('<td class="meta"><span class="muted">由 ' + commit.committer_name + ' <span class="unixtime">' + commit.committer_date + '</span>提交: ' + commit.commit_message + '</span></td>');
             html.push('<td class="actions">');
             html.push('<a href="/{{user_name}}/{{repo_name}}/refs/create/' + branch + '/" class="btn btn-primary btn-mini branch-action hide">Create</a>');
             html.push('<a href="/{{user_name}}/{{repo_name}}/refs/graph/' + branch + '/" class="btn btn-mini branch-action">Graph</a>');
@@ -36,6 +36,10 @@ $(function(){
         }
         html.push('</tbody></table>');
         $('#i_branches').html(html.join(''));
+        $('.unixtime').each(function(index){
+            $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+            $(this).show();
+        });
     });
     $('.branch-manage').click(
       function(e){

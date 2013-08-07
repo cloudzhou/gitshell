@@ -35,6 +35,10 @@ $(function(){
         }
         html.push('</tbody></table>');
         $('#tags').html(html.join(''));
+        $('.unixtime').each(function(index){
+            $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+            $(this).show();
+        });
     });
 
     $('.tag-manage').click(
