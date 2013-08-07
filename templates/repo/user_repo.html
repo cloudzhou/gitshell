@@ -72,7 +72,7 @@
                                 }
                                 if(feed.feed_type == 0) {
                                     commit = feed.relative_obj;
-                                    html.push('<li><code><a href="/{{user_name}}/' + commit.repo_name + '/">' + commit.commit_hash + '</a></code> ' + commit.subject + ' <span class="date">' + commit.author_name + ' ' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></li>');
+                                    html.push('<li><code><a href="/{{user_name}}/' + commit.repo_name + '/">' + commit.commit_hash + '</a></code> ' + commit.subject + ' <span class="date">' + commit.author + ' ' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></li>');
                                 } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
                                     issue = feed.relative_obj;
                                     action = 'create issue';
