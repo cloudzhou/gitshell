@@ -3,29 +3,29 @@
 {% block container_class_name %} user todo{% endblock %}
 {% block subcontainer %}
     <div id="todo_container">
-            <div class="todo-controls">
+      <div class="todo-controls">
         <div id="id_sceneAdd_div" class="form-inline hide">
-                    <input id="id_sceneAdd" type="text" placeholder="添加新的场景，支持Enter按键">
-                    <a href="#" id="id_sceneAdd_button" class="btn btn-primary" type="submit">添加新的情景</a>
-                    <a href="#" id="id_sceneCancel_button" class="btn" type="submit">取消</a>
+          <input id="id_sceneAdd" type="text" placeholder="添加新的场景，支持Enter按键">
+          <a href="#" id="id_sceneAdd_button" class="btn btn-primary" type="submit">添加新的情景</a>
+          <a href="#" id="id_sceneCancel_button" class="btn" type="submit">取消</a>
         </div>
         <div id="id_todoAdd_div" class="todo-category" style="margin-bottom: 10px">
-                    <div class="btn-group dropdown">
-                        <a href="#" data-toggle="dropdown" class="btn dropdown-toggle">@{{scene.name}}<i class="icon-caret-down"></i></a>
-                        <div class="dropdown-menu">
-                            <ul class="nav nav-list">
-                                {%for scene in scene_list%}
-                                    <li><a href="/home/todo/{{scene.id}}/">@{{scene.name}}</a></li>
-                                {%endfor%}
-                                <li id="id_addScene"><a href="javascript: void(0)"><i class="icon-plus"></i> 添加新的场景</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <input id="id_todoAdd" type="text" placeholder="添加新的todo，支持Enter按键" class="span6">
-                    <button id="id_todoAdd_button" class="btn btn-primary" type="submit">添加</button>
-                    {%if not todoing_list and scene.name != ''%}
-                        <button id="id_sceneRemove_button" class="btn btn-danger" type="submit">删除场景</button>
-                    {%endif%}
+          <div class="btn-group dropdown">
+            <a href="#" data-toggle="dropdown" class="btn dropdown-toggle">@{{scene.name}}<i class="icon-caret-down"></i></a>
+            <div class="dropdown-menu">
+              <ul class="nav nav-list">
+                {%for scene in scene_list%}
+                  <li><a href="/home/todo/{{scene.id}}/">@{{scene.name}}</a></li>
+                {%endfor%}
+                <li id="id_addScene"><a href="javascript: void(0)"><i class="icon-plus"></i> 添加新的场景</a></li>
+              </ul>
+            </div>
+          </div>
+          <input id="id_todoAdd" type="text" placeholder="添加新的todo，支持Enter按键" class="span6">
+          <button id="id_todoAdd_button" class="btn btn-primary" type="submit">添加</button>
+          {%if not todoing_list and scene.name != ''%}
+              <button id="id_sceneRemove_button" class="btn btn-danger" type="submit">删除场景</button>
+          {%endif%}
         </div>
             </div>
 
@@ -78,9 +78,9 @@ $(function(){
 
     $('.todo-item').live('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
-                    $(this).find('.fade').fadeTo(0, 100);
+            $(this).find('.fade').fadeTo(0, 100);
         } else {
-                    $(this).find('.fade').fadeTo(0, 0);
+            $(this).find('.fade').fadeTo(0, 0);
         }
     });
 
