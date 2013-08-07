@@ -26,5 +26,4 @@ class SshpubkeyForm(forms.Form):
     pubkey = forms.CharField(max_length=1024, widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
 
 class ChangepasswordForm(forms.Form):
-    old_password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False))
     password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False))

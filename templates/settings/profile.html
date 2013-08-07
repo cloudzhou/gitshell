@@ -5,10 +5,17 @@
         <legend class="title">个人信息<small>详细的个人信息可以让他人更好了解你</small></legend>
         {% csrf_token %}
         <div class="control-group">
+            <label for="id_imgurl" class="control-label">个人头像</label>
+            <div class="controls avatar">
+                <img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=50" alt="{{ user.username }}">
+                <span>通过 <a target="_blank" href="http://cn.gravatar.com/">Gravatar</a> 修改个人头像</span>
+            </div>
+        </div>
+        <div class="control-group">
             <label class="control-label">GitHub账户关联</label>
             <div class="controls">
             {% if thirdpartyUser %}
-            <a target="_blank" href="https://github.com/{{ thirdpartyUser.tp_username }}/" class="btn btn-success"><i class="icon-github"></i>关联GitHub ({{ thirdpartyUser.tp_username }})</a>
+            <a target="_blank" href="https://github.com/{{ thirdpartyUser.tp_username }}/" class="btn btn-success"><i class="icon-github"></i>已关联 ({{ thirdpartyUser.tp_username }})</a>
             {% else %}
             <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/" class="btn btn-primary"><i class="icon-github"></i>关联 GitHub 账户</a>
             {% endif %}

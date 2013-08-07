@@ -2,9 +2,9 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>{% block title %}gitshell - 专注于 git 托管{% endblock %}</title>
+        <title>{% block title %}Gitshell - 专注于 git 托管{% endblock %}</title>
         <meta content="Gitshell 专注git代码托管, 团队协同，项目开发" name="description">
-        <meta content="gitshell" name="author">
+        <meta content="Gitshell" name="author">
         <meta name="csrf-token" content="{{csrf_token}}">
         <link href="/static/less/app/font-awesome/css/font-awesome.min.css?timestamp={{gitshell.timestamp}}" rel="stylesheet" type="text/css">
         {% if gitshell.mode == 'run' %}
@@ -24,10 +24,10 @@
     <body {% block body_class %}{% endblock %}>
         <header class="navbar navbar-fixed">
             <nav class="navbar-inner container">
-                <a class="brand" href="/">Gitshell</a>
+                <a class="brand" href="{%if user.is_authenticated%}/dashboard/{%else%}/{%endif%}">Gitshell</a>
                 <ul class="nav global">
                     {% if user.is_authenticated %}
-                        <li><a href="/home/">工作台</a></li>
+                        <li><a href="/dashboard/">工作台</a></li>
                         <li><a href="/{{user.username}}/repo/">我的仓库</a></li>
                     {% else %}
                         <li><a href="/join/">工作台</a></li>
@@ -40,7 +40,7 @@
                 <ul class="nav account">
                     {% if user.is_authenticated %}
                         {% if userprofile.unread_message > 0 %}
-                        <li class="notifications"><a href="/home/notif/" class="label label-warning">{{userprofile.unread_message}}</a></li>
+                        <li class="notifications"><a href="/dashboard/notif/" class="label label-warning">{{userprofile.unread_message}}</a></li>
                         {% endif %}
                         <li class="dropdown{%if mainnav == 'user'%} active{%endif%}">
                             <a href="/{{ user.username }}/" class="user dropdown-toggle" data-toggle="dropdown" data-target="#">

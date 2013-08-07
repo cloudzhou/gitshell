@@ -119,7 +119,7 @@ def ls_tree(request, user_name, repo_name, refs, path, current):
             tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
     readme_md = None
     if tree and 'has_readme' in tree and tree['has_readme']:
-        readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, path + '/' + tree['readme_file'])
+        readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, tree['readme_file'])
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'readme_md': readme_md}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/tree.html',
@@ -820,10 +820,22 @@ def refs_graph(request, user_name, repo_name, refs):
                           context_instance=RequestContext(request))
 
 @repo_permission_check
+def refs_create(request, user_name, repo_name, refs):
+    current = 'branches'
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or not RepoManager.is_repo_member(repo, request.user):
+        raise Http404
+    response_dictionary = {'mainnav': 'repo', 'current': current}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    return render_to_response('repo/refs_create.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@repo_permission_check
 @require_http_methods(["POST"])
 def refs_branch_create(request, user_name, repo_name, branch, base_branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
+    if repo is None or not RepoManager.is_repo_member(repo, request.user):
         return json_httpResponse({'returncode': 128, 'result': 'failed'})
     gitHandler = GitHandler()
     if gitHandler.create_branch(repo, branch, base_branch):
@@ -834,7 +846,7 @@ def refs_branch_create(request, user_name, repo_name, branch, base_branch):
 @require_http_methods(["POST"])
 def refs_branch_delete(request, user_name, repo_name, branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
+    if repo is None or not RepoManager.is_repo_member(repo, request.user) or branch == 'master':
         return json_httpResponse({'returncode': 128, 'result': 'failed'})
     gitHandler = GitHandler()
     if gitHandler.delete_branch(repo, branch):
@@ -845,7 +857,7 @@ def refs_branch_delete(request, user_name, repo_name, branch):
 @require_http_methods(["POST"])
 def refs_tag_create(request, user_name, repo_name, tag, base_branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
+    if repo is None or not RepoManager.is_repo_member(repo, request.user):
         return json_httpResponse({'returncode': 128, 'result': 'failed'})
     gitHandler = GitHandler()
     if gitHandler.create_tag(repo, tag, base_branch):
@@ -856,7 +868,7 @@ def refs_tag_create(request, user_name, repo_name, tag, base_branch):
 @require_http_methods(["POST"])
 def refs_tag_delete(request, user_name, repo_name, tag):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
+    if repo is None or not RepoManager.is_repo_member(repo, request.user):
         return json_httpResponse({'returncode': 128, 'result': 'failed'})
     gitHandler = GitHandler()
     if gitHandler.delete_tag(repo, tag):
@@ -1122,21 +1134,25 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     refs_meta = gitHandler.repo_ls_refs(repo, repo.get_abs_repopath())
     is_watched_repo = RepoManager.is_watched_repo(request.user.id, repo.id)
     is_stared_repo = RepoManager.is_stared_repo(request.user.id, repo.id)
-    is_forked_repo = False
     is_repo_member = RepoManager.is_repo_member(repo, request.user)
     is_owner = (repo.user_id == request.user.id)
     is_branch = (refs in refs_meta['branches'])
     is_tag = (refs in refs_meta['tags'])
     is_commit = (not is_branch and not is_tag)
+    has_forked = False
     has_fork_right = (repo.auth_type == 0 or is_repo_member)
     has_pull_right = is_owner
+    user_child_repo = None
+    parent_repo = None
+    if repo.fork_repo_id:
+        parent_repo = RepoManager.get_repo_by_id(repo.fork_repo_id)
     if not is_owner:
-        child_repo = RepoManager.get_repo_by_forkrepo(request.user.username, repo)
-        if child_repo is not None:
-            is_forked_repo = True
+        user_child_repo = RepoManager.get_childrepo_by_user_forkrepo(request.user, repo)
+        if user_child_repo is not None:
+            has_forked = True
             has_pull_right = True
     repo_pull_new_count = RepoManager.count_pullRequest_by_descRepoId(repo.id, PULL_STATUS.NEW)
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_stared_repo': is_stared_repo, 'is_forked_repo': is_forked_repo, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'is_branch': is_branch, 'is_tag': is_tag, 'is_commit': is_commit, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta}
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_stared_repo': is_stared_repo, 'has_forked': has_forked, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'is_branch': is_branch, 'is_tag': is_tag, 'is_commit': is_commit, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta, 'user_child_repo': user_child_repo, 'parent_repo': parent_repo}
 
 @login_required
 def list_github_repos(request):
@@ -1188,7 +1204,7 @@ def _fillwith_commits(commits):
     if not commits:
         return
     for commit in commits:
-        userprofile = GsuserManager.get_userprofile_by_name(commit['author'])
+        userprofile = GsuserManager.get_userprofile_by_name(commit['author_name'])
         if userprofile:
             commit['author_imgurl'] = userprofile.imgurl
         else:

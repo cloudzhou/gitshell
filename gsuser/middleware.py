@@ -11,7 +11,7 @@ from django.db.models.signals import post_save, post_delete
 from gitshell.objectscache.da import da_post_save
 from gitshell.settings import TIMESTAMP, MODE
 
-MAIN_NAVS = ['index', 'stats', 'skills', 'home', 'login', 'logout', 'join', 'resetpassword', 'help', 'settings', 'private', 'captcha', 'ajax', 'explore', 'error']
+MAIN_NAVS = ['index', 'stats', 'skills', 'dashboard', 'login', 'logout', 'join', 'resetpassword', 'help', 'settings', 'private', 'captcha', 'ajax', 'explore', 'error']
 KEEP_REPO_NAME = ['active', 'watch', 'recommend', 'repo']
 
 def get_userprofile(request):
@@ -67,7 +67,7 @@ def gitshell(request):
 def mainnav(request):
     path = request.path
     if path == '' or path == '/':
-        return {'mainnav': 'home' }
+        return {'mainnav': 'dashboard' }
     second_slash_index = path.find('/', 1)
     if second_slash_index == -1:
         mainnav = path[1:]

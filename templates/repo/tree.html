@@ -29,24 +29,28 @@
             <tr>
                 <td class="icon">
                     <!--dir and file image-->
-                    {% if file_attrs.1 == 'tree' %}
+                    {% if file_attrs.type == 'tree' %}
                         <i class="icon-folder-open"></i>
                     {% else %}
                         <i class="icon-file"></i>
                     {% endif %}
                 </td>
                 <td class="file-name">
-                    <a href="/{{user_name}}/{{repo_name}}/{%if file_attrs.1 == 'tree'%}tree{%else%}blob{%endif%}/{{refs}}/{%if path != '.' %}{{path}}{%endif%}{{file_attrs.0}}" title="{{file_attrs.0}}">{{file_attrs.0}}</a>
+                    <a href="/{{user_name}}/{{repo_name}}/{%if file_attrs.type == 'tree'%}tree{%else%}blob{%endif%}/{{refs}}/{%if path != '.' %}{{path}}{%endif%}{{file_attrs.relative_path}}" title="{{file_attrs.relative_path}}">{{file_attrs.relative_path}}</a>
                 </td>
                 <td class="commit-info">
-                    {% if file_attrs.5|length > 80 %}
-                        <a href="javascript:void(0)" data-toggle="popover" data-content="{{file_attrs.5}}" data-placement="bottom" class="commit">{{file_attrs.5|truncatechars:80}}</a>
+                    {% if file_attrs.last_commit_message|length > 80 %}
+                        <a href="javascript:void(0)" data-toggle="popover" data-content="{{file_attrs.last_commit_message}}" data-placement="bottom" class="commit">{{file_attrs.last_commit_message|truncatechars:80}}</a>
                     {% else %}
-                        <a href="javascript:void(0)" class="commit">{{file_attrs.5}}</a>
+                        <a href="javascript:void(0)" class="commit">{{file_attrs.last_commit_message}}</a>
                     {% endif %}
-                    <a href="/{{file_attrs.4}}/" class="commiter">@{{file_attrs.4}}</a>
+                    {% if file_attrs.real_author_name == '' %}
+                    <span>@{{file_attrs.author_name}}</span>
+                    {% else %}
+                    <a href="/{{file_attrs.real_author_name}}/" class="commiter">@{{file_attrs.author_name}}</a>
+                    {% endif %}
                 <td class="date">
-                    <span class="date unixtime">{{file_attrs.3}}</span></td>
+                    <span class="date unixtime">{{file_attrs.author_time}}</span></td>
                 </td>
             </tr>
             {% endfor %}

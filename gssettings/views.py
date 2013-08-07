@@ -32,14 +32,9 @@ def changepassword(request):
     if request.method == 'POST':
         changepasswordForm = ChangepasswordForm(request.POST)
         if changepasswordForm.is_valid():
-            old_password = changepasswordForm.cleaned_data['old_password']
             new_password = changepasswordForm.cleaned_data['password']
-            if request.user.check_password(old_password):
-                request.user.set_password(new_password)
-                request.user.save()
-                return HttpResponseRedirect('/home/')
-            else:
-                error = u'确定原密码正确？'
+            request.user.set_password(new_password)
+            request.user.save()
         else:
             error = u'输入正确的密码'
     response_dictionary = {'current': current, 'changepasswordForm': changepasswordForm, 'error': error}
