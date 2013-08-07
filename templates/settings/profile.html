@@ -6,8 +6,8 @@
         {% csrf_token %}
         <div class="control-group">
             <label for="id_imgurl" class="control-label">个人头像</label>
-            <div class="controls">
-                <img class="avatar" src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=50" alt="{{ user.username }}">
+            <div class="controls avatar">
+                <img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=50" alt="{{ user.username }}">
                 <span>通过 <a target="_blank" href="http://cn.gravatar.com/">Gravatar</a> 修改个人头像</span>
             </div>
         </div>

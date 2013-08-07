@@ -6,7 +6,7 @@
 <h2 class="heading">
     标签
 {% if is_repo_member %}
-    <a href="#tag-manage" class="btn pull-right tag-manage">管理</a>
+  <a href="#tag-manage" class="btn btn-mini pull-right tag-manage"><i class="icon-cog"></i><span>管理</span></a>
 {% endif %}
 </h2>
 <div id="tags">
@@ -28,7 +28,7 @@ $(function(){
             html.push('<td><h2><a href="/{{user_name}}/{{repo_name}}/tree/' + tag + '">' + tag + '</a></h2></td>');
             html.push('<td><span class="muted">由 ' + commit.committer_name + ' <span class="c_unixtime">' + commit.committer_date + '</span>提交: ' + commit.commit_message + '</span></td>');
             html.push('<td class="actions">');
-            html.push('<a href="/{{user_name}}/{{repo_name}}/refs/graph/' + tag + '/" class="btn btn-mini">Graph</a>');
+            html.push('<a href="/{{user_name}}/{{repo_name}}/refs/graph/' + tag + '/" class="btn btn-mini tag-action">Graph</a>');
             html.push('<a href="javascript:;" data-tag="' + tag + '"class="btn btn-danger btn-mini tag-action hide tag-delete">Delete</a>');
             html.push('</td>');
             html.push('</tr>');
@@ -36,15 +36,16 @@ $(function(){
         html.push('</tbody></table>');
         $('#tags').html(html.join(''));
     });
-    $('.tag-manage').live('click', function(){
-        if($(this).hasClass('btn-success')) {
-            $(this).removeClass('btn-success')
-            $('.tag-action').hide();
-        } else {
-            $(this).addClass('btn-success')
-            $('.tag-action').show();
-        }
-    });
+
+    $('.tag-manage').click(
+      function(e){
+        e.preventDefault();
+        var txt = $(this).children('span').text();
+        $(this).children('span').text( txt == '管理' ? '取消' : '管理' );
+        $('.tag-action').toggle();
+      }
+    );
+
     $('.tag-delete').live('click', function(){
         var tag = $(this).data('tag');
         var tr = $(this).parents('tr');

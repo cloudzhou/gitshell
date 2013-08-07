@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
 {% block css %}
-    {% if current == 'blob' %}
-        <link href='/static/less/min/syntaxhighlighter.min.css?timestamp={{gitshell.timestamp}}' rel='stylesheet'>
-    {% endif %}
+  {% if current == 'blob' %}
+    <link href='/static/less/min/syntaxhighlighter.min.css?timestamp={{gitshell.timestamp}}' rel='stylesheet'>
+  {% endif %}
 {% endblock %}
 
 {% block container_class_name %} bubble bubble-flat repo{% endblock %}
@@ -16,12 +16,28 @@
                 <li>
                     <a href="/{{user_name}}/{{repo_name}}/">{{repo_name}}</a>
                     <sup class="{%if repo.dropbox_sync == 1%}synced{%endif%}"><a href="/{{user_name}}/{{repo_name}}/settings/#dropbox"><i class="icon-dropbox"></i></a></sup>
-                    {% if parent_repo %}
-                    <span>Froked from <a href="/{{parent_repo.username}}/">{{parent_repo.username}}</a> / <a href="/{{parent_repo.username}}/{{parent_repo.name}}/">{{parent_repo.name}}</a></span>
-                    {% endif %}
-                    {% if user_child_repo %}
-                    <span>Child Forked <a href="/{{user_child_repo.username}}/">{{user_child_repo.username}}</a> / <a href="/{{user_child_repo.username}}/{{user_child_repo.name}}/">{{user_child_repo.name}}</a></span>
-                    {% endif %}
+                    <div class="forked dropdown">
+                      <span class="dropdown-toggle" data-toggle="dropdown">
+                        <a href="#" class="label label-mini"><i class="icon-ellipsis-horizontal"></i></a>
+                        <i class="icon-caret-down hide"></i>
+                      </span>
+                      <div class="dropdown-menu">
+                        <p>forked from <a href="#">yuwen</a>/<a href="#">gitshell</a></p>
+                        <hr>
+                        <h4>Child forked</h4>
+                        <p><a href="#">song</a>/<a href="#">gitshell</a></p>
+                        <p><a href="#">wang</a>/<a href="#">gitshell</a></p>
+                        <p><a href="#">hjee</a>/<a href="#">gitshell</a></p>
+                      {% comment %}
+                        {% if parent_repo %}
+                          <span>Froked from <a href="/{{parent_repo.username}}/">{{parent_repo.username}}</a> / <a href="/{{parent_repo.username}}/{{parent_repo.name}}/">{{parent_repo.name}}</a></span>
+                        {% endif %}
+                        {% if user_child_repo %}
+                          <span>Child Forked <a href="/{{user_child_repo.username}}/">{{user_child_repo.username}}</a> / <a href="/{{user_child_repo.username}}/{{user_child_repo.name}}/">{{user_child_repo.name}}</a></span>
+                        {% endif %}
+                      {% endcomment %}
+                      </div>
+                    </div>
                 </li>
             </ul>
             <ul class="repo-actions">
@@ -44,9 +60,9 @@
                 </li>
                 <li class="btn-group">
                   {% if has_fork_right %}
-                        <a class="btn btn-mini fork first" data-original-title="Fork" rel="tooltip" href="javascript: void(0)">Fork</a>
-                        <span class="btn btn-mini count last" title="衍生次数" href="/{{user_name}}/{{repo_name}}/clone_watch_star/">{{repo.fork}}</span>
-                    {% endif %}
+                    <a class="btn btn-mini fork first" data-original-title="Fork" rel="tooltip" href="javascript: void(0)">Fork</a>
+                    <span class="btn btn-mini count last" title="衍生次数" href="/{{user_name}}/{{repo_name}}/clone_watch_star/">{{repo.fork}}</span>
+                  {% endif %}
                 </li>
             </ul>
         </div>
@@ -135,6 +151,14 @@
 <script type="text/javascript" src="http://www.steamdev.com/zclip/js/jquery.snippet.min.js"></script>
 <script>
 $(function(){
+
+    $('.repocrumb span[data-toggle]').hover(
+      function(){
+        $(this).find('.icon-caret-down').show();
+      },function(){
+        $(this).find('.icon-caret-down').hide();
+      }
+    );
 
     $("#ssh_fork, #http_fork, #git_fork").bind({
       click: function(e) {
