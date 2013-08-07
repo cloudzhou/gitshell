@@ -19,7 +19,7 @@ from gitshell.todolist.views import todo
 from gitshell.viewtools.views import json_httpResponse, obj2dict
 
 @login_required
-def home(request):
+def dashboard(request):
     feedAction = FeedAction()
     goto = feedAction.get_user_position(request.user.id)
     if goto == None:
