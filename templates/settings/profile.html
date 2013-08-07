@@ -5,6 +5,13 @@
         <legend class="title">个人信息<small>详细的个人信息可以让他人更好了解你</small></legend>
         {% csrf_token %}
         <div class="control-group">
+            <label for="id_imgurl" class="control-label">个人头像</label>
+            <div class="controls">
+                <img class="avatar" src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=50" alt="{{ user.username }}">
+                <span>通过 <a target="_blank" href="http://cn.gravatar.com/">Gravatar</a> 修改个人头像</span>
+            </div>
+        </div>
+        <div class="control-group">
             <label class="control-label">GitHub账户关联</label>
             <div class="controls">
             {% if thirdpartyUser %}

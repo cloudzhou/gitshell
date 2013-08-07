@@ -24,7 +24,7 @@
     <body {% block body_class %}{% endblock %}>
         <header class="navbar navbar-fixed">
             <nav class="navbar-inner container">
-                <a class="brand" href="/">Gitshell</a>
+                <a class="brand" href="{%if user.is_authenticated%}/home/{%else%}/{%endif%}">Gitshell</a>
                 <ul class="nav global">
                     {% if user.is_authenticated %}
                         <li><a href="/home/">工作台</a></li>
