@@ -4,21 +4,20 @@
 		<meta charset="utf-8">
 		<title>{% block title %}gitshell - 你的代码托管{% endblock %}</title>
 		<meta content="GitShell 专注git代码托管, 项目开发, 个人技能" name="description">
-		<meta content="gitshell" name="author">
 		<link href="/static/less/gitshell.less" rel="stylesheet/less" media="all">
 		{% block css %}{% endblock %}
-		<script src="/static/js/less-1.4.0.min.js"></script>
     <script>
       less = { 
         env: 'development' 
       }
     </script>
+		<script src="/static/js/less-1.4.0.min.js"></script>
 		<link rel="shortcut icon" href="/static/img/favicon.ico">
 	</head>
-  <body class="{% block body_class_name %}{% endblock %}">
-		<div class="navbar">
+  <body id="gitshell" class="{% block body_class_name %}{% endblock %}">
+		<nav class="navbar" role="navigation">
 			<div class="container">
-				<a class="brand" href="/">GitShell</a>
+				<a class="brand" href="/" role="logo">GitShell</a>
 				<ul class="nav main-nav">
 					{% if user.is_authenticated %}
             <li><a href="/home/">工作台</a></li>
@@ -31,9 +30,12 @@
 				</ul>
         {% if user.is_authenticated %}
           <ul class="nav userbar">
-            {% if userprofile.unread_message > 0 %}
-              <li class="msgs"><a href="/home/notif/" class="label label-warning">{{userprofile.unread_message}}</a></li>
-            {% endif %}
+            {% comment %}
+              {% if userprofile.unread_message > 0 %}
+                <li class="msgs"><a href="/home/notif/" class="label label-warning">{{userprofile.unread_message}}</a></li>
+              {% endif %}
+            {% endcomment %}
+            <li class="msgs"><a href="/home/notif/" class="label label-warning">{{userprofile.unread_message}}</a></li>
 						<li class="dropdown{%if mainnav == 'user'%} active{%endif%}">
 							<a href="/{{ user.username }}/" class="user dropdown-toggle" data-toggle="dropdown" data-target="#">
 								<img class="avatar" src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=35" alt="{{ user.username }}">
@@ -70,32 +72,32 @@
             <p class="welcome-msg">请<a href="/login/"{%if mainnav == 'login'%}class="active"{%endif%}>登录</a>,或者<a href="/join/0/"{%if mainnav == 'eoin'%}class="active"{%endif%}>注册</a></p>
 					{% endif %}
 			</div>
-		</div>
+		</nav>
 
-    <!--TODO repo_header ?-->
+    {# TODO repo_header ? #}
     {% block repo_header %}{% endblock %}
 
-		<div id="container" class="{% block container_class_name %}{% endblock %}">
+		<main class="main {% block container_class_name %}{% endblock %}" role="main">
 			{% block container %}{% endblock %}
-		</div>
+		</main>
 
-		<footer id="footer">
+		<footer class="footer" role="contentinfo">
 			<div class="container">
-				<nav class="nav">
-					<a href="/help/#about" class="about-gitshell">关于GitShell<i class="icon-sort"></i></a>
-					<a href="/help/#mission">我们的愿景</a>
-					<a href="/help/#faq">FAQ</a>
-					<a href="/help/#join_login" class="free-join">注册</a>
-					<a href="/help/" class="help">帮助</a>
-					<a target="_blank" href="http://blog.gitshell.com">官方博客</a>
-					<a href="/help/#contact">联系GitShell</a>
-				</nav>
+				<ul class="nav">
+          <li><a href="/help/#about" class="about-gitshell">关于GitShell<i class="icon-sort"></i></a></li>
+          <li><a href="/help/#mission">我们的愿景</a></li>
+          <li><a href="/help/#faq">FAQ</a></li>
+          <li><a href="/help/#join_login" class="free-join">注册</a></li>
+          <li><a href="/help/" class="help">帮助</a></li>
+          <li><a target="_blank" href="http://blog.gitshell.com">官方博客</a></li>
+          <li><a href="/help/#contact">联系GitShell</a></li>
+				</ul>
 				<p class="copyright">&copy; <strong>Gitshell</strong> 2013 专注<a target="_blank" href="http://git-scm.com/">Git</a>代码托管<a class="muted" href="http://www.miitbeian.gov.cn">苏ICP备12042031号</a></p>
 				<a href="#" class="btn pull-right">返回顶部</a>
 			</div>
 		</footer>
 
-    <!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>-->
+    {#<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>#}
     <script src="/static/js/jquery-1.7.2.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <script src="/static/js/select2.min.js"></script>

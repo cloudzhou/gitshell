@@ -4,16 +4,13 @@
     <link href="/static/less/app/highlight/github.css" rel="stylesheet">
 {% endblock %}
 
-{% block bubble_inner_class_name %} commits{% endblock %}
-
 {% block subcontainer %}
-    <!--TODO html error -->
-    <header class="header clearfix">
-        {% include "repo/branch_nav.html" %}
-    </header>
+<div class="commits bubble">
+
+    {% include "repo/branch_nav.html" %}
 
     {% for commit in commits %}
-        <div class="commit colspan">
+        <section class="commit colspan">
             <div class="commiter user-plugin span">
                 <figure class="avatar"><img src="https://gravatar.com/avatar/{{commit.author_imgurl}}?s=30" alt="{{commit.author}}"></figure>
                 <div class="info">
@@ -22,32 +19,29 @@
                 </div>
             </div>
             <span class="hash span"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/" class="btn label-mini btn-info">{{commit.commit_hash}}</a></span>
-        </div>
+        </section>
     {% endfor %}
 
 		{% if not commits %}
-			<div class="commit">
+			<section class="commit">
 				<p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有提交信息，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
-			</div>
+			</section>
 		{% endif %}
 
-		<footer class="footer">
-			<nav class="pagination">
-				<p class="nav">
-					<a href="#"><img src="/static/img/icons/pagination-previous.png" alt="">上一页</a>
-					<a href="#">1</a>
-					<a href="#">2</a>
-					<a href="#">3</a>
-					<a href="#">4</a>
-					<a href="#">5</a>
-					<a href="#">6</a>
-					<a href="#">7</a>
-					<a href="#">8</a>
-					<a href="#">下一页<img src="/static/img/icons/pagination-next.png" alt=""></a>
-				</p>
-			</nav>
-		</footer>
+    <ul class="pagination">
+      <li><a href="#"><img src="/static/img/icons/pagination-previous.png" alt="">上一页</a></li>
+      <li><a href="#">1</a></li>
+      <li><a href="#">2</a></li>
+      <li><a href="#">3</a></li>
+      <li><a href="#">4</a></li>
+      <li><a href="#">5</a></li>
+      <li><a href="#">6</a></li>
+      <li><a href="#">7</a></li>
+      <li><a href="#">8</a></li>
+      <li><a href="#">下一页<img src="/static/img/icons/pagination-next.png" alt=""></a></li>
+    </ul>
 
+  </div>
 {% endblock %}
 
 {% block subjs %}

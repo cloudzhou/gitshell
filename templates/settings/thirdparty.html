@@ -5,7 +5,7 @@
     {% if thirdpartyUser %}
     <button class="btn" type="button"><i class="icon-github"></i>GitHub 账户 ({{ thirdpartyUser.tp_username }})</button><button id="id_github_relieve" class="btn btn-danger" type="button">解除绑定</button>
     {% else %}
-    <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/"><button class="btn btn-success"><i class="icon-github"></i>关联 GitHub 账户</button></a>
+    <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/" class="btn btn-success"><i class="icon-github"></i>关联 GitHub 账户</a>
     {% endif %}
 {% endblock %}
 

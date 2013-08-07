@@ -1,27 +1,26 @@
 <div class="branches dropdown">
     <a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle">
-    <span class="branch">
-      <i class="icon-code-fork"></i>
-      <span class="branch">{%if is_branch%}Branch:{%elif is_tag%}Tag:{%elif is_commit%}Commit:{%endif%}</span>
-      <span class="branch-name">{{ refs }}</span>
-    </span>
-    <span class="caret"><i class="icon-caret-down"></i></span>
+      <span class="branch">
+        <i class="icon-code-fork"></i>
+        <span class="branch">{%if is_branch%}Branch:{%elif is_tag%}Tag:{%elif is_commit%}Commit:{%endif%}</span>
+        <span class="branch-name">{{ refs }}</span>
+      </span>
+      <span class="caret"><i class="icon-caret-down"></i></span>
     </a>
     <ul class="dropdown-menu nav nav-list">
-    <!--TODO Need divider for branch and tag split line -->
-    <!--TODO icon-ok goto right pull-right -->
-    {% for branch in refs_meta.branches %}
+      {# TODO Need divider for branch and tag split line TODO icon-ok goto right pull-righto #}
+      {% for branch in refs_meta.branches %}
         <li{%if branch == refs %} class="active"{%endif%}>
-            <a href="/{{user_name}}/{{repo_name}}/{%if current == 'index' or current == 'tree' or current == 'blob' %}tree{%endif%}{%if current == 'commits' %}commits{%endif%}{%if current == 'refs_graph' %}refs/graph{%endif%}/{{branch}}/">{%if branch == refs %}<i class="icon-ok"></i>{%endif%}<span>{{branch}}</span></a>
+          <a href="/{{user_name}}/{{repo_name}}/{%if current == 'index' or current == 'tree' or current == 'blob' %}tree{%endif%}{%if current == 'commits' %}commits{%endif%}{%if current == 'refs_graph' %}refs/graph{%endif%}/{{branch}}/">{%if branch == refs %}<i class="icon-ok"></i>{%endif%}<span>{{branch}}</span></a>
         </li>
-    {% endfor %}
-    {% if refs_meta.tags|length > 0 %}
-        <li class="divider"></li>
-    {% endif %}
-    {% for tag in refs_meta.tags %}
-        <li{%if tag == refs %} class="active"{%endif%}>
-            <a href="/{{user_name}}/{{repo_name}}/{%if current == 'index' or current == 'tree' or current == 'blob' %}tree{%endif%}{%if current == 'commits' %}commits{%endif%}{%if current == 'refs_graph' %}refs/graph{%endif%}/{{tag}}/">{%if tag == refs %}<i class="icon-ok"></i>{%endif%}<span>{{tag}}</span></a>
-        </li>
-    {% endfor %}
+      {% endfor %}
+      {% if refs_meta.tags|length > 0 %}
+          <li class="divider"></li>
+      {% endif %}
+      {% for tag in refs_meta.tags %}
+          <li{%if tag == refs %} class="active"{%endif%}>
+              <a href="/{{user_name}}/{{repo_name}}/{%if current == 'index' or current == 'tree' or current == 'blob' %}tree{%endif%}{%if current == 'commits' %}commits{%endif%}{%if current == 'refs_graph' %}refs/graph{%endif%}/{{tag}}/">{%if tag == refs %}<i class="icon-ok"></i>{%endif%}<span>{{tag}}</span></a>
+          </li>
+      {% endfor %}
     </ul>
 </div>

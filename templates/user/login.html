@@ -1,35 +1,31 @@
 {% extends "base.html" %}
 
 {% block container %}
-<div class="bubble authorize">
+<div class="authorize">
 
-    <header class="header clearfix">
-        <h1 class="heading">登录</h1>
-    </header>
+    <h2 class="heading">登录</h2>
 
-    <div class="bubble-inner">
-        <div class="form">
-            <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn btn-success"><i class="icon-github"></i>使用 GitHub 账户登录</a>
+    <div class="authorize-form">
+        <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn btn-success"><i class="icon-github"></i>使用 GitHub 账户登录</a>
 
-            <hr class="hr">
-            <form action="" method="post">
-                {% csrf_token %}
-                {{ loginForm.email }}
-                <input type="password" maxlength="64" name="unencrypt_password" id="id_unencrypt_password" placeholder="密码">
-                <span class="hide">{{ loginForm.password }}</span>
-                <button id="id_login_submit" class="btn btn-primary" type="submit">登录</button>
-                <label class="checkbox">{{ loginForm.rememberme }} 下次自动登录</label>
-                    <a href="/resetpassword/">忘记密码了?</a>
-                </form>
+        <hr>
+        <form action="" method="post">
+            {% csrf_token %}
+            {{ loginForm.email }}
+            <input type="password" maxlength="64" name="unencrypt_password" id="id_unencrypt_password" placeholder="密码">
+            <span class="hide">{{ loginForm.password }}</span>
+            <button id="id_login_submit" class="btn btn-primary" type="submit">登录</button>
+            <label class="checkbox">{{ loginForm.rememberme }} 下次自动登录</label>
+                <a href="/resetpassword/">忘记密码了?</a>
+            </form>
 
-            {% if error %}
-                <div class="alert">
-                    <a data-dismiss="alert" class="close">×</a>
-                    <strong>出错了！</strong> {{ error }}
-                </div>
-            {% endif %}
+        {% if error %}
+            <div class="alert">
+                <a data-dismiss="alert" class="close">×</a>
+                <strong>出错了！</strong> {{ error }}
+            </div>
+        {% endif %}
 
-        </div>
     </div>
 
 </div>

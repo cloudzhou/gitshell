@@ -1,22 +1,17 @@
 {% extends "base.html" %}
 
 {% block container %}
-<div class="bubble authorize">
+<div class="authorize">
     {% ifequal step '3'  %}
-        <header class="bubble-header">
-            <h1 class="heading">:-), {{ user.username }}，欢迎您</h1>
-        </header>
+        <h2 class="heading">{{ user.username }}，欢迎您</h2>
         {% else %}
-        <header class="header">
-            <h1 class="heading">注册</h1>
-        </header>
+        <h2 class="heading">注册</h2>
     {% endifequal %}
 
-    <div class="bubble-inner clearfix">
-        <div class="form">
+        <div class="authorize-form">
         {% ifequal step '0' %}
             <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn"><i class="icon-github"></i>用 GitHub 账户直接登录</a>
-            <hr class="hr">
+            <hr>
             <form action="" method="post">
                 {% csrf_token %}
                 {{ joinForm.username }}
@@ -38,7 +33,7 @@
     {% endifequal %}
 
     {% ifequal step '1' %}
-            <div class="">
+        <div class="">
             <p class="lead">谢谢你，已经发送注册邮件，请在半小时内激活，注意查收。 <a id="id_goto_a" target="_blank" class="hide"><button class="btn btn-success">点击到<span id="id_goto_domain"></span></button></a></p>
             <p class="lead">（部分运营商会拦截邮件，您有可能需要查看一下垃圾邮件）</p>
             <small>如果发送邮件失败，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="/static/img/sina_logo.png"/>&nbsp;gitshell</a></small>
@@ -107,7 +102,6 @@
         <small>注册失败，可能是激活url Token过期，请重新通过<a href="/join/0/">注册</a>获取激活url，如果这种情况持续出现，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="/static/img/sina_logo.png"/>&nbsp;gitshell</a></small>
         </div>
     {% endifequal %}
-    </div>
 </div>
 {% endblock %}
 {% block js %}

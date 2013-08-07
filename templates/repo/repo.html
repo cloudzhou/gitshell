@@ -7,13 +7,13 @@
   {% endif %}
 {% endblock %}
 
-{% block container_class_name %} bubble bubble-flat repo{% endblock %}
+{% block container_class_name %} repo{% endblock %}
 
 {% block container %}
 
-	<header class="header repo-actions-bar">
+	<div class="repo-global-bar">
     <div class="container">
-      <ul class="repocrumb breadcrumb">
+      <ul class="breadcrumb">
         <li class="user"><a href="/{{user_name}}/">{{user_name}}</a><span class="divider">/</span></li>
         <li>
             <a href="/{{user_name}}/{{repo_name}}/">{{repo_name}}</a>
@@ -46,10 +46,12 @@
           </li>
       </ul>
 		</div>
-	</header>
+	</div>
 
-	<section class="colspan container">
-        <nav class="sidenav hide">
+	<div class="content">
+    <div class="container">
+      {% comment %}
+        <nav class="sidenav">
             <ul class="nav nav-list">
                 <li class="first{% if current == 'index' or current == 'tree' or current == 'blob' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/" data-original-title="Code" rel="tooltip"><span><i class="icon-code"></i></span></a></li>
                 <li class="middle{% if current == 'issues' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/issues/" data-original-title="Issues" rel="tooltip"><span><i class="icon-bug"></i></span></a></li>
@@ -63,66 +65,60 @@
                 {% endif %}
             </ul>
         </nav>
-		</nav>
-
-		<section class="bubble-inner{% block bubble_inner_class_name %}{% endblock %}">
+      {% endcomment %}
 
 			{% block repo_description %}{% endblock %}
 
-            {% if current == 'index' %}
-
-            <div class="url-container clearfix visible">
-                {% if repo.status != 0 %}
-                  <p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
-                {% endif %}
-                {% if has_fork_right %}
-                    <dl class="url colspan">
-                        <dt class="btn-group span">
-                            {% if is_repo_member %}
-                                <a id="ssh_fork" class="active url-select btn first">SSH</a></span>
-                            {% endif %}
-                                <a id="http_fork" class="url-select btn middle">HTTP</a></span>
-                            {% if repo.auth_type == 0 %}
-                                <a id="git_fork" class="url-select btn middle">GIT</a></span>
-                            {% endif %}
-                        </dt>
-                        <dd class="url-holder btn-group span">
-                            <!--as input and click then select all-->
-                            {% if is_repo_member %}
-                              <input class="btn middle" id="url-data" type="text" value="git@gitshell.com:{{user_name}}/{{repo_name}}.git" readonly="readonly">
-                            {% elif repo.auth_type == 0 %}
-                              <input class="btn middle" id="url-data" type="text" value="https://{{user_name}}@gitshell.com/{{user_name}}/{{repo_name}}.git" readonly="readonly"></span>
-                            {% endif %}
-                            <!--TODO clipboard jsipboard, try to using button? -->
-                              <a href="#" class="clipboard url-select btn last hide" id="url-js-copy">复制</a>
-                            <span class="span" id="url-info">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>
-                        </dd>
-                    </dl>
-                {% endif %}
-            </div>
-            {% endif %}
+      {% comment %}
+          {% if current == 'index' %}
+          <div class="url-container clearfix visible">
+              {% if repo.status != 0 %}
+                <p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
+              {% endif %}
+              {% if has_fork_right %}
+                  <dl class="url colspan">
+                      <dt class="btn-group span">
+                          {% if is_repo_member %}
+                              <a id="ssh_fork" class="active url-select btn first">SSH</a></span>
+                          {% endif %}
+                              <a id="http_fork" class="url-select btn middle">HTTP</a></span>
+                          {% if repo.auth_type == 0 %}
+                              <a id="git_fork" class="url-select btn middle">GIT</a></span>
+                          {% endif %}
+                      </dt>
+                      <dd class="url-holder btn-group span">
+                          <!--as input and click then select all-->
+                          {% if is_repo_member %}
+                            <input class="btn middle" id="url-data" type="text" value="git@gitshell.com:{{user_name}}/{{repo_name}}.git" readonly="readonly">
+                          {% elif repo.auth_type == 0 %}
+                            <input class="btn middle" id="url-data" type="text" value="https://{{user_name}}@gitshell.com/{{user_name}}/{{repo_name}}.git" readonly="readonly"></span>
+                          {% endif %}
+                          <!--TODO clipboard jsipboard, try to using button? -->
+                            <a href="#" class="clipboard url-select btn last hide" id="url-js-copy">复制</a>
+                          <span class="span" id="url-info">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>
+                      </dd>
+                  </dl>
+              {% endif %}
+          </div>
+          {% endif %}
+        {% endcomment %}
 
             {% if current == 'index' or current == 'tree' or current == 'blob' or current == 'commits' or current == 'branches' or current == 'tags' or current == 'refs_graph' %}
-                <nav class="repo-tabs nav nav-tabs">
-                    <ul class="nav clearfix">
-                        <li class="first{% if current == 'index' or current == 'tree' or current == 'blob' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">Code</a></li>
-                        <li {% if current == 'commits' %} class="active" {% endif %}><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">Commit<span class="label label-mini{% if current == 'commits' %} label-success{% endif %}">{{repo.commit}}</span></a></li>
-                        <li {% if current == 'branches' %} class="active" {% endif %}><a href="/{{user_name}}/{{repo_name}}/branches/{{refs}}/">Branch<span class="label label-mini{% if current == 'branches' %} label-success{% endif %}">{{refs_meta.branch_count}}</span></a></li>
-                        <li {% if current == 'tags' %} class="active" {% endif %}><a href="/{{user_name}}/{{repo_name}}/tags/{{refs}}/">Tag<span class="label label-mini{% if current == 'tags' %} label-success{% endif %}">{{refs_meta.tag_count}}</span></a></li>
-                        <li class="last{% if current == 'refs_graph' %} active{% endif %}"><a href="/{{user_name}}/{{repo_name}}/refs/graph/{{refs}}/">Graph</a></li>
-                    </ul>
-                </nav>
+              <ul class="nav nav-tabs">
+                  <li{% if current == 'index' or current == 'tree' or current == 'blob' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">Code</a></li>
+                  <li{% if current == 'commits' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">Commit<span class="label label-mini{% if current == 'commits' %} label-success{% endif %}">{{repo.commit}}</span></a></li>
+                  <li{% if current == 'branches' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/branches/{{refs}}/">Branch<span class="label label-mini{% if current == 'branches' %} label-success{% endif %}">{{refs_meta.branch_count}}</span></a></li>
+                  <li{% if current == 'tags' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/tags/{{refs}}/">Tag<span class="label label-mini{% if current == 'tags' %} label-success{% endif %}">{{refs_meta.tag_count}}</span></a></li>
+                  <li{% if current == 'refs_graph' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/refs/graph/{{refs}}/">Graph</a></li>
+              </ul>
             {% endif %}
 
 			{% block bubbleheader %}{% endblock %}
 
-			<section class="inner-container">
-				{% block subcontainer %}{% endblock %}
-			</section>
+      {% block subcontainer %}{% endblock %}
 
-		</section>
-
-	</section>
+    </div>
+	</div>
 
 {% endblock %}
 

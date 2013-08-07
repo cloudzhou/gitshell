@@ -1,8 +1,10 @@
 {% extends "repo/repo.html" %}
+
 {% block subcontainer %}
-<!--TODO refactor add create delete branch tag-->
-<h2 class="heading">Branches</h2>
-<div id="i_branches"></div>
+{# TODO refactor add create delete branch tag #}
+<div class="branches bubble" id="branches">
+  <h2 class="heading">Branches</h2>
+</div>
 {% endblock %}
 {% block subjs %}
 <script>
@@ -26,11 +28,7 @@ $(function(){
             html.push('</tr>');
         }
         html.push('</tbody></table>');
-        $('#i_branches').html(html.join(''));
-        $('.c_unixtime').each(function(index){ 
-            $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-            $(this).show();
-        });
+        $('#branches').append(html.join(''));
     });
 });
 </script>

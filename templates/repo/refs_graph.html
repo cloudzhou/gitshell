@@ -1,11 +1,12 @@
 {% extends "repo/repo.html" %}
+
 {% block subcontainer %}
-<!--TODO refactor-->
-<header class="header clearfix">
+{# TODO refactor #}
+  <div class="graph bubble c_terminal" id="logGraph">
     {% include "repo/branch_nav.html" %}
-</header>
-    <div id="i_log_graph" class="c_terminal"></div>
+  </div>
 {% endblock %}
+
 {% block subjs %}
 <script>
 $(function(){
@@ -91,7 +92,7 @@ $(function(){
             }
             htmls.push('<p>' + log_graph_line + '</p>');
         }
-        $('#i_log_graph').html(htmls.join(''));
+        $('#logGraph').append(htmls.join(''));
     });
 });
 </script>

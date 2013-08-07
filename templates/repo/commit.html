@@ -1,8 +1,10 @@
 {% extends "repo/repo.html" %}
-{% block bubble_inner_class_name %} commits{% endblock %}
+
+{% block bubble_inner_class_name %}commits{% endblock %}
 
 {% block subcontainer %}
-    <!--TODO html error -->
+
+<section class="content">
     {% if commit %}
         <div class="commit colspan">
             <div class="commiter user-plugin span">
@@ -27,6 +29,7 @@
     <div id="diff">
     </div>
 
+  </section>
 {% endblock %}
 
 {% block subjs %}
