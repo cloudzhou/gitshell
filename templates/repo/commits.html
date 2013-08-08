@@ -78,7 +78,7 @@ $(function(){
         $('#repo-path').html(path_href_html);
     };
     set_path_href();
-    <!--TODO add compare diff-->
+    {# TODO add compare diff #}
     var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
     $('.c_diff_commit').click(function() {
         commit_hash = $(this).attr('value');

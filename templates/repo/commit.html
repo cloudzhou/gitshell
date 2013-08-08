@@ -1,10 +1,8 @@
 {% extends "repo/repo.html" %}
 
-{% block bubble_inner_class_name %}commits{% endblock %}
-
 {% block subcontainer %}
 
-<section class="content">
+<div class="commits bubble">
     {% if commit %}
         <div class="commit colspan">
             <div class="commiter user-plugin span">
@@ -26,24 +24,23 @@
             <p class="info text-error"><i class="icon-bell"></i><em>没有找到该 Commit</em></p>
         </div>
     {% endif %}
-    <div id="diff">
-    </div>
+    <div id="diff"></div>
 
-  </section>
+  </div>
 {% endblock %}
 
 {% block subjs %}
-<script>
-$(function(){
-    <!--TODO add compare diff-->
-    var commit_hash = '{{commit_hash}}';
-    var parent_commit_hash = $('.parent_commit_hash').first().text();
-    var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
-    repoComparer.from_refs = parent_commit_hash;
-    repoComparer.to_refs = commit_hash;
-    repoComparer.path = '.';
-    repoComparer.loadDiff($('#diff'), null, function() {
+  <script>
+    $(function(){
+        {# TODO add compare diff #}
+        var commit_hash = '{{commit_hash}}';
+        var parent_commit_hash = $('.parent_commit_hash').first().text();
+        var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
+        repoComparer.from_refs = parent_commit_hash;
+        repoComparer.to_refs = commit_hash;
+        repoComparer.path = '.';
+        repoComparer.loadDiff($('#diff'), null, function() {
+        });
     });
-});
-</script>
+  </script>
 {% endblock %}

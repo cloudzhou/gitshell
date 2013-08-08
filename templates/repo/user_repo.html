@@ -1,39 +1,49 @@
 {% extends "user/user_base.html" %}
 
-<!-- TODO user repo index page -->
-{% block left_sub_container %}
-<div class="span left user-repos">
-<div class="item">
+{# TODO user repo index page #}
+
+{% block primary %}
+
+  <div class="primary user-repos span">
+
     <h2 class="heading">{{user_name}}的仓库列表</h2>
+
     <div class="dropdown">
-        <a href="#" data-toggle="dropdown" class="btn btn-small dropdown-toggle">查看列表<i class="icon-caret-down"></i></a>
-        <ul class="dropdown-menu">
-            {% for repo in repo_list %}
-            <li><a href="/{{user_name}}/{{repo.name}}/">{{repo.name}}</a></li>
-            {% endfor %}
-            <li class="create"><a href="/{{user.username}}/repo/create/">+ 创建新的仓库</a></li>
-        </ul>
-        <a href="/{{user.username}}/repo/create/" class="btn btn-success btn-small"><strong>+</strong>创建仓库</a>
+      <a href="#" data-toggle="dropdown" class="btn btn-small dropdown-toggle">查看列表<i class="icon-caret-down"></i></a>
+      <ul class="dropdown-menu">
+        {% for repo in repo_list %}
+          <li><a href="/{{user_name}}/{{repo.name}}/">{{repo.name}}</a></li>
+        {% endfor %}
+      </ul>
+      <a href="/{{user.username}}/repo/create/" class="btn btn-success btn-small"><strong>+</strong>创建仓库</a>
     </div>
-{% load humanize %}
-{% for repo in repo_list %}
-    <div class="repo c_repo">
+
+    {% load humanize %}
+
+    {% for repo in repo_list %}
+      <section class="repo c_repo">
         <h3 class="heading"><a href="/{{user_name}}/{{repo.name}}/">{{repo.name}}</a></h3>
         <div class="actions btn-group">
-            <a href="/{{user_name}}/{{repo.name}}/commits/" rel="tooltip" data-original-title="commit 次数" class="first btn btn-mini"><i class="icon-time"></i>{{repo.commit}}</a>
-            <a href="/{{user_name}}/{{repo.name}}/clone_watch/" rel="tooltip" data-original-title="watch 次数" class="middle btn btn-mini"><i class="icon-eye-open"></i>{{repo.watch}}</a>
-            <a href="/{{user_name}}/{{repo.name}}/clone_watch/" rel="tooltip" data-original-title="fork 次数" class="last btn btn-mini"><i class="icon-code-fork"></i>{{repo.fork}}</a>
+          <a href="/{{user_name}}/{{repo.name}}/commits/" rel="tooltip" data-original-title="commit 次数" class="first btn btn-mini"><i class="icon-time"></i>{{repo.commit}}</a>
+          <a href="/{{user_name}}/{{repo.name}}/clone_watch/" rel="tooltip" data-original-title="watch 次数" class="middle btn btn-mini"><i class="icon-eye-open"></i>{{repo.watch}}</a>
+          <a href="/{{user_name}}/{{repo.name}}/clone_watch/" rel="tooltip" data-original-title="fork 次数" class="last btn btn-mini"><i class="icon-code-fork"></i>{{repo.fork}}</a>
         </div>
         <div class="detail">
-            <p class="meta">创建于{{repo.create_time|date:"y/m/d"}}，最近更新{{repo.modify_time|date:"y/m/d H:i"}}</p> 
-            <p class="description">{{repo.desc}}</p>
-            <ul id="i_{{repo.name}}" class="list">
-            </ul>
+          <p class="meta">创建于{{repo.create_time|date:"y/m/d"}}，最近更新{{repo.modify_time|date:"y/m/d H:i"}}</p> 
+          <p class="description">{{repo.desc}}</p>
+          <ul id="i_{{repo.name}}" class="list"></ul>
         </div>
-    </div>
-{% endfor %}
-</div>
-</div>
+      </section>
+    {% endfor %}
+
+  </div>
+
+{% endblock %}
+
+{% block sidebar %}
+  <aside class="sidebar">
+    <p>Aside content goes here.</p>
+  </aside>
 {% endblock %}
 
 {% block js %}

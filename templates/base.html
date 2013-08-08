@@ -4,6 +4,7 @@
 		<meta charset="utf-8">
 		<title>{% block title %}gitshell - 你的代码托管{% endblock %}</title>
 		<meta content="GitShell 专注git代码托管, 项目开发, 个人技能" name="description">
+    <meta name="csrf-token" content="{{csrf_token}}">
 		<link href="/static/less/gitshell.less" rel="stylesheet/less" media="all">
 		{% block css %}{% endblock %}
     <script>
@@ -20,13 +21,15 @@
 				<a class="brand" href="/" role="logo">GitShell</a>
 				<ul class="nav main-nav">
 					{% if user.is_authenticated %}
-            <li><a href="/home/">工作台</a></li>
-            <li><a href="/{{user.username}}/repo/">我的仓库</a></li>
+            <li{# if mainnav == '?????' %} class="active"{% endif #}><a href="#">NewsFeeds</a></li>
+            <li{% if mainnav == 'home' %} class="active"{% endif %}><a href="/home/">Desktop</a></li>
+            <li{# if mainnav == '?????' %} class="active"{% endif #}><a href="/{{user.username}}/repo/">仓库</a></li>
 					{% else %}
-            <li><a href="/join/">工作台</a></li>
+            <li><a href="/join/">NewsFeeds</a></li>
+            <li><a href="/join/">Desktop</a></li>
 					{% endif %}
-					<li {%if mainnav == 'explore'%}class="active"{%endif%}><a href="/explore/">浏览仓库</a></li>
-					<li {%if mainnav == 'help'%}class="active"{%endif%}><a href="/help/">帮助</a></li>
+            {#<li {%if mainnav == 'explore'%}class="active"{%endif%}><a href="/explore/">浏览仓库</a></li>#}
+            {#<li {%if mainnav == 'help'%}class="active"{%endif%}><a href="/help/">帮助</a></li>#}
 				</ul>
         {% if user.is_authenticated %}
           <ul class="nav userbar">

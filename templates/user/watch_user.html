@@ -1,27 +1,29 @@
 {% extends "user/user_base.html" %}
 
-{% block left_sub_container %}
-    <div class="span left">
-        <h2 class="heading">关注</h2>
-        {% for watch_user in watch_users %}
-            <div class="user-plugin">
-                <figure class="avatar"><img src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=32" alt=""></figure>
-                <div class="info">
-                    <p class="name"><a href="/{{watch_user.username}}/">{{watch_user.username}}</a></p>
-                    <p class="meta">{{watch_user.tweet}}</p>
-                </div>
-            </div>
-        {% endfor %}
+{% block primary %}
 
-        <h2 class="heading">被关注</h2>
-        {% for bewatch_user in bewatch_users %}
-            <div class="user-plugin">
-                <figure class="avatar"><img src="https://gravatar.com/avatar/{{bewatch_user.imgurl}}?s=32" alt=""></figure>
-                <div class="info">
-                    <p class="name"><a href="/{{bewatch_user.username}}/">{{bewatch_user.username}}</a></p>
-                    <p class="meta">{{bewatch_user.tweet}}</p>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
+  <div class="primary">
+    <h2 class="heading">关注</h2>
+    {% for watch_user in watch_users %}
+      <div class="user-plugin">
+        <figure class="avatar"><img src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=32" alt=""></figure>
+        <div class="info">
+          <p class="name"><a href="/{{watch_user.username}}/">{{watch_user.username}}</a></p>
+          <p class="meta">{{watch_user.tweet}}</p>
+        </div>
+      </div>
+    {% endfor %}
+
+    <h2 class="heading">被关注</h2>
+    {% for bewatch_user in bewatch_users %}
+      <div class="user-plugin">
+        <figure class="avatar"><img src="https://gravatar.com/avatar/{{bewatch_user.imgurl}}?s=32" alt=""></figure>
+        <div class="info">
+          <p class="name"><a href="/{{bewatch_user.username}}/">{{bewatch_user.username}}</a></p>
+          <p class="meta">{{bewatch_user.tweet}}</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
 {% endblock %}

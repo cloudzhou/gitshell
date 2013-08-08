@@ -1,24 +1,19 @@
 {% extends "repo/repo.html" %}
 
-{% block bubble_inner_class_name %} issues{% endblock %}
-
 {% block subcontainer %}
-	<nav class="sidebar">
+	<div class="sidebar">
 		{% include "repo/condition.html" %}
-	</nav>
+	</div>
 
-	<section class="issue-list">
-		<header class="header">
-			<h1 class="heading">Gitshell Issues</h1>
-			<ul class="btn-group sort">
-        <li><a href="/{{user_name}}/{{repo_name}}/issues/create/" class="btn btn-mini btn-success">新建</a></li>
-				<li class="leader">排序:</li>
-        <li>{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn btn-mini first">更新</a>{%else%}<span class="btn btn-mini btn-disable first">更新</span>{%endif%}</li>
-        <li>{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn btn-mini last">创建</a>{%else%}<span class="btn btn-mini btn-disable last">创建</span>{%endif%}</li>
-			</ul>
-		</header>
+	<div class="primary issue-list">
+    <ul class="sort btn-group">
+      <li><a href="/{{user_name}}/{{repo_name}}/issues/create/" class="btn btn-mini btn-success">新建</a></li>
+      <li class="leader">排序:</li>
+      <li>{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn btn-mini first">更新</a>{%else%}<span class="btn btn-mini btn-disable first">更新</span>{%endif%}</li>
+      <li>{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn btn-mini last">创建</a>{%else%}<span class="btn btn-mini btn-disable last">创建</span>{%endif%}</li>
+    </ul>
 		{% for issue in issues %}
-		<div class="issue">
+		<section class="issue">
 			<figure class="avatar span">
         <img src="https://gravatar.com/avatar/{{issue.reporter_imgurl}}/?s=35" alt="{{issue.reporter_imgurl}}">
 			</figure>
@@ -37,29 +32,25 @@
           <span class="unixtime hide date">{%if orderby == 'modify_time'%}{{issue.modify_time}}{%else%}{{issue.create_time}}{%endif%}</span>
 				</div>
 			</div>
-		</div>
+		</section>
 		{% endfor %}
 		{% if not issues %}
 			<div class="issue"><p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有Issues，或者没有查看Issues权限，半公开和私有项目需要申请成为成员才能查看Issues</p></div>
 		{% endif %}
 
-    <footer class="footer">
-      <nav class="pagination">
-        <ul class="nav">
-          {% if hasPre %}
-          <li><a href="/{{user_name}}/{{repo_name}}/issues/"><i class="icon-home"></i>首页</a></li>
-          <li><a id="i_pre_page" href="javascript:void(0)">前一页</a></li>
-          {% endif %}
-          {% if hasPre or hasNext %}
-          <li class="active">第{{page}}页</li>
-          {% endif %}
-          {% if hasNext %}
-          <li><a id="i_next_page" href="javascript:void(0)">后一页</a></li>
-          {% endif %}
-        </ul>
-      </nav>
-    </footer>
-	</section>
+    <ul class="pagination">
+      {% if hasPre %}
+      <li><a href="/{{user_name}}/{{repo_name}}/issues/"><i class="icon-home"></i>首页</a></li>
+      <li><a id="i_pre_page" href="javascript:void(0)">前一页</a></li>
+      {% endif %}
+      {% if hasPre or hasNext %}
+      <li class="active">第{{page}}页</li>
+      {% endif %}
+      {% if hasNext %}
+      <li><a id="i_next_page" href="javascript:void(0)">后一页</a></li>
+      {% endif %}
+    </ul>
+	</div>
 
 {% endblock %}
 
