@@ -1,6 +1,6 @@
 {% extends "repo/repo.html" %}
 {% block subcontainer %}
-<h2 class="heading">
+<h2 class="refs_create_header heading">
     创建分支
 </h2>
 <hr>
@@ -23,9 +23,29 @@
 {% block subjs %}
 <script>
 $(function(){
+    var branch_or_tag_select = function(){
+        var branch_or_tag = $('#branch-or-tag option:selected').val();
+        if(branch_or_tag == 'branch') {
+            $('.refs_create_header').text('创建分支');
+            $('.repo-tabs li').removeClass('active');
+            $('.branches-nav').addClass('active');
+            $('.repo-tabs li .label').removeClass('label-success');
+            $('.branches-nav .label').addClass('label-success');
+            window.location.hash = '#target_branch';
+        }else if(branch_or_tag == 'tag') {
+            $('.refs_create_header').text('创建标签');
+            $('.repo-tabs li').removeClass('active');
+            $('.tags-nav').addClass('active');
+            $('.repo-tabs li .label').removeClass('label-success');
+            $('.tags-nav .label').addClass('label-success');
+            window.location.hash = '#target_tag';
+        }
+    };
+    $('#branch-or-tag').change(branch_or_tag_select);
     var hash = window.location.hash;
     if(hash == '#target_tag') {
         $('#branch-or-tag option').eq(1).prop('selected', true);
+        branch_or_tag_select();
     } 
     $('#refs-create-btn').click(function(){
         var base_refs_name = $('#base-refs-name option:selected').val();
