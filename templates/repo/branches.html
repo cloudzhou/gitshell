@@ -1,8 +1,7 @@
 {% extends "repo/repo.html" %}
 {% block subcontainer %}
-<!--TODO refactor add create delete branch tag-->
 <h2 class="heading">
-    分支
+    分支 {%if is_repo_member%}<a href="/{{user_name}}/{{repo_name}}/refs/create/master/#target_branch">+</a>{%endif%}
 {% if is_repo_member %}
 <a href="#branch-manage" class="btn btn-mini pull-right branch-manage"><i class="icon-cog"></i><span>管理</span></a>
 {% endif %}

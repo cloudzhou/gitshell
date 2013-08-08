@@ -3,6 +3,7 @@
 <h2 class="heading">
     创建分支
 </h2>
+<hr>
 <div class="refs-create">
     基于
     <select id="base-refs-name">
@@ -22,6 +23,10 @@
 {% block subjs %}
 <script>
 $(function(){
+    var hash = window.location.hash;
+    if(hash == '#target_tag') {
+        $('#branch-or-tag option').eq(1).prop('selected', true);
+    } 
     $('#refs-create-btn').click(function(){
         var base_refs_name = $('#base-refs-name option:selected').val();
         var branch_or_tag = $('#branch-or-tag option:selected').val();
