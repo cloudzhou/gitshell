@@ -93,29 +93,28 @@
                     </section>
                     <section class="item">
                         <h2 class="heading">关注<a href="/{{gsuser.username}}/watch/user/" class="more">more</a></h2>
-                          <div class="colspan">
-                              {% for watch_user in watch_users %}
-                              <a href="/{{watch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ watch_user.username }}" data-content="{% if tweet != "" %}{{ watch_user.tweet }}{% else %}这家伙真懒{%endif%}">
-                                  <figure class="avatar"><img src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=32" alt=""></figure>
-                              </a>
-                              {% endfor %}
-                          </div>
-                      </section>
-                      <section class="item">
-                          <h2 class="heading">被关注<a href="/{{gsuser.username}}/watch/user/" class="more">more</a></h2>
-                          <div class="colspan">
-                              {% for bewatch_user in bewatch_users %}
-                              <a href="/{{bewatch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ bewatch_user.username }}" data-content="{{ bewatch_user.tweet }}">
-                                  <figure class="avatar"><img src="https://gravatar.com/avatar/{{bewatch_user.imgurl}}?s=32" alt=""></figure>
-                              </a>
-                              {% endfor %}
-                          </div>
-                      </section>
-                  </div>
-                  {% endif %}
+                        <div class="colspan">
+                            {% for watch_user in watch_users %}
+                            <a href="/{{watch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ watch_user.username }}" data-content="{% if tweet != "" %}{{ watch_user.tweet }}{% else %}这家伙真懒{%endif%}">
+                                <figure class="avatar"><img src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=32" alt=""></figure>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="item">
+                        <h2 class="heading">被关注<a href="/{{gsuser.username}}/watch/user/" class="more">more</a></h2>
+                        <div class="colspan">
+                            {% for bewatch_user in bewatch_users %}
+                            <a href="/{{bewatch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ bewatch_user.username }}" data-content="{{ bewatch_user.tweet }}">
+                                <figure class="avatar"><img src="https://gravatar.com/avatar/{{bewatch_user.imgurl}}?s=32" alt=""></figure>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
 
-            </aside>
-
+                </div>
+                {% endif %}
+            </div>
     </div>
 
     {% block row_sub_container %}{% endblock %}
@@ -127,8 +126,6 @@
 {% endblock %}
 
 {% block js %}
-<script src="/static/js/moment.min.js"></script>
-<script src="/static/js/moment.zh-cn.js"></script>
 <script>
 $(function(){
     var disabled_watch = false;
@@ -183,7 +180,8 @@ $(function(){
                 $('#id_alert_message').html(json.message);
             },
         })
-    })
+    });
+
 });
 </script>
     {% block subjs %}{% endblock %}

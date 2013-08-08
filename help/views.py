@@ -38,5 +38,5 @@ def reset_access_limit(request):
         user_id = request.user.id
         key = '%s:%s' % (ACL_KEY, user_id)
         cache.set(key, 1, ACCESS_WITH_IN_TIME)
-    return HttpResponseRedirect('/home/')
+    return HttpResponseRedirect('/dashboard/')
 

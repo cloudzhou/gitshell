@@ -62,7 +62,7 @@ $(function(){
                     }
                     lastBlank = author.lastIndexOf(' ') + 1;
                     real_author = author.substring(lastBlank);
-                    new_log_graph_splits.push(author.substring(0, lastBlank) + '<a href="/' + real_author + '/">' + real_author + '</a> ');
+                    new_log_graph_splits.push(author.substring(0, lastBlank) + '<span>' + real_author + '</span> ');
                     refs = log_graph_line.substring(indexOfs[6], indexOfs[7]+1);
                     if(refs[0] == '(' && refs[refs.length-1] == ')') {
                         var refs_splits = [];
@@ -86,7 +86,7 @@ $(function(){
                     author = log_graph_line.substring(indexOfs[5]);
                     lastBlank = author.lastIndexOf(' ') + 1;
                     real_author = author.substring(lastBlank);
-                    new_log_graph_splits.push(author.substring(0, lastBlank) + '<a href="/' + real_author + '/"><span class="c_author">' + real_author + '</span></a>');
+                    new_log_graph_splits.push(author.substring(0, lastBlank) + '<span class="c_author">' + real_author + '</span>');
                 }
                 log_graph_line = new_log_graph_splits.join('')
             }

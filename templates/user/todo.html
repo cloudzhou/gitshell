@@ -1,31 +1,31 @@
-{% extends "user/home_base.html" %}
+{% extends "user/dashboard_base.html" %}
 
 {% block container_class_name %} user todo{% endblock %}
 {% block subcontainer %}
     <div id="todo_container">
-            <div class="todo-controls">
+      <div class="todo-controls">
         <div id="id_sceneAdd_div" class="form-inline hide">
-                    <input id="id_sceneAdd" type="text" placeholder="添加新的场景，支持Enter按键">
-                    <a href="#" id="id_sceneAdd_button" class="btn btn-primary" type="submit">添加新的情景</a>
-                    <a href="#" id="id_sceneCancel_button" class="btn" type="submit">取消</a>
+          <input id="id_sceneAdd" type="text" placeholder="添加新的场景，支持Enter按键">
+          <a href="#" id="id_sceneAdd_button" class="btn btn-primary" type="submit">添加新的情景</a>
+          <a href="#" id="id_sceneCancel_button" class="btn" type="submit">取消</a>
         </div>
         <div id="id_todoAdd_div" class="todo-category" style="margin-bottom: 10px">
-                    <div class="btn-group dropdown">
-                        <a href="#" data-toggle="dropdown" class="btn dropdown-toggle">@{{scene.name}}<i class="icon-caret-down"></i></a>
-                        <div class="dropdown-menu">
-                            <ul class="nav nav-list">
-                                {%for scene in scene_list%}
-                                    <li><a href="/home/todo/{{scene.id}}/">@{{scene.name}}</a></li>
-                                {%endfor%}
-                                <li id="id_addScene"><a href="javascript: void(0)"><i class="icon-plus"></i> 添加新的场景</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <input id="id_todoAdd" type="text" placeholder="添加新的todo，支持Enter按键" class="span6">
-                    <button id="id_todoAdd_button" class="btn btn-primary" type="submit">添加</button>
-                    {%if not todoing_list and scene.name != ''%}
-                        <button id="id_sceneRemove_button" class="btn btn-danger" type="submit">删除场景</button>
-                    {%endif%}
+          <div class="btn-group dropdown">
+            <a href="#" data-toggle="dropdown" class="btn dropdown-toggle">@{{scene.name}}<i class="icon-caret-down"></i></a>
+            <div class="dropdown-menu">
+              <ul class="nav nav-list">
+                {%for scene in scene_list%}
+                  <li><a href="/dashboard/todo/{{scene.id}}/">@{{scene.name}}</a></li>
+                {%endfor%}
+                <li id="id_addScene"><a href="javascript: void(0)"><i class="icon-plus"></i> 添加新的场景</a></li>
+              </ul>
+            </div>
+          </div>
+          <input id="id_todoAdd" type="text" placeholder="添加新的todo，支持Enter按键" class="span6">
+          <button id="id_todoAdd_button" class="btn btn-primary" type="submit">添加</button>
+          {%if not todoing_list and scene.name != ''%}
+              <button id="id_sceneRemove_button" class="btn btn-danger" type="submit">删除场景</button>
+          {%endif%}
         </div>
             </div>
 
@@ -59,8 +59,6 @@
     </div>
 {% endblock %}
 {% block js %}
-<script src="/static/js/moment.min.js"></script>
-<script src="/static/js/moment.zh-cn.js"></script>
 <!--script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script-->
 <script src="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.21/jquery-ui.min.js"></script>
 <!--script src="http://lib.sinaapp.com/js/jquery-ui/1.8.11/jquery-ui.min.js"></script-->
@@ -79,9 +77,9 @@ $(function(){
 
     $('.todo-item').live('mouseover mouseout', function(event) {
         if (event.type == 'mouseover') {
-                    $(this).find('.fade').fadeTo(0, 100);
+            $(this).find('.fade').fadeTo(0, 100);
         } else {
-                    $(this).find('.fade').fadeTo(0, 0);
+            $(this).find('.fade').fadeTo(0, 0);
         }
     });
 
@@ -117,7 +115,7 @@ $(function(){
         if(todo_text == '') {
             return
         }
-        $.post('/home/todo/'+{{scene.id}}+'/add_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_text': todo_text}, function(json){
+        $.post('/dashboard/todo/'+{{scene.id}}+'/add_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_text': todo_text}, function(json){
             var todo_id = json.todo_id;
             var todo = init_todo(todo_id, todo_text);
             $('#id_todoList').prepend(todo);
@@ -145,9 +143,9 @@ $(function(){
         }
     });
     function add_scene(scene) {
-        $.post('/home/todo/0/add/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'name': scene}, function(json){
+        $.post('/dashboard/todo/0/add/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'name': scene}, function(json){
             var scene_id = json.scene_id;
-            window.location = '/home/todo/'+ scene_id +'/';
+            window.location = '/dashboard/todo/'+ scene_id +'/';
         });
     }
     $('.cl_todo').tooltip({
@@ -194,7 +192,7 @@ $(function(){
     }
     function done_todo(todo_id){
         var todo_text = $('#id_todo_'+todo_id).find('.cl_todo_text').text();
-        $.post('/home/todo/'+ {{scene.id}} +'/done_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todo_id}, function(json){
+        $.post('/dashboard/todo/'+ {{scene.id}} +'/done_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todo_id}, function(json){
             var result_todo_id = json.todo_id;
             if(result_todo_id != 0) {
                 $('#id_todo_'+todo_id).remove();
@@ -214,7 +212,7 @@ $(function(){
     $('.cl_todone_check').on('click', function (e) {
         var todone_id = $(this).parents('.cl_todone').attr('data');
         var todone_text = $('#id_todone_'+todone_id).find('.cl_todo_text').text();
-        $.post('/home/todo/'+ {{scene.id}} +'/doing_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todone_id}, function(json){
+        $.post('/dashboard/todo/'+ {{scene.id}} +'/doing_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todone_id}, function(json){
             var result_todo_id = json.todo_id;
             if(result_todo_id != 0) {
                 $('#id_todone_'+todone_id).remove();
@@ -245,7 +243,7 @@ $(function(){
     });
     $('.remove_todo').on('click', function (e) {
         var todo_id = $(this).parents('.cl_todo').attr('data');
-        $.post('/home/todo/'+ {{scene.id}} +'/remove_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todo_id}, function(json){
+        $.post('/dashboard/todo/'+ {{scene.id}} +'/remove_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todo_id}, function(json){
             var result_todo_id = json.todo_id;
             if(result_todo_id != 0) {
                 $('#id_todo_'+todo_id).remove()
@@ -258,10 +256,10 @@ $(function(){
             return;
         }
         if($(this).text() == '确定删除？') {
-            $.post('/home/todo/'+ {{scene.id}} +'/remove/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'scene_id': '{{scene.id}}'}, function(json){
+            $.post('/dashboard/todo/'+ {{scene.id}} +'/remove/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'scene_id': '{{scene.id}}'}, function(json){
                 var result_scene_id = json.scene_id;
                 if(result_scene_id != 0) {
-                    window.location = '/home/todo/';
+                    window.location = '/dashboard/todo/';
                 }
             });
         }
@@ -273,10 +271,10 @@ $(function(){
             todo_order_ids.push(todo_id);
         });
         if(todo_order_ids.length > 0) {
-            $.post('/home/todo/'+ {{scene.id}} +'/update_scene_meta/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_ids': todo_order_ids.join(',')}, function(json){
+            $.post('/dashboard/todo/'+ {{scene.id}} +'/update_scene_meta/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_ids': todo_order_ids.join(',')}, function(json){
                 var result = json.result;
                 if(result != 0) {
-                    window.location = '/home/todo/{{scene.id}}/';
+                    window.location = '/dashboard/todo/{{scene.id}}/';
                 }
             });
         }

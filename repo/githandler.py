@@ -6,6 +6,8 @@ from django.core.cache import cache
 from subprocess import check_output, Popen, PIPE
 from chardet.universaldetector import UniversalDetector
 from gitshell.objectscache.models import CacheKey
+from gitshell.gsuser.models import GsuserManager
+from gitshell.repo.models import RepoManager
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.settings import PULLREQUEST_REPO_PATH, logger
 """
@@ -45,7 +47,7 @@ class GitHandler():
             path = path[2:]
         file_type = path.split('.')[-1]
         if file_type in BINARY_FILE_TYPE:
-            return "二进制文件"
+            return u'二进制文件'
         stage_file = self._get_stage_file(repo_path, commit_hash, path)
         result = self._read_load_stage_file(stage_file)
         if result is not None:
@@ -182,7 +184,7 @@ class GitHandler():
         refs_meta = self.repo_ls_refs(repo, repo.get_abs_repopath())
         if branch in refs_meta['branches'] or base_branch not in refs_meta['branches']:
             return False
-        args = ['/bin/bash', '/usr/bin/git', 'branch', branch, base_branch]
+        args = ['/usr/bin/git', 'branch', branch, base_branch]
         return self._run_command_on_repo_and_flush(repo, args)
 
     def create_tag(self, repo, tag, base_branch):
@@ -191,7 +193,7 @@ class GitHandler():
         refs_meta = self.repo_ls_refs(repo, repo.get_abs_repopath())
         if tag in refs_meta['tags'] or base_branch not in refs_meta['branches']:
             return False
-        args = ['/bin/bash', '/usr/bin/git', 'tag', tag, base_branch]
+        args = ['/usr/bin/git', 'tag', tag, base_branch]
         return self._run_command_on_repo_and_flush(repo, args)
 
     def delete_branch(self, repo, branch):
@@ -200,20 +202,20 @@ class GitHandler():
         refs_meta = self.repo_ls_refs(repo, repo.get_abs_repopath())
         if branch not in refs_meta['branches']:
             return False
-        args = ['/bin/bash', '/usr/bin/git', 'branch', '-D', branch]
+        args = ['/usr/bin/git', 'branch', '-D', branch]
         return self._run_command_on_repo_and_flush(repo, args)
 
     def delete_tag(self, repo, tag):
         if not self._is_allowed_path(tag):
             return False
         refs_meta = self.repo_ls_refs(repo, repo.get_abs_repopath())
-        if tag not in refs_meta['branches']:
+        if tag not in refs_meta['tags']:
             return False
-        args = ['/bin/bash', '/usr/bin/git', 'tag', '-d', tag]
+        args = ['/usr/bin/git', 'tag', '-d', tag]
         return self._run_command_on_repo_and_flush(repo, args)
 
     def update_server_info(self, repo):
-        args = ['/bin/bash', '/usr/bin/git', 'update-server-info']
+        args = ['/usr/bin/git', 'update-server-info']
         return self._run_command_on_repo(repo, args)
 
     def _run_command_on_repo_and_flush(self, repo, args):
@@ -238,30 +240,34 @@ class GitHandler():
     def _repo_load_log_file(self, from_commit_hash, commit_hash, log_size, path):
         commits = []
         between_commit_hash = commit_hash
+        
+        path_in_git = ''
+        if path != '' and path != '.':
+            path_in_git = '-- ' + path
         if from_commit_hash is not None and not from_commit_hash.startswith('0000000'):
             between_commit_hash = from_commit_hash + '...' + commit_hash
-        command = '/usr/bin/git log -%s --pretty="%%h______%%p______%%t______%%an______%%cn______%%ct|%%s" %s -- %s | /usr/bin/head -c 524288' % (log_size, between_commit_hash, path)
+        command = '/usr/bin/git log -%s --pretty="%%h|%%p|%%t|%%an|%%ae|%%at|%%cn|%%ce|%%ct|%%s" %s %s | /usr/bin/head -c 524288' % (log_size, between_commit_hash, path_in_git)
         try:
             raw_result = check_output(command, shell=True)
             for line in raw_result.split('\n'):
-                ars = line.split('|', 1)
-                if len(ars) != 2:
+                ars = line.split('|', 9)
+                if len(ars) != 10:
                     continue
-                attr, commit_message = ars
-                attrs = attr.split('______', 6)
-                if len(attrs) != 6:
-                    continue
-                (commit_hash, parent_commit_hash, tree_hash, author, committer, committer_date) = (attrs)
+                (commit_hash, parent_commit_hash, tree_hash, author_name, author_email, author_date, committer_name, committer_email, committer_date, commit_message) = (ars)
                 commit = {
                     'commit_hash': commit_hash,
                     'parent_commit_hash': parent_commit_hash,
                     'tree_hash': tree_hash,
-                    'author': author,
-                    'committer': committer,
+                    'author_name': author_name,
+                    'author_email': author_email,
+                    'author_date': author_date,
+                    'committer_name': committer_name,
+                    'committer_email': committer_email,
                     'committer_date': committer_date,
                     'commit_message': commit_message,
                 }
                 commit['parent_commit_hash'] = parent_commit_hash.split(' ')
+                self._set_real_author_committer_name(commit)
                 commits.append(commit)
             return commits
         except Exception, e:
@@ -277,18 +283,22 @@ class GitHandler():
             for line in raw_output.split("\n"):
                 array = self.blank_p.split(line, 3) 
                 if len(array) >= 4:
-                    relative_path = array[3]
+                    abs_path = array[3]; relative_path = abs_path
                     if path != '.':
-                        relative_path = relative_path[len(path):]
+                        relative_path = abs_path[len(path):]
                     if array[1] == 'tree':
                         relative_path = relative_path + '/'
                     relative_path = self._oct_utf8_decode(relative_path)
                     if self._repo_file_path_check(relative_path):
-                        tree[relative_path] = [relative_path] + array[1:3]
-                        relative_path_lower = relative_path.lower()
-                        if relative_path_lower == 'readme.md' or relative_path_lower == 'readme.mkd':
+                        tree[relative_path] = {}
+                        tree[relative_path]['relative_path'] = relative_path
+                        tree[relative_path]['type'] = array[1]
+                        tree[relative_path]['commit_hash'] = array[2]
+                        tree[relative_path]['abs_path'] = abs_path
+                        filename_lower = relative_path.lower()
+                        if filename_lower == 'readme.md' or filename_lower == 'readme.mkd':
                             has_readme = True
-                            readme_file = relative_path
+                            readme_file = abs_path
                         if array[1] == 'tree':
                             dirs.append(relative_path)
                         else:
@@ -303,30 +313,60 @@ class GitHandler():
                 pre_path = path
                 if path == '.':
                     pre_path = ''
-                last_commit_command = 'for i in %s; do echo -n "$i|"; git log %s -1 --pretty="%%ct %%an %%s" -- "%s$i" | /usr/bin/head -c 524288; done' % (' '.join(quote_relative_paths), commit_hash, pre_path)
+                last_commit_command = 'for i in %s; do echo -n "$i|"; git log %s -1 --pretty="%%at|%%an|%%ae|%%s" -- "%s$i" | /usr/bin/head -c 524288; done' % (' '.join(quote_relative_paths), commit_hash, pre_path)
                 last_commit_output = check_output(last_commit_command, shell=True)
                 for last_commit in last_commit_output.split('\n'):
-                    splits = last_commit.split('|', 1)
-                    if len(splits) < 2:
+                    splits = last_commit.split('|', 4)
+                    if len(splits) < 5:
                         continue
                     relative_path = splits[0]
-                    meta_splits = splits[1].split(' ', 2)
-                    if len(meta_splits) < 3:
-                        continue
-                    (unixtime, author_name, last_commit_message) = meta_splits
-                    tree[relative_path].append(unixtime)
-                    tree[relative_path].append(author_name)
-                    tree[relative_path].append(last_commit_message)
+                    tree[relative_path]['author_time'] = splits[1]
+                    tree[relative_path]['author_name'] = splits[2]
+                    tree[relative_path]['author_email'] = splits[3]
+                    tree[relative_path]['last_commit_message'] = splits[4]
             dirs.sort()
             files.sort()
             ordered_tree = []
             for file_path in dirs + files:
                 tree_item = tree[file_path]
+                self._set_real_author_name(tree_item)
                 ordered_tree.append(tree_item)
             return {'tree': ordered_tree, 'has_readme': has_readme, 'readme_file': readme_file}
         except Exception, e:
             logger.exception(e)
         return {}
+
+    def _set_real_author_name(self, item):
+        if 'author_name' not in item or 'author_email' not in item:
+            return
+        author_name = item['author_name']
+        author_email = item['author_email']
+        item['real_author_name'] = ''
+        user = GsuserManager.get_user_by_email(author_email)
+        if user:
+            item['real_author_name'] = user.username
+            return
+        user = GsuserManager.get_user_by_name(author_name)
+        if user:
+            item['real_author_name'] = user.username
+
+    def _set_real_committer_name(self, item):
+        if 'committer_name' not in item or 'committer_email' not in item:
+            return
+        committer_name = item['committer_name']
+        committer_email = item['committer_email']
+        item['real_committer_name'] = ''
+        user = GsuserManager.get_user_by_email(committer_email)
+        if user:
+            item['real_committer_name'] = user.username
+            return
+        user = GsuserManager.get_user_by_name(committer_name)
+        if user:
+            item['real_committer_name'] = user.username
+
+    def _set_real_author_committer_name(self, commit):
+        self._set_real_author_name(commit)
+        self._set_real_committer_name(commit)
 
     def _get_diff_stage_file(self, repo_path, pre_commit_hash, commit_hash, context, path):
         (username, reponame) = repo_path.split('/')[-2:]
@@ -341,15 +381,14 @@ class GitHandler():
         return stage_file
         
     def _read_load_stage_file(self, stage_file):
-        if os.path.exists(stage_file):
-            try:
-                json_data = open(stage_file)
+        if not os.path.exists(stage_file):
+            return None
+        try:
+            with codecs.open(stage_file, encoding='utf-8', mode='r') as json_data:
                 result = json.load(json_data)
                 return result
-            except Exception, e:
-                logger.exception(e)
-            finally:
-                json_data.close()
+        except Exception, e:
+            logger.exception(e)
         return None
 
     def _dumps_write_stage_file(self, result, stage_file):
@@ -361,18 +400,15 @@ class GitHandler():
         if not os.path.exists(stage_file_tmp_path):
             os.makedirs(stage_file_tmp_path)
         try:
-            stage_file_w = codecs.open(stage_file_tmp, encoding='utf-8', mode='w')
-            logger.error(result)
-            stage_file_w.write(json.dumps(result))
-            stage_file_w.flush()
-            shutil.move(stage_file_tmp, stage_file)
+            with codecs.open(stage_file_tmp, encoding='utf-8', mode='w') as stage_file_w:
+                stage_file_w.write(json.dumps(result))
+                stage_file_w.flush()
+                shutil.move(stage_file_tmp, stage_file)
         except Exception, e:
             logger.exception(e)
         finally:
             if os.path.exists(stage_file_tmp):
                 os.remove(stage_file_tmp)
-            if stage_file_w:
-                stage_file_w.close()
 
     def _get_quote_path(self, path):
         path = ''.join(c for c in path if ord(c) >= 32 and ord(c) != 127)
@@ -469,26 +505,28 @@ class GitHandler():
         refs_detail_commit = {}
         refses = commit_hash_dict.keys()
         try:
-            last_commit_command = 'for i in %s; do echo -n "$i|"; git log "$i" -1 --pretty="%%h______%%p______%%t______%%an______%%cn______%%ct|%%s" | /usr/bin/head -c 524288; done' % (' '.join(refses))
+            last_commit_command = 'for i in %s; do echo -n "$i|"; git log "$i" -1 --pretty="%%h|%%p|%%t|%%an|%%ae|%%at|%%cn|%%ce|%%ct|%%s" | /usr/bin/head -c 524288; done' % (' '.join(refses))
             last_commit_output = check_output(last_commit_command, shell=True)
             for line in last_commit_output.split('\n'):
-                ars = line.split('|', 2)
-                if len(ars) != 3:
+                ars = line.split('|', 10)
+                if len(ars) != 11:
                     continue
-                refs, attr, commit_message = ars
-                attrs = attr.split('______', 6)
-                if len(attrs) != 6:
-                    continue
-                (commit_hash, parent_commit_hash, tree_hash, author, committer, committer_date) = (attrs)
-                refs_detail_commit[refs] = {
+                (refs, commit_hash, parent_commit_hash, tree_hash, author_name, author_email, author_date, committer_name, committer_email, committer_date, commit_message) = (ars)
+                refs_commit = {
                     'commit_hash': commit_hash,
+                    'parent_commit_hash': parent_commit_hash,
                     'tree_hash': tree_hash,
-                    'author': author,
-                    'committer': committer,
+                    'author_name': author_name,
+                    'author_email': author_email,
+                    'author_date': author_date,
+                    'committer_name': committer_name,
+                    'committer_email': committer_email,
                     'committer_date': committer_date,
                     'commit_message': commit_message,
                 }
-                refs_detail_commit[refs]['parent_commit_hash'] = parent_commit_hash.split(' ')
+                refs_commit['parent_commit_hash'] = parent_commit_hash.split(' ')
+                self._set_real_author_committer_name(refs_commit)
+                refs_detail_commit[refs] = refs_commit
         except Exception, e:
             logger.exception(e)
         meta['detail_commit'] = refs_detail_commit
@@ -514,22 +552,23 @@ class GitHandler():
 
     def _append_refs_and_put_dict(self, dirpath, refs_array, commit_hash_dict):
         for refs in os.listdir(dirpath):
-            if self._is_allowed_path(refs):
-                if len(refs_array) >= 100:
-                    return
-                if refs in refs_array:
-                    continue
-                refs_array.append(refs)
-                refs_path = '%s/%s' % (dirpath, refs)
-                f = None
-                try:
-                    f = open(refs_path, 'r')
-                    commit_hash = f.read(40)
-                    if re.match('^\w+$', commit_hash):
-                        commit_hash_dict[refs] = commit_hash
-                finally:
-                    if f != None:
-                        f.close()
+            if not self._is_allowed_path(refs):
+                continue
+            if len(refs_array) >= 100:
+                return
+            if refs in refs_array:
+                continue
+            refs_array.append(refs)
+            refs_path = '%s/%s' % (dirpath, refs)
+            f = None
+            try:
+                f = open(refs_path, 'r')
+                commit_hash = f.read(40)
+                if re.match('^\w+$', commit_hash):
+                    commit_hash_dict[refs] = commit_hash
+            finally:
+                if f != None:
+                    f.close()
     
     def _is_allowed_paths(self, paths):
         for path in paths:
@@ -657,7 +696,15 @@ class GitHandler():
             filediff['linediff'] = linediff
             filediff['filename'] = filename
             detail.append(filediff)
-
+        diff['changedfiles_count'] = len(numstat)
+        total_add_line = 0; total_delete_line = 0;
+        for item in numstat:
+            total_add_line = total_add_line + int(item[0])
+            total_delete_line = total_delete_line + int(item[1])
+        abs_change_line = total_add_line - total_delete_line
+        diff['total_add_line'] = total_add_line
+        diff['total_delete_line'] = total_delete_line
+        diff['abs_change_line'] = abs_change_line
         return diff
 
 if __name__ == '__main__':

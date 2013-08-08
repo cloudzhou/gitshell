@@ -19,7 +19,7 @@ from gitshell.todolist.views import todo
 from gitshell.viewtools.views import json_httpResponse, obj2dict
 
 @login_required
-def home(request):
+def dashboard(request):
     feedAction = FeedAction()
     goto = feedAction.get_user_position(request.user.id)
     if goto == None:
@@ -164,7 +164,7 @@ def feed_by_ids(request):
     _fillwith_issue_event(request, feeds, usernames, userIds)
     _fillwith_pull_event(request, feeds, usernames, userIds)
     (gravatar_dict, gravatar_userId_dict) = _get_gravatar_dict(usernames, userIds)
-    response_dictionary = {'feeds': obj2dict(feeds), 'gravatar_dict': gravatar_dict, 'gravatar_userId_dict': gravatar_userId_dict}
+    response_dictionary = {'feeds': feeds, 'gravatar_dict': gravatar_dict, 'gravatar_userId_dict': gravatar_userId_dict}
     return json_httpResponse(response_dictionary)
 
 def _get_gravatar_dict(username_list, userIds):

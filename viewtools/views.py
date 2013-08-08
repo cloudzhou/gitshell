@@ -5,7 +5,7 @@ from django.utils.html import escape
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 
 def json_httpResponse(o):
-    return json_httpResponse_obj2dict(o, False)
+    return json_httpResponse_obj2dict(o, True)
 
 def json_httpResponse_obj2dict(o, is_obj2dict):
     if is_obj2dict:
@@ -13,9 +13,9 @@ def json_httpResponse_obj2dict(o, is_obj2dict):
     return HttpResponse(json_escape_dumps(o), mimetype='application/json')
 
 def json_escape_dumps(o):
-    json.encoder.encode_basestring = encoder
-    #json.encoder.encode_basestring_ascii = functools.partial(encoder, _encoder=json.encoder.encode_basestring_ascii)
-    json.encoder.encode_basestring_ascii = encoder
+    #json.encoder.encode_basestring = encoder
+    ##json.encoder.encode_basestring_ascii = functools.partial(encoder, _encoder=json.encoder.encode_basestring_ascii)
+    #json.encoder.encode_basestring_ascii = encoder
     return json.dumps(o)
 
 def encoder(o, _encoder=json.encoder.encode_basestring):
@@ -30,7 +30,9 @@ def obj2dict(obj):
 def _recursion_obj2dict(id_set, obj):
     if obj is None:
         return None
-    if isinstance(obj, (basestring, int, long, float, complex)):
+    if isinstance(obj, basestring):
+        return escape(obj)
+    if isinstance(obj, (int, long, float, complex)):
         return obj
     if isinstance(obj, datetime):
         return time.mktime(obj.timetuple())
@@ -54,5 +56,6 @@ def _recursion_obj2dict(id_set, obj):
             if not key.startswith('_') and not callable(value):
                 _dict[_recursion_obj2dict(id_set, key)] = _recursion_obj2dict(id_set, value)
         return _dict
+    return obj
 
 

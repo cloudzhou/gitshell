@@ -1,4 +1,4 @@
-{% extends "user/home_base.html" %}
+{% extends "user/dashboard_base.html" %}
 
 {% block subcontainer %}
 	<div id='issues_container'>
@@ -41,14 +41,14 @@
 
 			<ul class="pager">
 				{%if hasPre%}
-					<li><a href="/home/issues/0/">首页</a></li>
-					<li><a href="/home/issues/{{page|add:"-1"}}/">前一页</a></li>
+					<li><a href="/dashboard/issues/0/">首页</a></li>
+					<li><a href="/dashboard/issues/{{page|add:"-1"}}/">前一页</a></li>
 				{%endif%}
 				{%if hasPre or hasNext%}
 					<li style="padding-left: 6px;padding-right: 6px"> 第{{page}}页 </li>
 				{%endif%}
 				{%if hasNext%}
-					<li><a href="/home/issues/{{page|add:"+1"}}/">后一页</a></li>
+					<li><a href="/dashboard/issues/{{page|add:"+1"}}/">后一页</a></li>
 				{%endif%}
 			</ul>
     </div>

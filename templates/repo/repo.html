@@ -2,22 +2,39 @@
 
 {% block css %}
   {% if current == 'blob' %}
-    <link href='/static/less/app/syntaxhighlighter/shCore.css' rel='stylesheet'>
-    <link href='/static/less/app/syntaxhighlighter/shThemeDefault.css' rel='stylesheet'>
+    <link href='/static/less/min/syntaxhighlighter.min.css?timestamp={{gitshell.timestamp}}' rel='stylesheet'>
   {% endif %}
 {% endblock %}
 
 {% block container_class_name %} repo{% endblock %}
 
 {% block container %}
-
 	<div class="repo-global-bar">
     <div class="container">
       <ul class="breadcrumb">
         <li class="user"><a href="/{{user_name}}/">{{user_name}}</a><span class="divider">/</span></li>
         <li>
             <a href="/{{user_name}}/{{repo_name}}/">{{repo_name}}</a>
+            {% if is_owner %}
             <sup class="{%if repo.dropbox_sync == 1%}synced{%endif%}"><a href="/{{user_name}}/{{repo_name}}/settings/#dropbox"><i class="icon-dropbox"></i></a></sup>
+            {% endif %}
+                {% if parent_repo or user_child_repo %}
+                <div class="forked dropdown">
+                  <span class="dropdown-toggle" data-toggle="dropdown">
+                    <a href="#" class="label label-mini"><i class="icon-ellipsis-horizontal"></i></a>
+                    <i class="icon-caret-down hide"></i>
+                  </span>
+                  <div class="dropdown-menu">
+                    {% if parent_repo %}
+                    <p>forked from <a href="/{{parent_repo.username}}/">{{parent_repo.username}}</a> / <a href="/{{parent_repo.username}}/{{parent_repo.name}}/">{{parent_repo.name}}</a></p>
+                    {% endif %}
+                    {% if parent_repo and user_child_repo %}<hr>{% endif %}
+                    {% if user_child_repo %}
+                    <p>my forked <a href="/{{user_child_repo.username}}/">{{user_child_repo.username}}</a> / <a href="/{{user_child_repo.username}}/{{user_child_repo.name}}/">{{user_child_repo.name}}</a></p>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endif %}
         </li>
       </ul>
       <ul class="repo-actions">
@@ -128,6 +145,14 @@
 <script>
 $(function(){
 
+    $('.repocrumb span[data-toggle]').hover(
+      function(){
+        $(this).find('.icon-caret-down').show();
+      },function(){
+        $(this).find('.icon-caret-down').hide();
+      }
+    );
+
     $("#ssh_fork, #http_fork, #git_fork").bind({
       click: function(e) {
         e.preventDefault();
@@ -142,7 +167,7 @@ $(function(){
             $('#url-info').text('读写');
             break;
           case "git_fork":
-            $('#url-data').val('git@gitshell.com/{{user_name}}/{{repo_name}}.git');
+            $('#url-data').val('git://gitshell.com/{{user_name}}/{{repo_name}}.git');
             $('#url-info').text('只读');
             break;
         };

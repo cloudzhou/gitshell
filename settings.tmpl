@@ -85,6 +85,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.csrf',
     'gitshell.gsuser.middleware.userprofile',
     'gitshell.gsuser.middleware.mainnav',
+    'gitshell.gsuser.middleware.gitshell',
 )
 
 ROOT_URLCONF = 'gitshell.urls'
@@ -176,3 +177,5 @@ DROPBOX_APP_SECRET = '${dropbox_app_secret}'
 DROPBOX_ACCESS_TOKEN = '${dropbox_access_token}'
 DROPBOX_ACCESS_TOKEN_SECRET = '${dropbox_access_token_secret}'
 
+TIMESTAMP = '${timestamp}'
+MODE = '${mode}'

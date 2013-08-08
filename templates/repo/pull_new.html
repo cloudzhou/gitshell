@@ -77,9 +77,7 @@
 {% endblock %}
 
 {% block subjs %}
-<script src='/static/js/app/syntaxhighlighter/shCore.js' type='text/javascript'></script>
-<script src='/static/js/app/syntaxhighlighter/shAutoloader.js' type='text/javascript'></script>
-<script src='/static/js/app/syntaxhighlighter/shBrushDiff.js' type='text/javascript'></script>
+<script src="/static/js/min/syntaxhighlighter.min.js?timestamp={{gitshell.timestamp}}"></script>
 <script>
 $(function(){
     var global_repo_branch_map = {};

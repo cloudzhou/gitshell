@@ -1,9 +1,11 @@
 {% extends "repo/repo.html" %}
 
 {% block subcontainer %}
-{# TODO refactor add create delete branch tag #}
 <div class="branches bubble" id="branches">
   <h2 class="heading">Branches</h2>
+  {% if is_repo_member %}
+  <a href="#branch-manage" class="btn btn-mini pull-right branch-manage"><i class="icon-cog"></i><span>管理</span></a>
+  {% endif %}
 </div>
 {% endblock %}
 {% block subjs %}
@@ -20,16 +22,40 @@ $(function(){
             var branch = branches[x];
             var commit = detail_commit[branch];
             html.push('<td class="branch-name"><h2 class="heading"><a href="/{{user_name}}/{{repo_name}}/tree/' + branch + '">' + branch + '</a></h2></td>');
-            html.push('<td class="meta"><span class="muted">由' + commit.author + '<span class="c_unixtime">' + commit.committer_date + '</span>提交: ' + commit.commit_message + '</span></td>');
+            html.push('<td class="meta"><span class="muted">由 ' + commit.committer_name + ' <span class="unixtime">' + commit.committer_date + '</span>提交: ' + commit.commit_message + '</span></td>');
             html.push('<td class="actions">');
-            html.push('<a href="/{{user_name}}/{{repo_name}}/refs/graph/' + branch + '/" class="btn">Graph</a>');
-            html.push('<a href="/{{user_name}}/{{repo_name}}/compare/' + branch + '/" class="btn btn-success">Compare</a>');
+            html.push('<a href="/{{user_name}}/{{repo_name}}/refs/create/' + branch + '/" class="btn btn-primary btn-mini branch-action hide">Create</a>');
+            html.push('<a href="/{{user_name}}/{{repo_name}}/refs/graph/' + branch + '/" class="btn btn-mini branch-action">Graph</a>');
+            html.push('<a href="/{{user_name}}/{{repo_name}}/compare/' + branch + '/" class="btn btn-success branch-action btn-mini">Compare</a>');
+            if(branch != 'master') {
+                html.push('<a href="javascript:;" data-branch="' + branch + '"class="btn btn-danger btn-mini branch-action hide branch-delete">Delete</a>');
+            }
             html.push('</td>');
             html.push('</tr>');
         }
         html.push('</tbody></table>');
         $('#branches').append(html.join(''));
+        $('.unixtime').each(function(index){
+            $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+            $(this).show();
+        });
     });
+    $('.branch-manage').click(
+      function(e){
+        e.preventDefault();
+        var txt = $(this).children('span').text();
+        $(this).children('span').text( txt == '管理' ? '取消' : '管理' );
+        $('.branch-action').toggle();
+      }
+    );
+    $('.branch-delete').live('click', function(){
+        var branch = $(this).data('branch');
+        var tr = $(this).parents('tr');
+        $.post('/{{user_name}}/{{repo_name}}/refs/branch/delete/' + branch + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            tr.hide();
+        });
+    });
+
 });
 </script>
 {% endblock %}

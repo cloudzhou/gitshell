@@ -1,9 +1,7 @@
 {% extends "repo/repo.html" %}
 
 {% block css %}
-  <link href="/static/less/app/highlight/github.css" rel="stylesheet">
 {% endblock %}
-
 
 {% block repo_description %}
 	<div class="description bubble"><p>{{repo.desc|truncatechars:80}} <a href="#README.md">Read More</a></p></div>
@@ -67,24 +65,28 @@
             {% for file_attrs in tree.tree %}
               <tr>
                 <td class="icon">
-                  {% if file_attrs.1 == 'tree' %}
-                    <img src="/static/img/file_dir.png" alt="dir">
-                  {% else %}
-                    <img src="/static/img/file_txt.png" alt="txt">
-                  {% endif %}
+                    <!--dir and file image-->
+                    {% if file_attrs.type == 'tree' %}
+                        <i class="icon-folder-open"></i>
+                    {% else %}
+                        <i class="icon-file"></i>
+                    {% endif %}
                 </td>
                 <td class="file-name">
-                  <a href="/{{user_name}}/{{repo_name}}/{%if file_attrs.1 == 'tree'%}tree{%else%}blob{%endif%}/{{refs}}/{%if path != '.' %}{{path}}{%endif%}{{file_attrs.0}}" title="{{file_attrs.0}}">{{file_attrs.0}}</a>
+                    <a href="/{{user_name}}/{{repo_name}}/{%if file_attrs.type == 'tree'%}tree{%else%}blob{%endif%}/{{refs}}/{%if path != '.' %}{{path}}{%endif%}{{file_attrs.relative_path}}" title="{{file_attrs.relative_path}}">{{file_attrs.relative_path}}</a>
                 </td>
                 <td class="commit-info">
-                  {% if file_attrs.5|length > 80 %}
-                    <a href="javascript:void(0)" data-toggle="popover" data-content="{{file_attrs.5}}" data-placement="bottom" class="commit">{{file_attrs.5|truncatechars:80}}</a>
-                  {% else %}
-                    <a href="javascript:void(0)" class="commit">{{file_attrs.5}}</a>
-                  {% endif %}
-                  <a href="/{{file_attrs.4}}/" class="commiter">@{{file_attrs.4}}</a>
-                </td>
-                <td class="date"><span class="date unixtime">{{file_attrs.3}}</span></td>
+                    {% if file_attrs.last_commit_message|length > 80 %}
+                        <a href="javascript:void(0)" data-toggle="popover" data-content="{{file_attrs.last_commit_message}}" data-placement="bottom" class="commit">{{file_attrs.last_commit_message|truncatechars:80}}</a>
+                    {% else %}
+                        <a href="javascript:void(0)" class="commit">{{file_attrs.last_commit_message}}</a>
+                    {% endif %}
+                    {% if file_attrs.real_author_name == '' %}
+                    <span>@{{file_attrs.author_name}}</span>
+                    {% else %}
+                    <a href="/{{file_attrs.real_author_name}}/" class="commiter">@{{file_attrs.author_name}}</a>
+                    {% endif %}
+                <td class="date"><span class="date unixtime">{{file_attrs.author_time}}</span></td>
               </tr>
           {% endfor %}
 					</tbody>
@@ -99,9 +101,7 @@
 {% block subjs %}
 
 {% if readme_md %}
-<script src="/static/js/Markdown.Converter.js"></script>
-<script src="/static/js/Markdown.Editor.js"></script>
-<script src="/static/js/Markdown.Sanitizer.js"></script>
+<script src="/static/js/min/markdown.min.js?timestamp={{gitshell.timestamp}}"></script>
 {% endif %}
 <script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 	<script src="/static/js/jquery-ui-1.10.3.custom.min.js"></script>

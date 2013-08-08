@@ -34,8 +34,7 @@
 {% endblock %}
 
 {% block subjs %}
-<script src="/static/js/app/highcharts/highcharts.js"></script>
-<script src="/static/js/app/highcharts/themes/gitshell.js"></script>
+<script src="/static/js/min/highcharts.min.js?timestamp={{gitshell.timestamp}}"></script>
 <script>
 $(function(){
     $('.c_unixtime').each(function(index){ 
