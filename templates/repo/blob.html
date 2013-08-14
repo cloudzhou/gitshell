@@ -22,7 +22,7 @@
             没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码
         {% else %}
             {% if is_markdown %}
-                <pre id="id_markdown_content" style="margin-top: 12px">{{ blob }}</pre>
+                <pre id="id_markdown_content" class="markdown hide">{{ blob }}</pre>
             {% else %}
                 <pre class="brush: {{ brush }}; ">{{ blob }}</pre>
             {% endif %}
@@ -33,7 +33,8 @@
 {% block subjs %}
 <script src="/static/js/min/syntaxhighlighter.min.js?timestamp={{gitshell.timestamp}}"></script>
 {% if is_markdown %}
-<script src="/static/js/min/markdown.min.js?timestamp={{gitshell.timestamp}}"></script>
+<script src="/static/js/app/markdown/marked.js"></script>
+<script src="/static/js/app/caja/html-css-sanitizer-minified.js"></script>
 {% endif %}
 <script>
 $(function(){
@@ -69,9 +70,11 @@ $(function(){
     };
     set_path_href();
 {% if is_markdown %}
-    var converter = new Markdown.getSanitizingConverter();
-    var html = converter.makeHtml($('#id_markdown_content').html());
-    $('#id_markdown_content').html(html);
+    marked.setOptions({ gfm: true, tables: true, breaks: false, pedantic: false, sanitize: false, smartLists: true, smartypants: false, langPrefix: 'lang-' });
+    var html = $('#id_markdown_content').html();
+    html = $('<div/>').html(html).text();
+    var sanitized_html = html_sanitize(marked(html), function(url) { return url; }, function(id) { return id; })
+    $('#id_markdown_content').html(sanitized_html);
     $('#id_markdown_content').show();
 {% else %}
     SyntaxHighlighter.all();

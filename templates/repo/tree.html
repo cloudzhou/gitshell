@@ -59,7 +59,7 @@
         <!--TODO readme.md -->
         {% if readme_md %}
         <div id="README.md" class="readme">
-          <pre id="id_readme_md">{{readme_md}}</pre>
+          <pre id="id_readme_md" class="markdown hide">{{readme_md}}</pre>
         </div>
         {% endif %}
     </div>
@@ -69,7 +69,8 @@
 
 {% block subjs %}
 {% if readme_md %}
-<script src="/static/js/min/markdown.min.js?timestamp={{gitshell.timestamp}}"></script>
+<script src="/static/js/app/markdown/marked.js"></script>
+<script src="/static/js/app/caja/html-css-sanitizer-minified.js"></script>
 {% endif %}
 <script>
 $(function(){
@@ -105,11 +106,13 @@ $(function(){
     };
     set_path_href();
 
-    // TODO readme_md area
     {% if readme_md %}
-        var converter = new Markdown.getSanitizingConverter();
-        var html = converter.makeHtml($('#id_readme_md').html());
-        $('#id_readme_md').html(html);
+        marked.setOptions({ gfm: true, tables: true, breaks: false, pedantic: false, sanitize: false, smartLists: true, smartypants: false, langPrefix: 'lang-' });
+        var html = $('#id_readme_md').html();
+        html = $('<div/>').html(html).text();
+        var sanitized_html = html_sanitize(marked(html), function(url) { return url; }, function(id) { return id; })
+        $('#id_readme_md').html(sanitized_html);
+        $('#id_readme_md').show();
     {% endif %}
     $('[data-toggle="popover"]').popover({ animation: false });
 });
