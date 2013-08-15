@@ -1,7 +1,6 @@
 {% extends "repo/repo.html" %}
 {% block bubble_inner_class_name %} files{% endblock %}
 
-<!--TODO refactor all-->
 {% block subcontainer %}
 <div class="file-list">
     <header class="header clearfix">
@@ -12,6 +11,9 @@
         </span>
     </header>
     <style>
+    #i_source_code pre code {
+        padding: 18px;
+    }
     #i_source_code .container:before, #i_source_code .container:after {
         content: "";
         display: none;
@@ -24,14 +26,15 @@
             {% if is_markdown %}
                 <pre id="id_markdown_content" class="markdown hide">{{ blob }}</pre>
             {% else %}
-                <pre class="brush: {{ brush }}; ">{{ blob }}</pre>
+                <pre><code>{{ blob }}</code></pre>
             {% endif %}
         {% endif %}
     </div>          
 </div>
 {% endblock %}
 {% block subjs %}
-<script src="/static/js/min/syntaxhighlighter.min.js?timestamp={{gitshell.timestamp}}"></script>
+<!--script src="/static/js/min/syntaxhighlighter.min.js?timestamp={{gitshell.timestamp}}"></script-->
+<script src="/static/js/app/highlight/highlight.min.js?timestamp={{gitshell.timestamp}}"></script>
 {% if is_markdown %}
 <script src="/static/js/app/markdown/marked.js"></script>
 <script src="/static/js/app/caja/html-css-sanitizer-minified.js"></script>
@@ -77,7 +80,9 @@ $(function(){
     $('#id_markdown_content').html(sanitized_html);
     $('#id_markdown_content').show();
 {% else %}
-    SyntaxHighlighter.all();
+    hljs.tabReplace = '    ';
+    hljs.initHighlightingOnLoad();
+    //SyntaxHighlighter.all();
 {% endif %}
 });
 </script>

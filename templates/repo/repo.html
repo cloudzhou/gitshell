@@ -3,6 +3,7 @@
 {% block css %}
     {% if current == 'blob' %}
         <link href='/static/less/min/syntaxhighlighter.min.css?timestamp={{gitshell.timestamp}}' rel='stylesheet'>
+        <link href='/static/less/app/highlight/default.css?timestamp={{gitshell.timestamp}}' rel='stylesheet'>
     {% endif %}
 {% endblock %}
 

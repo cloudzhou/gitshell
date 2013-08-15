@@ -100,7 +100,7 @@ def raw_blob(request, user_name, repo_name, refs, path):
     abs_repopath = repo.get_abs_repopath()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
-    return HttpResponse(blob, content_type="text/plain")
+    return HttpResponse(blob, content_type="text/plain; charset=utf-8")
 
 @repo_permission_check
 def ls_tree(request, user_name, repo_name, refs, path, current):
