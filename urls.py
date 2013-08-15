@@ -3,11 +3,7 @@ from django.conf.urls.defaults import patterns, include, url
 urlpatterns = patterns('gitshell',
     # gitshell web app, nginx port 8000, proxy by haproxy, public
     url(r'^/?$', 'index.views.index'),
-    # skills
-    # url(r'^skills/?$', 'skills.views.skills'),
 
-    # stats
-    url(r'^stats/(\w+)/?$', 'stats.views.stats'),
     # explore
     url(r'^explore/?$', 'explore.views.explore'),
 
@@ -91,16 +87,15 @@ urlpatterns = patterns('gitshell',
     # write middleware to rewrite urlconf, by add 'urlconf' attribute to HttpRequest
     # gsuser
     url(r'^(\w+)/?$', 'gsuser.views.user'),
+    url(r'^(\w+)/-/stats/?$', 'gsuser.views.stats'),
     url(r'^(\w+)/active/?$', 'gsuser.views.active'),
     url(r'^(\w+)/star/repo/?$', 'gsuser.views.star_repo'),
     url(r'^(\w+)/watch/repo/?$', 'gsuser.views.watch_repo'),
     url(r'^(\w+)/watch/user/?$', 'gsuser.views.watch_user'),
-    url(r'^(\w+)/recommend/?$', 'gsuser.views.recommend'),
-    #url(r'^(\w+)/stats/?$', 'gsuser.views.stats'),
-    # repo
     url(r'^(\w+)/repo/?$', 'repo.views.user_repo'),
     url(r'^(\w+)/repo/(\d+)/?$', 'repo.views.user_repo_paging'),
     url(r'^(\w+)/repo/create/?$', 'repo.views.create'),
+    # repo
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/?$', 'repo.views.repo'),
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/tree/?$', 'repo.views.tree_default'),
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/tree/([a-zA-Z0-9_\.\-]+)/([^\@\#\$\&\\\*\"\'\<\>\|\;]*)$', 'repo.views.tree'),
