@@ -8,6 +8,14 @@
         <ul id="id_lastest_active" class="list"></ul>
     </div>
 
+    <div class="item c_user_stats hide">
+        <h2 class="heading">统计</h2>
+        <div>
+            <div id="figure-a" class="figure lg">
+                <a href="/stats/{{gsuser.username}}/"><canvas id="id_month_container" width="700" height="250"></canvas></a>
+            </div>
+        </div>
+    </div>
 
     <ul class="nav nav-tabs heading" id="repo-tab">
         <li><a href="#repos" data-toggle="tab">仓库</a></li>
@@ -149,6 +157,41 @@ $(function(){
         });
     };
     do_orgi_feeds();
+
+    var last30days = {{last30days}};
+    var last30daysAsCat = [];
+    for(x in last30days) {
+        last30daysAsCat.push(new Date(last30days[x]*1000).getDate());
+    }
+    last30daysAsCat.reverse()
+    var last30days_commit = {{last30days_commit}};
+    var last30daysAsData = [];
+    for(x in last30days) {
+        if(last30days[x] in last30days_commit) {
+            last30daysAsData.push(last30days_commit[last30days[x]]);
+            continue;
+        }
+        last30daysAsData.push(0);
+    }
+    last30daysAsData.reverse();
+
+    if(Object.keys(last30days_commit).length > 0) {
+        $('.c_user_stats').show();
+        var lineChartData = {
+            labels : last30daysAsCat,
+            datasets : [
+                {
+                    fillColor : "rgba(151,187,205,0.5)",
+                    strokeColor : "rgba(151,187,205,0.5)",
+                    pointColor : "rgba(151,187,205,0.5)",
+                    pointStrokeColor : "#fff",
+                    data : last30daysAsData
+                }
+            ]
+        };
+        var ctx = document.getElementById("id_month_container").getContext("2d");
+        new Chart(ctx).Line(lineChartData, {scaleShowLabels : true, scaleFontColor : "#767C8D"});
+    }
 
 });
 </script>

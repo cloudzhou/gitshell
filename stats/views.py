@@ -43,24 +43,55 @@ def get_stats_dict(request, user):
     round_week = timeutils.get_round_week(now)
     round_month = timeutils.get_round_month(now)
     round_year = timeutils.get_round_year(now)
+
     raw_per_last_week_commit = StatsManager.list_user_repo_stats(user.id, 'week', round_week)
     raw_per_last_month_commit = StatsManager.list_user_repo_stats(user.id, 'month', round_month)
     raw_per_last_year_commit = StatsManager.list_user_repo_stats(user.id, 'year', round_year)
-    per_last_week_commit = [int(x.count) for x in raw_per_last_week_commit]
-    per_last_month_commit = [int(x.count) for x in raw_per_last_month_commit]
-    per_last_year_commit = [int(x.count) for x in raw_per_last_year_commit]
+
     raw_per_repo_week_commit = [x.repo_id for x in raw_per_last_week_commit]
     raw_per_repo_month_commit = [x.repo_id for x in raw_per_last_month_commit]
     raw_per_repo_year_commit = [x.repo_id for x in raw_per_last_year_commit]
     mergedlist = list(set(raw_per_repo_week_commit + raw_per_repo_month_commit + raw_per_repo_year_commit))
     repo_dict = RepoManager.merge_repo_map(mergedlist)
-    per_repo_week_commit = [str(repo_dict[x]['name']) for x in raw_per_repo_week_commit if (x in repo_dict and repo_dict[x]['auth_type'] != 2)]
-    per_repo_month_commit = [str(repo_dict[x]['name']) for x in raw_per_repo_month_commit if (x in repo_dict and repo_dict[x]['auth_type'] != 2)]
-    per_repo_year_commit = [str(repo_dict[x]['name']) for x in raw_per_repo_year_commit if (x in repo_dict and repo_dict[x]['auth_type'] != 2)]
+
+    is_yourself = False
+    if request.user.is_authenticated() and user.id == request.user.id:
+        is_yourself = True
+
+    per_repo_week_commit = _list_repo_count_dict(raw_per_last_week_commit, repo_dict, is_yourself)
+    per_repo_month_commit = _list_repo_count_dict(raw_per_last_month_commit, repo_dict, is_yourself)
+    per_repo_year_commit = _list_repo_count_dict(raw_per_last_year_commit, repo_dict, is_yourself)
+    round_week_tip = u'%s 以来参与项目' % round_week.strftime('%y/%m/%d')
+    round_month_tip = u'%s 以来参与项目' %  round_month.strftime('%y/%m/%d')
+    round_year_tip = u'%s 以来参与项目' %  round_year.strftime('%y/%m/%d')
+    per_repo_commits = []
+    if len(per_repo_week_commit) > 0:
+        per_repo_commits.append({'commits': per_repo_week_commit, 'tip': round_week_tip})
+    if len(per_repo_month_commit) > 0:
+        per_repo_commits.append({'commits': per_repo_month_commit, 'tip': round_month_tip})
+    if len(per_repo_year_commit) > 0:
+        per_repo_commits.append({'commits': per_repo_year_commit, 'tip': round_year_tip})
 
     userprofile = GsuserManager.get_userprofile_by_id(user.id)
     quotes = {'used_quote': int(userprofile.used_quote), 'total_quote': int(userprofile.quote)}
 
-    stats_dict = {'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last7days_commit': last7days_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'round_week': round_week, 'round_month': round_month, 'round_year': round_year, 'per_last_week_commit': per_last_week_commit, 'per_last_month_commit': per_last_month_commit, 'per_last_year_commit': per_last_year_commit, 'per_repo_week_commit': per_repo_week_commit, 'per_repo_month_commit': per_repo_month_commit, 'per_repo_year_commit': per_repo_year_commit}
+    stats_dict = {'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last7days_commit': last7days_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'per_repo_commits': per_repo_commits}
     return stats_dict
+
+def _list_repo_count_dict(raw_per_commit, repo_dict, is_yourself):
+    per_commits = []
+    total_count = 0
+    for x in raw_per_commit:
+        repo_id = x.repo_id
+        if repo_id not in repo_dict or (repo_dict[repo_id]['auth_type'] != 0 and not is_yourself):
+            continue
+        total_count = total_count + int(x.count)
+        per_commits.append({'name': repo_dict[repo_id]['name'], 'count': int(x.count)})
+    for x in per_commits:
+        ratio = x['count']*100/total_count
+        if ratio == 0:
+            ratio = 1
+        x['ratio'] = ratio
+    return per_commits
+
 

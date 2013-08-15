@@ -639,14 +639,10 @@ class RepoManager():
     @classmethod
     def __inner_merge_repo_map(self, repos):
         repo_vo_dict = {}
-        user_ids = [x.user_id for x in repos]
-        users = GsuserManager.list_user_by_ids(user_ids)
-        users_map = dict([(x.id, x) for x in users])
         for repo in repos:
             repo_vo = {}
             repo_vo['id'] = repo.id
-            if repo.user_id in users_map:
-                repo_vo['username'] = users_map[repo.user_id].username
+            repo_vo['username'] = repo.username
             repo_vo['name'] = repo.name
             repo_vo['desc'] = repo.desc
             repo_vo['create_time'] = time.mktime(repo.create_time.timetuple())
