@@ -42,12 +42,12 @@
     <div class="graphs-container">
       <h4 class="heading">
           仓库配额
-          <span class="used">{{userprofile.get_readable_used_quote}}</span>
+          <span class="used">{{gsuserprofile.get_readable_used_quote}}</span>
           <span class="divider"> / </span>
-          <span class="capacity">{{userprofile.get_readable_quote}}</span>
+          <span class="capacity">{{gsuserprofile.get_readable_quote}}</span>
       </h4>
       <div class="progress progress-danger">
-          <span class="bar" style="width:{{userprofile.get_used_quote_percent}}%;"></span>
+          <span class="bar" style="width:{{gsuserprofile.get_used_quote_percent}}%;"></span>
       </div>
     </div>
     

@@ -502,7 +502,8 @@ def stats(request, user_name):
     if user is None:
         raise Http404
     stats_dict = get_stats_dict(request, user)
-    response_dictionary = {}
+    gsuserprofile = GsuserManager.get_userprofile_by_id(user.id)
+    response_dictionary = {'gsuserprofile': gsuserprofile}
     response_dictionary.update(stats_dict)
     return render_to_response('user/stats.html',
                           response_dictionary,
