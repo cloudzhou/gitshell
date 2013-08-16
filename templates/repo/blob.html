@@ -1,15 +1,7 @@
 {% extends "repo/repo.html" %}
 {% block bubble_inner_class_name %} files{% endblock %}
 
-{% block subcontainer %}
-<div class="file-list">
-    <header class="header clearfix">
-        {% include "repo/branch_nav.html" %}
-        <span class="pull-right">
-            <a class="btn btn-mini" href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}">Commits</a>
-            <a class="btn btn-mini" href="/{{user_name}}/{{repo_name}}/raw/blob/{{refs}}/{{path}}">Raw</a>
-        </span>
-    </header>
+{% block subcss %}
     <style>
     #i_source_code pre code {
         padding: 18px;
@@ -19,12 +11,22 @@
         display: none;
     }
     </style>
+{% endblock %}
+{% block subcontainer %}
+<div class="file-list">
+    <header class="header clearfix">
+        {% include "repo/branch_nav.html" %}
+        <span class="pull-right">
+            <a class="btn btn-mini" href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}">Commits</a>
+            <a class="btn btn-mini" href="/{{user_name}}/{{repo_name}}/raw/blob/{{refs}}/{{path}}">Raw</a>
+        </span>
+    </header>
     <div id="i_source_code">
         {% if not blob and blob != '' %}
             没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码
         {% else %}
             {% if is_markdown %}
-                <pre id="id_markdown_content" class="markdown hide">{{ blob }}</pre>
+                <div id="id_markdown_content" class="markdown hide">{{ blob }}</div>
             {% else %}
                 <pre><code>{{ blob }}</code></pre>
             {% endif %}
