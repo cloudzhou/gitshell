@@ -175,8 +175,26 @@ $(function(){
     }
     last30daysAsData.reverse();
 
+    function get_max(chart_data) {
+        var max = 0;
+        for(x in chart_data) {
+            if(chart_data[x] > max) {
+                max = chart_data[x];
+            }
+        }
+        return max;
+    }
+    function get_steps(max) {
+        var steps = 3;
+        if(max > steps) {
+            steps = 10;
+        }
+        return steps;
+    }
     if(Object.keys(last30days_commit).length > 0) {
         $('.c_user_stats').show();
+        var max = get_max(last30daysAsData);
+        var steps = get_steps(max);
         var lineChartData = {
             labels : last30daysAsCat,
             datasets : [
@@ -190,7 +208,7 @@ $(function(){
             ]
         };
         var ctx = document.getElementById("id_month_container").getContext("2d");
-        new Chart(ctx).Line(lineChartData, {scaleShowLabels : true, scaleFontColor : "#767C8D"});
+        new Chart(ctx).Line(lineChartData, {scaleShowLabels : true, scaleOverride: true, scaleSteps: steps, scaleStepWidth: Math.ceil(max / steps), scaleStartValue: 0, scaleFontColor : "#767C8D"});
     }
 
 });
