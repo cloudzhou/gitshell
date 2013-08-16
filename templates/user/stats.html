@@ -4,57 +4,51 @@
 
 {% block css %}
 {% endblock %}
-
+{% block container_class_name %} user{% endblock %}
 {% block container %}
-    <div class="row">
-        <div class="span7">
-            <div id="day_stats_div" class="hide">
-                <h4>最近 24 小时</h4>
-                <canvas class="user_chart" id="day_stats" width="700" height="250"></canvas>
-            </div>
-            <div id="week_stats_div" class="hide">
-                <h4>最近 7 天</h4>
-                <canvas class="user_chart" id="week_stats" width="700" height="250"></canvas>
-            </div>
-            <div id="month_stats_div" class="hide">
-                <h4>最近 30 天</h4>
-                <canvas class="user_chart" id="month_stats" width="700" height="250"></canvas>
-            </div>
-            <div id="year_stats_div" class="hide">
-                <h4>最近 12 月</h4>
-                <canvas class="user_chart" id="year_stats" width="700" height="250"></canvas>
-            </div>
+    <div class="graphs-container">
+        <div id="day_stats_div" class="hide">
+            <h4 class="heading">最近 24 小时</h4>
+            <canvas class="user_chart" id="day_stats" width="700" height="250"></canvas>
+        </div>
+        <div id="week_stats_div" class="hide">
+            <h4 class="heading">最近 7 天</h4>
+            <canvas class="user_chart" id="week_stats" width="700" height="250"></canvas>
+        </div>
+        <div id="month_stats_div">
+            <h4 class="heading">最近 30 天</h4>
+            <canvas class="user_chart" id="month_stats" width="1000" height="250"></canvas>
+        </div>
+        <div id="year_stats_div">
+            <h4 class="heading">最近 12 月</h4>
+            <canvas class="user_chart" id="year_stats" width="1000" height="250"></canvas>
         </div>
     </div>
     {% if per_repo_commits %}
-    <div class="row">
-        <div>
-            {% for pre_repo_commit in per_repo_commits %}
-            <h4>{{pre_repo_commit.tip}}</h4>
-            <code class="clearfix">
-                <dl class="chart-bar-css">
-                {% for commit in pre_repo_commit.commits %}
-                    <dt>{{commit.name}}</dt>
-                    <dd><span class="data-one" style="width: {{commit.ratio}}%">{{commit.count}}({{commit.ratio}}%)</span></dd>
-                {% endfor %}
-                </dl>
-            </code>
-            {% endfor %}
-        </div>
+    <div class="graphs-container">
+      {% for pre_repo_commit in per_repo_commits %}
+      <h4 class="heading">{{pre_repo_commit.tip}}</h4>
+      <code class="clearfix">
+          <div class="chart-bar-css">
+          {% for commit in pre_repo_commit.commits %}
+          {# {{commit.name}} {{commit.count}} #}
+          <span class="data-one" style="width:{{commit.ratio}}%" data-toggle="tooltip" title="{{commit.name}}/{{commit.count}}commits">{{commit.ratio}}%</span>
+          {% endfor %}
+          </div>
+      </code>
+      {% endfor %}
     </div>
     {% endif %}
-    <div class="row">
-        <div class="span4">
-            <h4>
-                仓库配额
-                <span class="used">{{userprofile.get_readable_used_quote}}</span>
-                <span class="divider"> / </span>
-                <span class="capacity">{{userprofile.get_readable_quote}}</span>
-            </h4>
-            <div class="progress progress-danger">
-                <span class="bar" width=400 style="width: {{userprofile.get_used_quote_percent}}%;"></span>
-            </div>
-        </div>
+    <div class="graphs-container">
+      <h4 class="heading">
+          仓库配额
+          <span class="used">{{userprofile.get_readable_used_quote}}</span>
+          <span class="divider"> / </span>
+          <span class="capacity">{{userprofile.get_readable_quote}}</span>
+      </h4>
+      <div class="progress progress-danger">
+          <span class="bar" style="width:{{userprofile.get_used_quote_percent}}%;"></span>
+      </div>
     </div>
     
 {% endblock %}
@@ -62,6 +56,8 @@
 {% block js %}
 <script>
 $(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+
     var last12hours = {{last12hours}};
     var last7days = {{last7days}};
     var last30days = {{last30days}};
@@ -180,6 +176,7 @@ $(function(){
         $('#year_stats_div').show();
         render_commit_chart('year_stats', last12monthsAsCat, last12monthsAsData);
     }
+
 });
 </script>
 {% endblock %}
