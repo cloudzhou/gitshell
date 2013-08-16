@@ -1,139 +1,145 @@
 {% extends "user/dashboard_base.html" %}
 
-{% block container_class_name %} home{% endblock %}
 {% block subcontainer %}
 
-<div class="colspan">
-    <div id="feeds_container" class="feeds">
-      <figure id="feeds_loading">
-          <img id='feeds_loading' src='/static/img/loading.gif'>
-      </figure>
+
+  <div class="primary">
+    <div id="newsfeed" class="feeds bubble">
+      <div class="ajaxLoader">
+        <p>请等待...</p>
+        <img src='/static/img/loading.gif' alt="loader">
+      </div>
     </div>
-</div>
+  </div>
+
+  <div class="sidebar">
+    <dl class="month-group-pagination">
+    </dl>
+  </div>
 
 {% endblock %}
+
 {% block js %}
-<script>
-/*global jQuery, window */
-$(function(){
-    moment.lang('zh-cn');
-    var orgi_feeds = {{ feeds_as_json|safe }}
-    var sorted_feeds = []
-    var do_orgi_feeds = function() {
-        all_ids = []
-        all_feeds = []
-        for (x in orgi_feeds) {
-            all_feeds = all_feeds.concat(orgi_feeds[x]);
-        } 
-        all_feeds.sort(function(a,b) {
-            return a[1] - b[1];
-        })
-        var i = 0;
-        var pre_feed_id = 0;
-        for (x in all_feeds) {
-            feed_id = all_feeds[x][0]
-            if(pre_feed_id != feed_id) {
-                i++;
-                all_ids.push(feed_id);
-            }
-            pre_feed_id = feed_id
-            if(i >= 100) { break; }
-        }
-        all_ids_str = all_ids.join('_');
-        $.ajax({
-            url: '/ajax/feed/ids/',
-            type: 'POST',
-            data: {'ids_str': all_ids_str, csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-                //alert('');
-            },
-            success: function(json){
-                ordered_date = []
-                ordered_date_reponame = {}
-                display_feeds_map = {}
-                feeds = json.feeds
-                gravatar_dict = json.gravatar_dict
-                gravatar_userId_dict = json.gravatar_userId_dict
-                feeds.sort(function(a,b) {
-                    return b.committer_date - a.committer_date;
-                })
-                for(x in feeds) {
-                    feed = feeds[x];
-                    feed_date_str = moment(new Date(feed.create_time*1000)).format('YY/MM/DD');
-                    if(!display_feeds_map[feed_date_str]) {
-                        ordered_date.push(feed_date_str);
-                        display_feeds_map[feed_date_str] = [];
-                    }
-                    display_feeds_map[feed_date_str].push(feed);
+  <script>
+    $(function(){
+        moment.lang('zh-cn');
+        var orgi_feeds = {{ feeds_as_json|safe }}
+        var sorted_feeds = []
+        var do_orgi_feeds = function() {
+            all_ids = []
+            all_feeds = []
+            for (x in orgi_feeds) {
+                all_feeds = all_feeds.concat(orgi_feeds[x]);
+            } 
+            all_feeds.sort(function(a,b) {
+                return a[1] - b[1];
+            })
+            var i = 0;
+            var pre_feed_id = 0;
+            for (x in all_feeds) {
+                feed_id = all_feeds[x][0]
+                if(pre_feed_id != feed_id) {
+                    i++;
+                    all_ids.push(feed_id);
                 }
-                padding_top = 0;
-                html = []
-                for(x in ordered_date) {
-                    feed_date = ordered_date[x];
-                    html.push('<section class="feedtime"><header class="header"><h1 class="date"> ' + feed_date.substring(3) + ' </h1></header>');
-                    for(y in display_feeds_map[feed_date]) {
-                        feed = display_feeds_map[feed_date][y];
-                        if(feed.relative_obj === undefined) {
-                            continue;
+                pre_feed_id = feed_id
+                if(i >= 100) { break; }
+            }
+            all_ids_str = all_ids.join('_');
+            $.ajax({
+                url: '/ajax/feed/ids/',
+                type: 'POST',
+                data: {'ids_str': all_ids_str, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                dataType: 'json',
+                timeout: 10000,
+                error: function(){
+                    //alert('');
+                },
+                success: function(json){
+                    ordered_date = []
+                    ordered_date_reponame = {}
+                    display_feeds_map = {}
+                    feeds = json.feeds
+                    gravatar_dict = json.gravatar_dict
+                    gravatar_userId_dict = json.gravatar_userId_dict
+                    feeds.sort(function(a,b) {
+                        return b.committer_date - a.committer_date;
+                    })
+                    for(x in feeds) {
+                        feed = feeds[x];
+                        feed_date_str = moment(new Date(feed.create_time*1000)).format('YY/MM/DD');
+                        if(!display_feeds_map[feed_date_str]) {
+                            ordered_date.push(feed_date_str);
+                            display_feeds_map[feed_date_str] = [];
                         }
-                        if(feed.feed_type == 0) {
-                            commit = feed.relative_obj
-                            html.push('<div class="event_feed user-plugin">');
-                            html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=18"></figure><div class="info"><a href="/' + commit.author + '/" class="author">' + commit.author + '</a>');
-                            html.push('<span class="subject">' + commit.subject + '</span>at <a href="/'+ commit.user_name + '/' + commit.repo_name +'/" class="repo-name">' + commit.repo_name + '</a>' + '<time class="date" pubdate="pubdate">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</time></div>');
-                            html.push('</div>');
-                        } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
-                            issue = feed.relative_obj;
-                            action = 'create issue';
-                            detail = '';
-                            if(feed.feed_type == 300) {
+                        display_feeds_map[feed_date_str].push(feed);
+                    }
+                    padding_top = 0;
+                    html = []
+                    for(x in ordered_date) {
+                        feed_date = ordered_date[x];
+                        html.push('<section class="feed-group">');
+                        for(y in display_feeds_map[feed_date]) {
+                            feed = display_feeds_map[feed_date][y];
+                            if(feed.relative_obj === undefined) {
+                                continue;
+                            }
+                            if(feed.feed_type == 0) {
+                                commit = feed.relative_obj
+                                html.push('<section class="feed-item">');
+                                html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=35"></figure><div class="info"><a href="/' + commit.author + '/" class="author">' + commit.author + '</a>');
+                                html.push('<span class="subject">' + commit.subject + '</span>at <a href="/'+ commit.user_name + '/' + commit.repo_name +'/" class="repo-name">' + commit.repo_name + '</a>' + '<time class="date" pubdate="pubdate">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</time></div>');
+                                html.push('</section>');
+                            } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
+                                issue = feed.relative_obj;
                                 action = 'create issue';
-                            } else if(feed.feed_type == 301) {
-                                action = 'update issue';
-                            } else if(feed.feed_type == 302) {
-                                action = 'change issue';
-                                detail = feed.first_refname;
+                                detail = '';
+                                if(feed.feed_type == 300) {
+                                    action = 'create issue';
+                                } else if(feed.feed_type == 301) {
+                                    action = 'update issue';
+                                } else if(feed.feed_type == 302) {
+                                    action = 'change issue';
+                                    detail = feed.first_refname;
+                                }
+                                html.push('<section class="feed-item">');
+                                html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=18"></figure><div class="info"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/" class="author">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>');
+                                html.push(action + '<span class="subject">#' + issue.id + '</span> on <a href="/'+ issue.username + '/' + issue.reponame +'/" class="repo-name">' + issue.reponame + '</a> ' + detail + '<a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a><time class="date" pubdate="pubdate">' + moment(new Date(issue.create_time*1000)).fromNow() + '</time></div>');
+                                html.push('</section>');
+                            } else if(feed.feed_type >= 100 && feed.feed_type <= 105) {
+                                var pullRequest = feed.relative_obj;
+                                var action = '';
+                                if(feed.feed_type == 100) {
+                                    action = 'created pull request';
+                                } else if(feed.feed_type == 101) {
+                                    action = 'merged pull request';
+                                } else if(feed.feed_type == 102) {
+                                    action = 'merged failed pull request';
+                                } else if(feed.feed_type == 103) {
+                                    action = 'rejected pull request';
+                                } else if(feed.feed_type == 104) {
+                                    action = 'closed pull request';
+                                } else if(feed.feed_type == 105) {
+                                    action = 'comment on pull request';
+                                }
+                                html.push('<section class="feed-item">');
+                                html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=18" alt=""></figure><div class="info"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>');
+                                html.push(action + '<span class="subject">#' + pullRequest.id + '</span> on <a href="/'+ pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name +'/" class="repo-name">' + pullRequest.desc_repo_name + '</a><a href="/'+pullRequest.desc_repo_username+'/'+pullRequest.desc_repo_name+'/pull/'+pullRequest.id+'/">#' + pullRequest.id + ' ' + pullRequest.short_title + '</a><time class="date" pubdate="pubdate">' + moment(new Date(pullRequest.create_time*1000)).fromNow() + '</time></div>')
+                                html.push('</section>');
                             }
-                            html.push('<div class="event_feed user-plugin">');
-                            html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=18"></figure><div class="info"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/" class="author">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>');
-                            html.push(action + '<span class="subject">#' + issue.id + '</span> on <a href="/'+ issue.username + '/' + issue.reponame +'/" class="repo-name">' + issue.reponame + '</a> ' + detail + '<a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a><time class="date" pubdate="pubdate">' + moment(new Date(issue.create_time*1000)).fromNow() + '</time></div>');
-                            html.push('</div>');
-                        } else if(feed.feed_type >= 100 && feed.feed_type <= 105) {
-                            var pullRequest = feed.relative_obj;
-                            var action = '';
-                            if(feed.feed_type == 100) {
-                                action = 'created pull request';
-                            } else if(feed.feed_type == 101) {
-                                action = 'merged pull request';
-                            } else if(feed.feed_type == 102) {
-                                action = 'merged failed pull request';
-                            } else if(feed.feed_type == 103) {
-                                action = 'rejected pull request';
-                            } else if(feed.feed_type == 104) {
-                                action = 'closed pull request';
-                            } else if(feed.feed_type == 105) {
-                                action = 'comment on pull request';
-                            }
-                            html.push('<div class="event_feed user-plugin">');
-                            html.push('<figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=18" alt=""></figure><div class="info"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>');
-                            html.push(action + '<span class="subject">#' + pullRequest.id + '</span> on <a href="/'+ pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name +'/" class="repo-name">' + pullRequest.desc_repo_name + '</a><a href="/'+pullRequest.desc_repo_username+'/'+pullRequest.desc_repo_name+'/pull/'+pullRequest.id+'/">#' + pullRequest.id + ' ' + pullRequest.short_title + '</a><time class="date" pubdate="pubdate">' + moment(new Date(pullRequest.create_time*1000)).fromNow() + '</time></div>')
-                            html.push('</div>');
                         }
+                        html.push('</section>');
+                        padding_top = 15;
                     }
-                    html.push('</section>');
-                    padding_top = 15;
+                    $('#newsfeed').append(html.join(''));
+                    if(ordered_date.length == 0) {
+                      $('#newsfeed').append('<p>还没有 feed 信息，请多关注活跃开发者或者仓库</p>');
+                    }
+                    $('.ajaxLoader').remove()
                 }
-                $('#feeds_container').append(html.join(''));
-                if(ordered_date.length == 0) {
-                  $('#feeds_container').append('<p>还没有 feed 信息，请多关注活跃开发者或者仓库</p>');
-                }
-                $('#feeds_loading').remove()
-            }
-        });
-    };
-    do_orgi_feeds();
-});
-</script>
+            });
+        };
+        do_orgi_feeds();
+    });
+  </script>
 {% endblock %}

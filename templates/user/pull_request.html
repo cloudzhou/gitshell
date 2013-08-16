@@ -1,46 +1,50 @@
 {% extends "user/dashboard_base.html" %}
 
 {% block subcontainer %}
-	<div id='pull_container'>
-    <div class="header clearfix">
-      <div class="btn-group pull-right">
-        <button id="id_pull_merge" class="btn btn-mini first">需要我合并的请求</button>
-        <button id="id_pull_request" class="btn btn-mini btn-disable last">我发出的</button>
-      </div>
-    </div>
+
+	<div class="bubble" id="pulls">
+
+    {% comment %}
+      <ul class="btn-group">
+        <li class="first"><button id="pullMerge" class="btn btn-mini">需要我合并的请求</button></li>
+        <li class="last"><button id="pullRequest" class="btn btn-mini btn-disable">我发出的</button></li>
+      </ul>
+    {% endcomment %}
+
 			{% if pullRequests %}
 				{% for pullRequest in pullRequests %}
-            <div class="well pull">
-              <div class="heading clearfix btn">
+            <section class="pull-item">
                 <h3>
                   <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/pull/{{pullRequest.id}}/">#{{pullRequest.id}} {{pullRequest.short_title}}</a>
                   <span class="label label-mini {{pullRequest.status_label}}">{{pullRequest.status_view}}</span>
                 </h3>
                 <p class="pull-right">来自:<a class="muted" href="/{{pullRequest.merge_user.username}}/">{{pullRequest.merge_user.username}}</a></p>
-              </div>
               <div class="meta">
                 <span class="branches"><span class="btn"><a href="/{{pullRequest.source_repo.username}}/">{{pullRequest.source_repo.username}}</a>/<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/">{{pullRequest.source_refname}}</a></span><span class="btn"><a href="/{{pullRequest.desc_repo.username}}/">{{pullRequest.desc_repo.username}}</a>/<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/">{{pullRequest.desc_refname}}</a></span></span>
                 <p>{{pullRequest.short_desc}}</p>
               </div>
-            </div>
+            </section>
 				{% endfor %}
 			{% else %}
-        <div class="well pull">
+        <div class="pull-item">
 					<p class="alert alert-info">您还没有发起 Pull Request</p>
 				</div>
 			{% endif %}
 	</div>
+
+
 {% endblock %}
+
 {% block js %}
-<script>
-$(function(){
-    moment.lang('zh-cn');
-    $('#id_pull_merge').click(function(){
-        window.location.href = '/dashboard/pull/';
+  <script>
+    $(function(){
+        moment.lang('zh-cn');
+        $('#pullMerge').click(function(){
+            window.location.href = '/dashboard/pull/';
+        });
+        $('#pullRequest').click(function(){
+            window.location.href = '/dashboard/pull/request/';
+        });
     });
-    $('#id_pull_request').click(function(){
-        window.location.href = '/dashboard/pull/request/';
-    });
-});
-</script>
+  </script>
 {% endblock %}

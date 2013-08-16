@@ -1,63 +1,65 @@
 {% extends "user/dashboard_base.html" %}
 
-{% block container_class_name %} user todo{% endblock %}
 {% block subcontainer %}
-    <div id="todo_container">
-      <div class="todo-controls">
-        <div id="id_sceneAdd_div" class="form-inline hide">
-          <input id="id_sceneAdd" type="text" placeholder="添加新的场景，支持Enter按键">
-          <a href="#" id="id_sceneAdd_button" class="btn btn-primary" type="submit">添加新的情景</a>
-          <a href="#" id="id_sceneCancel_button" class="btn" type="submit">取消</a>
-        </div>
-        <div id="id_todoAdd_div" class="todo-category" style="margin-bottom: 10px">
-          <div class="btn-group dropdown">
-            <a href="#" data-toggle="dropdown" class="btn dropdown-toggle">@{{scene.name}}<i class="icon-caret-down"></i></a>
-            <div class="dropdown-menu">
-              <ul class="nav nav-list">
-                {%for scene in scene_list%}
-                  <li><a href="/dashboard/todo/{{scene.id}}/">@{{scene.name}}</a></li>
-                {%endfor%}
-                <li id="id_addScene"><a href="javascript: void(0)"><i class="icon-plus"></i> 添加新的场景</a></li>
-              </ul>
-            </div>
-          </div>
-          <input id="id_todoAdd" type="text" placeholder="添加新的todo，支持Enter按键" class="span6">
-          <button id="id_todoAdd_button" class="btn btn-primary" type="submit">添加</button>
-          {%if not todoing_list and scene.name != ''%}
-              <button id="id_sceneRemove_button" class="btn btn-danger" type="submit">删除场景</button>
-          {%endif%}
-        </div>
-            </div>
 
-            <div id="id_todoList" class="todo-list">
-                {%for todoing in todoing_list%}
-                <div id="id_todo_{{todoing.id}}" class="todo-item cl_todo cleafix" data="{{todoing.id}}">
-                    <div class="drag-todo">
-                        <a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序" class="pull-left fade"><i class="icon-reorder"></i></a> 
-                        <input class="cl_todo_check" type="checkbox" value="" class="pull-left">
-                    </div>
-                    <div class=""><p class="cl_todo_text">{{todoing.content}}</p></div>
-                    <div class="cl_todo_control btn-group pull-right hide fade">
-                        <a class="go_top cl_control first btn btn-mini" title="置顶" href="javascript: void(0)"><i class="icon-long-arrow-up"></i></a>
-                        <a class="go_down cl_control middle btn btn-mini" title="置底" href="javascript: void(0)"><i class="icon-long-arrow-down"></i></a>
-                        <a class="remove_todo cl_control last btn btn-mini" title="删除" href="javascript: void(0)"><i class="icon-remove"></i></a>
-                    </div>
-                </div>
-                {%endfor%}
+  <div class="bubble" id="todo_container">
+    <div class="todo-controls">
+      <div id="id_sceneAdd_div" class="form-inline hide">
+        <input id="id_sceneAdd" type="text" placeholder="添加新的场景，支持Enter按键">
+        <a href="#" id="id_sceneAdd_button" class="btn btn-primary" type="submit">添加新的情景</a>
+        <a href="#" id="id_sceneCancel_button" class="btn" type="submit">取消</a>
+      </div>
+      <div id="id_todoAdd_div" class="todo-category" style="margin-bottom: 10px">
+        <div class="btn-group dropdown">
+          <a href="#" data-toggle="dropdown" class="btn dropdown-toggle">@{{scene.name}}<i class="icon-caret-down"></i></a>
+          <div class="dropdown-menu">
+            <ul class="nav nav-list">
+              {%for scene in scene_list%}
+                <li><a href="/dashboard/todo/{{scene.id}}/">@{{scene.name}}</a></li>
+              {%endfor%}
+              <li id="id_addScene"><a href="javascript: void(0)"><i class="icon-plus"></i> 添加新的场景</a></li>
+            </ul>
+          </div>
         </div>
-                <hr>
-        <div id="id_todoneList" class="todo-list">
-                    <div id="id_todone_div">
-                    {%for todone in todone_list %}
-                        <div id="id_todone_{{todone.id}}" class="cl_todone todo-item" data="{{todone.id}}">
-                            <div class="drag-todo"><input class="cl_todone_check" type="checkbox" value="" checked="checked"></div>
-                            <div class=""><p class="cl_todo_text"> {{todone.content}}</p></div>
-                        </div>
-                    {%endfor%}
-                    </div>
-        </div>
+        <input id="id_todoAdd" type="text" placeholder="添加新的todo，支持Enter按键" class="span6">
+        <button id="id_todoAdd_button" class="btn btn-primary" type="submit">添加</button>
+        {%if not todoing_list and scene.name != ''%}
+            <button id="id_sceneRemove_button" class="btn btn-danger" type="submit">删除场景</button>
+        {%endif%}
+      </div>
     </div>
+
+    <div id="id_todoList" class="todo-list">
+      {%for todoing in todoing_list%}
+      <div id="id_todo_{{todoing.id}}" class="todo-item cl_todo cleafix" data="{{todoing.id}}">
+          <div class="drag-todo">
+              <a href="javascript: void(0)" rel="tooltip" data-original-title="拖动调整todo顺序" class="pull-left fade"><i class="icon-reorder"></i></a> 
+              <input class="cl_todo_check" type="checkbox" value="" class="pull-left">
+          </div>
+          <div class=""><p class="cl_todo_text">{{todoing.content}}</p></div>
+          <div class="cl_todo_control btn-group pull-right hide fade">
+              <a class="go_top cl_control first btn btn-mini" title="置顶" href="javascript: void(0)"><i class="icon-long-arrow-up"></i></a>
+              <a class="go_down cl_control middle btn btn-mini" title="置底" href="javascript: void(0)"><i class="icon-long-arrow-down"></i></a>
+              <a class="remove_todo cl_control last btn btn-mini" title="删除" href="javascript: void(0)"><i class="icon-remove"></i></a>
+          </div>
+      </div>
+      {%endfor%}
+    </div>
+    <hr>
+    <div id="id_todoneList" class="todo-list">
+      <div id="id_todone_div">
+      {%for todone in todone_list %}
+        <div id="id_todone_{{todone.id}}" class="cl_todone todo-item" data="{{todone.id}}">
+          <div class="drag-todo"><input class="cl_todone_check" type="checkbox" value="" checked="checked"></div>
+          <div class=""><p class="cl_todo_text"> {{todone.content}}</p></div>
+        </div>
+      {%endfor%}
+      </div>
+    </div>
+
+  </div>
 {% endblock %}
+
 {% block js %}
 <!--script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script-->
 <script src="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.21/jquery-ui.min.js"></script>

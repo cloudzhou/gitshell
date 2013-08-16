@@ -15,9 +15,9 @@
         {#<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="btn btn-mini">Commits</a>#}
 				<ul class="nav nav-list">
           {% for file_attrs in tree.tree %}
-          {%if file_attrs.1 == 'tree'%}
+          {%if file_attrs.type == 'tree'%}
 						<li class="tree-node">
-              <span title="{{file_attrs.0}}" class="fold"><img src="/static/img/file_dir.png" alt="dir">{{file_attrs.0}}</span>
+              <span title="{{file_attrs.relative_path}}" class="fold"><img src="/static/img/file_dir.png" alt="dir">{{file_attrs.relative_path}}</span>
 							<ul class="nav nav-list">
 								<li class="tree-node">
 									<span class="fold"><img src="/static/img/file_dir.png" alt="">dir 1</span>
@@ -32,7 +32,7 @@
 							</ul>
 						</li>
 						{% else %}
-							<li><a href="#"><img src="/static/img/file_txt.png" alt="txt">{{ file_attrs.0 }}</a></li>
+							<li><a href="#"><img src="/static/img/file_txt.png" alt="txt">{{ file_attrs.relative_path }}</a></li>
 						{% endif %}
 					{% endfor %}
 				</ul>

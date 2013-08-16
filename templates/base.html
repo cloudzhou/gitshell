@@ -12,9 +12,7 @@
     {% else %}
     <link href="/static/less/gitshell.less" rel="stylesheet/less" type="text/css">
     <script>
-      less = {
-        env: "development"
-      }
+      less = { env: "development" }
     </script>
     <script src="/static/js/less-1.4.0.min.js"></script>
     {% endif %}
@@ -24,15 +22,32 @@
   <body id="gitshell" class="{% block body_class_name %}{% endblock %}">
 		<nav class="navbar" role="navigation">
 			<div class="container">
-				<a class="brand" href="/" role="logo">GitShell</a>
+				<a class="brand" href="#" role="logo">Gitshell</a>
 				<ul class="nav main-nav">
 					{% if user.is_authenticated %}
-            <li{# if mainnav == '/' %} class="active"{% endif #}><a href="#">NewsFeeds</a></li>
-            <li{% if mainnav == '/dashboard/' %} class="active"{% endif %}><a href="/dashboard/">Desktop</a></li>
-            <li{# if mainnav == '?????' %} class="active"{% endif #}><a href="/{{user.username}}/repo/">仓库</a></li>
+          <li class="active"{# Fake #}><a href="/dashboard/feed/">信息流</a></li>
+            <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="/dashboard/notif/" class="todo">工作台<span class="label-mini label-warning">{{userprofile.unread_message}}</span></a></li>
+            <li class="dropdown{% if mainnav == '/{{user.username}}/repo/' %}active{% endif %}">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">仓库</a>
+              <ul class="dropdown-menu">
+                <li class="all"><a href="/{{user.username}}/repo/">所有仓库</a></li>
+                <li class="leader"><span>最近更新</span></li>
+                <li><a href="#">cloudzhou/gitshell</a></li>
+                <li><a href="#">yuwen/notes</a></li>
+                <li><a href="#">cloudzhou/scripts</a></li>
+                <li><a href="#">cloudzhou/gitshell_static</a></li>
+                {% comment %}
+                  {% for repo in repo_list %}
+                    <li><a href="/{{user_name}}/{{repo.name}}/">{{repo.name}}</a></li>
+                  {% endfor %}
+                {% endcomment %}
+                <li class="create"><a href="#"><i class="icon-pencil"></i>新建仓库</a></li>
+              </ul>
+            </li>
+            </li>
 					{% else %}
-            <li><a href="/join/">NewsFeeds</a></li>
-            <li><a href="/join/">Desktop</a></li>
+            <li><a href="/login/">信息流</a></li>
+            <li><a href="/login/">工作台</a></li>
 					{% endif %}
             {#<li {%if mainnav == 'explore'%}class="active"{%endif%}><a href="/explore/">浏览仓库</a></li>#}
             {#<li {%if mainnav == 'help'%}class="active"{%endif%}><a href="/help/">帮助</a></li>#}
@@ -44,36 +59,44 @@
                 <li class="msgs"><a href="/dashboard/notif/" class="label label-warning">{{userprofile.unread_message}}</a></li>
               {% endif %}
             {% endcomment %}
-            <li class="msgs"><a href="/dashboard/notif/" class="label label-warning">{{userprofile.unread_message}}</a></li>
-						<li class="dropdown{%if mainnav == 'user'%} active{%endif%}">
-							<a href="/{{ user.username }}/" class="user dropdown-toggle" data-toggle="dropdown" data-target="#">
-								<img class="avatar" src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=35" alt="{{ user.username }}">
+						<li class="dropdown">
+							<a href="/{{ user.username }}/" class="dropdown-toggle" data-toggle="dropdown">
+                <i class="icon-cog"></i>
 							</a>
 							<div class="dropdown-menu" role="menu" aria-labelladby="dLable">
+
 								<div class="info">
-									<div class="header">
-										<h2 class="heading"><a href="/{{ user.username }}/" id="username">{{ user.username }}<i class="userid"><img src="/static/img/icons/id-user.png" alt=""></i></a></h1>
-										<p class="email">{{ user.email }}</p>
-									</div>
-									<ul class="unstyledList repo-count">
-										<li>
-											<h4>仓库数<span class="used">{{userprofile.get_total_repo}}</span><span class="divider">/</span><span class="capacity">100</span></h4>
-											<div class="progress">
-												<span id="id_repo_count" class="bar" style="width: 18%;"></span>
-											</div>
-										</li>
-										<li>
-											<h4>仓库配额<span class="used">{{userprofile.used_quote}}</span><span class="divider">/</span><span class="capacity">{{userprofile.quote}}</span></h4>
-											<div class="progress progress-danger">
-												<span id="id_quote_used" class="bar" style="width: 6%;"></span>
-											</div>
-										</li>
-									</ul>
-								</div>
-								<ul class="nav nav-list">
-									<li><a href="/settings/"><span><i class="icon-wrench"></i>设置</span></a></li>
-									<li><a href="/logout/" class="logout"><span><i class="icon-off"></i>登出</span></a></li>
-								</ul>
+
+                  <div class="detail">
+                    <h2 class="heading">{{ user.username }}</h2>
+                    <p class="actions">
+                      <a href="/{{user.username}}/">个人主页</a><br>
+                      <a href="/settings/">设置</a>
+                    </p>
+                  </div>
+
+                  <figure class="avatar">
+                    <img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=80" alt="{{ user.username }}">
+                  </figure>
+
+                </div>
+
+                <div class="other">
+                  <a href="/logout/" class="logout btn btn-mini">登出</a>
+                  {% comment %}
+                    <div class="repo-count">
+                      <div class="progress">
+                        <span id="id_repo_count" class="bar" style="width: 18%;"></span>
+                      </div>
+                    </div>
+                  {% endcomment %}
+                  <span class="feedback">
+                    <a href="/help/">帮助</a>
+                    <span>·</span>
+                    <a href="#">反馈</a>
+                  </span>
+                </div>
+
 							</div>
 						</li>
           </ul>
@@ -100,64 +123,18 @@
           <li><a href="/help/#contact">联系GitShell</a></li>
 				</ul>
 				<p class="copyright">&copy; <strong>Gitshell</strong> 2013 专注<a target="_blank" href="http://git-scm.com/">Git</a>代码托管<a class="muted" href="http://www.miitbeian.gov.cn">苏ICP备12042031号</a></p>
-				<a href="#" class="btn pull-right">返回顶部</a>
 			</div>
 		</footer>
+    <a href="#" class="btn hide">返回顶部</a>
 
-    {#<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>#}
-    <script src="/static/js/jquery-1.7.2.min.js"></script>
-    <script src="/static/js/bootstrap.min.js"></script>
-    <script src="/static/js/select2.min.js"></script>
-    <script src='/static/js/app/underscore/underscore-min.js'></script>
-    <script src='/static/js/app/underscore/underscore.string.min.js'></script>
-    <script> _.mixin(_.str.exports()) </script>
-    <script src="/static/js/moment.min.js"></script>
-    <script src="/static/js/moment.zh-cn.js"></script>
-    <script src='/static/js/gitshell-template.js?timestamp=1373609013'></script>
-    <script src='/static/js/gitshell.js?timestamp=1373609013'></script>
-		<script>
-			$(function(){
-
-<<<<<<< HEAD
-        $('body').contents().filter(
-          function(){
-            return this.nodeType == 8;
-          }
-        ).remove();
-=======
-        <script src="/static/js/min/lib.min.js?timestamp={{gitshell.timestamp}}"></script>
-        {% if gitshell.mode == 'run' %}
-        <script src="/static/js/min/gitshell.min.js?timestamp={{gitshell.timestamp}}"></script>
-        {% else %}
-        <script src="/static/js/gitshell-template.js"></script>
-        <script src="/static/js/gitshell.js"></script>
-        {% endif %}
-        {% block js %}{% endblock %}
-        <script>
-            var _gaq = _gaq || [];
-            _gaq.push(['_setAccount', 'UA-33142900-1']);
-            _gaq.push(['_trackPageview']);
->>>>>>> origin
-
-				$('.unixtime').each(function(index){ 
-					$(this).html(moment(new Date($(this).html()*1000)).fromNow());
-					$(this).show();
-				});
-
-				$('.dropdown-toggle').dropdown();
-
-				$("#username").bind({
-					mouseover: function(){
-						$(this).find(".userid").show();
-					},
-					mouseout: function(){
-						$(this).find(".userid").hide();
-					}
-				});
-
-			});
-		</script>
-		{% block js %}{% endblock %}
+    <script src="/static/js/min/lib.min.js?timestamp={{gitshell.timestamp}}"></script>
+    {% if gitshell.mode == 'run' %}
+    <script src="/static/js/min/gitshell.min.js?timestamp={{gitshell.timestamp}}"></script>
+    {% else %}
+    <script src="/static/js/gitshell-template.js"></script>
+    <script src="/static/js/gitshell.js"></script>
+    {% endif %}
+    {% block js %}{% endblock %}
 		<script>
 			var _gaq = _gaq || [];
 			_gaq.push(['_setAccount', 'UA-33142900-1']);

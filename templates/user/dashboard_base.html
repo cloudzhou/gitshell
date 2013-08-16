@@ -1,16 +1,40 @@
 {% extends "base.html" %}
 
-{% block container_class_name %} user{% endblock %}
+{% block container_class_name %} dashboard{% endblock %}
+
 {% block container %}
-  <ul class="nav nav-tabs">
-    <li{% if current == 'feed' %} class="active"{% endif %}><a href="/dashboard/feed/">Feed</a></li>
-    <li{% if current == 'timeline' %} class="active"{% endif %}><a href="/dashboard/timeline/">Timeline</a></li>
-    <li{% if current == 'todo' %} class="active"{% endif %}><a href="/dashboard/todo/">Todo</a></li>
-    <li{% if current == 'pull' %} class="active"{% endif %}><a href="/dashboard/pull/">Pull</a></li>
-    <li{% if current == 'issues' %} class="active"{% endif %}><a href="/dashboard/issues/">Issues</a></li>
-    <li{% if current == 'notif' %} class="active"{% endif %}><a href="/dashboard/notif/">通知{% if userprofile.unread_message > 0 %} <span class="badge">{{ userprofile.unread_message }}</span>{% endif %}</a></li>
-  </ul>
-  {% block subcontainer %}{% endblock %}
+
+  <header class="subhead">
+    <div class="container">
+      <ul class="nav nav-tabs">
+        {% if current == 'feed' or current == 'timeline' %}
+          <li{% if current == 'feed' %} class="active"{% endif %}><a href="/dashboard/feed/">好友</a></li>
+          <li{% if current == 'timeline' %} class="active"{% endif %}><a href="/dashboard/timeline/">个人</a></li>
+        {% else %}
+          <li{% if current == 'notif' %} class="active"{% endif %}><a href="/dashboard/notif/">最新事件</a></li>
+          <li{% if current == 'todo' %} class="active"{% endif %}><a href="/dashboard/todo/">Todo<span class="remove"><i class="icon-remove"></i></span></a></li>
+          {% if current == 'pull' %}
+            <li class="dropdown active">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">合并请求<span class=""><i class="icon-caret-down"></i></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#" {# if current == '/dashboard/pull/' %}class="active"{% endif #} id="pullMerge">需要我处理的</a></li>
+                <li><a href="#" {# if current == '/dashboard/pull/request/' %}class="active"{% endif #} id="pullRequest">我创建的</a></li>
+              </ul>
+            </li>
+          {% else %}
+            <li><a href="/dashboard/pull/">合并请求</a></li>
+          {% endif %}
+          <li{% if current == 'issues' %} class="active"{% endif %}><a href="/dashboard/issues/">Issues</a></li>
+        {% endif %}
+    </div>
+  </header>
+
+  <div class="content notif">
+    <div class="container">
+      {% block subcontainer %}{% endblock %}
+    </div>
+  </div>
+
 {% endblock %}
 
 {% block js %}
