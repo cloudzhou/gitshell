@@ -394,7 +394,7 @@ def join(request, step):
                 if not client_ip.startswith('192.168.') and client_ip != '127.0.0.1':
                     cache_join_client_ip_count = cache_join_client_ip_count + 1
                     cache.set(CacheKey.JOIN_CLIENT_IP % client_ip, cache_join_client_ip_count)
-                    if cache_join_client_ip_count < 6 and _create_user_and_authenticate(request, username, email, password):
+                    if cache_join_client_ip_count < 6 and _create_user_and_authenticate(request, username, email, password, False):
                         return HttpResponseRedirect('/join/3/')
                 cache.set(random_hash + '_email', email)
                 cache.set(random_hash + '_username', username)
@@ -416,7 +416,7 @@ def join(request, step):
         password = cache.get(step + '_password')
         if email is None or username is None or password is None or not email_re.match(email) or not re.match("^\w+$", username) or username in MAIN_NAVS:
             return HttpResponseRedirect('/join/4/')
-        if _create_user_and_authenticate(request, username, email, password):
+        if _create_user_and_authenticate(request, username, email, password, True):
             return HttpResponseRedirect('/join/3/')
         else:
             error = u'请检查用户名，密码是否正确，注意大小写和前后空格。'
@@ -585,7 +585,7 @@ def __conver_to_recommends_vo(raw_recommends):
     recommends_vo = [x.to_recommend_vo(users_map) for x in raw_recommends]
     return recommends_vo
 
-def _create_user_and_authenticate(request, username, email, password):
+def _create_user_and_authenticate(request, username, email, password, is_verify):
     user = None
     try:
         user = User.objects.create_user(username, email, password)
@@ -596,12 +596,10 @@ def _create_user_and_authenticate(request, username, email, password):
         user = auth_authenticate(username=user.username, password=password)
         if user is not None and user.is_active:
             auth_login(request, user)
-            userprofile = Userprofile()
-            userprofile.id = user.id
-            userprofile.username = user.username
-            userprofile.email = user.email
-            userprofile.imgurl = hashlib.md5(user.email.lower()).hexdigest()
+            userprofile = Userprofile(id = user.id, username = user.username, email = user.email, imgurl = hashlib.md5(user.email.lower()).hexdigest())
             userprofile.save()
+            userEmail = UserEmail(user_id = user.id, email = user.email, is_verify = is_verify, is_primary = 1, is_public = 1)
+            userEmail.save()
             return True
     return False
 

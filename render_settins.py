@@ -1,29 +1,22 @@
 # -*- coding: utf-8 -*- 
 #!/usr/bin/python
-import os
+import os, sys
 import ConfigParser
 from string import Template
 import time
 if __name__ == '__main__':
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    if os.path.exists('env.ini'):
-        fr = None
-        fw = None
-        try:
-            config = ConfigParser.RawConfigParser()
-            config.readfp(open('env.ini'))
-            items = dict(config.items('env'))
-            items['timestamp'] = str(time.time())
-            fr = open('settings.tmpl', 'r')
-            fw = open('settings.py', 'w')
-            properties_tmpl = fr.read()
-            template = Template(properties_tmpl)
-            fw.write(template.substitute(items))
-        finally:
-            if fr is not None:
-                fr.close()
-            if fw is not None:
-                fw.close()
+    if not os.path.exists('env.ini'):
+        print 'can not found env.ini, exit now'
+        sys.exit(128)
+    config = ConfigParser.RawConfigParser()
+    with open('env.ini', 'r') as envF, open('settings.tmpl', 'r') as tmplF, open('settings.py', 'w') as settingsF:
+        config.readfp(envF)
+        items = dict(config.items('env'))
+        items['timestamp'] = str(time.time())
+        properties_tmpl = tmplF.read()
+        template = Template(properties_tmpl)
+        settingsF.write(template.substitute(items))
 
 ########### env.ini ###########
 """

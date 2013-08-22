@@ -29,6 +29,7 @@ table_ptkey_field = {
     'todolist_todolist': 'user_id',
     'feed_notifmessage': 'to_user_id',
     'gsuser_thirdpartyuser': 'user_type',
+    'gsuser_useremail': 'user_id',
 }
 rawsql = {
     # userpubkey #
@@ -49,6 +50,8 @@ rawsql = {
         'select * from gsuser_recommend where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
     'thirdpartyuser_s_userType_tpId':
         'select * from gsuser_thirdpartyuser where visibly = 0 and user_type = %s and tp_id = %s',
+    'useremail_l_userId':
+        'select * from gsuser_useremail where visibly = 0 and user_id = %s order by create_time limit 100',
     # repo #
     'repo_s_userId_name':
         'select * from repo_repo where visibly = 0 and user_id = %s and name = %s limit 0, 1',

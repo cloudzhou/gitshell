@@ -1,0 +1,79 @@
+{% extends "settings/base.html" %}
+
+{% block container-right %}
+<div>
+    <h2 class="heading">管理邮箱</h2>
+    <table class="table email">
+        <colgroup>
+            <col width="">
+            <col width="action">
+        </colgroup>
+        <tbody>
+            {% for useremail in useremails %}
+            <tr>
+                <td class="name">
+                    {{ useremail.email }}
+                    {% if useremail.is_primary == 1 %}
+                    <label data-id="{{ useremail.id }}" data-email="{{ useremail.email }}" class="verify-email label label-success">默认邮箱</label>
+                    {% endif %}
+                </td>
+                <td class="action">
+                    {% if useremail.is_verify == 1 and useremail.is_primary == 0 %}
+                        <button data-id="{{ useremail.id }}" data-email="{{ useremail.email }}" class="primary-email btn btn-success">设置为默认</button>
+                    {% endif %}
+                    {% if useremail.is_verify == 0 %}
+                    <button data-id="{{ useremail.id }}" data-email="{{ useremail.email }}" class="verify-email btn btn-danger">验证</button>
+                    {% endif %}
+                    <button data-id="{{ useremail.id }}" data-email="{{ useremail.email }}" class="remove-email btn btn">删除</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div>
+<p>添加新的邮箱</p>
+<input id="id_email" type="text" name="email" maxlength="64" class="input-xlarge">
+<button id="add-email" class="add-email btn btn-success">添加</button>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+/*global jQuery, window */
+$(function(){
+    $('#add-email').click(function(){
+        var email = $('#id_email').val();
+        $.post('/settings/email/add/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'email': email}, function(json){
+            window.location.href = '/settings/emails/';
+        });
+    });
+    $('.primary-email').click(function(){
+        var useremail_id = $(this).data('id');
+        $.post('/settings/email/primary/' + useremail_id + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            window.location.href = '/settings/emails/';
+        });
+    });
+    $('.verify-email').click(function(){
+        var useremail_id = $(this).data('id');
+        var email = $(this).data('email');
+        var verify_button = $(this);
+        $.post('/settings/email/verify/' + useremail_id + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            var via = json.via;
+            if(via != '') {
+                verify_button.html('<a target="_blank" href="http://' + via + '">访问 ' + via + ' 进行验证</a>');
+            } else {
+                verify_button.html('收取邮件 ' + email + ' 进行验证');
+            }
+        });
+    });
+    $('.remove-email').click(function(){
+        var useremail_id = $(this).data('id');
+        $.post('/settings/email/remove/' + useremail_id + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            window.location.href = '/settings/emails/';
+        });
+    });
+});
+</script>
+{% endblock %}
+

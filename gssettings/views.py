@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-  
-import base64, hashlib
+import base64, hashlib, random
 from django.core.cache import cache
+from django.core.mail import send_mail
+from django.core.validators import email_re
 from django.template import RequestContext
 from django.contrib.auth.models import User
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from gitshell.gsuser.models import Userprofile, GsuserManager
+from gitshell.settings import logger
+from gitshell.viewtools.views import json_httpResponse
+from gitshell.gsuser.models import Userprofile, UserEmail, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
 from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, UserprofileForm, DoSshpubkeyForm
 
@@ -93,6 +97,78 @@ def sshpubkey_remove(request):
                 userPubkey.save()
             return HttpResponseRedirect('/settings/sshpubkey/')
     return render_to_response('settings/sshpubkey.html', {}, context_instance=RequestContext(request))
+
+@login_required
+def emails(request):
+    current = 'emails'
+    useremails = GsuserManager.list_useremail_by_userId(request.user.id)
+    response_dictionary = {'current': current, 'useremails': useremails}
+    return render_to_response('settings/emails.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
+def email_add(request):
+    useremails = GsuserManager.list_useremail_by_userId(request.user.id)
+    if len(useremails) >= 50:
+        return json_httpResponse({'code': 500, 'message': 'hit max email count(50)'})
+    email = request.POST.get('email')
+    for x in useremails:
+        if email == x.email:
+            return json_httpResponse({'code': 500, 'message': u'添加邮箱 %s 失败，邮箱已经存在' % email})
+    user = request.user
+    if email and email_re.match(email):
+        userEmail = UserEmail(user_id = user.id, email = email, is_verify = 0, is_primary = 0, is_public = 1)
+        userEmail.save()
+    return json_httpResponse({'code': 200, 'message': u'成功添加邮箱' + email})
+
+@login_required
+def email_primary(request, eid):
+    usermail = GsuserManager.get_useremail_by_id(eid)
+    if not usermail or usermail.user_id != request.user.id:
+        return json_httpResponse({'code': 500, 'message': u'设置失败，没有权限'})
+    useremails = GsuserManager.list_useremail_by_userId(request.user.id)
+    for x in useremails:
+        if usermail.id != x.id and x.is_primary == 1:
+            x.is_primary = 0
+            x.save()
+    usermail.is_primary = 1
+    usermail.save()
+    return json_httpResponse({'code': 500, 'message': u'成功设置默认邮箱 %s' % usermail.email})
+
+@login_required
+def email_verify(request, eid):
+    usermail = GsuserManager.get_useremail_by_id(eid)
+    email = usermail.email
+    via = ''
+    if usermail and usermail.is_verify == 0 and usermail.user_id == request.user.id:
+        random_hash = '%032x' % random.getrandbits(128)
+        cache.set(random_hash + '_useremail_id', eid)
+        active_url = 'https://gitshell.com/settings/email/verified/%s/' % random_hash
+        message = u'尊敬的gitshell用户：\n请点击下面的地址验证您在gitshell的邮箱：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
+        send_mail('[gitshell]验证邮件地址', message, 'noreply@gitshell.com', [email], fail_silently=False)
+        email_suffix = email.split('@')[-1]
+        if email_suffix in COMMON_EMAIL_DOMAIN:
+            via = COMMON_EMAIL_DOMAIN[email_suffix]
+        return json_httpResponse({'code': 200, 'message': u'请尽快验证邮箱', 'via': via})
+    return json_httpResponse({'code': 500, 'message': u'邮箱不对，或者没有相关权限', 'via': via})
+
+@login_required
+def email_verified(request, token):
+    useremail_id = cache.get(token + '_useremail_id')
+    usermail = GsuserManager.get_useremail_by_id(useremail_id)
+    if usermail and usermail.is_verify == 0 and usermail.user_id == request.user.id:
+        usermail.is_verify = 1
+        usermail.save()
+    return HttpResponseRedirect('/settings/emails/')
+
+@login_required
+def email_remove(request, eid):
+    usermail = GsuserManager.get_useremail_by_id(eid)
+    if usermail and usermail.user_id == request.user.id:
+        usermail.visibly = 1
+        usermail.save()
+    return json_httpResponse({'code': 200, 'message': u'成功删除邮箱 ' + usermail.email})
 
 @login_required
 def notif(request):
