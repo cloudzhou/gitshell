@@ -1,34 +1,45 @@
 {% extends "base.html" %}
 
+{% block body_class_name %}authorize{% endblock %}
 {% block container %}
-<div class="authorize">
 
-    <h2 class="heading">登录</h2>
+  <header class="subhead">
+    <div class="container">
+      <h1 class="heading">登陆</h1>
+    </div>
+  </header>
 
-    <div class="authorize-form">
-        <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn btn-success"><i class="icon-github"></i>使用 GitHub 账户登录</a>
+  <div class="content">
+    <div class="container">
+      <div class="auth-container">
 
-        <hr>
-        <form action="" method="post">
-            {% csrf_token %}
-            {{ loginForm.email }}
-            <input type="password" maxlength="64" name="unencrypt_password" id="id_unencrypt_password" placeholder="密码">
-            <span class="hide">{{ loginForm.password }}</span>
-            <button id="id_login_submit" class="btn btn-primary" type="submit">登录</button>
-            <label class="checkbox">{{ loginForm.rememberme }} 下次自动登录</label>
-                <a href="/resetpassword/">忘记密码了?</a>
-            </form>
+    <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn btn-success"><i class="icon-github"></i>使用 GitHub 账户登录</a>
 
-        {% if error %}
-            <div class="alert">
-                <a data-dismiss="alert" class="close">×</a>
-                <strong>出错了！</strong> {{ error }}
-            </div>
-        {% endif %}
+    <hr>
+    <form method="post" class="form">
+      <fieldset>
+        <legend>登陆</legend>
+        {% csrf_token %}
+        {{ loginForm.email }}
+        <input type="password" maxlength="64" name="unencrypt_password" id="id_unencrypt_password" placeholder="密码">
+        <span class="hide">{{ loginForm.password }}</span>
+        <button id="id_login_submit" class="btn btn-primary" type="submit">登录</button>
+        <label class="checkbox">{{ loginForm.rememberme }} 下次自动登录</label>
+      </fieldset>
+    </form>
+      <p><a href="/resetpassword/">找回密码</a></p>
+    {% if error %}
+      <div class="alert">
+        <a data-dismiss="alert" class="close">×</a>
+        <strong>出错了！</strong> {{ error }}
+      </div>
+    {% endif %}
 
     </div>
+    </div>
 
-</div>
+  </div>
+
 {% endblock %}
 
 {% block js %}

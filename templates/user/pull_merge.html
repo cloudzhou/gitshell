@@ -2,25 +2,46 @@
 
 {% block subcontainer %}
 
-  <div class="bubble" id="pulls">
+  <div class="bubble pulls">
+    <div class="pulls-head">
+      <h2 class="heading">需要我处理的</h2>
+      <p>未合并的<a href="#" class="count">12</a>, 已经关闭的<a href="#" class="count">1</a>, 拒绝合并的<a href="#" class="count">2</a></p>
+    </div>
 
     {% if pullRequests %}
       {% for pullRequest in pullRequests %}
         <section class="pull-item">
-          <h3>
-            <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/pull/{{pullRequest.id}}/" class="id">[{{pullRequest.id}}]{{pullRequest.short_title}}</a>
-            <span class="label label-mini {{pullRequest.status_label}}">{{pullRequest.status_view}}</span>
-          </h3>
-          <p>来自:<a class="puller" href="/{{pullRequest.pull_user.username}}/">{{pullRequest.pull_user.username}}</a></p>
-          <div class="meta">
-            <span class="branches"><span class="btn"><a href="/{{pullRequest.source_repo.username}}/">{{pullRequest.source_repo.username}}</a>/<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/" class="repo-name">{{pullRequest.source_refname}}</a></span><span class="btn"><a href="/{{pullRequest.desc_repo.username}}/">{{pullRequest.desc_repo.username}}</a>/<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/" class="repo-name">{{pullRequest.desc_refname}}</a></span></span>
-            <p>{{pullRequest.short_desc}}</p>
+          <div class="pull">
+
+            <figure class="avatar">
+              <img src="https://gravatar.com/avatar/{{pullRequest.pull_user.username}}?s=32" alt="{{pullRequest.pull_user.username}}">
+            </figure>
+
+            <div class="info">
+
+              <h3 class="heading">
+                <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/pull/{{pullRequest.id}}/" class="id">{#[{{pullRequest.id}}]#}{{pullRequest.short_title}}</a>
+                <span class="label label-mini {{pullRequest.status_label}}">{{pullRequest.status_view}}</span>
+              </h3>
+
+              <div class="branches">
+                <span class="puller">
+                  <a href="/{{pullRequest.pull_user.username}}/">{{pullRequest.pull_user.username}}</a>想把
+                </span>
+                <span class="sub">{#<a href="/{{pullRequest.source_repo.username}}/">{{pullRequest.source_repo.username}}</a>/#}<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<span{# href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/" #} class="repo-name">{{pullRequest.source_refname}}</span>
+                </span>合并到
+                <span class="master">{#<a href="/{{pullRequest.desc_repo.username}}/">{{pullRequest.desc_repo.username}}</a>/#}<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<span{# href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/" #} class="repo-name">{{pullRequest.desc_refname}}</span>
+                </span>
+              </div>
+              <p class="desc hide">{{pullRequest.short_desc}}</p>
+          </div>
+
           </div>
         </section>
       {% endfor %}
     {% else %}
-      <div class="pull-item">
-        <p class="alert alert-info">您还没有发起 Pull Request</p>
+      <div class="pull-item wall">
+        <p>您还没有发起 Pull Request</p>
       </div>
     {% endif %}
 

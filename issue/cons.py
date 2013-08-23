@@ -18,11 +18,11 @@ TRACKERS_VAL = [1, 2, 3]
 STATUSES_VAL = [1, 2, 3, 4, 5, 6]
 PRIORITIES_VAL = [1, 2, 3, 4]
 
-ISSUE_ATTRS = { 'TRACKERS': TRACKERS, 'STATUSES': STATUSES, 'PRIORITIES': PRIORITIES }
+ISSUE_ATTRS = { u'TRACKERS': TRACKERS, u'STATUSES': STATUSES, u'PRIORITIES': PRIORITIES }
 
-REV_TRACKERS = {1: '缺陷', 2: '功能', 3: '支持'}
-REV_STATUSES = {1: '新建', 2: '已指派', 3: '进行中', 4: '已解决', 5: '已关闭', 6: '已拒绝'}
-REV_PRIORITIES = {1: '紧急', 2: '高', 3: '普通', 4: '低'}
+REV_TRACKERS = {1: u'缺陷', 2: u'功能', 3: u'支持'}
+REV_STATUSES = {1: u'新建', 2: u'已指派', 3: u'进行中', 4: u'已解决', 5: u'已关闭', 6: u'已拒绝'}
+REV_PRIORITIES = {1: u'紧急', 2: u'高', 3: u'普通', 4: u'低'}
 
 def conver_issues(raw_issues, username_map, reponame_map):
     issues = []

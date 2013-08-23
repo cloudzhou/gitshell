@@ -26,7 +26,7 @@
 				<ul class="nav main-nav">
 					{% if user.is_authenticated %}
           <li class="active"{# Fake #}><a href="/dashboard/feed/">信息流</a></li>
-            <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="/dashboard/notif/" class="todo">工作台<span class="label-mini label-warning">{{userprofile.unread_message}}</span></a></li>
+            <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="/dashboard/notif/" class="todo">工作台<span class="label-mini label-warning hide">{{userprofile.unread_message}}</span></a></li>
             <li class="dropdown{% if mainnav == '/{{user.username}}/repo/' %}active{% endif %}">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">仓库</a>
               <ul class="dropdown-menu">

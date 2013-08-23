@@ -3,10 +3,10 @@
 {% block subcontainer %}
 
     {% if notifMessages %}
-    <div class="bubble" id="notifs">
+    <div class="bubble notifs">
 
       {% for notifMessage in notifMessages %}
-        <section class="notif-item">
+        <div class="notif-item">
           <a href="/{{notifMessage.relative_name}}/">@{{notifMessage.relative_name}}</a>
             {% if notifMessage.relative_obj %}
                 {% if notifMessage.notif_type == 0 %}
@@ -21,7 +21,7 @@
                 {% endif %}
                   <span class="unixtime">{{notifMessage.relative_obj.modify_time|date:"U"}}</span>
             {% endif %}
-          </section>
+          </div>
 
       {% endfor %}
 

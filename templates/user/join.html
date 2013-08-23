@@ -1,18 +1,30 @@
 {% extends "base.html" %}
 
+{% block body_class_name %}authorize{% endblock %}
 {% block container %}
-<div class="authorize">
-    {% ifequal step '3'  %}
-        <h2 class="heading">{{ user.username }}，欢迎您</h2>
-        {% else %}
-        <h2 class="heading">注册</h2>
-    {% endifequal %}
+  <header class="subhead">
+    <div class="container">
+      <h1 class="heading">注册</h1>
+    </div>
+  </header>
 
-        <div class="authorize-form">
+  <div class="content">
+    <div class="container">
+      <div class="auth-container">
+        {% comment %}
+          {% ifequal step '3'  %}
+            <h2 class="heading">{{ user.username }}，欢迎您</h2>
+            {% else %}
+            <h2 class="heading">注册</h2>
+          {% endifequal %}
+        {% endcomment %}
+
         {% ifequal step '0' %}
-            <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn"><i class="icon-github"></i>用 GitHub 账户直接登录</a>
+          <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn"><i class="icon-github"></i>用 GitHub 账户直接登录</a>
             <hr>
-            <form action="" method="post">
+            <form class="form" method="post">
+              <fieldset>
+                <legend>注册</legend>
                 {% csrf_token %}
                 {{ joinForm.username }}
                 <span id="id_username_alert" class="label label-warning hide">用户名已经存在</span>
@@ -21,26 +33,25 @@
                 <input type="password" maxlength="64" name="unencrypt_password" id="id_unencrypt_password" placeholder="密码区分大小写">
                 <span class="hide">{{ joinForm.password }}</span>
                 {% if error %}
-                    <div class="alert">
-                        <a data-dismiss="alert" class="close"><i class="icon-close"></i></a>
-                        <strong>出错了！</strong> {{ error }}
-                    </div>
+                  <div class="alert">
+                    <a data-dismiss="alert" class="close"><i class="icon-close"></i></a>
+                    <strong>出错了！</strong> {{ error }}
+                  </div>
                 {% endif %}
                 <button id="id_join_submit" class="btn btn-primary" type="submit">注册</button>
-                <p>当你点击注册的时候表示你接受Gitshell的<a href="/help/#service">服务条款</a>和<a href="/help/">隐私政策</a>.</p>
+              </fieldset>
             </form>
+            <p>当你点击注册的时候表示你接受Gitshell的<a href="/help/#service">服务条款</a>和<a href="/help/">隐私政策</a>.</p>
         </div>
     {% endifequal %}
 
     {% ifequal step '1' %}
-        <div class="">
             <p class="lead">谢谢你，已经发送注册邮件，请在半小时内激活，注意查收。 <a id="id_goto_a" target="_blank" class="hide"><button class="btn btn-success">点击到<span id="id_goto_domain"></span></button></a></p>
             <p class="lead">（部分运营商会拦截邮件，您有可能需要查看一下垃圾邮件）</p>
             <small>如果发送邮件失败，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="/static/img/sina_logo.png"/>&nbsp;gitshell</a></small>
-            </div>
     {% endifequal %}
+
     {% ifequal step '3' %}
-            <div class="">
             <p class="lead">为了gitshell能更好的为您服务，你有必要看一下：</p>
             <p>快速入门：</p>
             <p style="margin-left: 10px">如果您使用任何类unix系统，第一次配置 ssh 公钥密钥，请按照步骤，复制黑色背景字符，在终端执行命令，和编辑文件</p>
@@ -100,13 +111,13 @@
     {% ifequal step '4' %}
         <div class="span12">
         <small>注册失败，可能是激活url Token过期，请重新通过<a href="/join/0/">注册</a>获取激活url，如果这种情况持续出现，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="/static/img/sina_logo.png"/>&nbsp;gitshell</a></small>
-        </div>
     {% endifequal %}
+
 </div>
 {% endblock %}
+
 {% block js %}
 <script>
-/*global jQuery, window */
 $(function(){
     var join_init = function() {
         $('#id_username').attr('placeholder', '用户名');

@@ -3,27 +3,60 @@
 {% block subcontainer %}
 
   {% if issues %}
-    <div class="bubble" id="issues">
+    <div class="bubble issues">
       {% for issue in issues %}
         <section class="issue-item" data="{{issue.id}}">
-            <a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">#{{issue.id}} {{issue.subject}}</a> <a href="/{{user.username}}/{{issue.reponame}}/">[{{issue.reponame}}]</a>
-            <p id="id_label_{{issue.id}}" class="c_label hide">
-              <span class="c_fixed_label label label-mini label-info">解决</span>
-              <span class="c_close_label label label-mini label-info">关闭</span>
-              <span class="c_reject_label label label-mini label-info">拒绝</span>
-            </p>
-            <p class="muted">{{issue.tracker}} {{issue.status}} {{issue.priority}} {{issue.category}} <a href="/{{issue.name}}/">{{issue.username}}</a> <span class="unixtime">{{issue.modify_time}}</span></p>
-          <p id="id_tr_{{issue.id}}" data="{{issue.id}}" class="hide">
+          <div class="title">
+            {% if issue.tracker %}
+              <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
+            {% endif %}
+            {% comment %}
+              {% if issue.status %}
+                <span class="label">{{issue.status}}</span>
+              {% endif %}
+              {% if issue.priority %}
+                <span class="label">{{issue.priority}}</span>
+              {% endif %}
+              {% if issue.category %}
+                <span class="label">{{issue.category}}</span>
+              {% endif %}
+            {% endcomment %}
+            <h3 class="heading">
+              <a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">{{issue.subject}}</a>
+            </h3>
+            <span class="issue-id">#{{issue.id}}</span>
+          </div>
+
+          <a href="/{{user.username}}/{{issue.reponame}}/" class="hide">{{issue.reponame}}</a>
+
+          <div class="meta">
+            <img src="https://gravatar.com/avatar/{{issue.username.imgurl}}?s=16" alt="{{issue.username}}">
+            <a href="/{{issue.name}}/">{{issue.username}}</a>
+            <span class="unixtime">{{issue.modify_time}}</span>
+            <span>
+              <i class="icon-comments-alt"></i>
+              <a href="#">{{issue.comments.count}}</a>
+            </span>
+          </div>
+
+          <div id="id_tr_{{issue.id}}" data="{{issue.id}}" class="comment">
             <input id="id_comment_{{issue.id}}" class="c_comment">
             <input id="id_repo_id_{{issue.id}}" class="hide" value="{{issue.repo_id}}">
-            <button class="c_button btn btn-mini btn-primary" type="submit"></button>
-          </p>
+            <button class="c_button btn btn-mini btn-primary" type="submit">回复</button>
+          </div>
+
+          <div id="id_label_{{issue.id}}" class="c_label actions hide">
+            <span class="c_fixed_label label label-mini">解决</span>
+            <span class="c_close_label label label-mini">关闭</span>
+            <span class="c_reject_label label label-mini">拒绝</span>
+          </div>
+
         </section>
       {% endfor %}
       <input id="id_action" class="hide">
     {% else %}
       <div class="issue-item">
-        <p class="text-info">没有 Issues 信息</p>
+        <p>没有 Issues 信息</p>
       </div>
     {% endif %}
 
@@ -33,7 +66,7 @@
         <li><a href="/dashboard/issues/{{page|add:"-1"}}/">前一页</a></li>
       {%endif%}
       {%if hasPre or hasNext%}
-        <li style="padding-left: 6px;padding-right: 6px">第{{page}}页</li>
+        <li class="active">第{{page}}页</li>
       {%endif%}
       {%if hasNext%}
         <li><a href="/dashboard/issues/{{page|add:"+1"}}/">后一页</a></li>
