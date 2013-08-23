@@ -10,10 +10,7 @@ from gitshell.repo.models import RepoManager, PullRequest, PULL_STATUS
 from gitshell.issue.models import IssueManager
 from gitshell.feed.feed import FeedAction
 
-class Feed(models.Model):
-    create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
-    modify_time = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
-    visibly = models.SmallIntegerField(default=0, null=False)
+class Feed(BaseModel):
     user_id = models.IntegerField(default=0)
     repo_id = models.IntegerField(default=0)
     auth_type = models.SmallIntegerField(default=0)
@@ -54,10 +51,7 @@ class Feed(models.Model):
     def is_pull_event(self):
         return self.feed_type >= FEED_TYPE.MERGE_CREATE_PULL_REQUEST and self.feed_type <= FEED_TYPE.MERGE_COMMENT_ON_PULL_REQUEST
 
-class NotifMessage(models.Model):
-    create_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
-    modify_time = models.DateTimeField(auto_now=True, auto_now_add=True, null=False)
-    visibly = models.SmallIntegerField(default=0, null=False)
+class NotifMessage(BaseModel):
     notif_cate = models.SmallIntegerField(default=0)
     notif_type = models.SmallIntegerField(default=0)
     from_user_id = models.IntegerField(default=0)
@@ -105,6 +99,24 @@ class NotifMessage(models.Model):
     def is_pull_request_cate(self):
         return self.notif_cate == NOTIF_CATE.MERGE
 
+class NotifSetting(BaseModel):
+    user_id = models.IntegerField(default=0)
+    notif_types = models.CharField(max_length=1024, null=True)
+    notif_fqcy = models.IntegerField(default=0)
+    email = models.CharField(max_length=75, null=True)
+
+    def get_notif_types(self):
+        types = []
+        if self.notif_types == 'all':
+            return NOTIF_TYPE.VALUES
+        for x in self.notif_types.split(','):
+            if not re.match('^\d+$', x):
+                continue
+            type_ = int(x)
+            if type_ in NOTIF_TYPE.VALUES:
+                types.append(type_);
+        return types
+
 class FeedManager():
 
     @classmethod
@@ -145,6 +157,22 @@ class FeedManager():
     def get_notifmessage_by_userId_relativeId(self, user_id, relative_id):
         notifMessage = query_first(NotifMessage, user_id, 'notifMessage_s_userId_relativeId', [user_id, relative_id])
         return notifMessage
+
+    @classmethod
+    def get_notifsetting_by_userId(self, user_id):
+        notifSetting = query_first(NotifSetting, user_id, 'notifsetting_s_userId', [user_id])
+        if not notifSetting:
+            userprofile = GsuserManager.get_userprofile_by_id(user_id)
+            if not userprofile:
+                return None
+            notifSetting = NotifSetting(
+                user_id = user_id,
+                notif_types = 'all',
+                notif_fqcy = 0,
+                email = userprofile.email,
+            )
+            notifSetting.save()
+        return notifSetting
 
     @classmethod
     def list_feed_by_ids(self, ids):
@@ -355,16 +383,49 @@ class ISSUE_ATTR_DICT:
         4: '低',
     }
 
+class NOTIF_FQCY:
+
+    NEVER = 0
+    NOW = 1
+    PER_15MIN = 12
+    PER_30MIN = 13
+    PER_45MIN = 14
+    PER_1HOUR = 105
+    PER_3HOUR = 106
+    PER_6HOUR = 107
+    PER_12HOUR = 108
+    PER_1DAY = 1009
+
+    NOTIF_FQCY_CHOICE = [
+        {'key': u'永远不', 'value': 0},
+        {'key': u'尽可能快', 'value': 1},
+        {'key': u'15分钟', 'value': 12},
+        {'key': u'30分钟', 'value': 13},
+        {'key': u'45分钟', 'value': 14},
+        {'key': u'1小时', 'value': 105},
+        {'key': u'3小时', 'value': 106},
+        {'key': u'6小时', 'value': 107},
+        {'key': u'12小时', 'value': 108},
+        {'key': u'24小时', 'value': 1009},
+    ]
+
+    VALUES = [0, 1, 12, 13, 14, 105, 106, 107, 108, 1009]
+
 class NOTIF_CATE:
 
     AT = 0
     MERGE = 1
+    TODO = 2
+    ISSUES = 3
+    ACTIVE = 4
 
 class NOTIF_TYPE:
 
     AT_COMMIT = 0
-    AT_ISSUE = 1
-    AT_ISSUE_COMMENT = 2
+    AT_MERGE = 10
+    AT_MERGE_COMMENT = 11
+    AT_ISSUE = 30
+    AT_ISSUE_COMMENT = 31
 
     MERGE_CREATE_PULL_REQUEST = 100
     MERGE_MERGED_PULL_REQUEST = 101
@@ -373,6 +434,37 @@ class NOTIF_TYPE:
     MERGE_CLOSE_PULL_REQUEST = 104
     MERGE_COMMENT_ON_PULL_REQUEST = 105
     
+    ISSUES_CREATE = 300
+    ISSUES_UPDATE = 301
+    ISSUES_STATUS_CHANGE = 302
+    ISSUES_COMMENT_ON_ISSUE = 303
+
+    NOTIF_TYPE_CHOICE = {
+        'at': [
+            {'key': u'Commit 提交信息', 'value': 0},
+            {'key': u'Pull Request 内容', 'value': 10},
+            {'key': u'Pull Request 评论', 'value': 11},
+            {'key': u'Issue 内容', 'value': 30},
+            {'key': u'Issue 评论', 'value': 31},
+        ],
+        'merge': [
+            {'key': u'需要你参与', 'value': 100},
+            {'key': u'合并成功', 'value': 101},
+            {'key': u'合并失败', 'value': 102},
+            {'key': u'被拒绝', 'value': 103},
+            {'key': u'被关闭', 'value': 104},
+            {'key': u'评论', 'value': 105},
+        ],
+        'issue': [
+            {'key': u'需要你参与', 'value': 300},
+            {'key': u'有更新', 'value': 301},
+            {'key': u'状态更新', 'value': 302},
+            {'key': u'评论', 'value': 303},
+        ],
+    }
+
+    VALUES = [0, 10, 11, 30, 31, 100, 101, 102, 103, 104, 105, 300, 301, 302, 303]
+
 class FEED_CATE:
 
     PUSH = 0

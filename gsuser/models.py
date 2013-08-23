@@ -144,6 +144,11 @@ class GsuserManager():
         return userEmails
 
     @classmethod
+    def get_useremail_by_userId_email(self, user_id, email):
+        userEmail = query_first(UserEmail, user_id, 'useremail_s_userId_email', [user_id, email]) 
+        return userEmail
+
+    @classmethod
     def get_useremail_by_id(self, id):
         return get(UserEmail, id)
 

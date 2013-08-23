@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-  
-import base64, hashlib, random
+import re, base64, hashlib, random
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.core.validators import email_re
@@ -12,6 +12,7 @@ from gitshell.settings import logger
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.gsuser.models import Userprofile, UserEmail, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
+from gitshell.feed.models import NOTIF_TYPE, NOTIF_FQCY, FeedManager
 from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, UserprofileForm, DoSshpubkeyForm
 
 @login_required
@@ -108,6 +109,7 @@ def emails(request):
                           context_instance=RequestContext(request))
 
 @login_required
+@require_http_methods(["POST"])
 def email_add(request):
     useremails = GsuserManager.list_useremail_by_userId(request.user.id)
     if len(useremails) >= 50:
@@ -123,6 +125,7 @@ def email_add(request):
     return json_httpResponse({'code': 200, 'message': u'成功添加邮箱' + email})
 
 @login_required
+@require_http_methods(["POST"])
 def email_primary(request, eid):
     usermail = GsuserManager.get_useremail_by_id(eid)
     if not usermail or usermail.user_id != request.user.id:
@@ -137,6 +140,7 @@ def email_primary(request, eid):
     return json_httpResponse({'code': 500, 'message': u'成功设置默认邮箱 %s' % usermail.email})
 
 @login_required
+@require_http_methods(["POST"])
 def email_verify(request, eid):
     usermail = GsuserManager.get_useremail_by_id(eid)
     email = usermail.email
@@ -163,6 +167,7 @@ def email_verified(request, token):
     return HttpResponseRedirect('/settings/emails/')
 
 @login_required
+@require_http_methods(["POST"])
 def email_remove(request, eid):
     usermail = GsuserManager.get_useremail_by_id(eid)
     if usermail and usermail.user_id == request.user.id:
@@ -173,10 +178,58 @@ def email_remove(request, eid):
 @login_required
 def notif(request):
     current = 'notif'
-    response_dictionary = {'current': current, 'hello_world': 'hello world'}
+    notifSetting = FeedManager.get_notifsetting_by_userId(request.user.id)
+    useremails = GsuserManager.list_useremail_by_userId(request.user.id)
+    response_dictionary = {'current': current, 'notif_type_choice': NOTIF_TYPE.NOTIF_TYPE_CHOICE, 'notif_fqcy_choice': NOTIF_FQCY.NOTIF_FQCY_CHOICE, 'notifSetting': notifSetting, 'useremails': useremails}
     return render_to_response('settings/notif.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+@login_required
+@require_http_methods(["POST"])
+def notif_types(request):
+    user = request.user
+    notifSetting = FeedManager.get_notifsetting_by_userId(user.id);
+    types_str = request.POST.get('types', 'all')
+    types = []
+    if types_str == 'all':
+        notifSetting.notif_types = 'all'
+    else:
+        for type_str in types_str.split(','):
+            if not re.match('^\d+$', type_str):
+                continue
+            type_ = int(type_str)
+            if type_ in NOTIF_TYPE.VALUES:
+                types.append(type_str);
+        notifSetting.notif_types = ','.join(types)
+    notifSetting.save()
+    return json_httpResponse({'code': 200, 'message': u'成功修改通知 ' + types_str})
+
+@login_required
+@require_http_methods(["POST"])
+def notif_fqcy(request):
+    user = request.user
+    notifSetting = FeedManager.get_notifsetting_by_userId(user.id);
+    fqcy_str = request.POST.get('fqcy', '0')
+    if re.match('^\d+$', fqcy_str):
+        fqcy = int(fqcy_str)
+        if fqcy in NOTIF_FQCY.VALUES:
+            notifSetting.notif_fqcy = fqcy
+            notifSetting.save()
+    return json_httpResponse({'code': 200, 'message': u'成功修改频率 ' + fqcy_str})
+
+@login_required
+@require_http_methods(["POST"])
+def notif_email(request):
+    user = request.user
+    notifSetting = FeedManager.get_notifsetting_by_userId(user.id);
+    email = request.POST.get('email', user.email)
+    if email_re.match(email):
+        useremail = GsuserManager.get_useremail_by_userId_email(user.id, email)
+        if useremail:
+            notifSetting.email = email
+            notifSetting.save()
+    return json_httpResponse({'code': 200, 'message': u'成功修改邮箱 ' + email})
 
 @login_required
 def thirdparty(request):
