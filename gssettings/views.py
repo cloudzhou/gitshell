@@ -7,6 +7,7 @@ from django.template import RequestContext
 from django.contrib.auth.models import User
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.settings import logger
 from gitshell.viewtools.views import json_httpResponse
