@@ -61,10 +61,11 @@ $(function(){
         $.post('/settings/email/verify/' + useremail_id + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             var via = json.via;
             if(via != '') {
-                verify_button.html('<a target="_blank" href="http://' + via + '">访问 ' + via + ' 进行验证</a>');
+                verify_button.after('<button class="btn"><a target="_blank" href="http://' + via + '">访问 ' + via + ' 进行验证</a></button>');
             } else {
-                verify_button.html('收取邮件 ' + email + ' 进行验证');
+                verify_button.after('<button class="btn"></span>收取邮件 ' + email + ' 进行验证</span></button>');
             }
+            verify_button.hide();
         });
     });
     $('.remove-email').click(function(){

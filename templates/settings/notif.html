@@ -55,7 +55,6 @@ $(function(){
         });
         types.sort();
         var types_str = types.join(',');
-        alert(types_str);
         $.post('/settings/notif/types/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'types': types_str}, function(json){
         });
     });

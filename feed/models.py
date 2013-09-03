@@ -83,6 +83,10 @@ class NotifMessage(BaseModel):
         return self.create(NOTIF_CATE.AT, NOTIF_TYPE.AT_COMMIT, from_user_id, to_user_id, relative_id)
 
     @classmethod
+    def create_at_merge(self, from_user_id, to_user_id, relative_id):
+        return self.create(NOTIF_CATE.AT, NOTIF_TYPE.AT_MERGE, from_user_id, to_user_id, relative_id)
+
+    @classmethod
     def create_at_issue(self, from_user_id, to_user_id, relative_id):
         return self.create(NOTIF_CATE.AT, NOTIF_TYPE.AT_ISSUE, from_user_id, to_user_id, relative_id)
 
@@ -92,6 +96,8 @@ class NotifMessage(BaseModel):
 
     def is_at_commit(self):
         return self.notif_type == NOTIF_TYPE.AT_COMMIT
+    def is_at_merge(self):
+        return self.notif_type == NOTIF_TYPE.AT_MERGE
     def is_at_issue(self):
         return self.notif_type == NOTIF_TYPE.AT_ISSUE
     def is_at_issue_comment(self):
@@ -103,6 +109,7 @@ class NotifSetting(BaseModel):
     user_id = models.IntegerField(default=0)
     notif_types = models.CharField(max_length=1024, null=True)
     notif_fqcy = models.IntegerField(default=0)
+    last_notif_time = models.DateTimeField(auto_now=True, null=True)
     email = models.CharField(max_length=75, null=True)
 
     def get_notif_types(self):
@@ -148,14 +155,14 @@ class FeedManager():
                         issue_comment.username = repo.username
                         issue_comment.reponame = repo.name
                 notifMessage.relative_obj = issue_comment
-            elif notifMessage.is_pull_request_cate():
+            elif notifMessage.is_at_merge() or notifMessage.is_pull_request_cate():
                 pullRequest = RepoManager.get_pullRequest_by_id(notifMessage.relative_id)
                 notifMessage.relative_obj = pullRequest
         return notifMessages
 
     @classmethod
-    def get_notifmessage_by_userId_relativeId(self, user_id, relative_id):
-        notifMessage = query_first(NotifMessage, user_id, 'notifMessage_s_userId_relativeId', [user_id, relative_id])
+    def get_notifmessage_by_userId_notifType_relativeId(self, user_id, notif_type, relative_id):
+        notifMessage = query_first(NotifMessage, user_id, 'notifMessage_s_userId_notifType_relativeId', [user_id, notif_type, relative_id])
         return notifMessage
 
     @classmethod
@@ -251,7 +258,7 @@ class FeedManager():
             feedAction.add_pub_user_feed(user.id, timestamp, feed.id)
 
     @classmethod
-    def notif_at(self, feed_type, from_user_id, relative_id, message):
+    def notif_at(self, notif_type, from_user_id, relative_id, message):
         at_name_list = FeedUtils.list_atname(message)
         user_unread_message_dict = {}
 
@@ -261,14 +268,16 @@ class FeedManager():
                 to_user_id = at_user.id
                 notifMessage = None
                 # disable duplicate notify
-                exists_notifMessage = self.get_notifmessage_by_userId_relativeId(to_user_id, relative_id)
+                exists_notifMessage = self.get_notifmessage_by_userId_notifType_relativeId(to_user_id, notif_type, relative_id)
                 if exists_notifMessage is not None:
                     continue
-                if feed_type == NOTIF_TYPE.AT_COMMIT:
+                if notif_type == NOTIF_TYPE.AT_COMMIT:
                     notifMessage = NotifMessage.create_at_commit(from_user_id, to_user_id, relative_id)
-                elif feed_type == NOTIF_TYPE.AT_ISSUE:
+                elif notif_type == NOTIF_TYPE.AT_MERGE:
+                    notifMessage = NotifMessage.create_at_merge(from_user_id, to_user_id, relative_id)
+                elif notif_type == NOTIF_TYPE.AT_ISSUE:
                     notifMessage = NotifMessage.create_at_issue(from_user_id, to_user_id, relative_id)
-                elif feed_type == NOTIF_TYPE.AT_ISSUE_COMMENT:
+                elif notif_type == NOTIF_TYPE.AT_ISSUE_COMMENT:
                     notifMessage = NotifMessage.create_at_issue_comment(from_user_id, to_user_id, relative_id)
                 if notifMessage is None:
                     continue
@@ -296,7 +305,7 @@ class FeedManager():
 
     @classmethod
     def notif_pull_request_status(self, pullRequest, pullStatus):
-        notfi_type = NOTIF_TYPE.MERGE_CREATE_PULL_REQUEST
+        notif_type = NOTIF_TYPE.MERGE_CREATE_PULL_REQUEST
         message = ''
         if pullStatus == PULL_STATUS.NEW:
             message = 'created'
@@ -458,7 +467,7 @@ class NOTIF_TYPE:
         'issue': [
             {'key': u'需要你参与', 'value': 300},
             {'key': u'有更新', 'value': 301},
-            {'key': u'状态更新', 'value': 302},
+            {'key': u'状态改变', 'value': 302},
             {'key': u'评论', 'value': 303},
         ],
     }

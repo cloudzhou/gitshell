@@ -14,6 +14,7 @@ from gitshell.viewtools.views import json_httpResponse
 from gitshell.gsuser.models import Userprofile, UserEmail, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
 from gitshell.feed.models import NOTIF_TYPE, NOTIF_FQCY, FeedManager
+from gitshell.feed.mailUtils import Mailer
 from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, UserprofileForm, DoSshpubkeyForm
 
 @login_required
@@ -147,11 +148,7 @@ def email_verify(request, eid):
     email = usermail.email
     via = ''
     if usermail and usermail.is_verify == 0 and usermail.user_id == request.user.id:
-        random_hash = '%032x' % random.getrandbits(128)
-        cache.set(random_hash + '_useremail_id', eid)
-        active_url = 'https://gitshell.com/settings/email/verified/%s/' % random_hash
-        message = u'尊敬的gitshell用户：\n请点击下面的地址验证您在gitshell的邮箱：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
-        send_mail('[gitshell]验证邮件地址', message, 'noreply@gitshell.com', [email], fail_silently=False)
+        Mailer().send_verify_email(request.user, eid, email)
         email_suffix = email.split('@')[-1]
         if email_suffix in COMMON_EMAIL_DOMAIN:
             via = COMMON_EMAIL_DOMAIN[email_suffix]
@@ -254,7 +251,7 @@ def change_username_email(request):
 def validate_email(request, token):
     current = 'validate_email'
     validate_result = 'success'
-    email = cache.get(token + '_email')
+    email = cache.get(token)
     if email is not None:
         user = GsuserManager.get_user_by_email(email)
         if user is None:

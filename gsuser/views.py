@@ -6,7 +6,6 @@ import base64, hashlib
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.shortcuts import render_to_response
-from django.core.mail import send_mail
 from django.core.cache import cache
 from django.core.validators import email_re
 from django.contrib.auth.decorators import login_required
@@ -16,12 +15,12 @@ from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
 from gitshell.objectscache.models import CacheKey
 from gitshell.gsuser.Forms import LoginForm, JoinForm, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
-from gitshell.gsuser.models import Recommend, Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
+from gitshell.gsuser.models import UserEmail, Recommend, Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
 from gitshell.gsuser.middleware import MAIN_NAVS
 from gitshell.repo.models import RepoManager
 from gitshell.stats.models import StatsManager
 from gitshell.feed.feed import FeedAction
-from gitshell.stats import timeutils
+from gitshell.feed.mailUtils import Mailer
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
 from gitshell.settings import logger
@@ -225,11 +224,7 @@ def change(request):
     if email is not None and email_re.match(email):
         user = GsuserManager.get_user_by_email(email)
         if user is None:
-            random_hash = '%032x' % random.getrandbits(128)
-            cache.set(random_hash + '_email', email)
-            active_url = 'https://gitshell.com/settings/validate_email/%s/' % random_hash
-            message = u'尊敬的gitshell用户：\n请点击下面的地址更改您在gitshell的登录邮箱：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
-            send_mail('[gitshell]更改邮件地址', message, 'noreply@gitshell.com', [email], fail_silently=False)
+            Mailer().send_change_email(request.user, email)
             email_suffix = email.split('@')[-1]
             if email_suffix in COMMON_EMAIL_DOMAIN:
                 goto = COMMON_EMAIL_DOMAIN[email_suffix]
@@ -380,7 +375,6 @@ def join(request, step):
     if step == '0' and request.method == 'POST':
         joinForm = JoinForm(request.POST)
         if joinForm.is_valid():
-            random_hash = '%032x' % random.getrandbits(128)
             email = joinForm.cleaned_data['email']
             username = joinForm.cleaned_data['username']
             password = joinForm.cleaned_data['password']
@@ -396,12 +390,7 @@ def join(request, step):
                     cache.set(CacheKey.JOIN_CLIENT_IP % client_ip, cache_join_client_ip_count)
                     if cache_join_client_ip_count < 6 and _create_user_and_authenticate(request, username, email, password, False):
                         return HttpResponseRedirect('/join/3/')
-                cache.set(random_hash + '_email', email)
-                cache.set(random_hash + '_username', username)
-                cache.set(random_hash + '_password', password)
-                active_url = 'https://gitshell.com/join/%s/' % random_hash
-                message = u'尊敬的gitshell用户：\n感谢您选择了gitshell，请点击下面的地址激活您在gitshell的帐号：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
-                send_mail('[gitshell]注册邮件', message, 'noreply@gitshell.com', [email], fail_silently=False)
+                Mailer().send_verify_account(email, username, password)
                 goto = ''
                 email_suffix = email.split('@')[-1]
                 if email_suffix in COMMON_EMAIL_DOMAIN:
@@ -425,6 +414,7 @@ def join(request, step):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+@login_required
 def resetpassword(request, step):
     if step is None:
         step = '0'
@@ -433,17 +423,13 @@ def resetpassword(request, step):
     if step == '0' and request.method == 'POST':
         resetpasswordForm0 = ResetpasswordForm0(request.POST)
         if resetpasswordForm0.is_valid():
-            random_hash = '%032x' % random.getrandbits(128)
             email = resetpasswordForm0.cleaned_data['email']
             try:
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
                 user = None
             if user is not None and user.is_active:
-                cache.set(random_hash, email)
-                active_url = 'https://gitshell.com/resetpassword/%s/' % random_hash
-                message = u'尊敬的gitshell用户：\n如果您没有重置密码的请求，请忽略此邮件。点击下面的地址重置您在gitshell的帐号密码：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
-                send_mail('[gitshell]重置密码邮件', message, 'noreply@gitshell.com', [email], fail_silently=False)
+                Mailer().send_resetpassword(request.user, email)
                 return HttpResponseRedirect('/resetpassword/1/')
             error = u'邮箱 %s 还没有注册' % email
         else:
