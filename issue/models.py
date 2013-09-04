@@ -31,6 +31,24 @@ class IssueComment(BaseModel):
     username = ''
     reponame = ''
 
+class ISSUE_STATUS:
+
+    NEW = 1
+    ASSIGNED = 2
+    INPROGRESS = 3
+    RESOLVED = 4
+    CLOSED = 5
+    REJECTED = 6
+
+    VIEW_MAP = {
+        1 : '新建',
+        2 : '已指派',
+        3 : '进行中',
+        4 : '已解决',
+        5 : '已关闭',
+        6 : '已拒绝',
+    }
+
 class IssueManager():
 
     @classmethod

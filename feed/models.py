@@ -7,7 +7,7 @@ from gitshell.objectscache.da import query, query_first, queryraw, execute, coun
 from gitshell.objectscache.da import get_raw, get_raw_many
 from gitshell.gsuser.models import GsuserManager
 from gitshell.repo.models import RepoManager, PullRequest, PULL_STATUS
-from gitshell.issue.models import IssueManager
+from gitshell.issue.models import IssueManager, ISSUE_STATUS
 from gitshell.feed.feed import FeedAction
 
 class Feed(BaseModel):
@@ -102,6 +102,8 @@ class NotifMessage(BaseModel):
         return self.notif_type == NOTIF_TYPE.AT_ISSUE
     def is_at_issue_comment(self):
         return self.notif_type == NOTIF_TYPE.AT_ISSUE_COMMENT
+    def is_issue_cate(self):
+        return self.notif_cate == NOTIF_CATE.ISSUES
     def is_pull_request_cate(self):
         return self.notif_cate == NOTIF_CATE.MERGE
 
@@ -137,7 +139,7 @@ class FeedManager():
             if notifMessage.is_at_commit():
                 commitHistory = RepoManager.get_commit_by_id(notifMessage.relative_id)
                 notifMessage.relative_obj = commitHistory
-            elif notifMessage.is_at_issue():
+            elif notifMessage.is_at_issue() or notifMessage.is_issue_cate():
                 issue = IssueManager.get_issue_by_id(notifMessage.relative_id)
                 if issue is not None:
                     repo = RepoManager.get_repo_by_id(issue.repo_id)
@@ -204,15 +206,15 @@ class FeedManager():
         status_changes = []
         if orgi_issue is not None:
             if orgi_issue.tracker != current_issue.tracker:
-                status_changes.append('跟踪: ' + ISSUE_ATTR_DICT.TRACKER[current_issue.tracker])
+                status_changes.append(u'跟踪: ' + ISSUE_ATTR_DICT.TRACKER[current_issue.tracker])
             if orgi_issue.status != current_issue.status:
-                status_changes.append('状态: ' + ISSUE_ATTR_DICT.STATUS[current_issue.status])
+                status_changes.append(u'状态: ' + ISSUE_ATTR_DICT.STATUS[current_issue.status])
             if orgi_issue.assigned != current_issue.assigned:
                 assigned_user = GsuserManager.get_user_by_id(current_issue.assigned)
                 if assigned_user is not None:
-                    status_changes.append('指派给: @' + assigned_user.username)
+                    status_changes.append(u'指派给: @' + assigned_user.username)
             if orgi_issue.priority != current_issue.priority:
-                status_changes.append('优先级: ' + ISSUE_ATTR_DICT.PRIORITY[current_issue.priority])
+                status_changes.append(u'优先级: ' + ISSUE_ATTR_DICT.PRIORITY[current_issue.priority])
             
             if len(status_changes) > 0:
                 message = ', '.join(status_changes)
@@ -305,6 +307,26 @@ class FeedManager():
         self.notif_at(NOTIF_TYPE.AT_ISSUE_COMMENT, from_user_id, issue_comment_id, issue_comment_message)
 
     @classmethod
+    def notif_issue_status(self, user, issue, issueStatus):
+        notif_cat = NOTIF_CATE.ISSUES
+        message = ''
+        if issueStatus == ISSUE_STATUS.ASSIGNED:
+            notif_type = NOTIF_TYPE.ISSUE_ASSIGNED
+            message = 'assigned'
+            exists_notifMessage = self.get_notifmessage_by_userId_notifType_relativeId(issue.assigned, notif_type, issue.id)
+            if exists_notifMessage:
+                return
+            assigned_userprofile = GsuserManager.get_userprofile_by_id(issue.assigned)
+            if assigned_userprofile:
+                notifMessage = NotifMessage.create(notif_cat, notif_type, user.id, issue.assigned, issue.id)
+                notifMessage.message = message
+                notifMessage.save()
+            assigned_userprofile.unread_message = assigned_userprofile.unread_message + 1
+            assigned_userprofile.save()
+        else:
+            return
+
+    @classmethod
     def notif_pull_request_status(self, pullRequest, pullStatus):
         notif_type = NOTIF_TYPE.MERGE_CREATE_PULL_REQUEST
         message = ''
@@ -374,23 +396,23 @@ class FeedUtils():
 class ISSUE_ATTR_DICT:
 
     TRACKER = { 
-        1: '缺陷',
-        2: '功能',
-        3: '支持',
+        1: u'缺陷',
+        2: u'功能',
+        3: u'支持',
     }
     STATUS = {
-        1: '新建',
-        2: '已指派',
-        3: '进行中',
-        4: '已解决',
-        5: '已关闭',
-        6: '已拒绝',
+        1: u'新建',
+        2: u'已指派',
+        3: u'进行中',
+        4: u'已解决',
+        5: u'已关闭',
+        6: u'已拒绝',
     }
     PRIORITY = {
-        1: '紧急',
-        2: '高',
-        3: '普通',
-        4: '低',
+        1: u'紧急',
+        2: u'高',
+        3: u'普通',
+        4: u'低',
     }
 
 class NOTIF_FQCY:
@@ -444,10 +466,10 @@ class NOTIF_TYPE:
     MERGE_CLOSE_PULL_REQUEST = 104
     MERGE_COMMENT_ON_PULL_REQUEST = 105
     
-    ISSUES_CREATE = 300
-    ISSUES_UPDATE = 301
-    ISSUES_STATUS_CHANGE = 302
-    ISSUES_COMMENT_ON_ISSUE = 303
+    ISSUE_ASSIGNED = 300
+    ISSUE_UPDATE = 301
+    ISSUE_STATUS_CHANGE = 302
+    ISSUE_COMMENT_ON_ISSUE = 303
 
     NOTIF_TYPE_CHOICE = {
         'at': [

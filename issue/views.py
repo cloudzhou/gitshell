@@ -15,7 +15,7 @@ from django.utils.html import escape
 from gitshell.repo.models import RepoManager
 from gitshell.repo.views import get_common_repo_dict
 from gitshell.gsuser.models import GsuserManager
-from gitshell.issue.models import IssueManager, Issue, IssueComment
+from gitshell.issue.models import IssueManager, Issue, IssueComment, ISSUE_STATUS
 from gitshell.issue.Forms import IssueForm, IssueCommentForm
 from gitshell.issue.cons import TRACKERS, STATUSES, PRIORITIES, TRACKERS_VAL, STATUSES_VAL, PRIORITIES_VAL, ISSUE_ATTRS, conver_issues, conver_issue_comments
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
@@ -172,8 +172,10 @@ def create(request, user_name, repo_name):
         issueForm = IssueForm(request.POST, instance = issue)
         issueForm.fill_assigned(repo)
         if issueForm.is_valid():
-            nid = issueForm.save().id
+            newIssue = issueForm.save()
+            nid = newIssue.id
             FeedManager.notif_issue_at(request.user.id, nid, issueForm.cleaned_data['subject'] + ' ' + issueForm.cleaned_data['content'])
+            FeedManager.notif_issue_status(request.user, newIssue, ISSUE_STATUS.ASSIGNED)
             FeedManager.feed_issue_change(request.user, repo, None, nid)
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
         else:
@@ -201,13 +203,13 @@ def edit(request, user_name, repo_name, issue_id):
     issueForm.fill_assigned(repo)
     error = u''
     if request.method == 'POST':
-        issue.user_id = request.user.id
-        issue.repo_id = repo.id
         issueForm = IssueForm(request.POST, instance = issue)
         issueForm.fill_assigned(repo)
         if issueForm.is_valid():
-            nid = issueForm.save().id
+            newIssue = issueForm.save()
+            nid = newIssue.id
             FeedManager.notif_issue_at(request.user.id, nid, issueForm.cleaned_data['subject'] + ' ' + issueForm.cleaned_data['content'])
+            FeedManager.notif_issue_status(request.user, newIssue, ISSUE_STATUS.ASSIGNED)
             FeedManager.feed_issue_change(request.user, repo, orgi_issue, nid)
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
         else:
@@ -257,6 +259,7 @@ def update(request, user_name, repo_name, issue_id, attr):
             return _json_failed()
         issue.assigned = repoMember.user_id
         issue.save()
+        FeedManager.notif_issue_status(request.user, issue, ISSUE_STATUS.ASSIGNED)
         FeedManager.feed_issue_change(request.user, repo, orgi_issue, issue.id)
         return _json_ok()
     value = int(value)
