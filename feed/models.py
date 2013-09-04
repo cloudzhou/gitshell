@@ -110,6 +110,7 @@ class NotifSetting(BaseModel):
     notif_types = models.CharField(max_length=1024, null=True)
     notif_fqcy = models.IntegerField(default=0)
     last_notif_time = models.DateTimeField(auto_now=True, null=True)
+    expect_notif_time = models.DateTimeField(auto_now=True, null=True)
     email = models.CharField(max_length=75, null=True)
 
     def get_notif_types(self):

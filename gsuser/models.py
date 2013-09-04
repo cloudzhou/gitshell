@@ -140,7 +140,12 @@ class GsuserManager():
 
     @classmethod
     def list_useremail_by_userId(self, user_id):
+        user = GsuserManager.get_userprofile_by_id(user_id)
         userEmails = query(UserEmail, user_id, 'useremail_l_userId', [user_id]) 
+        if len(userEmails) == 0:
+            userEmail = UserEmail(user_id = user.id, email = user.email, is_verify = 1, is_primary = 1, is_public = 1)
+            userEmail.save()
+            userEmails.append(userEmail)
         return userEmails
 
     @classmethod
