@@ -419,6 +419,7 @@ class NOTIF_FQCY:
 
     NEVER = 0
     NOW = 1
+    PER_5MIN = 11
     PER_15MIN = 12
     PER_30MIN = 13
     PER_45MIN = 14
@@ -431,6 +432,7 @@ class NOTIF_FQCY:
     NOTIF_FQCY_CHOICE = [
         {'key': u'永远不', 'value': 0},
         {'key': u'尽可能快', 'value': 1},
+        {'key': u'5分钟', 'value': 11},
         {'key': u'15分钟', 'value': 12},
         {'key': u'30分钟', 'value': 13},
         {'key': u'45分钟', 'value': 14},
@@ -441,7 +443,7 @@ class NOTIF_FQCY:
         {'key': u'24小时', 'value': 1009},
     ]
 
-    VALUES = [0, 1, 12, 13, 14, 105, 106, 107, 108, 1009]
+    VALUES = [0, 1, 11, 12, 13, 14, 105, 106, 107, 108, 1009]
 
 class NOTIF_CATE:
 
