@@ -131,7 +131,26 @@ class FeedManager():
 
     @classmethod
     def list_notifmessage_by_userId(self, user_id, offset, row_count):
-        notifMessages = query(NotifMessage, user_id, 'notifMessage_l_userId', [user_id, offset, row_count])
+        notifMessages = query(NotifMessage, user_id, 'notifmessage_l_userId', [user_id, offset, row_count])
+        return self._fillwith_notifMessages(notifMessages)
+
+    @classmethod
+    def list_notifmessage_by_userId_notifTypes(self, user_id, notif_types, offset, row_count):
+        notifMessages = []
+        if notif_types == 'all':
+            notifMessages = query(NotifMessage, user_id, 'notifmessage_l_userId', [user_id, offset, row_count])
+        else:
+            filtered_notif_types = []
+            split_notif_types = notif_types.split(',')
+            for split_notif_type in split_notif_types:
+                if re.match('^\d+$', split_notif_type):
+                    filtered_notif_types.append(int(split_notif_type))
+            if len(filtered_notif_types) == 0:
+                return []
+            notifMessages = list(NotifMessage.objects.filter(visibly=0).filter(to_user_id=user_id).filter(notif_type__in=filtered_notif_types).order_by('-modify_time')[offset : offset+row_count]))
+        return self._fillwith_notifMessages(notifMessages)
+
+    def _fillwith_notifMessages(self, notifMessages):
         for notifMessage in notifMessages:
             relative_user = GsuserManager.get_user_by_id(notifMessage.from_user_id)
             if relative_user is not None:
@@ -165,9 +184,14 @@ class FeedManager():
 
     @classmethod
     def get_notifmessage_by_userId_notifType_relativeId(self, user_id, notif_type, relative_id):
-        notifMessage = query_first(NotifMessage, user_id, 'notifMessage_s_userId_notifType_relativeId', [user_id, notif_type, relative_id])
+        notifMessage = query_first(NotifMessage, user_id, 'notifmessage_s_userId_notifType_relativeId', [user_id, notif_type, relative_id])
         return notifMessage
 
+    @classmethod
+    def list_notifsetting_by_expectNotifTime(self, expect_notif_time, offset, row_count):
+        notifSettings = query(NotifSetting, None, 'notifsetting_l_expectNotifTime', [expect_notif_time, offset, row_count])
+        return notifSettings
+        
     @classmethod
     def get_notifsetting_by_userId(self, user_id):
         notifSetting = query_first(NotifSetting, user_id, 'notifsetting_s_userId', [user_id])
