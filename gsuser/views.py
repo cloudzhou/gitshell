@@ -414,7 +414,6 @@ def join(request, step):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@login_required
 def resetpassword(request, step):
     if step is None:
         step = '0'
@@ -429,7 +428,7 @@ def resetpassword(request, step):
             except User.DoesNotExist:
                 user = None
             if user is not None and user.is_active:
-                Mailer().send_resetpassword(request.user, email)
+                Mailer().send_resetpassword(email)
                 return HttpResponseRedirect('/resetpassword/1/')
             error = u'邮箱 %s 还没有注册' % email
         else:
