@@ -4,48 +4,50 @@
 
 {% block container %}
 
-  <header class="subhead">
+  <div class="subhead">
     <div class="container">
-      <h1>设置</h1>
+      <h2 class="heading">设置</h2>
     </div>
-  </header>
+  </div>
 
 	<div class="content">
-    <div class="container bubble">
+    <div class="container">
 
       <div class="sidebar">
-        <ul class="nav nav-list">
-          <li><a href="/settings/profile/"{%if current == 'profile'%} class="active"{%endif%}><span>个人资料</span></a></li>
-          <li><a href="/settings/sshpubkey/"{%if current == 'sshpubkey'%} class="active"{%endif%}><span>SSH公匙</span></a></li>
-          <li><a href="/settings/notif/"{%if current == 'notif'%} class="active"{%endif%}><span>通知</span></a></li>
-          <li><a href="/settings/changepassword/"{%if current == 'changepassword'%} class="active"{%endif%}><span>更改密码</span></a></li>
-          <li><a href="/settings/thirdparty/"{%if current == 'thirdparty'%} class="active"{%endif%}><span>GitHub关联</span></a></li>
-          {% if userprofile.prirepo == 0 and userprofile.pubrepo == 0 %}
-            <li><a href="/settings/change_username_email/"{%if current == 'change_username_email'%} class="active"{%endif%}><span>修改邮箱</span></a></li>
-          {% endif %}
-            <li><a href="/settings/destroy/"{%if current == 'destroy'%} class="active"{%endif%}><span>删除账户</span></a></li>
-        </ul>
-        <hr>
-        <aside class="repo-count">
-          <ul class="unstyledList">
+        <div class="inner">
+          <ul class="nav nav-list">
+            <li><a href="/settings/profile/"{%if current == 'profile'%} class="active"{%endif%}><span>个人资料</span></a></li>
+            <li><a href="/settings/sshpubkey/"{%if current == 'sshpubkey'%} class="active"{%endif%}><span>SSH公匙</span></a></li>
+            <li><a href="/settings/notif/"{%if current == 'notif'%} class="active"{%endif%}><span>通知</span></a></li>
+            <li><a href="/settings/changepassword/"{%if current == 'changepassword'%} class="active"{%endif%}><span>更改密码</span></a></li>
+            <li><a href="/settings/thirdparty/"{%if current == 'thirdparty'%} class="active"{%endif%}><span>GitHub关联</span></a></li>
+            {% if userprofile.prirepo == 0 and userprofile.pubrepo == 0 %}
+              <li><a href="/settings/change_username_email/"{%if current == 'change_username_email'%} class="active"{%endif%}><span>修改邮箱</span></a></li>
+            {% endif %}
+              <li><a href="/settings/destroy/"{%if current == 'destroy'%} class="active"{%endif%}><span>删除账户</span></a></li>
+          </ul>
+          <hr>
+          <ul class="repo-count">
             <li>
-              <h4>仓库数<span class="used">{{userprofile.get_total_repo}}</span><span class="divider">/</span><span class="capacity">100</span></h4>
+              <p>仓库数<span class="used">{{userprofile.get_total_repo}}</span><span class="divider">/</span><span class="capacity">100</span></p>
               <div class="progress">
                   <span class="bar" style="width: {{userprofile.get_used_repo_percent}}%;"></span>
               </div>
             </li>
             <li>
-              <h4>仓库配额<span class="used">{{userprofile.get_readable_used_quote}}</span><span class="divider">/</span><span class="capacity">{{userprofile.get_readable_quote}}</span></h4>
+              <p>仓库配额<span class="used">{{userprofile.get_readable_used_quote}}</span><span class="divider">/</span><span class="capacity">{{userprofile.get_readable_quote}}</span></p>
               <div class="progress progress-danger">
                 <span class="bar" style="width: {{userprofile.get_used_quote_percent}}%;"></span>
               </div>
             </li>
           </ul>
-        </aside>
+        </div>
       </div>
 
       <div class="primary">
-        {% block container-right %}{% endblock %}
+        <div class="inner">
+          {% block container-right %}{% endblock %}
+        </div>
       </div>
 
       </div>

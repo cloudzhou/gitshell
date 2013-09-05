@@ -86,7 +86,7 @@ $(function(){
         });
     };
     do_orgi_feeds();
-    $('.c_unixtime').each(function(index){ 
+    $('.unixtime').each(function(index){ 
         $(this).html(moment(new Date($(this).html()*1000)).fromNow());
         $(this).show();
     });

@@ -2,55 +2,82 @@
 
 {% block primary %}
 
-<div class="primary span">
+  <div class="primary">
 
-    <section class="item">
-      <h2 class="heading">最近<a href="/{{gsuser.username}}/active/" class="more">more</a></h2>
-      <ul id="id_lastest_active" class="list"></ul>
-    </section>
+    {% comment %}
+      <section class="item">
+        <h2 class="heading">最近<a href="/{{gsuser.username}}/active/" class="more">more</a></h2>
+        <ul id="lastestActive" class="list"></ul>
+      </section>
+    {% endcomment %}
 
     <ul class="nav nav-tabs" id="repoTab">
       <li><a href="#repos" data-toggle="tab">仓库</a></li>
-      <li><a href="#watched-repos" data-toggle="tab">关注仓库</a></li>
+      <li><a href="#watchedRepos" data-toggle="tab">关注仓库</a></li>
+      <li><a href="#followed" data-toggle="tab">关注用户</a></li>
+      <li><a href="#follower" data-toggle="tab">粉丝</a></li>
     </ul>
 
     <div class="tab-content">
       <section class="item tab-pane active" id="repos">
-        <ul class="list">
+        <ul class="repo-list">
           {% for repo in repos %}
             <li>
-              <h3 class="heading"><a href="/{{gsuser.username}}/{{repo.name}}/">{{repo.name}}</a><span class="modified"><span class="unixtime">{{repo.modify_time|date:"U"}}</span>更新过</span></h3>
-              <p>{{repo.desc}}</p>
+              <div class="title">
+                <h3 class="heading"><a href="/{{gsuser.username}}/{{repo.name}}/">{{repo.name}}</a></h3>
+                <span class="meta"><time class="unixtime" pubdate>{{repo.modify_time|date:"U"}}</time>更新过</span>
+              </div>
+              <p class="desc">{{repo.desc}}</p>
             </li>
           {% endfor %}
         </ul>
         <a href="/{{gsuser.username}}/repo/" class="more">more</a>
       </section>
 
-      <section class="item tab-pane" id="watched-repos">
-        <ul class="list">
+      <section class="item tab-pane" id="watchedRepos">
+        <ul class="repo-list">
           {% for watch_repo in watch_repos %}
             <li>
-              <h3 class="heading"><a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a><span class="modified"><span class="unixtime">{{watch_repo.modify_time}}</span>更新过</span></h3>
-              <p>{{watch_repo.desc}}</p>
+              <div class="title">
+                <h3 class="heading"><a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a></h3>
+                <span class="meta"><time class="unixtime" pubdate>{{watch_repo.modify_time}}</time>更新过</span>
+              </div>
+              <p class="desc">{{watch_repo.desc}}</p>
             </li>
           {% endfor %}
         </ul>
         <a href="/{{gsuser.username}}/watch/repo/" class="more">more</a>
       </section>
+
+      <section class="item tab-pane" id="followed">
+        {% if user.username != gsuser.username %}
+          <p class="alert alert-info">这家伙是典型的装逼汉，一个人也不关注。<a href="#">骂他一句吧</a></p>
+        {% else %}
+          <p class="alert alert-info">切，都什么人，我才JB懒得关注他们呢。</p>
+        {% endif %}
+      </section>
+
+      <section class="item tab-pane" id="follower">
+        {% if user.username != gsuser.username %}
+          <p class="alert alert-info">哎呀，这家伙真可怜还没有粉丝，<a href="#">成为他的第一个粉丝</a>，安慰他一下。</p>
+        {% else %}
+        <p class="alert alert-info">居然没有人粉我? 难道不知道我是Github上的{{user.username}}吗？<a href="#">导入我在Github上的项目</a></p>
+        {% endif %}
+      </section>
+
     </div>
 
+  </div>
 
-</div>
 {% endblock %}
 {% block subjs %}
 <script src="/static/js/min/highcharts.min.js?timestamp={{gitshell.timestamp}}"></script>
 <script src="/static/js/min/markdown.min.js?timestamp={{gitshell.timestamp}}"></script>
 <script>
-    $(function(){
-        $(".user-span").popover({ animation: false, placement: "bottom" });
-        $("#repoTab a:first").tab("show");
-    });
+  $(function(){
+      $(".user-span").popover({ animation: false, placement: "bottom" });
+      $("#repoTab a:first").tab("show");
+  });
 </script>
 <script>
 $(function(){
@@ -58,20 +85,20 @@ $(function(){
 {% if gsuserprofile.resume %}
     var resume_md_converter = function() {
         var converter = new Markdown.getSanitizingConverter();
-        var html = converter.makeHtml($('#id_user_resume_content').html());
-        $('#id_user_resume_content').html(html);
-        $('#id_user_resume_content').css("padding", "0 10px").show();
+        var html = converter.makeHtml($('#userResumeContent').html());
+        $('#userResumeContent').html(html);
+        $('#userResumeContent').css("padding", "0 10px").show();
     };
     resume_md_converter();
 {% endif %}
-    $('#id_content').attr('placeholder', '跟他打个招呼吧');
-    $('#id_content').click(function() {
-            $('#id_recommend_submit').show();
+    $('#idContent').attr('placeholder', '跟他打个招呼吧');
+    $('#idContent').click(function() {
+            $('#recommendSubmit').show();
     });
-    $('#id_content').blur(function() {
+    $('#idContent').blur(function() {
             setTimeout(
                 function(event) {
-                    $('#id_recommend_submit').hide();
+                    $('#recommendSubmit').hide();
                 }
             , 200)
     });
@@ -141,9 +168,9 @@ $(function(){
                         html.push('<li><span>' + action + ' #' + ' on <a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></span><time class="date" pubdate="pubdate">' + moment(new Date(issue.create_time*1000)).fromNow() + '</time></li>')
                     }
                 }
-                $('#id_lastest_active').html(html.join(''));
+                $('#lastestActive').html(html.join(''));
                 if(feeds.length == 0) {
-                    $('#id_lastest_active').html('<p>还没有活跃信息</p>');
+                    $('#lastestActive').html('<p>还没有活跃信息</p>');
                 }
             }
         });

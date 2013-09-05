@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
+{% block body_class_name %}user{% endblock %}
 {% block container_class_name %}dashboard{% endblock %}
+
 {% block container %}
 
 <div class="subhead">
   <div class="container">
-    <h2 class="heading">{{user_name}}的仓库列表</h2>
-    <a href="/{{user.username}}/repo/create/" class="btn btn-success btn-small"><strong>+</strong>创建仓库</a>
+    <h2 class="heading">我的仓库<span class="count">({{userprofile.get_total_repo}})</span></h2>
   </div>
 </div>
 
@@ -19,29 +20,74 @@
 
       {% for repo in repo_list %}
         <section class="repo c_repo">
-          <h3 class="heading"><a href="/{{user_name}}/{{repo.name}}/">{{repo.name}}</a></h3>
-          <div class="actions btn-group">
-            <a href="/{{user_name}}/{{repo.name}}/commits/" rel="tooltip" data-original-title="commit 次数" class="first btn btn-mini"><i class="icon-time"></i>{{repo.commit}}</a>
-            <a href="/{{user_name}}/{{repo.name}}/clone_watch/" rel="tooltip" data-original-title="watch 次数" class="middle btn btn-mini"><i class="icon-eye-open"></i>{{repo.watch}}</a>
-            <a href="/{{user_name}}/{{repo.name}}/clone_watch/" rel="tooltip" data-original-title="fork 次数" class="last btn btn-mini"><i class="icon-code-fork"></i>{{repo.fork}}</a>
+
+          <div class="summary">
+            <div class="heading">
+              <h3><a href="/{{user_name}}/{{repo.name}}/">{{repo.name}}</a></h3>
+              <p class="origin">fork自<a href="#">yuwen</a><span class="divider">/</span><a href="#">gitshell</a></p>
+            </div>
+
+            <div class="detail">
+              <p class="desc">{{repo.desc}}</p>
+            </div>
           </div>
-          <div class="detail">
-            <p class="meta">创建于{{repo.create_time|date:"y/m/d"}}，最近更新{{repo.modify_time|date:"y/m/d H:i"}}</p> 
-            <p class="description">{{repo.desc}}</p>
-            <ul id="i_{{repo.name}}" class="list"></ul>
-          </div>
+
+          <ul class="meta">
+            <li><a href="#"><span class="count">{{repo.commit}}</span><span class="meta-type">提交</span></a></li>
+            <li><a href="#"><span class="count">{{repo.fork}}</span><span class="meta-type">派生</span></a></li>
+            <li><a href="#"><span class="count">{{repo.watch}}</span><span class="meta-type">关注</span></a></li>
+          </ul>
+
         </section>
       {% endfor %}
+
+      <ul class="pagination">
+        <li><a href="#">首页</a></li>
+        <li><a href="#">上一页</a></li>
+        <li class="active"><span>第1页</span></li>
+        <li><a href="#">下一页</a></li>
+        <li><a href="#">尾页</a></li>
+      </ul>
 
     </div>
 
     <aside class="sidebar">
-      <h2>仓库列表</h2>
-      <ul class="nav nav-list">
-        {% for repo in repo_list %}
-          <li><a href="/{{user_name}}/{{repo.name}}/">{{repo.name}}</a></li>
-        {% endfor %}
-      </ul>
+
+      <div class="create section">
+        <div class="inner">
+          <a href="/{{user.username}}/repo/create/" class="btn">新建仓库</a>
+          <p>还可以创建<span>98</span>个仓库</p>
+        </div>
+      </div>
+
+      {% comment %}
+        <section class="capacities section">
+          <div class="inner">
+          <div class="item">
+              <div class="dt">仓库数<span class="used">{{userprofile.get_total_repo}}</span><span class="divider">/</span><span class="capacity">100</span></div>
+              <div class="progress">
+                <div class="bar" style="width: {{userprofile.get_used_repo_percent}}%;"></div>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="dt">仓库配额<span class="used">{{userprofile.get_readable_used_quote}}</span><span class="divider">/</span><span class="capacity">{{userprofile.get_readable_quote}}</span></div>
+              <div class="progress progress-danger">
+                <div class="bar" style="width: {{userprofile.get_used_quote_percent}}%;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      {% endcomment %}
+
+      <section class="activity section">
+        <h2 class="heading">最近活动的仓库</h2>
+        <ul class="nav nav-list">
+          {% for repo in repo_list|slice:':6' %}
+          <li><i class="icon-lock"></i><a href="/{{user_name}}/{{repo.name}}/"><span class="user">{{user_name}}</span><span class="divider">/</span><span class="repo-name">{{repo.name}}</span></a></li>
+          {% endfor %}
+        </ul>
+      </section>
     </aside>
 
   </div>
@@ -87,21 +133,23 @@
                                 }
                                 if(feed.feed_type == 0) {
                                     commit = feed.relative_obj;
-                                    html.push('<li><code><a href="/{{user_name}}/' + commit.repo_name + '/">' + commit.commit_hash + '</a></code> ' + commit.subject + ' <span class="date">' + commit.author + ' ' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></li>');
+                                    html.push('<li><img src="https://gravatar.com/avatar/{{user_name}}?s=14" alt="{{user_name}}"><a href="/{{user_name}}/' + commit.repo_name + '/" class="hash">' + commit.commit_hash + '</a>' + commit.subject + ' <span class="date">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</span></li>');
+                                /*
                                 } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
                                     issue = feed.relative_obj;
-                                    action = 'create issue';
+                                    action = '创建了新的issue';
                                     detail = '';
                                     if(feed.feed_type == 300) {
-                                        action = 'create issue';
+                                        action = '创建了新的issue';
                                     } else if(feed.feed_type == 301) {
-                                        action = 'update issue';
+                                        action = '更新了issue';
                                     } else if(feed.feed_type == 302) {
-                                        action = 'change issue';
+                                        action = '更改了issue';
                                         detail = feed.first_refname;
                                     }
-                                    html.push('<li>' + action + ' #' + issue.id + ' on <strong><a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></strong> ' + detail + '<div><a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a> <span class="muted">' + moment(new Date(issue.create_time*1000)).fromNow() + '</span></div>')
-                                    html.push('</li>');
+                                    html.push('<li>' + action + ' #' + issue.id + '在仓库<strong><a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></strong> ' + detail + '<div><a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/">#' + issue.id + ' ' + issue.subject + '</a> <span class="muted">' + moment(new Date(issue.create_time*1000)).fromNow() + '</span></div>')
+                                  */
+                                  html.push('</li>');
                                 }
                             }
                         }
@@ -112,6 +160,16 @@
         };
         do_repo_feeds();
         $('.c_repo').tooltip({ selector: "a[rel=tooltip]" });
+
+        /*
+        $('.repo').hover(
+          function(){
+            $(this).find('.meta').show();
+          },function(){
+            $(this).find('.meta').hide();
+          }
+        );
+        */
     });
     </script>
 {% endblock %}

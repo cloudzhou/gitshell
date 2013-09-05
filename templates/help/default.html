@@ -3,35 +3,49 @@
 {% block container_class_name %} helps{% endblock %}
 
 {% block container %}
-    <section class="colgroup">
-        <nav class="sidebar">
-            <dl class="nav nav-list">
-                <dt class="leader"><i class="icon-caret-down"></i>关于 Gitshell</dt>
-                <dd>
-                    <a href="#about"><span>关于我们</span></a>
-                    <a href="#mission"><span>愿景</span></a>
-                    <a href="#faq"><span>FAQ</span></a>
-                    <a href="#service"><span>服务条款</span></a>
-                    <a href="#contact"><span>联系方式</span></a>
-                </dd>
-                <dt class="leader"><i class="icon-caret-down"></i>快速入门</dt>
-                <dd>
-                    <a href="#join_login"><span>注册·登录</span></a>
-                    <a href="#sshkey"><span>管理ssh key</span></a>
-                    <a href="#repo"><span>管理仓库</span></a>
-                    <a href="#code"><span>clone·push·pull代码</span></a>
-                    <a href="#group"><span>协同开发</span></a>
-                    <a href="#error"><span>出错代码</span></a>
-                </dd>
-                <dt class="leader"><i class="icon-caret-down"></i>git 学习</dt>
-                <dd>
-                    <a href="#learn"><span>从实践中学习</span></a>
-                    <a href="#resource"><span>git外部学习资源</span></a>
-                </dd>
-            </dl>
-        </nav>
 
-        <section id="id_help" class="main bubble bubble-flat">
+<div class="subhead">
+  <div class="container">
+    <h2 class="heading">帮助<span class="last-update">最后更新2013年08月2号</span></h2>
+  </div>
+</div>
+
+<div class="content">
+  <div class="container">
+
+  <article class="article">
+
+  <aside class="sidebar">
+    <div class="inner">
+      <dl class="nav nav-list">
+          <dt class="leader">关于 Gitshell</dt>
+          <dd>
+              <a href="#about"><span>关于我们</span></a>
+              <a href="#mission"><span>愿景</span></a>
+              <a href="#faq"><span>FAQ</span></a>
+              <a href="#service"><span>服务条款</span></a>
+              <a href="#contact"><span>联系方式</span></a>
+          </dd>
+          <dt class="leader">快速入门</dt>
+          <dd>
+              <a href="#join_login"><span>注册·登录</span></a>
+              <a href="#sshkey"><span>管理ssh key</span></a>
+              <a href="#repo"><span>管理仓库</span></a>
+              <a href="#code"><span>clone·push·pull代码</span></a>
+              <a href="#group"><span>协同开发</span></a>
+              <a href="#error"><span>出错代码</span></a>
+          </dd>
+          <dt class="leader">git 学习</dt>
+          <dd>
+              <a href="#learn"><span>从实践中学习</span></a>
+              <a href="#resource"><span>git外部学习资源</span></a>
+          </dd>
+      </dl>
+    </div>
+  </aside>
+
+        <div class="primary">
+          <div class="inner">
                 <section>
                     <h2 id="about" class="heading">关于</h2>
                     <p>Gitshell.com 是一个技术至上的社区，域名注册于2012/03/09，第一行代码写于2012/03/17 22:17:30，此后每天不断的添加代码。</p>
@@ -39,7 +53,7 @@
                     <p>对于程序员来说，数据库是心脏的话，代码就是大脑。我们希望可以为程序员们提供一个专业、安全、稳定的代码托管平台。</p>
                     <p>Gitshell，专心只做一件事。</p>
                     <p>我们专注于Git代码托管。在越来越多庞大体系的社会里，越来越多的巨无霸公司，他们什么都做，而且什么其实都做得不差，但是我们并不喜欢这样，我们愿意静静地待在角落，我们只专注于做一件事情，代码托管本身，我们希望在未来的中国社会里，越来越多专业的服务能够立足，我们不希望自己的一切都是来自BAT，我们愿意让你的生活多一点色彩，希望我们可以在互联网蛮荒中涂个鸦。</p>
-                    <p>为了避免各种不可用的说明，先说明一下，Gitshell 只支持 Google Chrome, Mozilla Firefox, Apple Safari,Opera等现代浏览器。</p>
+                    <p>为了避免各种不可用的说明，先说明一下，<mark>Gitshell 只支持 Google Chrome, Mozilla Firefox, Apple Safari,Opera等现代浏览器</mark>。</p>
                 </section>
                 <section>
                     <h2 id="mission">愿景</h2>
@@ -232,8 +246,17 @@ $ git pull</code>
       （为什么放在最后，因为绝大多数人不会认真看到这里的:)）</dd>
                       </dl>
                   </section>
-      </article>
 
+              </div>
+
+            </div>
+
+          </article>
+
+
+
+        </div>
+    </div>
 {% endblock %}
 
 {% block js %}

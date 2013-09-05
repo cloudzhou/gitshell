@@ -90,7 +90,7 @@
                     html = []
                     for(x in ordered_date) {
                         feed_date = ordered_date[x];
-                        html.push('<section class="feed-group"><div class="feed-date"><time class="date" pubdate><i class="icon-time"></i>' + feed_date + '</time></div><section class="feed-item"><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=50" alt="{{userprofile.imgurl}}"></figure><div class="info">');
+                        html.push('<section class="feed-group"><div class="feed-date"><time class="date" pubdate><i class="icon-time"></i>' + feed_date + '</time></div><section class="feed-item"><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=80" alt="{{userprofile.imgurl}}"></figure><div class="info">');
                         for(y in ordered_date_reponame[ordered_date[x]]) {
                             feed_reponame = ordered_date_reponame[ordered_date[x]][y];
                             if(feed_reponame.indexOf('#') != 0) {

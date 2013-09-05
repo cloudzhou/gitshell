@@ -1,7 +1,6 @@
 <div class="branches dropdown">
     <a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle">
       <span class="branch">
-        <i class="icon-code-fork"></i>
         <span class="branch">{%if is_branch%}Branch:{%elif is_tag%}Tag:{%elif is_commit%}Commit:{%endif%}</span>
         <span class="branch-name">{{ refs }}</span>
       </span>

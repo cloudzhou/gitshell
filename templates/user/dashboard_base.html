@@ -4,12 +4,12 @@
 
 {% block container %}
 
-  <header class="subhead">
+  <div class="subhead">
     <div class="container">
       <ul class="nav nav-tabs">
-        {% if current == 'feed' or current == 'timeline' %}
+        {% if current == 'timeline' or current == 'feed' %}
+          <li{% if current == 'timeline' %} class="active"{% endif %}><a href="/dashboard/timeline/">我</a></li>
           <li{% if current == 'feed' %} class="active"{% endif %}><a href="/dashboard/feed/">好友</a></li>
-          <li{% if current == 'timeline' %} class="active"{% endif %}><a href="/dashboard/timeline/">个人</a></li>
         {% else %}
           <li{% if current == 'notif' %} class="active"{% endif %}><a href="/dashboard/notif/">最新事件</a></li>
           <li{% if current == 'todo' %} class="active"{% endif %}><a href="/dashboard/todo/">Todo<span class="remove"><i class="icon-remove"></i></span></a></li>
@@ -27,7 +27,7 @@
           <li{% if current == 'issues' %} class="active"{% endif %}><a href="/dashboard/issues/">Issues</a></li>
         {% endif %}
     </div>
-  </header>
+  </div>
 
   <div class="content notif">
     <div class="container">

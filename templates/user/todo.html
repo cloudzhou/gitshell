@@ -2,12 +2,12 @@
 
 {% block subcontainer %}
 
-  <div class="bubble todos" id="todo_container">
+  <div class="todos bubble" id="todoContainer">
 
-    <div id="id_todoList" class="todo-list to-do">
+    <div id="todoList" class="todo-list to-do">
 
     <div class="todo-controls">
-      <div id="id_todoAdd_div" class="todo-category">
+      <div id="todoAddDiv" class="todo-category">
         <div class="dropdown">
           <a href="#" data-toggle="dropdown" class="dropdown-toggle"><i class="icon-inbox"></i>类别:{{scene.name}}<i class="icon-caret-down"></i></a>
           <div class="dropdown-menu">
@@ -15,21 +15,21 @@
               {%for scene in scene_list%}
               <li><a href="/dashboard/todo/{{scene.id}}/"><i class="icon-inbox"></i>{{scene.name}}</a></li>
               {%endfor%}
-              <li id="id_addScene" class="create"><a href="javascript: void(0)"><i class="icon-pencil"></i>添加新类别</a></li>
+              <li id="addScene" class="create"><a href="javascript: void(0)"><i class="icon-pencil"></i>添加新类别</a></li>
               <li>
-                <div id="id_sceneAdd_div" class="form-inline hide">
-                  <input id="id_sceneAdd" type="text" placeholder="添加新的类别">
-                  <a href="#" id="id_sceneAdd_button" class="" type="submit">创建新类别</a>
-                  <a href="#" id="id_sceneCancel_button" class="" type="submit">取消</a>
+                <div id="sceneAddDiv" class="form-inline hide">
+                  <input id="sceneAdd" type="text" placeholder="添加新的类别">
+                  <a href="#" id="sceneAddButton" class="" type="submit">创建新类别</a>
+                  <a href="#" id="sceneCancelButton" class="" type="submit">取消</a>
                 </div>
               </li>
             </ul>
           </div>
         </div>
-        <input id="id_todoAdd" type="text" placeholder="添加新的todo，Enter添加">
-        {#<button id="id_todoAdd_button" class="" type="submit">添加</button>#}
+        <input id="todoAdd" type="text" placeholder="添加新的todo，Enter添加">
+        {#<button id="todoAddButton" class="" type="submit">添加</button>#}
         {%if not todoing_list and scene.name != ''%}
-          <button id="id_sceneRemove_button" class="" type="submit">删除类别</button>
+          <button id="sceneRemoveButton" class="" type="submit">删除类别</button>
         {%endif%}
       </div>
     </div>
@@ -39,30 +39,30 @@
 
 
       {%for todoing in todoing_list|slice:":20"%}
-      <div id="id_todo_{{todoing.id}}" class="todo-item cl_todo cleafix" data="{{todoing.id}}">
+      <div id="todo-{{todoing.id}}" class="todo-item todo clearfix" data="{{todoing.id}}">
           <div class="drag-todo">
-            <input class="cl_todo_check" type="checkbox" value="" class="pull-left">
+            <input class="todoCheck" type="checkbox" value="" class="pull-left">
           </div>
-          <div class="todo"><p class="cl_todo_text">{{todoing.content}}</p></div>
-          <a class="remove_todo cl_control todo-control hide fade" title="删除" href="javascript: void(0)"><i class="icon-remove"></i></a>
+          <div class="todo"><p class="todoText">{{todoing.content}}</p></div>
+          <a class="removeTodo control todo-control hide fade" title="删除" href="javascript: void(0)"><i class="icon-remove"></i></a>
           {% comment %}
-            <div class="todo_control btn-group pull-right hide fade">
-              <a class="go_top cl_control first btn btn-mini" title="置顶" href="javascript: void(0)"><i class="icon-long-arrow-up"></i></a>
-              <a class="go_down cl_control middle btn btn-mini" title="置底" href="javascript: void(0)"><i class="icon-long-arrow-down"></i></a>
-              <a class="remove_todo cl_control last btn btn-mini" title="删除" href="javascript: void(0)"><i class="icon-remove"></i></a>
+            <div class="todoControl btn-group pull-right hide fade">
+              <a class="goTop control first btn btn-mini" title="置顶" href="javascript: void(0)"><i class="icon-long-arrow-up"></i></a>
+              <a class="goDown control middle btn btn-mini" title="置底" href="javascript: void(0)"><i class="icon-long-arrow-down"></i></a>
+              <a class="removeTodo control last btn btn-mini" title="删除" href="javascript: void(0)"><i class="icon-remove"></i></a>
             </div>
           {% endcomment %}
       </div>
       {%endfor%}
     </div>
 
-    <div id="id_todoneList" class="todo-list done">
+    <div id="todoneList" class="todo-list done">
 
-      <div id="id_todone_div" class="inner">
+      <div id="todoneDiv" class="inner">
       {%for todone in todone_list|slice:":10" %}
-        <div id="id_todone_{{todone.id}}" class="cl_todone todo-item" data="{{todone.id}}">
-          <div class="drag-todo"><input class="cl_todone_check" type="checkbox" value="" checked="checked"></div>
-          <div class="todo"><p class="cl_todo_text"> {{todone.content}}</p></div>
+        <div id="todone-{{todone.id}}" class="todone todo-item" data="{{todone.id}}">
+          <div class="drag-todo"><input class="todoneCheck" type="checkbox" value="" checked="checked"></div>
+          <div class="todo"><p class="todoText"> {{todone.content}}</p></div>
         </div>
       {%endfor%}
       <div class="scrollbar">
@@ -90,57 +90,57 @@ $(function(){
         }
     });
 
-    $('#id_todoAdd_button').click(function(event) {
-        var todo_text = $('#id_todoAdd').val()
-        add_todo(todo_text)
+    $('#todoAddButton').click(function(event) {
+        var todoText = $('#todoAdd').val()
+        add_todo(todoText)
     });
-    $('#id_todoAdd').keydown(function (e) {
+    $('#todoAdd').keydown(function (e) {
         if (e.keyCode == 10 || e.keyCode == 13) {
-            var todo_text = $(this).val()
-            add_todo(todo_text)
+            var todoText = $(this).val()
+            add_todo(todoText)
         }
     });
-    function init_todo(todo_id, todo_text) {
-        var todo = '<div id="id_todo_' + todo_id + '" class="todo-item cl_todo cleafix ui-draggable ui-droppable" data="' + todo_id + '"> ' +
+    function init_todo(todoId, todoText) {
+        var todo = '<div id="todo-' + todoId + '" class="todo-item todo cleafix ui-draggable ui-droppable" data="' + todoId + '"> ' +
                     '<div class="drag-todo">' +
-                    '<input class="cl_todo_check" type="checkbox" value=""></div>' +
-                    '<div class="todo"><p class="cl_todo_text">' + todo_text + '</p></div> ' +
-                    '<a class="remove_todo cl_control todo-control hide fade" title="删除" href="javascript: void(0)"><i class="icon-remove"></i></a>' +
+                    '<input class="todoCheck" type="checkbox" value=""></div>' +
+                    '<div class="todo"><p class="todoText">' + todoText + '</p></div> ' +
+                    '<a class="removeTodo control todo-control hide fade" title="删除" href="javascript: void(0)"><i class="icon-remove"></i></a>' +
                     '</div></div>';
         return todo;
     }
-    function init_todone(todo_id, todo_text) {
-        var todone = '<div id="id_todone_' + todo_id + '" class="cl_todone todo-item" data="' + todo_id + '">' +
-                     '<div class="drag-todo"><input class="cl_todone_check" type="checkbox" value="' + todo_id + '" checked></div>' +
-                     '<div class="todo"><span class="cl_todo_text"> ' + todo_text + '</span></div></div>';
+    function init_todone(todoId, todoText) {
+        var todone = '<div id="todone-' + todoId + '" class="todone todo-item" data="' + todoId + '">' +
+                     '<div class="drag-todo"><input class="todoneCheck" type="checkbox" value="' + todoId + '" checked></div>' +
+                     '<div class="todo"><span class="todoText"> ' + todoText + '</span></div></div>';
         return todone;
     }
-    function add_todo(todo_text) {
-        if(todo_text == '') {
+    function add_todo(todoText) {
+        if(todoText == '') {
             return
         }
-        $.post('/dashboard/todo/'+{{scene.id}}+'/add_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_text': todo_text}, function(json){
-            var todo_id = json.todo_id;
-            var todo = init_todo(todo_id, todo_text);
-            $(todo).insertAfter('#id_todoList > .heading');
-            drag_drop_init('#id_todo_'+todo_id);
-            $('#id_todoAdd').val('');
+        $.post('/dashboard/todo/'+{{scene.id}}+'/add_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todoText': todoText}, function(json){
+            var todoId = json.todoId;
+            var todo = init_todo(todoId, todoText);
+            $(todo).insertAfter('#todoList > .heading');
+            drag_drop_init('#todo-'+todoId);
+            $('#todoAdd').val('');
             $('a').tooltip();
         });
     }
-    $('#id_addScene a').click(function(event) {
+    $('#addScene a').click(function(event) {
         $('this').hide();
-        $('#id_sceneAdd_div').show();
+        $('#sceneAddDiv').show();
     });
-    $('#id_sceneCancel_button').click(function(event) {
-        $('#id_sceneAdd_div').hide();
-        $('#id_addScene').show();
+    $('#sceneCancelButton').click(function(event) {
+        $('#sceneAddDiv').hide();
+        $('#addScene').show();
     });
-    $('#id_sceneAdd_button').click(function(event) {
-        var scene = $('#id_sceneAdd').val()
+    $('#sceneAddButton').click(function(event) {
+        var scene = $('#sceneAdd').val()
         add_scene(scene)
     });
-    $('#id_sceneAdd').keydown(function (e) {
+    $('#sceneAdd').keydown(function (e) {
         if (e.keyCode == 10 || e.keyCode == 13) {
             var scene = $(this).val()
             add_scene(scene)
@@ -152,7 +152,7 @@ $(function(){
             window.location = '/dashboard/todo/'+ scene_id +'/';
         });
     }
-    $('.cl_todo').tooltip({
+    $('.todo').tooltip({
         selector: "a[rel=tooltip]"
     })
     function drag_drop_init(selector) {
@@ -163,107 +163,107 @@ $(function(){
         });
         $(selector).droppable({
             live: true,
-            accept: '.cl_todo',
-            hoverClass: 'cl_todo_move_hovered',
+            accept: '.todo',
+            hoverClass: 'todoMoveHovered',
             drop: handleTodoMoveDrop
         });
     }
-    drag_drop_init('.cl_todo');
-    $('#id_todone_div').droppable({
+    drag_drop_init('.todo');
+    $('#todoneDiv').droppable({
         live: true,
-        accept: '.cl_todo',
-        hoverClass: 'cl_todo_done_hovered',
+        accept: '.todo',
+        hoverClass: 'todoDoneHovered',
         drop: handleTodoDoneDrop
     });
     function handleTodoMoveDrop(event, ui){
         var from_todo_id = ui.draggable.attr('data');
         var to_todo_id = $(this).attr('data');
-        var from_todo = $('#id_todo_'+from_todo_id);
+        var from_todo = $('#todo-'+from_todo_id);
         from_todo.remove();
         var i = 0;
         var index = 0;
-        $('#id_todoList .cl_todo').each(function(){
+        $('#todoList .todo').each(function(){
             if($(this).attr('data') == to_todo_id) {
                 index = i;
             }
             i++;
         });
-        var to_todo = $('#id_todo_'+to_todo_id);
+        var to_todo = $('#todo-'+to_todo_id);
         from_todo.insertBefore(to_todo);
-        drag_drop_init('#id_todo_'+from_todo_id)
+        drag_drop_init('#todo-'+from_todo_id)
         $('a').tooltip();
         update_scene_meta()
     }
-    function done_todo(todo_id){
-        var todo_text = $('#id_todo_'+todo_id).find('.cl_todo_text').text();
-        $.post('/dashboard/todo/'+ {{scene.id}} +'/done_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todo_id}, function(json){
-            var result_todo_id = json.todo_id;
+    function done_todo(todoId){
+        var todoText = $('#todo-'+todoId).find('.todoText').text();
+        $.post('/dashboard/todo/'+ {{scene.id}} +'/done_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todoId': todoId}, function(json){
+            var result_todo_id = json.todoId;
             if(result_todo_id != 0) {
-                $('#id_todo_'+todo_id).remove();
-                var todone = init_todone(todo_id, todo_text);
-                $('#id_todone_div').prepend(todone);
+                $('#todo-'+todoId).remove();
+                var todone = init_todone(todoId, todoText);
+                $('#todoneDiv').prepend(todone);
             }
         });
     }
     function handleTodoDoneDrop(event, ui){
-        var todo_id = ui.draggable.attr('data');
-        done_todo(todo_id);
+        var todoId = ui.draggable.attr('data');
+        done_todo(todoId);
     }
-    $('.cl_todo_check').on('click', function (e) {
-        var todo_id = $(this).parents('.cl_todo').attr('data');
-        done_todo(todo_id);
+    $('.todoCheck').on('click', function (e) {
+        var todoId = $(this).parents('.todo').attr('data');
+        done_todo(todoId);
     });
-    $('.cl_todone_check').on('click', function (e) {
-        var todone_id = $(this).parents('.cl_todone').attr('data');
-        var todone_text = $('#id_todone_'+todone_id).find('.cl_todo_text').text();
-        $.post('/dashboard/todo/'+ {{scene.id}} +'/doing_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todone_id}, function(json){
-            var result_todo_id = json.todo_id;
+    $('.todoneCheck').on('click', function (e) {
+        var todone_id = $(this).parents('.todone').attr('data');
+        var todone_text = $('#todone-'+todone_id).find('.todoText').text();
+        $.post('/dashboard/todo/'+ {{scene.id}} +'/doing_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todoId': todone_id}, function(json){
+            var result_todo_id = json.todoId;
             if(result_todo_id != 0) {
-                $('#id_todone_'+todone_id).remove();
+                $('#todone-'+todone_id).remove();
                 var todo = init_todo(todone_id, todone_text);
-                $('#id_todoList').prepend(todo);
-                drag_drop_init('#id_todo_'+todone_id);
+                $('#todoList').prepend(todo);
+                drag_drop_init('#todo-'+todone_id);
                 $('a').tooltip();
             }
         });
     });
     /*
-    $('.go_top').on('click', function (e) {
-        var todo_id = $(this).parents('.cl_todo').attr('data');
-        var todo_top = $('#id_todo_'+todo_id);
-        todo_top.remove();
-        $('#id_todoList').prepend(todo_top);
-        drag_drop_init('#id_todo_'+todo_id);
+    $('.goTop').on('click', function (e) {
+        var todoId = $(this).parents('.todo').attr('data');
+        var todoTop = $('#todo-'+todoId);
+        todoTop.remove();
+        $('#todoList').prepend(todoTop);
+        drag_drop_init('#todo-'+todoId);
         $('a').tooltip();
         update_scene_meta()
     });
-    $('.go_down').on('click', function (e) {
-        var todo_id = $(this).parents('.cl_todo').attr('data');
-        var todo_down = $('#id_todo_'+todo_id);
-        todo_down.remove();
-        $('#id_todoList').append(todo_down);
-        drag_drop_init('#id_todo_'+todo_id);
+    $('.goDown').on('click', function (e) {
+        var todoId = $(this).parents('.todo').attr('data');
+        var todoDown = $('#todo-'+todoId);
+        todoDown.remove();
+        $('#todoList').append(todoDown);
+        drag_drop_init('#todo-'+todoId);
         $('a').tooltip();
         update_scene_meta()
     });
     */
-    $('.remove_todo').on('click', function (e) {
-        var todo_id = $(this).parents('.cl_todo').attr('data');
-        $.post('/dashboard/todo/'+ {{scene.id}} +'/remove_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_id': todo_id}, function(json){
-            var result_todo_id = json.todo_id;
+    $('.removeTodo').on('click', function (e) {
+        var todoId = $(this).parents('.todo').attr('data');
+        $.post('/dashboard/todo/'+ {{scene.id}} +'/remove_todo/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todoId': todoId}, function(json){
+            var result_todo_id = json.todoId;
             if(result_todo_id != 0) {
-                $('#id_todo_'+todo_id).remove()
+                $('#todo-'+todoId).remove()
             }
         });
     });
-    $('#id_sceneRemove_button').on('click', function (e) {
+    $('#sceneRemoveButton').on('click', function (e) {
         if($(this).text() == '删除场景') {
             $(this).text('确定删除？');
             return;
         }
         if($(this).text() == '确定删除？') {
-            $.post('/dashboard/todo/'+ {{scene.id}} +'/remove/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'scene_id': '{{scene.id}}'}, function(json){
-                var result_scene_id = json.scene_id;
+            $.post('/dashboard/todo/'+ {{scene.id}} +'/remove/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'sceneId': '{{scene.id}}'}, function(json){
+                var result_scene_id = json.sceneId;
                 if(result_scene_id != 0) {
                     window.location = '/dashboard/todo/';
                 }
@@ -272,12 +272,12 @@ $(function(){
     });
     function update_scene_meta() {
         var todo_order_ids = []
-        $('.cl_todo').each(function() {
-            var todo_id = $(this).attr('data');
-            todo_order_ids.push(todo_id);
+        $('.todo').each(function() {
+            var todoId = $(this).attr('data');
+            todo_order_ids.push(todoId);
         });
         if(todo_order_ids.length > 0) {
-            $.post('/dashboard/todo/'+ {{scene.id}} +'/update_scene_meta/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todo_ids': todo_order_ids.join(',')}, function(json){
+            $.post('/dashboard/todo/'+ {{scene.id}} +'/update_scene_meta/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'todoIds': todo_order_ids.join(',')}, function(json){
                 var result = json.result;
                 if(result != 0) {
                     window.location = '/dashboard/todo/{{scene.id}}/';

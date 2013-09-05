@@ -4,7 +4,7 @@
 {% endblock %}
 
 {% block repo_description %}
-	<div class="description bubble"><p>{{repo.desc|truncatechars:80}} <a href="#README.md">Read More</a></p></div>
+<div class="description bubble"><p>{{repo.desc|truncatechars:80}} <a href="#README.md" class="readmore"><i class="icon-double-angle-right"></i>Read More</a></p></div>
 {% endblock %}
 
 {% block subcontainer %}
@@ -42,7 +42,7 @@
 				<div class="theme-selector">
 					<a href="#" id="switcher">Color Scheme</a>
 					<ul class="theme-list clearfix" id="themes">
-						<li class="active"><a href="#">Default</a></li>
+            <li class="active"><a href="#"><i class="icon-ok"></i>Default</a></li>
 						<li><a href="#">Github</a></li>
 						<li><a href="#">Sunburst</a></li>
 						<li><a href="#">Solarized</a></li>
@@ -52,7 +52,6 @@
 						<li><a href="#">Google Code</a></li>
 						<li><a href="#">xCode</a></li>
 						<li><a href="#">Tomorrow</a></li>
-						<li><a href="#">Zenburt</a></li>
 					</ul>
 				</div>
 				<table class="table">
@@ -118,8 +117,8 @@
 
 			$("#file-browser > .nav").treeview({
 				collapsed: true,
-				animated: "fast",
-				unique: true
+				//unique: true,
+				animated: "fast"
 			});
 
 			$("#file-browser").bind("resize",

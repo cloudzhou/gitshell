@@ -398,16 +398,16 @@ def join(request, step):
                 cache.set(random_hash + '_username', username)
                 cache.set(random_hash + '_password', password)
                 active_url = 'https://gitshell.com/join/%s/' % random_hash
-                message = u'尊敬的gitshell用户：\n感谢您选择了gitshell，请点击下面的地址激活您在gitshell的帐号：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
+                message = u'祝贺!\n欢迎来到Gitshell，记得激活您在gitshell的帐号：\n%s\n----------\n此邮件由Gitshell系统发出，无法接收回信，所以不要直接回复。 如有您有什么疑问，可以于 support@gitshell.com 联络。' % active_url
                 send_mail('[gitshell]注册邮件', message, 'noreply@gitshell.com', [email], fail_silently=False)
                 goto = ''
                 email_suffix = email.split('@')[-1]
                 if email_suffix in COMMON_EMAIL_DOMAIN:
                     goto = COMMON_EMAIL_DOMAIN[email_suffix]
                 return HttpResponseRedirect('/join/1/?goto=' + goto)
-            error = u'email: %s 或者 name: %s 已经注册，如果您是邮箱的主人，可以执行重置密码' % (email, username)
+            error = u'欢迎回来, email: %s 或者 name: %s 已经注册过了, 您只需要直接登陆就行。' % (email, username)
         else:
-            error = u'请检查邮箱，验证码是否正确，注意大小写和前后空格。'
+            error = u'啊? 邮箱或验证码有误输入。注意大小写和前后空格。'
     if len(step) > 1:
         email = cache.get(step + '_email')
         username = cache.get(step + '_username')
@@ -417,7 +417,7 @@ def join(request, step):
         if _create_user_and_authenticate(request, username, email, password):
             return HttpResponseRedirect('/join/3/')
         else:
-            error = u'请检查用户名，密码是否正确，注意大小写和前后空格。'
+            error = u'啊? 用户名或密码有误输入，注意大小写和前后空格。'
     response_dictionary = {'step': step, 'error': error, 'joinForm': joinForm}
     return render_to_response('user/join.html',
                           response_dictionary,
@@ -440,7 +440,7 @@ def resetpassword(request, step):
             if user is not None and user.is_active:
                 cache.set(random_hash, email)
                 active_url = 'https://gitshell.com/resetpassword/%s/' % random_hash
-                message = u'尊敬的gitshell用户：\n如果您没有重置密码的请求，请忽略此邮件。点击下面的地址重置您在gitshell的帐号密码：\n%s\n----------\n此邮件由gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
+                message = u'我们的Happy Gitshell成员：\n嘘...! 下面是您设置新密码的秘密地址：\n%s\n----------\n此邮件由gitshell系统发出，无法接收回信，所以不要直接回复。 如果您有什么疑问，可以于 support@gitshell.com 联络。' % active_url
                 send_mail('[gitshell]重置密码邮件', message, 'noreply@gitshell.com', [email], fail_silently=False)
                 return HttpResponseRedirect('/resetpassword/1/')
             error = u'邮箱 %s 还没有注册' % email

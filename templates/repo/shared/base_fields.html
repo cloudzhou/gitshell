@@ -1,0 +1,35 @@
+<div class="control-group">
+  <label for="id_name" class="control-label">仓库名称</label>
+  <div class="controls">{{ repoForm.name }}<span id="id_reponame_exist" class="alert hide">该仓库名已经存在或者不符合规范</span></div>
+</div>
+
+<div class="control-group">
+  <label for="id_desc" class="control-label">简介</label>
+  <div class="controls">{{ repoForm.desc }}</div>
+</div>
+
+<div class="control-group">
+  <label for="id_lang" class="control-label">语言</label>
+  <div class="controls">{{ repoForm.lang }}</div>
+</div>
+
+<div class="control-group hide"  id="id_other_lang_group">
+  <label for="id_other_lang" class="control-label">其他语言</label>
+  <div class="controls"><input type="text" maxlength="16" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder=""></div>
+</div>
+
+<div class="control-group">
+  <label for="id_auth_type" class="control-label">可见度</label>
+  <div class="controls">
+    {% for radio in repoForm.auth_type %}
+      {{ radio }}
+    {% endfor %}
+    <p class="text-warning"><b>公开:</b>包括源代码公开; <b>半公开:</b>除了源代码之外公开; <b>私有:</b>对外不公开</p>
+  </div>
+</div>
+
+<div class="control-group">
+  <div class="controls">
+    <button id="id_edit_submit" class="btn btn-large btn-success" type="submit">确定</button>
+  </div>
+</div>

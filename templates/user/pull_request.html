@@ -2,7 +2,7 @@
 
 {% block subcontainer %}
 
-	<div class="bubble pulls">
+	<div class="pulls bubble">
     <div class="pulls-head">
       <h2 class="heading">我创建的</h2>
       <p>等待合并的<a href="#" class="count">12</a>, 已经关闭的<a href="#" class="count">1</a>, 被拒绝的<a href="#" class="count">2</a></p>
@@ -15,7 +15,7 @@
               <div class="pull">
 
                 <figure class="avatar">
-                  <img src="https://gravatar.com/avatar/{{pullRequest.desc_repo.username}}?s=32" alt="{{pullRequest.pull_user.username}}">
+                  <img src="https://gravatar.com/avatar/{{pullRequest.desc_repo.username}}?s=38" alt="{{pullRequest.pull_user.username}}">
                 </figure>
 
                 <div class="info">
@@ -25,7 +25,7 @@
                     <span class="label label-mini {{pullRequest.status_label}}">{{pullRequest.status_view}}</span>
                   </h3>
 
-                  <div class="branches">
+                  <div class="branches hide">
 
                     <span class="puller">
                       我想把
@@ -38,7 +38,7 @@
 
                   </div>
 
-                  <p class="desc hide">{{pullRequest.short_desc}}</p>
+                  <p class="desc">{{pullRequest.short_desc}}</p>
 
                 </div>
 

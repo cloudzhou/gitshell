@@ -2,15 +2,15 @@ from django import forms
 from captcha.fields import CaptchaField
 
 class LoginForm(forms.Form):
-    email = forms.EmailField(max_length=64)
-    password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False))
+    email = forms.EmailField(max_length=64, widget=forms.TextInput(attrs={'id': 'email'}))
+    password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False, attrs={'id': 'password'}))
     #captcha = CaptchaField()
     rememberme = forms.BooleanField(required=False)
 
 class JoinForm(forms.Form):
-    email = forms.EmailField()
-    username = forms.CharField(max_length=24)
-    password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False))
+    email = forms.EmailField(widget=forms.TextInput(attrs={'id': 'email'}))
+    username = forms.CharField(max_length=24, widget=forms.TextInput(attrs={'id': 'username'}))
+    password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False, attrs={'id': 'password'}))
     #captcha = CaptchaField()
 
 class ResetpasswordForm0(forms.Form):

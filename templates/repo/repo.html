@@ -9,7 +9,7 @@
 {% block container_class_name %} repo{% endblock %}
 
 {% block container %}
-	<div class="repo-global-bar">
+	<div class="subhead repo-global-bar">
     <div class="container">
       <ul class="breadcrumb">
         <li class="user"><a href="/{{user_name}}/">{{user_name}}</a><span class="divider">/</span></li>
@@ -38,9 +38,15 @@
         </li>
       </ul>
       <ul class="repo-actions">
-          <li><a href="/{{user_name}}/{{repo_name}}/compare/" class="btn btn-mini btn-primary"><i class="icon-random"></i>Compare</a>
+          <li class="dropdown">
+            <a href="#" class="btn btn-mini btn-primary dropdown-toggle" data-toggle="dropdown"><i class="icon-terminal"></i>Clone</a>
+            <div class="dropdown-menu">
+              <p>git@gitshell.com:yuwen/gitshell.git</p>
+            </div>
+          </li>
+          <li><a href="/{{user_name}}/{{repo_name}}/compare/" class="btn btn-mini"><i class="icon-random"></i>Compare</a>
           <li><a href="/{{user_name}}/{{repo_name}}/pull/new/" class="btn btn-mini"><i class="icon-code-fork"></i>合并请求</a>
-          <li class="btn-group">
+          <li>
               {% if is_watched_repo %}
                   <a class="btn btn-mini unwatch" data-original-title="Unwatch" rel="tooltip" href="javascript: void(0)">Unwatch</a>
               {% else %}
@@ -66,7 +72,7 @@
 	</div>
 
 	<div class="content">
-    <div class="container">
+    <div class="container{% block repo_container_class_name %}{% endblock %}">
       {% comment %}
         <nav class="sidenav">
             <ul class="nav nav-list">

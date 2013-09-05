@@ -1,63 +1,54 @@
 {% extends "base.html" %}
 
 {% block body_class_name %}authorize{% endblock %}
+
 {% block container %}
 
-  <header class="subhead">
+  <div class="subhead">
     <div class="container">
-      <h1 class="heading">登陆</h1>
+      <h2 class="heading">登陆</h2>
     </div>
-  </header>
+  </div>
 
   <div class="content">
     <div class="container">
       <div class="auth-container">
-
-    <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn btn-success"><i class="icon-github"></i>使用 GitHub 账户登录</a>
-
-    <hr>
-    <form method="post" class="form">
-      <fieldset>
-        <legend>登陆</legend>
-        {% csrf_token %}
-        {{ loginForm.email }}
-        <input type="password" maxlength="64" name="unencrypt_password" id="id_unencrypt_password" placeholder="密码">
-        <span class="hide">{{ loginForm.password }}</span>
-        <button id="id_login_submit" class="btn btn-primary" type="submit">登录</button>
-        <label class="checkbox">{{ loginForm.rememberme }} 下次自动登录</label>
-      </fieldset>
-    </form>
-      <p><a href="/resetpassword/">找回密码</a></p>
-    {% if error %}
-      <div class="alert">
-        <a data-dismiss="alert" class="close">×</a>
-        <strong>出错了！</strong> {{ error }}
-      </div>
-    {% endif %}
-
-    </div>
-    </div>
-
-  </div>
+        <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn btn-success"><i class="icon-github"></i>使用 GitHub 账户登录</a>
+        <hr>
+        {% if error %}
+          <div class="alert alert-warning">
+            <a data-dismiss="alert" class="close"><i class="icon-remove"></i></a>
+            <p><strong>出错了！</strong> {{ error }}</p>
+          </div>
+        {% endif %}
+        <form method="post" class="form">
+          <fieldset>
+            <legend>登陆</legend>
+            {% csrf_token %}
+            {{ loginForm.email }}
+            <input type="password" maxlength="64" name="unencryptPassword" id="unencryptPassword" placeholder="密码">
+            <span class="hide">{{ loginForm.password }}</span>
+            <button id="loginSubmit" class="btn btn-primary" type="submit">登录</button>
+            <label class="checkbox">{{ loginForm.rememberme }} 下次自动登录</label>
+          </fieldset>
+        </form>
+          <p><a href="/resetpassword/">找回密码</a></p>
+      </div>{# auth-container #}
+    </div>{# container #}
+  </div>{# content #}
 
 {% endblock %}
 
 {% block js %}
 <script>
-/*global jQuery, window */
 $(function(){
-    var md5_user_passwd = function() {
-        $('#id_password').val(window.md5($('#id_unencrypt_password').val()));
-    },
-    login_init = function() {
-        $('#id_email').attr('placeholder', 'Email地址');
-        $('#id_captcha_1').attr('placeholder', '输入验证码');
-    };
-    login_init();
-    $('#id_login_submit').on('click', md5_user_passwd);
-    $('#id_github_logo').mouseover(function(){
-        $('#id_via_gitshell_first').show();
-    });
+  var md5_user_passwd = function() {
+    $('#password').val(window.md5($('#unencryptPassword').val()));
+  };
+  $('#loginSubmit').on('click', md5_user_passwd);
+  $('#githubLogo').mouseover(function(){
+    $('#viaGitshellFirst').show();
+  });
 });
 </script>
 {% endblock %}
