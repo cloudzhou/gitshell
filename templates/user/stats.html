@@ -1,34 +1,182 @@
-{% extends "user/user_base.html" %}
+{% extends "base.html" %}
 
-{% block primary %}
-  <div class="page-header">
-    <h2>关注</h2>
-  </div>
-  <div>
-    <table class="table">
-        <thead>
-            <tr>
-                <th class="span2">用户</th>
-                <th class="span5">简介</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><img class="avatar" src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-            </tr>
-            <tr>
-                <td><img class="avatar" src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=40"/> <a href="/cloudzhou/gitshell/">gitshell</a></td>
-                <td style="vertical-align: middle">没错！gitshell 就是你目前使用的这个网站代码，基于django...</td>
-            </tr>
-        </tbody>
-    </table>
-  </div>
+{% load gstools %}
+
+{% block css %}
+{% endblock %}
+{% block container_class_name %} user{% endblock %}
+{% block container %}
+    <div class="graphs-container">
+        <div id="day_stats_div" class="hide">
+            <h4 class="heading">最近 24 小时</h4>
+            <canvas class="user_chart" id="day_stats" width="1000" height="250"></canvas>
+        </div>
+        <div id="week_stats_div" class="hide">
+            <h4 class="heading">最近 7 天</h4>
+            <canvas class="user_chart" id="week_stats" width="1000" height="250"></canvas>
+        </div>
+        <div id="month_stats_div">
+            <h4 class="heading">最近 30 天</h4>
+            <canvas class="user_chart" id="month_stats" width="1000" height="250"></canvas>
+        </div>
+        <div id="year_stats_div">
+            <h4 class="heading">最近 12 月</h4>
+            <canvas class="user_chart" id="year_stats" width="1000" height="250"></canvas>
+        </div>
+    </div>
+    {% if per_repo_commits %}
+    <div class="graphs-container">
+      {% for pre_repo_commit in per_repo_commits %}
+      <h4 class="heading">{{pre_repo_commit.tip}}</h4>
+      <code class="clearfix">
+          <div class="chart-bar-css">
+          {% for commit in pre_repo_commit.commits %}
+          {# {{commit.name}} {{commit.count}} #}
+          <span class="data-one" style="width:{{commit.ratio}}%" data-toggle="tooltip" title="{{commit.name}}/{{commit.count}}commits">{{commit.ratio}}%</span>
+          {% endfor %}
+          </div>
+      </code>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="graphs-container">
+      <h4 class="heading">
+          仓库配额
+          <span class="used">{{gsuserprofile.get_readable_used_quote}}</span>
+          <span class="divider"> / </span>
+          <span class="capacity">{{gsuserprofile.get_readable_quote}}</span>
+      </h4>
+      <div class="progress progress-danger">
+          <span class="bar" style="width:{{gsuserprofile.get_used_quote_percent}}%;"></span>
+      </div>
+    </div>
+    
 {% endblock %}
 
-{% block subjs %}
-  <script>
-    $(function(){
-    });
-  </script>
+{% block js %}
+<script>
+$(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+
+    var last12hours = {{last12hours}};
+    var last7days = {{last7days}};
+    var last30days = {{last30days}};
+    var last12months = {{last12months}};
+
+    var last12hoursAsCat = [];
+    var last7daysAsCat = [];
+    var last30daysAsCat = [];
+    var last12monthsAsCat = [];
+    for(x in last12hours) {
+        last12hoursAsCat.push(new Date(last12hours[x]*1000).getHours() + 'h');
+    }
+    last12hoursAsCat.reverse()
+    for(x in last7days) {
+        var d = new Date(last7days[x]*1000) 
+        last7daysAsCat.push(d.getMonth()+1+'/'+d.getDate());
+    }
+    last7daysAsCat.reverse()
+    for(x in last30days) {
+        last30daysAsCat.push(new Date(last30days[x]*1000).getDate());
+    }
+    last30daysAsCat.reverse()
+    for(x in last12months) {
+        last12monthsAsCat.push((new Date(last12months[x]*1000).getMonth()+1) + 'm');
+    }
+    last12monthsAsCat.reverse()
+    
+    var last12hours_commit = {{last12hours_commit}};
+    var last7days_commit = {{last7days_commit}};
+    var last30days_commit = {{last30days_commit}};
+    var last12months_commit = {{last12months_commit}};
+    var last12hoursAsData = [];
+    var last7daysAsData = [];
+    var last30daysAsData = [];
+    var last12monthsAsData = [];
+    for(x in last12hours) {
+        if(last12hours[x] in last12hours_commit) {
+            last12hoursAsData.push(last12hours_commit[last12hours[x]]);
+            continue;
+        }
+        last12hoursAsData.push(0);
+    }
+    last12hoursAsData.reverse();
+    for(x in last7days) {
+        if(last7days[x] in last30days_commit) {
+            last7daysAsData.push(last30days_commit[last7days[x]]);
+            continue;
+        }
+        last7daysAsData.push(0);
+    }
+    last7daysAsData.reverse();
+    for(x in last30days) {
+        if(last30days[x] in last30days_commit) {
+            last30daysAsData.push(last30days_commit[last30days[x]]);
+            continue;
+        }
+        last30daysAsData.push(0);
+    }
+    last30daysAsData.reverse();
+    for(x in last12months) {
+        if(last12months[x] in last12months_commit) {
+            last12monthsAsData.push(last12months_commit[last12months[x]]);
+            continue;
+        }
+        last12monthsAsData.push(0);
+    }
+    last12monthsAsData.reverse();
+
+    function get_max(chart_data) {
+        var max = 0;
+        for(x in chart_data) {
+            if(chart_data[x] > max) {
+                max = chart_data[x];
+            }
+        }
+        return max;
+    }
+    function get_steps(max) {
+        var steps = 3;
+        if(max > steps) {
+            steps = 10;
+        }
+        return steps;
+    }
+    function render_commit_chart(selector, chart_labels, chart_data) {
+        var max = get_max(chart_data);
+        var steps = get_steps(max);
+        var lineChartData = {
+            labels : chart_labels,
+            datasets : [
+                {
+                    fillColor : "rgba(151,187,205,0.5)",
+                    strokeColor : "rgba(151,187,205,0.5)",
+                    pointColor : "rgba(151,187,205,0.5)",
+                    pointStrokeColor : "#fff",
+                    data : chart_data
+                }
+            ]
+        };
+        var ctx = document.getElementById(selector).getContext('2d');
+        new Chart(ctx).Line(lineChartData, {scaleShowLabels : true, scaleOverride: true, scaleSteps: steps, scaleStepWidth: Math.ceil(max / steps), scaleStartValue: 0, scaleFontColor : '#767C8D'});
+    }
+    if(Object.keys(last12hours_commit).length > 0) {
+        $('#day_stats_div').show();
+        render_commit_chart('day_stats', last12hoursAsCat, last12hoursAsData);
+    }
+    if(Object.keys(last7days_commit).length > 0) {
+        $('#week_stats_div').show();
+        render_commit_chart('week_stats', last7daysAsCat, last7daysAsData);
+    }
+    if(Object.keys(last30days_commit).length > 0) {
+        $('#month_stats_div').show();
+        render_commit_chart('month_stats', last30daysAsCat, last30daysAsData);
+    }
+    if(Object.keys(last12months_commit).length > 0) {
+        $('#year_stats_div').show();
+        render_commit_chart('year_stats', last12monthsAsCat, last12monthsAsData);
+    }
+
+});
+</script>
 {% endblock %}

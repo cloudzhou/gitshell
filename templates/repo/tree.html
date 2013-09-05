@@ -85,14 +85,19 @@
                     {% else %}
                     <a href="/{{file_attrs.real_author_name}}/" class="commiter">@{{file_attrs.author_name}}</a>
                     {% endif %}
-                <td class="date"><span class="date unixtime">{{file_attrs.author_time}}</span></td>
-              </tr>
-          {% endfor %}
-					</tbody>
-				</table>
-
-			</div>
-
+                </td>
+                <td class="date">
+                    <span class="date unixtime">{{file_attrs.author_time}}</span></td>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% if readme_md %}
+        <div id="README.md" class="readme">
+          <div id="id_readme_md" class="markdown hide">{{readme_md}}</div>
+        </div>
+        {% endif %}
     </div>
 
 {% endblock %}
@@ -100,7 +105,8 @@
 {% block subjs %}
 
 {% if readme_md %}
-<script src="/static/js/min/markdown.min.js?timestamp={{gitshell.timestamp}}"></script>
+<script src="/static/js/app/markdown/marked.js"></script>
+<script src="/static/js/app/caja/html-css-sanitizer-minified.js"></script>
 {% endif %}
 <script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 	<script src="/static/js/jquery-ui-1.10.3.custom.min.js"></script>
@@ -183,11 +189,13 @@ $(function(){
     };
     set_path_href();
 
-    // TODO readme_md area
     {% if readme_md %}
-        var converter = new Markdown.getSanitizingConverter();
-        var html = converter.makeHtml($('#id_readme_md').html());
-        $('#id_readme_md').html(html);
+        marked.setOptions({ gfm: true, tables: true, breaks: false, pedantic: false, sanitize: false, smartLists: true, smartypants: false, langPrefix: 'lang-' });
+        var html = $('#id_readme_md').html();
+        html = $('<div/>').html(html).text();
+        var sanitized_html = html_sanitize(marked(html), function(url) { return url; }, function(id) { return id; })
+        $('#id_readme_md').html(sanitized_html);
+        $('#id_readme_md').show();
     {% endif %}
     $('[data-toggle="popover"]').popover({ animation: false });
 });

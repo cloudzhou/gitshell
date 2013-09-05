@@ -1,8 +1,8 @@
 {% extends "repo/repo.html" %}
 
 {% block subcontainer %}
-<div class="tags bubble" id="tags">
-  <h2>Tags</h2>
+<h2 class="heading">
+    标签 {%if is_repo_member%}<a href="/{{user_name}}/{{repo_name}}/refs/create/master/#target_tag">+</a>{%endif%}
 {% if is_repo_member %}
   <a href="#tag-manage" class="btn btn-mini pull-right tag-manage"><i class="icon-cog"></i><span>管理</span></a>
 {% endif %}

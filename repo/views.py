@@ -100,7 +100,7 @@ def raw_blob(request, user_name, repo_name, refs, path):
     abs_repopath = repo.get_abs_repopath()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
-    return HttpResponse(blob, content_type="text/plain")
+    return HttpResponse(blob, content_type="text/plain; charset=utf-8")
 
 @repo_permission_check
 def ls_tree(request, user_name, repo_name, refs, path, current):
@@ -634,23 +634,33 @@ def stats(request, user_name, repo_name):
     round_week = timeutils.get_round_week(now)
     round_month = timeutils.get_round_month(now)
     round_year = timeutils.get_round_year(now)
-    raw_per_last_week_commit = StatsManager.list_repo_user_stats(repo.id, 'week', round_week)
-    raw_per_last_month_commit = StatsManager.list_repo_user_stats(repo.id, 'month', round_month)
-    raw_per_last_year_commit = StatsManager.list_repo_user_stats(repo.id, 'year', round_year)
-    per_last_week_commit = [int(x.count) for x in raw_per_last_week_commit]
-    per_last_month_commit = [int(x.count) for x in raw_per_last_month_commit]
-    per_last_year_commit = [int(x.count) for x in raw_per_last_year_commit]
-    raw_per_user_week_commit = [x.user_id for x in raw_per_last_week_commit]
-    raw_per_user_month_commit = [x.user_id for x in raw_per_last_month_commit]
-    raw_per_user_year_commit = [x.user_id for x in raw_per_last_year_commit]
-    mergedlist = list(set(raw_per_user_week_commit + raw_per_user_month_commit + raw_per_user_year_commit))
-    user_dict = GsuserManager.map_users(mergedlist)
-    per_user_week_commit = [str(user_dict[x]['username']) if x in user_dict else 'unknow' for x in raw_per_user_week_commit]
-    per_user_month_commit = [str(user_dict[x]['username']) if x in user_dict else 'unknow' for x in raw_per_user_month_commit]
-    per_user_year_commit = [str(user_dict[x]['username']) if x in user_dict else 'unknow' for x in raw_per_user_year_commit]
 
-    quotes = {'used_quote': int(repo.used_quote), 'total_quote': int(userprofile.quote)}
-    response_dictionary = {'mainnav': 'repo', 'current': 'stats', 'path': path, 'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last7days_commit': last7days_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'round_week': round_week, 'round_month': round_month, 'round_year': round_year, 'per_last_week_commit': per_last_week_commit, 'per_last_month_commit': per_last_month_commit, 'per_last_year_commit': per_last_year_commit, 'per_user_week_commit': per_user_week_commit, 'per_user_month_commit': per_user_month_commit, 'per_user_year_commit': per_user_year_commit}
+    raw_per_last_week_commits = StatsManager.list_repo_user_stats(repo.id, 'week', round_week)
+    raw_per_last_month_commits = StatsManager.list_repo_user_stats(repo.id, 'month', round_month)
+    raw_per_last_year_commits = StatsManager.list_repo_user_stats(repo.id, 'year', round_year)
+
+    raw_week_user_ids = [x.user_id for x in raw_per_last_week_commits]
+    raw_month_user_ids = [x.user_id for x in raw_per_last_month_commits]
+    raw_year_user_ids = [x.user_id for x in raw_per_last_year_commits]
+    uniq_user_ids = list(set(raw_week_user_ids + raw_month_user_ids + raw_year_user_ids))
+    user_dict = GsuserManager.map_users(uniq_user_ids)
+
+    per_user_week_commits = _list_user_count_dict(raw_per_last_week_commits, user_dict)
+    per_user_month_commits = _list_user_count_dict(raw_per_last_month_commits, user_dict)
+    per_user_year_commits = _list_user_count_dict(raw_per_last_year_commits, user_dict)
+    round_week_tip = u'%s 以来贡献者' % round_week.strftime('%y/%m/%d')
+    round_month_tip = u'%s 以来贡献者' %  round_month.strftime('%y/%m/%d')
+    round_year_tip = u'%s 以来贡献者' %  round_year.strftime('%y/%m/%d')
+    per_user_commits = []
+    if len(per_user_week_commits) > 0:
+        per_user_commits.append({'commits': per_user_week_commits, 'tip': round_week_tip})
+    if len(per_user_month_commits) > 0:
+        per_user_commits.append({'commits': per_user_month_commits, 'tip': round_month_tip})
+    if len(per_user_year_commits) > 0:
+        per_user_commits.append({'commits': per_user_year_commits, 'tip': round_year_tip})
+
+    quotes = {'used_quote': _get_readable_du(repo.used_quote), 'total_quote': _get_readable_du(userprofile.quote), 'ratio': int(repo.used_quote)*100/int(userprofile.quote)}
+    response_dictionary = {'mainnav': 'repo', 'current': 'stats', 'path': path, 'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last7days_commit': last7days_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'round_week': round_week, 'round_month': round_month, 'round_year': round_year, 'per_user_commits': per_user_commits}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/stats.html',
                           response_dictionary,
@@ -1225,6 +1235,31 @@ def _get_current_refs(user, repo, refs, update_to_cache):
         return repo_refs
     feedAction.set_repo_attr(repo.id, AttrKey.REFS, 'master')
     return 'master'
+
+def _list_user_count_dict(raw_per_commit, user_dict):
+    per_commits = []
+    total_count = 0
+    for x in raw_per_commit:
+        user_id = x.user_id
+        if user_id not in user_dict:
+            continue
+        total_count = total_count + int(x.count)
+        per_commits.append({'name': user_dict[user_id]['username'], 'count': int(x.count)})
+    for x in per_commits:
+        ratio = x['count']*100/total_count
+        if ratio == 0:
+            ratio = 1
+        x['ratio'] = ratio
+    return per_commits
+
+def _get_readable_du(quote):
+    if quote < 1024:
+        return str(quote) + 'b'
+    if quote < 1048576:
+        return str(quote/1024) + 'kb'
+    if quote < 1073741824:
+        return str(quote/1048576) + 'mb'
+    return str(quote/1073741824) + 'g'
 
 def json_ok():
     return json_httpResponse({'result': 'ok'})
