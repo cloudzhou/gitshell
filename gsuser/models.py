@@ -66,6 +66,13 @@ class ThirdpartyUser(BaseModel):
     GITHUB = 1
     GOOGLE = 2
 
+class UserEmail(BaseModel):
+    user_id = models.IntegerField(null=False, default=0)
+    email = models.CharField(max_length=75, null=True)
+    is_verify = models.IntegerField(default=0, null=True)
+    is_primary = models.IntegerField(default=0, null=True)
+    is_public = models.IntegerField(default=0, null=True)
+
 class Recommend(BaseModel):
     user_id = models.IntegerField(null=False, default=0)
     content = models.CharField(max_length=128, null=False)
@@ -130,6 +137,25 @@ class GsuserManager():
     def get_thirdpartyUser_by_type_tpId(self, user_type, tp_id):
         thirdpartyUser = query_first(ThirdpartyUser, user_type, 'thirdpartyuser_s_userType_tpId', [user_type, tp_id]) 
         return thirdpartyUser
+
+    @classmethod
+    def list_useremail_by_userId(self, user_id):
+        user = GsuserManager.get_userprofile_by_id(user_id)
+        userEmails = query(UserEmail, user_id, 'useremail_l_userId', [user_id]) 
+        if len(userEmails) == 0:
+            userEmail = UserEmail(user_id = user.id, email = user.email, is_verify = 1, is_primary = 1, is_public = 1)
+            userEmail.save()
+            userEmails.append(userEmail)
+        return userEmails
+
+    @classmethod
+    def get_useremail_by_userId_email(self, user_id, email):
+        userEmail = query_first(UserEmail, user_id, 'useremail_s_userId_email', [user_id, email]) 
+        return userEmail
+
+    @classmethod
+    def get_useremail_by_id(self, id):
+        return get(UserEmail, id)
 
     @classmethod
     def map_users(self, user_ids):

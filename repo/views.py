@@ -15,7 +15,7 @@ from django.core.exceptions import ValidationError
 from django.utils.html import escape
 from django.forms.models import model_to_dict
 from gitshell.feed.feed import AttrKey, FeedAction
-from gitshell.feed.models import FeedManager
+from gitshell.feed.models import FeedManager, FEED_TYPE, NOTIF_TYPE
 from gitshell.repo.Forms import RepoForm, RepoMemberForm
 from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, PullRequest, PULL_STATUS
@@ -350,6 +350,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         pullRequest.save()
         pullRequest.fillwith()
         FeedManager.notif_pull_request_status(pullRequest, pullRequest.status)
+        FeedManager.notif_at(NOTIF_TYPE.AT_MERGE, request.user.id, pullRequest.id, pullRequest.title + ' ' + pullRequest.desc)
         FeedManager.feed_pull_change(pullRequest, pullRequest.status)
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
 

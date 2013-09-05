@@ -116,7 +116,6 @@ class WatchHistory(BaseModel):
     watch_repo_id = models.IntegerField(default=0)
     watch_user_id = models.IntegerField(default=0)
 
-#TODO not using now
 class ForkHistory(BaseModel):
     repo_id = models.IntegerField()
     fork_repo_id = models.IntegerField()
@@ -176,6 +175,15 @@ class PullRequest(BaseModel):
             self.short_desc = self.short_desc[0:20] + '...'
         self.status_view = PULL_STATUS.VIEW_MAP[self.status]
         self.status_label = PULL_STATUS.LABEL_MAP[self.status]
+
+class PullRequestComment(BaseModel):
+    pull_id = models.IntegerField()
+    user_id = models.IntegerField()
+    content = models.CharField(max_length=2048, default='') 
+
+    username = ''
+    reponame = ''
+
 
 class RepoManager():
 

@@ -153,6 +153,7 @@ def notif(request):
     return render_to_response('user/notif.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
 def feed_by_ids(request):
     ids_str = request.POST.get('ids_str', '')
     feeds = []

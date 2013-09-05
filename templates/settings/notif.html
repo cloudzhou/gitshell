@@ -1,5 +1,74 @@
 {% extends "settings/base.html" %}
 {% block container-right %}
-    <h2 class="heading">消息通知</h2>
-    <p class="alert alert-info"><i class="icon-bell"></i>目前还没有什么消息通知</p>
+    <h2 class="heading">消息设置</h2>
+    <div>
+        <dl>
+            <dt>提到你的</dt>
+            <dd>
+                {% for x in notif_type_choice.at %}
+                <input id="notif-{{x.value}}" type="checkbox" class="notif-type" data-value="{{x.value}}" value="{{x.value}}"{%if x.value in notifSetting.get_notif_types%} checked="checked"{%endif%}>
+                <label for="notif-{{x.value}}">{{x.key}}</label>
+                {% endfor %}
+            </dd>
+            <dt>Pull Request</dt>
+            <dd>
+                {% for x in notif_type_choice.merge %}
+                <input id="notif-{{x.value}}" type="checkbox" class="notif-type" data-value="{{x.value}}" value="{{x.value}}"{%if x.value in notifSetting.get_notif_types%} checked="checked"{%endif%}>
+                <label for="notif-{{x.value}}">{{x.key}}</label>
+                {% endfor %}
+            </dd>
+            <dt>Issue</dt>
+            <dd>
+                {% for x in notif_type_choice.issue %}
+                <input id="notif-{{x.value}}" type="checkbox" class="notif-type" data-value="{{x.value}}" value="{{x.value}}"{%if x.value in notifSetting.get_notif_types%} checked="checked"{%endif%}>
+                <label for="notif-{{x.value}}">{{x.key}}</label>
+                {% endfor %}
+            </dd>
+            <dt>通知频率</dt>
+            <dd>
+                <select id="notif-fqcy">
+                    {% for x in notif_fqcy_choice %}
+                    <option value="{{x.value}}"{%if x.value == notifSetting.notif_fqcy%} selected="selected"{%endif%}>{{x.key}}</option>
+                    {% endfor %}
+                </select>
+            </dd>
+            <dt>通过邮箱</dt>
+                <select id="notif-email">
+                    {% for x in useremails %}
+                    <option value="{{x.email}}"{%if x.email == notifSetting.email%} selected="selected"{%endif%}>{{x.email}}</option>
+                    {% endfor %}
+                </select>
+            <dd></dd>
+        </dl>
+    </div>
 {% endblock %}
+{% block js %}
+<script>
+$(function(){
+    $('.notif-type').click(function(){
+        var types = []
+        $('.notif-type').each(function(index){
+            if(this.checked) {
+                var type = $(this).val();
+                types.push(type)
+            }
+        });
+        types.sort();
+        var types_str = types.join(',');
+        $.post('/settings/notif/types/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'types': types_str}, function(json){
+        });
+    });
+    $('#notif-fqcy').change(function(){
+        var fqcy = $('option:selected', this).val();
+        $.post('/settings/notif/fqcy/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'fqcy': fqcy}, function(json){
+        });
+    });
+    $('#notif-email').change(function(){
+        var email = $('option:selected', this).val();
+        $.post('/settings/notif/email/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'email': email}, function(json){
+        });
+    });
+})
+</script>
+{% endblock %}
+

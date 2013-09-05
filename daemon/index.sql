@@ -45,3 +45,9 @@ update repo_repo set dropbox_url = '';
 update repo_repo set last_push_time = now();
 
 create index repo_last_push_time_idx on repo_repo (last_push_time DESC);
+
+insert into gsuser_useremail select 0, now(), now(), 0, id, email, 1, 1, 1 from auth_user;
+create index gsuser_useremail_uid_idx on gsuser_useremail (visibly, user_id)
+create index feed_notifsetting_uid_idx on feed_notifsetting (visibly, user_id)
+
+

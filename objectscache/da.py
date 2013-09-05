@@ -27,8 +27,10 @@ table_ptkey_field = {
     'stats_statsuser': 'user_id',
     'todolist_scene': 'user_id',
     'todolist_todolist': 'user_id',
-    'feed_notifmessage': 'to_user_id',
     'gsuser_thirdpartyuser': 'user_type',
+    'gsuser_useremail': 'user_id',
+    'feed_notifmessage': 'to_user_id',
+    'feed_notifsetting': 'user_id',
 }
 rawsql = {
     # userpubkey #
@@ -49,6 +51,10 @@ rawsql = {
         'select * from gsuser_recommend where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
     'thirdpartyuser_s_userType_tpId':
         'select * from gsuser_thirdpartyuser where visibly = 0 and user_type = %s and tp_id = %s',
+    'useremail_l_userId':
+        'select * from gsuser_useremail where visibly = 0 and user_id = %s order by create_time limit 100',
+    'useremail_s_userId_email':
+        'select * from gsuser_useremail where visibly = 0 and user_id = %s and email = %s limit 0, 1',
     # repo #
     'repo_s_userId_name':
         'select * from repo_repo where visibly = 0 and user_id = %s and name = %s limit 0, 1',
@@ -142,10 +148,16 @@ rawsql = {
     'scene_l_userId_name':
         'select * from todolist_scene where visibly = 0 and user_id = %s and name = %s',
     # feed #
-    'notifMessage_l_userId':
+    'notifmessage_l_userId':
         'select * from feed_notifmessage where visibly = 0 and to_user_id = %s order by modify_time desc limit %s, %s',
-    'notifMessage_s_userId_relativeId':
-        'select * from feed_notifmessage where visibly = 0 and to_user_id = %s and relative_id = %s limit 0, 1',
+    'notifmessage_l_userId_modifyTime':
+        'select * from feed_notifmessage where visibly = 0 and to_user_id = %s and modify_time > %s and modify_time <= %s order by modify_time desc limit %s, %s',
+    'notifmessage_s_userId_notifType_relativeId':
+        'select * from feed_notifmessage where visibly = 0 and to_user_id = %s and notif_type = %s and relative_id = %s limit 0, 1',
+    'notifsetting_l_expectNotifTime':
+        'select * from feed_notifsetting where visibly = 0 and expect_notif_time <= %s and notif_fqcy > 0 limit %s, %s',
+    'notifsetting_s_userId':
+        'select * from feed_notifsetting where visibly = 0 and user_id = %s limit 0, 1',
 }
 
 def get(model, pkid):
