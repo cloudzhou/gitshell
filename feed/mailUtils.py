@@ -30,7 +30,7 @@ class Mailer():
         smtp = SMTP('localhost', 25)
         for receiver in receivers:
             try:
-                msg = MIMEMultipar('alternative')
+                msg = MIMEMultipart('alternative')
                 msg['Subject'] = header
                 msg['From'] = sender
                 msg['To'] = receiver
@@ -86,9 +86,9 @@ NOTIF_MAIL_TEMPLATE = """<html><head><title>{{title}}</title></head><body>
                 {% if notifMessage.notif_type == 0 %}
                 <span class="muted">commit: </span>{{notifMessage.relative_obj.subject}}
                 <span class="muted"><a href="/{{notifMessage.relative_obj.get_repo_username}}/">{{notifMessage.relative_obj.get_repo_username}}</a>/<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/">{{notifMessage.relative_obj.repo_name}}</a>:<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commits/{{notifMessage.relative_obj.get_short_refname}}/">{{notifMessage.relative_obj.get_short_refname}}</a></span>
-                {% elif notifMessage.notif_type == 1 %}
+                {% elif notifMessage.notif_type == 30 %}
                 <span class="muted">issue: </span>{{notifMessage.relative_obj.subject}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
-                {% elif notifMessage.notif_type == 2 %}
+                {% elif notifMessage.notif_type == 31 %}
                 <span class="muted">comment on issue: </span>{{notifMessage.relative_obj.content}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.issues_id}}/">#{{notifMessage.relative_obj.issues_id}}</a>
                 {% elif notifMessage.notif_type == 10 %}
                 <span class="muted">pull request 提到你: </span> <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}} {{notifMessage.relative_obj.short_title}}</a>
@@ -97,7 +97,7 @@ NOTIF_MAIL_TEMPLATE = """<html><head><title>{{title}}</title></head><body>
                 {% elif notifMessage.notif_type == 300 %}
                 <span class="muted">{{notifMessage.message}} issue: {{notifMessage.relative_obj.subject}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
                 {% endif %}
-                <span class="unixtime">{{notifMessage.relative_obj.modify_time|date:"U"}}</span>
+                <span class="unixtime">{{notifMessage.relative_obj.modify_time}}</span>
             </td>
           </tr>
           {% endfor %}

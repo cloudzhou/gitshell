@@ -1,4 +1,4 @@
-#!/usr/bin/python
+# -*- coding: utf-8 -*-  
 import os, threading, shutil, sys, json, time
 import beanstalkc
 from datetime import datetime
@@ -20,26 +20,35 @@ def start():
     logger.info('==================== START notifworker ====================')
     while True:
         expect_notif_time = datetime.now()
+        #print expect_notif_time
         if os.path.exists(STOP_FILE_FLAG):
+            os.remove(STOP_FILE_FLAG)
             break
         for i in range(0, 1000):
             notifSettings = FeedManager.list_notifsetting_by_expectNotifTime(expect_notif_time, ROW_COUNT*i, ROW_COUNT)
-            if len(notifSettings) < ROW_COUNT:
-                break
+            #print len(notifSettings)
             for notifSetting in notifSettings:
+                #print notifSetting.id
                 from_time = notifSetting.last_notif_time
-                to_time = notifSetting.expect_notif_time
+                to_time = expect_notif_time
+                #print from_time, to_time
                 if from_time >= to_time:
-                    return
+                    notifSetting.expect_notif_time = TIME_NEVER_COME
+                    notifSetting.save()
+                    continue
                 notifMessages = FeedManager.list_notifmessage_by_userId_betweenTime_notifTypes(notifSetting.user_id, from_time, to_time, notifSetting.notif_types, 0, 1000)
+                #print len(notifMessages)
                 _send_notifMessages(notifMessages, notifSetting)
                 notifSetting.last_notif_time = expect_notif_time
                 notifSetting.expect_notif_time = TIME_NEVER_COME
                 notifSetting.save()
+            if len(notifSettings) < ROW_COUNT:
+                break
         now = int(time.time())
         next_minute_left = 60 - now%60
         if next_minute_left == 0:
             next_minute_left = 60
+        #print next_minute_left
         time.sleep(next_minute_left)
         
     logger.info('==================== STOP notifworker ====================')
@@ -48,7 +57,7 @@ def _send_notifMessages(notifMessages, notifSetting):
     userprofile = GsuserManager.get_userprofile_by_id(notifSetting.user_id)
     header = u'来自Gitshell的 %s 个通知' % len(notifMessages)
     html = FeedManager.render_notifMessages_as_html(userprofile, header, notifMessages)
-    Mailer().send_html_mail(header, html, None, notifSetting.email)
+    Mailer().send_html_mail(header, html, None, [notifSetting.email])
 
 def stop():
     open(STOP_FILE_FLAG, 'a').close()

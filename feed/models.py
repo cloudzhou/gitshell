@@ -115,8 +115,8 @@ class NotifSetting(BaseModel):
     user_id = models.IntegerField(default=0)
     notif_types = models.CharField(max_length=1024, null=True)
     notif_fqcy = models.IntegerField(default=0)
-    last_notif_time = models.DateTimeField(auto_now=True, null=True)
-    expect_notif_time = models.DateTimeField(auto_now=True, null=True)
+    last_notif_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
+    expect_notif_time = models.DateTimeField(auto_now=False, auto_now_add=True, null=False)
     email = models.CharField(max_length=75, null=True)
 
     def get_notif_types(self):
@@ -406,8 +406,9 @@ class FeedManager():
             last_notif_time = datetime.now()
         notif_fqcy = notifSetting.notif_fqcy
         if notif_fqcy == 0:
+            notifMessage = self._fillwith_notifMessages([notifMessage])[0]
             html = self.render_notifMessages_as_html(userprofile, header, [notifMessage])
-            Mailer().send_html_mail(header, html, None, notifSetting.email)
+            Mailer().send_html_mail(header, html, None, [notifSetting.email])
         if notif_fqcy > 0:
             expect_notif_time = last_notif_time + timedelta(minutes=notif_fqcy)
             if expect_notif_time != notifSetting.expect_notif_time:
