@@ -150,10 +150,12 @@ rawsql = {
     # feed #
     'notifmessage_l_userId':
         'select * from feed_notifmessage where visibly = 0 and to_user_id = %s order by modify_time desc limit %s, %s',
+    'notifmessage_l_userId_modifyTime':
+        'select * from feed_notifmessage where visibly = 0 and to_user_id = %s and modify_time > %s and modify_time <= %s order by modify_time desc limit %s, %s',
     'notifmessage_s_userId_notifType_relativeId':
         'select * from feed_notifmessage where visibly = 0 and to_user_id = %s and notif_type = %s and relative_id = %s limit 0, 1',
     'notifsetting_l_expectNotifTime':
-        'select * from feed_notifsetting where visibly = 0 and expect_notif_time <= %s and notif_fqcy > 1 limit ?, ?',
+        'select * from feed_notifsetting where visibly = 0 and expect_notif_time <= %s and notif_fqcy > 0 limit ?, ?',
     'notifsetting_s_userId':
         'select * from feed_notifsetting where visibly = 0 and user_id = %s limit 0, 1',
 }

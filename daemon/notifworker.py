@@ -8,6 +8,8 @@ from gitshell.gsuser.models import GsuserManager
 from gitshell.daemon.models import EventManager, IMPORT_REPO_TUBE_NAME
 from gitshell.settings import GIT_BARE_REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT, logger
 from gitshell.objectscache.da import da_post_save
+from gitshell.feed.models import FeedManager
+from gitshell.feed.mailUtils import Mailer
 from django.db.models.signals import post_save, post_delete
 
 STOP_FILE_FLAG = '/tmp/notifworker.exit.flag'
@@ -25,22 +27,28 @@ def start():
             if len(notifSettings) < ROW_COUNT:
                 break
             for notifSetting in notifSettings:
-                notifMessages = FeedManager.list_notifmessage_by_userId_notifTypes(notifSetting.user_id, notifSetting.notif_types, 0, 1000)
-                send_notifMessages(notifMessages, notifSetting)
+                from_time = notifSetting.last_notif_time
+                to_time = notifSetting.expect_notif_time
+                if from_time >= to_time:
+                    return
+                notifMessages = FeedManager.list_notifmessage_by_userId_betweenTime_notifTypes(notifSetting.user_id, from_time, to_time, notifSetting.notif_types, 0, 1000)
+                _send_notifMessages(notifMessages, notifSetting)
                 notifSetting.last_notif_time = expect_notif_time
                 notifSetting.expect_notif_time = TIME_NEVER_COME
                 notifSetting.save()
         now = int(time.time())
         next_minute_left = 60 - now%60
         if next_minute_left == 0:
-            next_minute_left = 1
+            next_minute_left = 60
         time.sleep(next_minute_left)
         
     logger.info('==================== STOP notifworker ====================')
 
-def send_notifMessages(notifMessages, notifSetting):
-    email = notifSetting.email
-    pass
+def _send_notifMessages(notifMessages, notifSetting):
+    userprofile = GsuserManager.get_userprofile_by_id(notifSetting.user_id)
+    header = u'来自Gitshell的 %s 个通知' % len(notifMessages)
+    html = FeedManager.render_notifMessages_as_html(userprofile, header, notifMessages)
+    Mailer().send_html_mail(header, html, None, notifSetting.email)
 
 def stop():
     open(STOP_FILE_FLAG, 'a').close()

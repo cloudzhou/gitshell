@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-  
 import re, time
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from django.db import models
 from django.core.cache import cache
+from django.template import Context, Template
 from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, query_first, queryraw, execute, count, get, get_many, get_version, get_sqlkey
 from gitshell.objectscache.da import get_raw, get_raw_many
@@ -9,6 +12,7 @@ from gitshell.gsuser.models import GsuserManager
 from gitshell.repo.models import RepoManager, PullRequest, PULL_STATUS
 from gitshell.issue.models import IssueManager, ISSUE_STATUS
 from gitshell.feed.feed import FeedAction
+from gitshell.feed.mailUtils import Mailer, NOTIF_MAIL_TEMPLATE
 
 class Feed(BaseModel):
     user_id = models.IntegerField(default=0)
@@ -135,10 +139,10 @@ class FeedManager():
         return self._fillwith_notifMessages(notifMessages)
 
     @classmethod
-    def list_notifmessage_by_userId_notifTypes(self, user_id, notif_types, offset, row_count):
+    def list_notifmessage_by_userId_betweenTime_notifTypes(self, user_id, from_time, to_time, notif_types, offset, row_count):
         notifMessages = []
         if notif_types == 'all':
-            notifMessages = query(NotifMessage, user_id, 'notifmessage_l_userId', [user_id, offset, row_count])
+            notifMessages = query(NotifMessage, user_id, 'notifmessage_l_userId_modifyTime', [user_id, from_time, to_time, offset, row_count])
         else:
             filtered_notif_types = []
             split_notif_types = notif_types.split(',')
@@ -147,9 +151,10 @@ class FeedManager():
                     filtered_notif_types.append(int(split_notif_type))
             if len(filtered_notif_types) == 0:
                 return []
-            notifMessages = list(NotifMessage.objects.filter(visibly=0).filter(to_user_id=user_id).filter(notif_type__in=filtered_notif_types).order_by('-modify_time')[offset : offset+row_count]))
+            notifMessages = list(NotifMessage.objects.filter(visibly=0).filter(to_user_id=user_id).filter(modify_time__gt=from_time).filter(modify_time__lte=to_time).filter(notif_type__in=filtered_notif_types).order_by('-modify_time')[offset : offset+row_count])
         return self._fillwith_notifMessages(notifMessages)
 
+    @classmethod
     def _fillwith_notifMessages(self, notifMessages):
         for notifMessage in notifMessages:
             relative_user = GsuserManager.get_user_by_id(notifMessage.from_user_id)
@@ -308,7 +313,7 @@ class FeedManager():
                     notifMessage = NotifMessage.create_at_issue_comment(from_user_id, to_user_id, relative_id)
                 if notifMessage is None:
                     continue
-                notifMessage.save()
+                self.message_save_and_notif(notifMessage)
                 if to_user_id not in user_unread_message_dict:
                     user_unread_message_dict[to_user_id] = 0
                 user_unread_message_dict[to_user_id] = user_unread_message_dict[to_user_id] + 1
@@ -344,7 +349,7 @@ class FeedManager():
             if assigned_userprofile:
                 notifMessage = NotifMessage.create(notif_cat, notif_type, user.id, issue.assigned, issue.id)
                 notifMessage.message = message
-                notifMessage.save()
+                self.message_save_and_notif(notifMessage)
             assigned_userprofile.unread_message = assigned_userprofile.unread_message + 1
             assigned_userprofile.save()
         else:
@@ -360,7 +365,7 @@ class FeedManager():
             if merge_user_profile is not None:
                 notifMessage = NotifMessage.create(NOTIF_CATE.MERGE, NOTIF_TYPE.MERGE_CREATE_PULL_REQUEST, pullRequest.pull_user_id, pullRequest.merge_user_id, pullRequest.id)
                 notifMessage.message = message
-                notifMessage.save()
+                self.message_save_and_notif(notifMessage)
             merge_user_profile.unread_message = merge_user_profile.unread_message + 1
             merge_user_profile.save()
             return
@@ -380,9 +385,34 @@ class FeedManager():
         if pull_user_profile is not None:
             notifMessage = NotifMessage.create(NOTIF_CATE.MERGE, notif_type, pullRequest.merge_user_id, pullRequest.pull_user_id, pullRequest.id)
             notifMessage.message = message
-            notifMessage.save()
+            self.message_save_and_notif(notifMessage)
         pull_user_profile.unread_message = pull_user_profile.unread_message + 1
         pull_user_profile.save()
+
+    @classmethod
+    def render_notifMessages_as_html(self, userprofile, header, notifMessages):
+        t = Template(NOTIF_MAIL_TEMPLATE)
+        c = Context({'userprofile': userprofile, 'title': header, 'notifMessages': notifMessages})
+        return t.render(c)
+
+    @classmethod
+    def message_save_and_notif(self, notifMessage):
+        notifMessage.save()
+        userprofile = GsuserManager.get_userprofile_by_id(notifMessage.to_user_id)
+        header = u'来自Gitshell的通知'
+        notifSetting = self.get_notifsetting_by_userId(notifMessage.to_user_id)
+        last_notif_time = notifSetting.last_notif_time
+        if not last_notif_time:
+            last_notif_time = datetime.now()
+        notif_fqcy = notifSetting.notif_fqcy
+        if notif_fqcy == 0:
+            html = self.render_notifMessages_as_html(userprofile, header, [notifMessage])
+            Mailer().send_html_mail(header, html, None, notifSetting.email)
+        if notif_fqcy > 0:
+            expect_notif_time = last_notif_time + timedelta(minutes=notif_fqcy)
+            if expect_notif_time != notifSetting.expect_notif_time:
+                notifSetting.expect_notif_time = expect_notif_time
+                notifSetting.save()
 
 class FeedUtils():
 
@@ -441,33 +471,33 @@ class ISSUE_ATTR_DICT:
 
 class NOTIF_FQCY:
 
-    NEVER = 0
-    NOW = 1
-    PER_5MIN = 11
-    PER_15MIN = 12
-    PER_30MIN = 13
-    PER_45MIN = 14
-    PER_1HOUR = 105
-    PER_3HOUR = 106
-    PER_6HOUR = 107
-    PER_12HOUR = 108
-    PER_1DAY = 1009
+    NEVER = -1
+    NOW = 0
+    PER_5MIN = 5
+    PER_15MIN = 15
+    PER_30MIN = 30
+    PER_45MIN = 45
+    PER_1HOUR = 60
+    PER_3HOUR = 180
+    PER_6HOUR = 360
+    PER_12HOUR = 720
+    PER_1DAY = 1440
 
     NOTIF_FQCY_CHOICE = [
-        {'key': u'永远不', 'value': 0},
-        {'key': u'尽可能快', 'value': 1},
-        {'key': u'5分钟', 'value': 11},
-        {'key': u'15分钟', 'value': 12},
-        {'key': u'30分钟', 'value': 13},
-        {'key': u'45分钟', 'value': 14},
-        {'key': u'1小时', 'value': 105},
-        {'key': u'3小时', 'value': 106},
-        {'key': u'6小时', 'value': 107},
-        {'key': u'12小时', 'value': 108},
-        {'key': u'24小时', 'value': 1009},
+        {'key': u'永远不', 'value': -1},
+        {'key': u'尽可能快', 'value': 0},
+        {'key': u'5分钟', 'value': 5},
+        {'key': u'15分钟', 'value': 15},
+        {'key': u'30分钟', 'value': 30},
+        {'key': u'45分钟', 'value': 45},
+        {'key': u'1小时', 'value': 60},
+        {'key': u'3小时', 'value': 180},
+        {'key': u'6小时', 'value': 360},
+        {'key': u'12小时', 'value': 720},
+        {'key': u'24小时', 'value': 1440},
     ]
 
-    VALUES = [0, 1, 11, 12, 13, 14, 105, 106, 107, 108, 1009]
+    VALUES = [-1, 0, 5, 15, 30, 45, 60, 180, 360, 720, 1440]
 
 class NOTIF_CATE:
 
