@@ -12,22 +12,22 @@
             <col width="action">
         </colgroup>
         <tbody>
-            {% for team_member in team_members %}
+            {% for teamMember in teamMembers %}
             <tr>
                 <td class="name">
-                    {{ teamprofile.name }}
+                    {{ teamMember.team_user.username }}
                 </td>
                 <td class="rights">
-                    {% if team_member.has_admin_rights %}
+                    {% if teamMember.has_admin_rights %}
                         <button class="btn btn-success">管理员</button>
                     {% endif %}
-                    <input id="rights-{{team_member.id}}" type="checkbox" class="team-rights rights-pull" data-id="{{team_member.id}}" value="0"{% if team_member.has_read_rights %} checked="checked"{% endif %}>
-                    <label for="rights-{{team_member.id}}">Pull</label>
-                    <input id="rights-{{team_member.id}}" type="checkbox" class="team-rights rights-push" data-id="{{team_member.id}}" value="0"{% if team_member.has_write_rights %} checked="checked"{% endif %}>
-                    <label for="rights-{{team_member.id}}">Push</label>
+                    <input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-pull" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_read_rights %} checked="checked"{% endif %}>
+                    <label for="rights-{{teamMember.id}}">Pull</label>
+                    <input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-push" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_write_rights %} checked="checked"{% endif %}>
+                    <label for="rights-{{teamMember.id}}">Push</label>
                 </td>
                 <td class="action">
-                    <button data-id="{{ team_member.id }}" class="leave-team btn">退出</button>
+                    <button data-id="{{ teamMember.id }}" class="leave-team btn">退出</button>
                 </td>
             </tr>
             {% endfor %}
@@ -38,23 +38,22 @@
 
 {% block js %}
 <script>
-/*global jQuery, window */
 $(function(){
     $('.rights-pull').click(function(){
-        var team_member_id = $(this).data('id');
-        $.post('/settings/team/rights/pull/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        var teamMember_id = $(this).data('id');
+        $.post('/settings/team/rights/pull/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'teamMember_id': teamMember_id}, function(json){
             window.location.href = '/settings/team/';
         });
     });
     $('.rights-push').click(function(){
-        var team_member_id = $(this).data('id');
-        $.post('/settings/team/rights/push/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        var teamMember_id = $(this).data('id');
+        $.post('/settings/team/rights/push/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'teamMember_id': teamMember_id}, function(json){
             window.location.href = '/settings/team/';
         });
     });
     $('.leave-team').click(function(){
         var team_id = $(this).data('id');
-        $.post('/settings/team/leave/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        $.post('/settings/team/leave/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'teamMember_id': teamMember_id}, function(json){
             window.location.href = '/settings/team/';
         });
     });

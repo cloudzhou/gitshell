@@ -31,6 +31,7 @@ table_ptkey_field = {
     'gsuser_useremail': 'user_id',
     'feed_notifmessage': 'to_user_id',
     'feed_notifsetting': 'user_id',
+    'team_teammember': 'user_id',
 }
 rawsql = {
     # userpubkey #
@@ -158,6 +159,9 @@ rawsql = {
         'select * from feed_notifsetting where visibly = 0 and expect_notif_time <= %s and notif_fqcy > 0 limit %s, %s',
     'notifsetting_s_userId':
         'select * from feed_notifsetting where visibly = 0 and user_id = %s limit 0, 1',
+    # team #
+    'teammember_l_userId':
+        'select * from team_teammember where visibly = 0 and user_id = %s order by modify_time desc limit 0, 1000',
 }
 
 def get(model, pkid):

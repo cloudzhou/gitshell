@@ -4,7 +4,7 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.core.validators import email_re
 from django.template import RequestContext
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, UserManager, check_password
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
@@ -15,6 +15,7 @@ from gitshell.gsuser.models import Userprofile, UserEmail, GsuserManager, Thirdp
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
 from gitshell.feed.models import NOTIF_TYPE, NOTIF_FQCY, FeedManager
 from gitshell.feed.mailUtils import Mailer
+from gitshell.team.models import TeamMember, TeamGroup, TeamManager
 from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, UserprofileForm, TeamprofileForm, DoSshpubkeyForm
 
 @login_required
@@ -271,7 +272,8 @@ def validate_email(request, token):
 @login_required
 def team(request):
     current = 'team'
-    response_dictionary = {'current': current}
+    teamMembers = TeamManager.list_teamMember_by_userId(request.user.id)
+    response_dictionary = {'current': current, 'teamMembers': teamMembers}
     return render_to_response('settings/team.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -280,6 +282,25 @@ def team(request):
 def team_create(request):
     current = 'team'
     teamprofileForm = TeamprofileForm()
+    if request.method == 'POST':
+        teamprofileForm = TeamprofileForm(request.POST)
+        if teamprofileForm.is_valid():
+            username = teamprofileForm.cleaned_data['username']
+            email = '%s@team.gitshell.com' % username
+            password = '%8x' % random.getrandbits(64)
+            team = None
+            try:
+                team = User.objects.create_user(username, email, password)
+            except IntegrityError, e:
+                logger.exception(e)
+            teamprofile = teamprofileForm.save(commit=False)
+            teamprofile.id = team.id
+            teamprofile.email = email
+            teamprofile.imgurl = hashlib.md5(team.email.lower()).hexdigest()
+            teamprofile.save()
+            teamMember = TeamMember(team_user_id = team.id, user_id = request.user.id, group_id = 0, permission = 2, is_admin = 1)
+            teamMember.save()
+            return HttpResponseRedirect('/settings/team/')
     response_dictionary = {'current': current, 'teamprofileForm': teamprofileForm}
     return render_to_response('settings/team_create.html',
                           response_dictionary,
