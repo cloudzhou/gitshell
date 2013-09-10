@@ -15,15 +15,16 @@ class Userprofile(BaseModel):
     resume = models.CharField(max_length=2048, null=True)
     imgurl = models.CharField(max_length=32, null=True)
 
-    pubrepo = models.IntegerField(null=False, default=0) 
-    prirepo = models.IntegerField(null=False, default=0)
-    watchrepo = models.IntegerField(null=False, default=0)
-    watch = models.IntegerField(null=False, default=0)
-    be_watched = models.IntegerField(null=False, default=0)
-    quote = models.BigIntegerField(null=False, default=536870912)
-    used_quote = models.BigIntegerField(null=False, default=0)
+    pubrepo = models.IntegerField(default=0, null=False) 
+    prirepo = models.IntegerField(default=0, null=False)
+    watchrepo = models.IntegerField(default=0, null=False)
+    watch = models.IntegerField(default=0, null=False)
+    be_watched = models.IntegerField(default=0, null=False)
+    quote = models.BigIntegerField(default=536870912, null=False)
+    used_quote = models.BigIntegerField(default=0, null=False)
 
-    unread_message = models.IntegerField(null=False, default=0)
+    unread_message = models.IntegerField(default=0, null=False)
+    is_team_account = models.IntegerField(default=0, null=False)
 
     def get_total_repo(self):
         return self.prirepo + self.pubrepo
@@ -67,16 +68,16 @@ class ThirdpartyUser(BaseModel):
     GOOGLE = 2
 
 class UserEmail(BaseModel):
-    user_id = models.IntegerField(null=False, default=0)
+    user_id = models.IntegerField(default=0, null=False)
     email = models.CharField(max_length=75, null=True)
     is_verify = models.IntegerField(default=0, null=True)
     is_primary = models.IntegerField(default=0, null=True)
     is_public = models.IntegerField(default=0, null=True)
 
 class Recommend(BaseModel):
-    user_id = models.IntegerField(null=False, default=0)
+    user_id = models.IntegerField(default=0, null=False)
     content = models.CharField(max_length=128, null=False)
-    from_user_id = models.IntegerField(null=False, default=0)
+    from_user_id = models.IntegerField(default=0, null=False)
 
     def to_recommend_vo(self, users_map):
         recommend_vo = {}

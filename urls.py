@@ -78,6 +78,8 @@ urlpatterns = patterns('gitshell',
     url(r'^settings/thirdparty/?$', 'gssettings.views.thirdparty'),
     url(r'^settings/change_username_email/?$', 'gssettings.views.change_username_email'),
     url(r'^settings/validate_email/(\w+)/?$', 'gssettings.views.validate_email'),
+    url(r'^settings/team/?$', 'gssettings.views.team'),
+    url(r'^settings/team/create/?$', 'gssettings.views.team_create'),
     url(r'^settings/destroy/?$', 'gssettings.views.destroy'),
 
     # gitshell openssh keyauth and dist, private for subnetwork access by iptables, nginx port 9000

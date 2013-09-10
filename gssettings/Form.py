@@ -14,9 +14,18 @@ class UserprofileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(UserprofileForm, self).__init__(*args, **kwargs)
         for key, field in self.fields.iteritems():
-            if key != 'tweet':
-                self.fields[key].required = False
+            self.fields[key].required = False
 
+class TeamprofileForm(forms.ModelForm):
+    class Meta:
+        model = Userprofile
+        fields = ('username', 'tweet', 'nickname', 'company', 'website')
+
+    def __init__(self, *args, **kwargs):
+        super(TeamprofileForm, self).__init__(*args, **kwargs)
+        for key, field in self.fields.iteritems():
+            self.fields[key].required = False
+    
 class DoSshpubkeyForm(forms.Form):
     pubkey_id = forms.IntegerField()
     action = forms.CharField(max_length=12)

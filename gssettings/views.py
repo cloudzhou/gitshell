@@ -15,7 +15,7 @@ from gitshell.gsuser.models import Userprofile, UserEmail, GsuserManager, Thirdp
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
 from gitshell.feed.models import NOTIF_TYPE, NOTIF_FQCY, FeedManager
 from gitshell.feed.mailUtils import Mailer
-from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, UserprofileForm, DoSshpubkeyForm
+from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, UserprofileForm, TeamprofileForm, DoSshpubkeyForm
 
 @login_required
 def profile(request):
@@ -269,9 +269,26 @@ def validate_email(request, token):
                           context_instance=RequestContext(request))
 
 @login_required
+def team(request):
+    current = 'team'
+    response_dictionary = {'current': current}
+    return render_to_response('settings/team.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
+def team_create(request):
+    current = 'team'
+    teamprofileForm = TeamprofileForm()
+    response_dictionary = {'current': current, 'teamprofileForm': teamprofileForm}
+    return render_to_response('settings/team_create.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
 def destroy(request):
     current = 'destroy'
-    response_dictionary = {'current': current, 'hello_world': 'hello world'}
+    response_dictionary = {'current': current}
     return render_to_response('settings/destroy.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
