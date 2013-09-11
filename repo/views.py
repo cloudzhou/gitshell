@@ -18,7 +18,7 @@ from gitshell.feed.feed import AttrKey, FeedAction
 from gitshell.feed.models import FeedManager, FEED_TYPE, NOTIF_TYPE
 from gitshell.repo.Forms import RepoForm, RepoMemberForm
 from gitshell.repo.githandler import GitHandler
-from gitshell.repo.models import Repo, RepoManager, PullRequest, PULL_STATUS
+from gitshell.repo.models import Repo, RepoManager, PullRequest, PULL_STATUS, KEEP_REPO_NAME
 from gitshell.gsuser.models import GsuserManager
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.stats import timeutils
@@ -27,7 +27,6 @@ from gitshell.settings import SECRET_KEY, REPO_PATH, GIT_BARE_REPO_PATH, DELETE_
 from gitshell.daemon.models import EventManager
 from gitshell.objectscache.models import CacheKey
 from gitshell.viewtools.views import json_httpResponse
-from gitshell.gsuser.middleware import KEEP_REPO_NAME
 from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo, dropbox_share_direct
 
 lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml', 'go': 'Go'}

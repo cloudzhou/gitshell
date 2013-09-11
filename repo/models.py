@@ -7,7 +7,8 @@ from gitshell.objectscache.da import query, query_first, queryraw, execute, coun
 from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
-from gitshell.gsuser.middleware import KEEP_REPO_NAME
+
+KEEP_REPO_NAME = ['active', 'watch', 'recommend', 'repo']
 
 class Repo(BaseModel):
     user_id = models.IntegerField()

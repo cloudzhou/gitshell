@@ -6,18 +6,22 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.functional import SimpleLazyObject
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.gsuser.models import GsuserManager, Userprofile
+from gitshell.gsuser.utils import UrlRouter
+from gitshell.repo.models import RepoManager
+from gitshell.team.models import TeamManager
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
 from gitshell.objectscache.da import da_post_save
 from gitshell.settings import TIMESTAMP, MODE
 
 MAIN_NAVS = ['index', 'stats', 'skills', 'dashboard', 'login', 'logout', 'join', 'resetpassword', 'help', 'settings', 'private', 'captcha', 'ajax', 'explore', 'error']
-KEEP_REPO_NAME = ['active', 'watch', 'recommend', 'repo']
 
 def get_userprofile(request):
     if not hasattr(request, '_cached_userprofile'):
         if request.user.is_authenticated():
             request._cached_userprofile = GsuserManager.get_userprofile_by_id(request.user.id)
+        else:
+            request._cached_userprofile = Userprofile()
     return request._cached_userprofile
 
 
@@ -27,7 +31,7 @@ class UserprofileMiddleware(object):
 
 ACL_KEY = 'ACL'
 ACCESS_WITH_IN_TIME = 30*60
-MAX_ACCESS_TIME = 500
+MAX_ACCESS_TIME = 1000
 OUT_OF_AccessLimit_URL = '/help/access_out_of_limit/'
 class UserAccessLimitMiddleware(object):
     def process_request(self, request):
@@ -56,8 +60,12 @@ def userprofile(request):
         userprofile = request.userprofile
     else:
         userprofile = Userprofile()
-    return {'userprofile': userprofile }
-
+    gs_teamMembers = []
+    if userprofile and userprofile.is_join_team == 1:
+        gs_teamMembers = TeamManager.list_teamMember_by_userId(userprofile.id)
+    urlRouter = UrlRouter(userprofile)
+    return {'userprofile': userprofile, 'urlRouter': urlRouter, 'gs_teamMembers': gs_teamMembers}
+    
 def gitshell(request):
     return {'gitshell': {
                 'timestamp': TIMESTAMP,

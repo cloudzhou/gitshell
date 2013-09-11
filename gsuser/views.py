@@ -18,6 +18,7 @@ from gitshell.gsuser.Forms import LoginForm, JoinForm, ResetpasswordForm0, Reset
 from gitshell.gsuser.models import UserEmail, Recommend, Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
 from gitshell.gsuser.middleware import MAIN_NAVS
 from gitshell.repo.models import RepoManager
+from gitshell.team.models import TeamManager
 from gitshell.stats.models import StatsManager
 from gitshell.feed.feed import FeedAction
 from gitshell.feed.mailUtils import Mailer
@@ -275,6 +276,15 @@ def unwatch(request, user_name):
         message = u'取消关注失败，可能用户未被关注'
         return json_httpResponse({'result': 'failed', 'message': message})
     return json_httpResponse(response_dictionary)
+
+@login_required
+def switch(request, user_name, current_user_id):
+    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, int(current_user_id))
+    if teamMember:
+        request.userprofile.current_user_id = current_user_id
+        request.userprofile.save()
+    # TODO to the same current url for switched user
+    return HttpResponseRedirect('/dashboard/')
 
 def login(request):
     loginForm = LoginForm()

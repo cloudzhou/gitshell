@@ -20,15 +20,15 @@
     <link rel="shortcut icon" href="/static/img/favicon.ico">
   </head>
   <body id="gitshell" class="{% block body_class_name %}{% endblock %}">
-		<nav class="navbar" role="navigation">
-			<div class="container">
+      <nav class="navbar" role="navigation">
+         <div class="container">
         {% if user.is_authenticated %}
           <a class="brand" href="#" role="logo"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=28" alt=""><span>{{user.username}}</span></a>
         {% else %}
           <a class="brand" href="#" role="logo"><span>Gitshell</span></a>
         {% endif %}
-				<ul class="nav main-nav">
-					{% if user.is_authenticated %}
+            <ul class="nav main-nav">
+               {% if user.is_authenticated %}
           <li class="active"{# Fake #}><a href="/dashboard/timeline/">信息流</a></li>
             <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="/dashboard/notif/" class="todo">操作中心<span class="label-mini label-warning hide">{{userprofile.unread_message}}</span></a></li>
             <li class="dropdown{% if mainnav == '/{{user.username}}/repo/' %}active{% endif %}">
@@ -50,11 +50,11 @@
             </li>
             <li class="create-repo"><a href="/{{user.username}}/-/repo/create/" class=""><span class="button"><i class="icon-pencil"></i>新建仓库</span></a></li>
             </li>
-					{% else %}
+               {% else %}
             <li><a href="/login/">注册</a></li>
             <li><a href="/login/">登陆</a></li>
-					{% endif %}
-				</ul>
+               {% endif %}
+            </ul>
         {% if user.is_authenticated %}
           <ul class="nav userbar">
             {% comment %}
@@ -66,13 +66,13 @@
               <a href="/dashboard/notif/"><i class="icon-bell"></i>{#userprofile.unread_message#}</a>
               {# TODO | Notifications #}
             </li>
-						<li class="dropdown">
-							<a href="/{{ user.username }}/" class="dropdown-toggle" data-toggle="dropdown">
+                  <li class="dropdown">
+                     <a href="/{{ user.username }}/" class="dropdown-toggle" data-toggle="dropdown">
                 <i class="icon-cog"></i>
-							</a>
-							<div class="dropdown-menu" role="menu" aria-labelladby="dLable">
+                     </a>
+                     <div class="dropdown-menu" role="menu" aria-labelladby="dLable">
 
-								<div class="info">
+                        <div class="info">
 
                   <div class="detail">
                     <h2 class="heading">{{ user.username }}</h2>
@@ -96,24 +96,28 @@
                     <a href="#">反馈</a>
                   </span>
                 </div>
-
-							</div>
-						</li>
+                <div>
+                    {% for teamMember in gs_teamMembers %}
+                        <a href="/{{user.username}}/-/user/switch/{{teamMember.team_user_id}}/">{{ teamMember.team_user.username }}</a>
+                    {% endfor %}
+                </div>
+                    </div>
+                  </li>
           </ul>
-					{% else %}
+               {% else %}
             <p class="welcome-msg">请<a href="/login/"{%if mainnav == 'login'%}class="active"{%endif%}>登录</a>,或者<a href="/join/0/"{%if mainnav == 'eoin'%}class="active"{%endif%}>注册</a></p>
-					{% endif %}
-			</div>
-		</nav>
+               {% endif %}
+         </div>
+      </nav>
     {% block repo_header %}{% endblock %}
 
-		<main class="main {% block container_class_name %}{% endblock %}" role="main">
-			{% block container %}{% endblock %}
-		</main>
+      <main class="main {% block container_class_name %}{% endblock %}" role="main">
+         {% block container %}{% endblock %}
+      </main>
 
-		<footer class="footer" role="contentinfo">
-			<div class="container">
-				<ul class="nav">
+      <footer class="footer" role="contentinfo">
+         <div class="container">
+            <ul class="nav">
           <li><a href="/help/#about" class="about-gitshell">关于GitShell<i class="icon-sort"></i></a></li>
           <li><a href="/help/#mission">我们的愿景</a></li>
           <li><a href="/help/#faq">FAQ</a></li>
@@ -121,10 +125,10 @@
           <li><a href="/help/" class="help">帮助</a></li>
           <li><a target="_blank" href="http://blog.gitshell.com">官方博客</a></li>
           <li><a href="/help/#contact">联系GitShell</a></li>
-				</ul>
-				<p class="copyright">&copy; <strong>Gitshell</strong> 2013 专注<a target="_blank" href="http://git-scm.com/">Git</a>代码托管<a class="muted" href="http://www.miitbeian.gov.cn">苏ICP备12042031号</a></p>
-			</div>
-		</footer>
+            </ul>
+            <p class="copyright">&copy; <strong>Gitshell</strong> 2013 专注<a target="_blank" href="http://git-scm.com/">Git</a>代码托管<a class="muted" href="http://www.miitbeian.gov.cn">苏ICP备12042031号</a></p>
+         </div>
+      </footer>
     <a href="#" class="btn hide">返回顶部</a>
 
     <script src="/static/js/min/lib.min.js?timestamp={{gitshell.timestamp}}"></script>
@@ -135,10 +139,10 @@
     <script src="/static/js/gitshell.js"></script>
     {% endif %}
     {% block js %}{% endblock %}
-		<script>
-			var _gaq = _gaq || [];
-			_gaq.push(['_setAccount', 'UA-33142900-1']);
-			_gaq.push(['_trackPageview']);
+      <script>
+         var _gaq = _gaq || [];
+         _gaq.push(['_setAccount', 'UA-33142900-1']);
+         _gaq.push(['_trackPageview']);
 
       (function() {
           var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;

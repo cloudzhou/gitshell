@@ -160,6 +160,8 @@ rawsql = {
     'notifsetting_s_userId':
         'select * from feed_notifsetting where visibly = 0 and user_id = %s limit 0, 1',
     # team #
+    'teammember_s_userId_teamUserId':
+        'select * from team_teammember where visibly = 0 and user_id = %s and team_user_id = %s limit 0, 1',
     'teammember_l_userId':
         'select * from team_teammember where visibly = 0 and user_id = %s order by modify_time desc limit 0, 1000',
 }

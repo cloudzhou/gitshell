@@ -109,6 +109,7 @@ urlpatterns = patterns('gitshell',
 
     # gsuser
     url(r'^(\w+)/?$', 'gsuser.views.user'),
+    url(r'^(\w+)/-/user/switch/(\d+)/?$', 'gsuser.views.switch'),
     url(r'^(\w+)/-/stats/?$', 'gsuser.views.stats'),
     url(r'^(\w+)/-/active/?$', 'gsuser.views.active'),
     url(r'^(\w+)/-/star/repo/?$', 'gsuser.views.star_repo'),

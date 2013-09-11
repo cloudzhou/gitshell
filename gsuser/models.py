@@ -24,7 +24,12 @@ class Userprofile(BaseModel):
     used_quote = models.BigIntegerField(default=0, null=False)
 
     unread_message = models.IntegerField(default=0, null=False)
+
+    # what about joined_team_count
+    is_join_team = models.IntegerField(default=0, null=False)
+    current_user_id = models.IntegerField(default=0, null=False)
     is_team_account = models.IntegerField(default=0, null=False)
+    creator_user_id = models.IntegerField(default=0, null=False)
 
     def get_total_repo(self):
         return self.prirepo + self.pubrepo

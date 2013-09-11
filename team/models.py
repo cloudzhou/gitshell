@@ -38,6 +38,12 @@ class TeamGroup(BaseModel):
 class TeamManager():
     
     @classmethod
+    def get_teamMember_by_userId_teamUserId(self, user_id, team_user_id):
+        teamMember = query_first(TeamMember, user_id, 'teammember_s_userId_teamUserId', [user_id, team_user_id])
+        teamMember.team_user = GsuserManager.get_userprofile_by_id(teamMember.team_user_id)
+        return teamMember
+
+    @classmethod
     def list_teamMember_by_userId(self, user_id):
         teamMembers = query(TeamMember, user_id, 'teammember_l_userId', [user_id])
         for x in teamMembers:
