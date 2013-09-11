@@ -346,13 +346,13 @@ def login_github_apply(request):
     if thirdpartyUser_find is not None:
         error = u'该 GitHub 账户已经关联 Gitshell，请直接使用 GitHub 账户登录'
     if error != '':
-        return HttpResponseRedirect('/%s/repo/create/?%s#via-github' % (request.user.username, urllib.urlencode({'apply_error': error.encode('utf8')})))
+        return HttpResponseRedirect('/%s/-/repo/create/?%s#via-github' % (request.user.username, urllib.urlencode({'apply_error': error.encode('utf8')})))
     thirdpartyUser.user_type = ThirdpartyUser.GITHUB
     thirdpartyUser.access_token = access_token
     thirdpartyUser.id = request.user.id
     thirdpartyUser.init = 1
     thirdpartyUser.save()
-    return HttpResponseRedirect('/%s/repo/create/#via-github' % request.user.username)
+    return HttpResponseRedirect('/%s/-/repo/create/#via-github' % request.user.username)
 
 @login_required
 @require_http_methods(["POST"])

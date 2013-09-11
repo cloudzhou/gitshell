@@ -12,18 +12,15 @@ urlpatterns = patterns('gitshell',
     url(r'^ajax/user/change/?$', 'gsuser.views.change'),
     url(r'^ajax/user/watch/(\w+)/', 'gsuser.views.watch'),
     url(r'^ajax/user/unwatch/(\w+)/', 'gsuser.views.unwatch'),
-    url(r'^ajax/user/(\w+)/recommend/delete/(\d+)/?$', 'gsuser.views.recommend_delete'),
     url(r'^ajax/feed/ids/?$', 'feed.views.feed_by_ids'),
     url(r'^ajax/repo/find/?$', 'repo.views.find'),
     url(r'^ajax/repo/list/github/?$', 'repo.views.list_github_repos'),
     url(r'^ajax/home/do_issue/?$', 'issue.views.do_issue'),
 
-    # gsuser
+    # dashboard
     url(r'^dashboard/?$', 'feed.views.dashboard'),
     url(r'^dashboard/feed/?$', 'feed.views.feed'),
     url(r'^dashboard/timeline/?$', 'feed.views.timeline'),
-
-    # todolist
     url(r'^dashboard/todo/?$', 'todolist.views.todo'),
     url(r'^dashboard/todo/(\d+)/?$', 'todolist.views.todo_scene'),
     url(r'^dashboard/todo/(\d+)/add/?$', 'todolist.views.add_scene'),
@@ -33,31 +30,22 @@ urlpatterns = patterns('gitshell',
     url(r'^dashboard/todo/(\d+)/doing_todo/?$', 'todolist.views.doing_todo'),
     url(r'^dashboard/todo/(\d+)/done_todo/?$', 'todolist.views.done_todo'),
     url(r'^dashboard/todo/(\d+)/update_scene_meta/?$', 'todolist.views.update_scene_meta'),
-
     url(r'^dashboard/issues/?$', 'feed.views.issues_default'),
     url(r'^dashboard/issues/(\d+)/?$', 'feed.views.issues'),
-
     url(r'^dashboard/pull/?$', 'feed.views.pull_merge'),
     url(r'^dashboard/pull/merge/?$', 'feed.views.pull_merge'),
     url(r'^dashboard/pull/request/?$', 'feed.views.pull_request'),
-
-    url(r'^dashboard/explore/?$', 'feed.views.explore'),
     url(r'^dashboard/notif/?$', 'feed.views.notif'),
+    url(r'^dashboard/explore/?$', 'feed.views.explore'),
 
-    url(r'^login/?$', 'gsuser.views.login'),
-    url(r'^login/oauth/github/?$', 'gsuser.views.login_github'),
-    url(r'^login/oauth/github/apply/?$', 'gsuser.views.login_github_apply'),
-    url(r'^login/oauth/github/relieve/?$', 'gsuser.views.login_github_relieve'),
-    url(r'^logout/?$', 'gsuser.views.logout'),
-    url(r'^join/?(\w+)?/?$', 'gsuser.views.join'),
-    url(r'^resetpassword/?(\w+)?/?$', 'gsuser.views.resetpassword'),
-
-    # help
-    url(r'^help/?$', 'help.views.default'),
-    url(r'^help/quickstart/?$', 'help.views.quickstart'),
-    url(r'^help/error/?$', 'help.views.error'),
-    url(r'^help/access_out_of_limit/?$', 'help.views.access_out_of_limit'),
-    url(r'^help/reset_access_limit/?$', 'help.views.reset_access_limit'),
+    url(r'^(\w+)/-/dashboard/?$', 'team.views.dashboard'),
+    url(r'^(\w+)/-/dashboard/feed/?$', 'team.views.feed'),
+    url(r'^(\w+)/-/dashboard/issues/?$', 'team.views.issues_default'),
+    url(r'^(\w+)/-/dashboard/issues/(\d+)/?$', 'team.views.issues'),
+    url(r'^(\w+)/-/dashboard/pull/?$', 'team.views.pull_merge'),
+    url(r'^(\w+)/-/dashboard/pull/merge/?$', 'team.views.pull_merge'),
+    url(r'^(\w+)/-/dashboard/pull/request/?$', 'team.views.pull_request'),
+    url(r'^(\w+)/-/dashboard/notif/?$', 'team.views.notif'),
 
     # settings
     url(r'^settings/?$', 'gssettings.views.profile'),
@@ -84,6 +72,27 @@ urlpatterns = patterns('gitshell',
     url(r'^settings/team/rights/push/?$', 'gssettings.views.team_push'),
     url(r'^settings/destroy/?$', 'gssettings.views.destroy'),
 
+    url(r'^(\w+)/-/settings/?$', 'team.views.profile'),
+    url(r'^(\w+)/-/settings/profile/?$', 'team.views.profile'),
+    url(r'^(\w+)/-/settings/groups/?$', 'team.views.groups'),
+    url(r'^(\w+)/-/settings/members/?$', 'team.views.members'),
+
+    # user login logout join
+    url(r'^login/?$', 'gsuser.views.login'),
+    url(r'^login/oauth/github/?$', 'gsuser.views.login_github'),
+    url(r'^login/oauth/github/apply/?$', 'gsuser.views.login_github_apply'),
+    url(r'^login/oauth/github/relieve/?$', 'gsuser.views.login_github_relieve'),
+    url(r'^logout/?$', 'gsuser.views.logout'),
+    url(r'^join/?(\w+)?/?$', 'gsuser.views.join'),
+    url(r'^resetpassword/?(\w+)?/?$', 'gsuser.views.resetpassword'),
+
+    # help
+    url(r'^help/?$', 'help.views.default'),
+    url(r'^help/quickstart/?$', 'help.views.quickstart'),
+    url(r'^help/error/?$', 'help.views.error'),
+    url(r'^help/access_out_of_limit/?$', 'help.views.access_out_of_limit'),
+    url(r'^help/reset_access_limit/?$', 'help.views.reset_access_limit'),
+
     # gitshell openssh keyauth and dist, private for subnetwork access by iptables, nginx port 9000
     url(r'^private/http_auth/?$', 'keyauth.views.http_auth'),
     url(r'^private/keyauth/([a-zA-Z0-9:]+)/?$', 'keyauth.views.pubkey'),
@@ -91,23 +100,24 @@ urlpatterns = patterns('gitshell',
     url(r'^private/dist/repo/(\w+)/([a-zA-Z0-9_\-]+)/?$', 'dist.views.repo'),
     url(r'^private/dist/refresh/?$', 'dist.views.refresh'),
     url(r'^private/dist/echo/?$', 'dist.views.echo'),
+
     # gitshell keep namespace
     url(r'^gitshell/list_latest_push_repo/(\w+)/?$', 'repo.views.list_latest_push_repo'),
 
     # third part
     url(r'^captcha/', include('captcha.urls')),
 
-    # write middleware to rewrite urlconf, by add 'urlconf' attribute to HttpRequest
     # gsuser
     url(r'^(\w+)/?$', 'gsuser.views.user'),
     url(r'^(\w+)/-/stats/?$', 'gsuser.views.stats'),
-    url(r'^(\w+)/active/?$', 'gsuser.views.active'),
-    url(r'^(\w+)/star/repo/?$', 'gsuser.views.star_repo'),
-    url(r'^(\w+)/watch/repo/?$', 'gsuser.views.watch_repo'),
-    url(r'^(\w+)/watch/user/?$', 'gsuser.views.watch_user'),
-    url(r'^(\w+)/repo/?$', 'repo.views.user_repo'),
-    url(r'^(\w+)/repo/(\d+)/?$', 'repo.views.user_repo_paging'),
-    url(r'^(\w+)/repo/create/?$', 'repo.views.create'),
+    url(r'^(\w+)/-/active/?$', 'gsuser.views.active'),
+    url(r'^(\w+)/-/star/repo/?$', 'gsuser.views.star_repo'),
+    url(r'^(\w+)/-/watch/repo/?$', 'gsuser.views.watch_repo'),
+    url(r'^(\w+)/-/watch/user/?$', 'gsuser.views.watch_user'),
+    url(r'^(\w+)/-/repo/?$', 'repo.views.user_repo'),
+    url(r'^(\w+)/-/repo/(\d+)/?$', 'repo.views.user_repo_paging'),
+    url(r'^(\w+)/-/repo/create/?$', 'repo.views.create'),
+
     # repo
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/?$', 'repo.views.repo'),
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/tree/?$', 'repo.views.tree_default'),

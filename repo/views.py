@@ -1113,7 +1113,7 @@ def delete(request, user_name, repo_name):
             shutil.move(abs_repopath, delete_path)
         feedAction = FeedAction()
         feedAction.delete_repo_feed(repo.id)
-        return HttpResponseRedirect('/%s/repo/' % request.user.username)
+        return HttpResponseRedirect('/%s/-/repo/' % request.user.username)
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'error': error}
     return render_to_response('repo/delete.html',
                           response_dictionary,

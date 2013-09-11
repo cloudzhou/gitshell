@@ -15,7 +15,7 @@
             {% for teamMember in teamMembers %}
             <tr>
                 <td class="name">
-                    {{ teamMember.team_user.username }}
+                    <a href="/{{ teamMember.team_user.username }}/">{{ teamMember.team_user.username }}</a>
                 </td>
                 <td class="rights">
                     {% if teamMember.has_admin_rights %}
