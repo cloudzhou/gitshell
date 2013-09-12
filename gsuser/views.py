@@ -285,7 +285,7 @@ def switch(request, user_name, current_user_id):
         request.userprofile.current_user_id = current_user_id
         request.userprofile.save()
     # TODO to the same current url for switched user
-    return HttpResponseRedirect(UrlRouter().route('/dashboard/'))
+    return HttpResponseRedirect(request.urlRouter.route('/dashboard/'))
 
 def login(request):
     loginForm = LoginForm()
@@ -306,7 +306,7 @@ def login(request):
                 user = auth_authenticate(username=user.username, password=password)
                 if user is not None and user.is_active:
                     auth_login(request, user)
-                    url_next = UrlRouter().route('/dashboard/')
+                    url_next = request.urlRouter.route('/dashboard/')
                     if request.GET.get('next') is not None:
                         url_next = request.GET.get('next')
                     return HttpResponseRedirect(url_next)
@@ -339,7 +339,7 @@ def login_github(request):
         thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(user.id)
     if thirdpartyUser.init == 0:
         return HttpResponseRedirect('/settings/change_username_email/')
-    return HttpResponseRedirect(UrlRouter().route('/dashboard/'))
+    return HttpResponseRedirect(request.urlRouter.route('/dashboard/'))
 
 @login_required
 def login_github_apply(request):

@@ -11,4 +11,8 @@ def keyvalue(dict, key):
 def route(urlRouter, url):
     return urlRouter.route(url)
 
+@register.filter
+def route_context(urlRouter, url):
+    return urlRouter.route_context(url)
+
 

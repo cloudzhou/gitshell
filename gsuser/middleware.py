@@ -28,6 +28,7 @@ def get_userprofile(request):
 class UserprofileMiddleware(object):
    def process_request(self, request):
         request.userprofile = SimpleLazyObject(lambda: get_userprofile(request))
+        request.urlRouter = UrlRouter(request.userprofile, _get_context_username(request))
 
 ACL_KEY = 'ACL'
 ACCESS_WITH_IN_TIME = 30*60
@@ -63,7 +64,7 @@ def userprofile(request):
     gs_teamMembers = []
     if userprofile and userprofile.is_join_team == 1:
         gs_teamMembers = TeamManager.list_teamMember_by_userId(userprofile.id)
-    urlRouter = UrlRouter(userprofile)
+    urlRouter = request.urlRouter
     return {'userprofile': userprofile, 'urlRouter': urlRouter, 'gs_teamMembers': gs_teamMembers}
     
 def gitshell(request):
@@ -83,8 +84,23 @@ def mainnav(request):
         mainnav = path[1:second_slash_index]
     return {'mainnav': mainnav }
 
+def _get_context_username(request):
+    context_username = ''
+    path = request.path
+    if path == '' or path == '/':
+        return context_username
+    second_slash_index = path.find('/', 1)
+    if second_slash_index == -1:
+        context_username = path[1:]
+    else:
+        context_username = path[1:second_slash_index]
+    return context_username
+
 def __cache_version_update(sender, **kwargs):
     da_post_save(kwargs['instance'])
+
+from django.template.loader import add_to_builtins
+add_to_builtins('gitshell.viewtools.templatetags.gstools')
 
 post_save.connect(__cache_version_update)
 post_delete.connect(__cache_version_update)
