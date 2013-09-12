@@ -5,6 +5,7 @@ from django.shortcuts import render_to_response
 from django.views.decorators.http import require_http_methods
 from gitshell.help.Forms import ResetAccessLimitForm
 from gitshell.gsuser.middleware import ACL_KEY, ACCESS_WITH_IN_TIME
+from gitshell.gsuser.utils import UrlRouter
 
 def default(request):
     response_dictionary = {}
@@ -38,5 +39,5 @@ def reset_access_limit(request):
         user_id = request.user.id
         key = '%s:%s' % (ACL_KEY, user_id)
         cache.set(key, 1, ACCESS_WITH_IN_TIME)
-    return HttpResponseRedirect('/dashboard/')
+    return HttpResponseRedirect(UrlRouter().route('/dashboard/'))
 

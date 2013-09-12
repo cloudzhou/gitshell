@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load gstools %}
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -29,12 +30,12 @@
         {% endif %}
             <ul class="nav main-nav">
                {% if user.is_authenticated %}
-          <li class="active"{# Fake #}><a href="/dashboard/timeline/">信息流</a></li>
-            <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="/dashboard/notif/" class="todo">操作中心<span class="label-mini label-warning hide">{{userprofile.unread_message}}</span></a></li>
-            <li class="dropdown{% if mainnav == '/{{user.username}}/repo/' %}active{% endif %}">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">仓库<i class="icon-caret-down"></i></a>
+          <li class="active"{# Fake #}><a href="{{urlRouter|route:'/dashboard/timeline/'}}">信息流</a></li>
+            <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="{{urlRouter|route:'/dashboard/notif/'}}" class="todo">操作中心<span class="label-mini label-warning hide">{{userprofile.unread_message}}</span></a></li>
+            <li class="dropdown{% if mainnav == '/{{user.username}}/-/repo/' %}active{% endif %}">
+              <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">仓库<i class="icon-caret-down"></i></a>
               <ul class="dropdown-menu">
-                <li class="all"><a href="/{{user.username}}/repo/">所有仓库</a></li>
+                <li class="all"><a href="/{{user.username}}/-/repo/">所有仓库</a></li>
                 <li class="leader"><span>最近更新</span></li>
                 <li><a href="#">cloudzhou/gitshell</a></li>
                 <li><a href="#">yuwen/notes</a></li>
@@ -57,13 +58,8 @@
             </ul>
         {% if user.is_authenticated %}
           <ul class="nav userbar">
-            {% comment %}
-              {% if userprofile.unread_message > 0 %}
-                <li class="msgs"><a href="/dashboard/notif/" class="label label-warning">{{userprofile.unread_message}}</a></li>
-              {% endif %}
-            {% endcomment %}
             <li class="bell">
-              <a href="/dashboard/notif/"><i class="icon-bell"></i>{#userprofile.unread_message#}</a>
+              <a href="{{urlRouter|route:'/dashboard/notif/'}}"><i class="icon-bell"></i>{#userprofile.unread_message#}</a>
               {# TODO | Notifications #}
             </li>
                   <li class="dropdown">
@@ -74,6 +70,7 @@
 
                         <div class="info">
 
+<!--TODO get the team name-->
                   <div class="detail">
                     <h2 class="heading">{{ user.username }}</h2>
                     <p class="actions">
@@ -93,7 +90,7 @@
                   <span class="feedback">
                     <a href="/help/">帮助</a>
                     <span>·</span>
-                    <a href="#">反馈</a>
+                    <a href="mailto:support@gitshell.com">反馈</a>
                   </span>
                 </div>
                 <div>

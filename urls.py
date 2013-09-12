@@ -39,7 +39,7 @@ urlpatterns = patterns('gitshell',
     url(r'^dashboard/explore/?$', 'feed.views.explore'),
 
     url(r'^(\w+)/-/dashboard/?$', 'team.views.dashboard'),
-    url(r'^(\w+)/-/dashboard/feed/?$', 'team.views.feed'),
+    url(r'^(\w+)/-/dashboard/timeline/?$', 'team.views.timeline'),
     url(r'^(\w+)/-/dashboard/issues/?$', 'team.views.issues_default'),
     url(r'^(\w+)/-/dashboard/issues/(\d+)/?$', 'team.views.issues'),
     url(r'^(\w+)/-/dashboard/pull/?$', 'team.views.pull_merge'),

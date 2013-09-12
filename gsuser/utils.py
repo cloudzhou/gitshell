@@ -11,10 +11,13 @@ class UrlRouter():
     def __init__(self, userprofile):
         self.userprofile = userprofile
 
-    def route(url):
+    def route(self, url):
         if not self.userprofile or not self.userprofile.id or not self.userprofile.current_user_id:
             return url
         if self.userprofile.current_user_id == 0 or self.userprofile.id == self.userprofile.current_user_id:
             return url
         current_user = GsuserManager.get_user_by_id(self.userprofile.current_user_id)
-        return '/%s/-%s' % (current_user.username, url)
+        if current_user:
+            return '/%s/-%s' % (current_user.username, url)
+        return url
+

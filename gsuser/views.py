@@ -17,6 +17,7 @@ from gitshell.objectscache.models import CacheKey
 from gitshell.gsuser.Forms import LoginForm, JoinForm, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
 from gitshell.gsuser.models import UserEmail, Recommend, Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
 from gitshell.gsuser.middleware import MAIN_NAVS
+from gitshell.gsuser.utils import UrlRouter
 from gitshell.repo.models import RepoManager
 from gitshell.team.models import TeamManager
 from gitshell.stats.models import StatsManager
@@ -284,7 +285,7 @@ def switch(request, user_name, current_user_id):
         request.userprofile.current_user_id = current_user_id
         request.userprofile.save()
     # TODO to the same current url for switched user
-    return HttpResponseRedirect('/dashboard/')
+    return HttpResponseRedirect(UrlRouter().route('/dashboard/'))
 
 def login(request):
     loginForm = LoginForm()
@@ -305,7 +306,7 @@ def login(request):
                 user = auth_authenticate(username=user.username, password=password)
                 if user is not None and user.is_active:
                     auth_login(request, user)
-                    url_next = '/dashboard/'
+                    url_next = UrlRouter().route('/dashboard/')
                     if request.GET.get('next') is not None:
                         url_next = request.GET.get('next')
                     return HttpResponseRedirect(url_next)
@@ -338,7 +339,7 @@ def login_github(request):
         thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(user.id)
     if thirdpartyUser.init == 0:
         return HttpResponseRedirect('/settings/change_username_email/')
-    return HttpResponseRedirect('/dashboard/')
+    return HttpResponseRedirect(UrlRouter().route('/dashboard/'))
 
 @login_required
 def login_github_apply(request):
