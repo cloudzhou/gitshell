@@ -23,7 +23,7 @@
       <nav class="navbar" role="navigation">
          <div class="container">
         {% if user.is_authenticated %}
-          <a class="brand" href="#" role="logo"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=28" alt=""><span>{{user.username}}</span></a>
+          <a class="brand" href="#" role="logo"><img src="https://gravatar.com/avatar/{{ userprofile.current_user.imgurl }}?s=28" alt=""><span>{{userprofile.current_user.username}}</span></a>
         {% else %}
           <a class="brand" href="#" role="logo"><span>Gitshell</span></a>
         {% endif %}

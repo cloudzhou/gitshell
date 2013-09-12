@@ -31,6 +31,12 @@ class Userprofile(BaseModel):
     is_team_account = models.IntegerField(default=0, null=False)
     creator_user_id = models.IntegerField(default=0, null=False)
 
+    def current_user(self):
+        if self._current_user and self._current_user.id == self.current_user_id:
+            return self._current_user
+        self._current_user = GsuserManager.get_userprofile_by_id(self.current_user_id)
+        return self._current_user
+
     def get_total_repo(self):
         return self.prirepo + self.pubrepo
 
@@ -56,6 +62,7 @@ class Userprofile(BaseModel):
         return str(quote/1073741824) + 'g'
 
    ### auth_user filed ###
+    _current_user = None
     date_joined = 0
     last_login = 0
 

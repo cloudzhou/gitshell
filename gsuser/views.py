@@ -280,11 +280,14 @@ def unwatch(request, user_name):
 
 @login_required
 def switch(request, user_name, current_user_id):
-    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, int(current_user_id))
-    if teamMember:
-        request.userprofile.current_user_id = current_user_id
-        request.userprofile.save()
-    # TODO to the same current url for switched user
+    current_user_id = int(current_user_id)
+    new_current_user_id = request.user.id
+    if current_user_id != request.user.id:
+        teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, current_user_id)
+        if teamMember:
+            new_current_user_id = current_user_id
+    request.userprofile.current_user_id = new_current_user_id
+    request.userprofile.save()
     return HttpResponseRedirect(request.urlRouter.route('/dashboard/'))
 
 def login(request):
