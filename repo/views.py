@@ -21,6 +21,7 @@ from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, PullRequest, PULL_STATUS, KEEP_REPO_NAME
 from gitshell.gsuser.models import GsuserManager
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
+from gitshell.team.models import TeamManager
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
 from gitshell.settings import SECRET_KEY, REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, PULLREQUEST_REPO_PATH, logger
@@ -1007,14 +1008,25 @@ def create(request, user_name):
     thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
     repo = Repo()
     repo.user_id = request.user.id
-    repo.username = request.user.username
     repoForm = RepoForm(instance = repo)
+    repoForm.fill_username(request.userprofile)
     response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error, 'thirdpartyUser': thirdpartyUser, 'apply_error': request.GET.get('apply_error')}
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
+        repoForm.fill_username(request.userprofile)
         userprofile = request.userprofile
+        create_repo = repoForm.save(commit=False)
+        username = create_repo.username
+        if username != request.user.username:
+            team_user = GsuserManager.get_user_by_name(username)
+            if team_user:
+                teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, team_user.id)
+                if teamMember:
+                    create_repo.user_id = team_user.id
+                    create_repo.username = team_user.username
+                    userprofile = GsuserManager.get_userprofile_by_id(team_user.id)
         if (userprofile.pubrepo + userprofile.prirepo) >= 100:
-            error = u'您拥有的仓库数量已经达到 100 的限制。'
+            error = u'拥有的仓库数量已经达到 100 的限制。'
             return __response_create_repo_error(request, response_dictionary, error)
         if not repoForm.is_valid():
             error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，选择好语言和可见度，active、watch、recommend、repo是保留的名称。'
@@ -1028,23 +1040,19 @@ def create(request, user_name):
             error = u'仓库名称已经存在。'
             return __response_create_repo_error(request, response_dictionary, error)
         if userprofile.used_quote > userprofile.quote:
-            error = u'您剩余空间不足，总空间 %s kb，剩余 %s kb' % (userprofile.quote, userprofile.used_quote)
+            error = u'剩余空间不足，总空间 %s kb，剩余 %s kb' % (userprofile.quote, userprofile.used_quote)
             return __response_create_repo_error(request, response_dictionary, error)
+        create_repo.save()
+        userprofile.save()
         remote_git_url = request.POST.get('remote_git_url', '').strip()
         remote_username = request.POST.get('remote_username', '').strip()
         remote_password = request.POST.get('remote_password', '').strip()
-        create_repo = repoForm.save()
-        if create_repo.auth_type == 0:
-            userprofile.pubrepo = userprofile.pubrepo + 1
-        else:
-            userprofile.prirepo = userprofile.prirepo + 1
-        userprofile.save()
         remote_git_url = __validate_get_remote_git_url(remote_git_url, remote_username, remote_password)
         if remote_git_url is not None and remote_git_url != '':
             create_repo.status = 2
             create_repo.save()
         fulfill_gitrepo(create_repo, remote_git_url)
-        return HttpResponseRedirect('/%s/%s/' % (request.user.username, name))
+        return HttpResponseRedirect('/%s/%s/' % (userprofile.username, name))
     return render_to_response('repo/create.html', response_dictionary, context_instance=RequestContext(request))
 
 def __response_create_repo_error(request, response_dictionary, error):

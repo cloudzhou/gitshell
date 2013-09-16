@@ -47,6 +47,9 @@ class TeamManager():
 
     @classmethod
     def list_teamMember_by_userId(self, user_id):
+        userprofile = GsuserManager.get_userprofile_by_id(user_id)
+        if userprofile.is_join_team == 0:
+            return []
         teamMembers = query(TeamMember, user_id, 'teammember_l_userId', [user_id])
         for x in teamMembers:
             x.team_user = GsuserManager.get_userprofile_by_id(x.team_user_id)

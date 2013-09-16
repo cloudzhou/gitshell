@@ -20,7 +20,7 @@
               </ul>
             </li>
           {% else %}
-            <li><a href="/dashboard/pull/">合并请求</a></li>
+            <li{% if current == 'pull' %} class="active"{% endif %}><a href="{{urlRouter|route_context:'/dashboard/pull/'}}">合并请求</a></li>
           {% endif %}
           <li{% if current == 'issues' %} class="active"{% endif %}><a href="{{urlRouter|route_context:'/dashboard/issues/'}}">Issues</a></li>
         {% endif %}
