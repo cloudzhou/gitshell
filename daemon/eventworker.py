@@ -204,6 +204,8 @@ def __notif(commitHistorys, repo, member_username_dict, member_email_dict):
             FeedManager.notif_commit_at(from_user_id, commitHistory.id, commitHistory.subject)
     
 def __stats(commitHistorys, repo, member_username_dict, member_email_dict):
+    feedAction = FeedAction()
+    unique_author_ids = {}
     stats_commits = []
     for commitHistory in commitHistorys:
         committer_id = get_committer_id(repo, commitHistory, member_username_dict, member_email_dict)
@@ -211,6 +213,10 @@ def __stats(commitHistorys, repo, member_username_dict, member_email_dict):
         if committer_id is not None and author_id is not None:
             timestamp = time.mktime(commitHistory.committer_date.timetuple())
             stats_commits.append([repo.id, committer_id, author_id, timestamp])
+            if author_id not in unique_author_ids:
+                unique_author_ids[author_id] = 1
+    for unique_author_id in unique_author_ids.keys():
+        feedAction.add_recently_active_repo_now(unique_author_id, repo.id)
     StatsManager.stats(stats_commits)
 
 def __clear_relative_cache(user, gsuser, repo):

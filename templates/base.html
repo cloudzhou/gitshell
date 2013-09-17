@@ -6,6 +6,9 @@
     <meta content="Gitshell 专注git代码托管, 团队协同，项目开发" name="description">
     <meta content="Gitshell" name="author">
     <meta name="csrf-token" content="{{csrf_token}}">
+{% if user.is_authenticated %}
+    <meta name="username" content="{{user.username}}">
+{% endif %}
     <link href="/static/less/app/font-awesome/css/font-awesome.min.css?timestamp={{gitshell.timestamp}}" rel="stylesheet" type="text/css">
     {% if gitshell.mode == 'run' %}
       <link href="/static/less/min/gitshell.min.css?timestamp={{gitshell.timestamp}}" rel="stylesheet" type="text/css">
@@ -32,19 +35,10 @@
           <li class="active"{# Fake #}><a href="{{urlRouter|route:'/dashboard/timeline/'}}">信息流</a></li>
             <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="{{urlRouter|route:'/dashboard/notif/'}}" class="todo">操作中心<span class="label-mini label-warning hide">{{userprofile.unread_message}}</span></a></li>
             <li class="dropdown{% if mainnav == '/{{user.username}}/-/repo/' %}active{% endif %}">
-              <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">仓库<i class="icon-caret-down"></i></a>
-              <ul class="dropdown-menu">
+              <a href="javascript:;" class="dropdown-toggle repo-shortcut" data-toggle="dropdown">仓库<i class="icon-caret-down"></i></a>
+              <ul class="dropdown-menu repo-shortcut-ul">
                 <li class="all"><a href="/{{user.username}}/-/repo/">所有仓库</a></li>
-                <li class="leader"><span>最近更新</span></li>
-                <li><a href="#">cloudzhou/gitshell</a></li>
-                <li><a href="#">yuwen/notes</a></li>
-                <li><a href="#">cloudzhou/scripts</a></li>
-                <li><a href="#">cloudzhou/gitshell_static</a></li>
-                {% comment %}
-                  {% for repo in repo_list %}
-                    <li><a href="/{{user_name}}/{{repo.name}}/">{{repo.name}}</a></li>
-                  {% endfor %}
-                {% endcomment %}
+                <li class="repo-loading"><img src="/static/img/loading.gif"></li>
                 <li class="create"><a href="/{{user.username}}/-/repo/create/"><i class="icon-pencil"></i>新建仓库</a></li>
               </ul>
             </li>

@@ -1,5 +1,6 @@
 from django.http import Http404
 from django.http import HttpResponseRedirect
+from gitshell.feed.feed import FeedAction
 from gitshell.repo.models import RepoManager
 
 def repo_permission_check(function):
@@ -15,6 +16,9 @@ def repo_permission_check(function):
             if repo.auth_type == 2:
                 if not RepoManager.is_repo_member(repo, request.user):
                     return HttpResponseRedirect('/help/error/')
+        if request.user.is_authenticated():
+            feedAction = FeedAction()
+            feedAction.add_recently_view_repo_now(request.user.id, repo.id)
         return function(request, *args, **kwargs)
     wrap.__doc__=function.__doc__
     wrap.__name__=function.__name__

@@ -2,6 +2,7 @@
 import os, re, sys
 import json, time, urllib
 import shutil, copy, random
+from sets import Set
 from datetime import datetime, timedelta
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
@@ -1054,6 +1055,33 @@ def create(request, user_name):
         fulfill_gitrepo(create_repo, remote_git_url)
         return HttpResponseRedirect('/%s/%s/' % (userprofile.username, name))
     return render_to_response('repo/create.html', response_dictionary, context_instance=RequestContext(request))
+
+@login_required
+#@require_http_methods(["POST"])
+def recently(request, user_name):
+    feedAction = FeedAction()
+    _recently_view_repo = feedAction.list_recently_view_repo(request.user.id, 0, 10)
+    recently_view_repo_ids = [int(x[0]) for x in _recently_view_repo]
+    _recently_active_repo = feedAction.list_recently_active_repo(request.user.id, 0, 10)
+    recently_active_repo_ids = [int(x[0]) for x in _recently_active_repo]
+    unique_repo_ids = Set(recently_view_repo_ids + recently_active_repo_ids)
+    repo_dict = dict([(x.id, x) for x in RepoManager.list_repo_by_ids(unique_repo_ids)])
+
+    recently_view_repo = []
+    recently_active_repo = []
+    for x in recently_view_repo_ids:
+        if x in repo_dict and repo_dict[x]:
+            recently_view_repo.append(repo_dict[x])
+        else:
+            feedAction.remove_recently_view_repo(request.user.id, x)
+    for x in recently_active_repo_ids:
+        if x in repo_dict and repo_dict[x]:
+            recently_active_repo.append(repo_dict[x])
+        else:
+            feedAction.remove_recently_active_repo(request.user.id, x)
+    current_user = GsuserManager.get_current_user(request.user, request.userprofile)
+    recently_update_repo = RepoManager.list_repo_by_userId(current_user.id, 0, 5)
+    return json_httpResponse({'result': 'success', 'cdoe': 200, 'message': 'recently view, active, update repo', 'recently_view_repo': recently_view_repo, 'recently_active_repo': recently_active_repo, 'recently_update_repo': recently_update_repo})
 
 def __response_create_repo_error(request, response_dictionary, error):
     response_dictionary['error'] = error

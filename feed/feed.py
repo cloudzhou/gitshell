@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import redis
+import redis, time
 from gitshell import settings
 
 
@@ -15,6 +15,8 @@ FEED_TYPE = {
     'WATCH_REPO' : 'wr',
     'COMM' : 'c',
     'IDENTIFY_CHECK' : 'ic',
+    'RECENTLY_VIEW_REPO': 'rvr',
+    'RECENTLY_ACTIVE_REPO': 'rar',
 }
 LAST_POSITION = 'lp'
 USER_ATTR = 'ua'
@@ -110,6 +112,32 @@ class FeedAction():
         key = '%s:%s' % (FEED_TYPE['WATCH_REPO'], user_id)
         self.redis.zrem(key, watch_repo_id)
 
+    def add_recently_view_repo_now(self, user_id, repo_id):
+        timestamp = int(time.time())
+        return self.add_recently_view_repo(user_id, timestamp, repo_id)
+
+    def add_recently_view_repo(self, user_id, timestamp, repo_id):
+        key = '%s:%s' % (FEED_TYPE['RECENTLY_VIEW_REPO'], user_id)
+        self.redis.zadd(key, -timestamp, repo_id)
+        self.redis.zremrangebyrank(key, 10, 20)
+
+    def remove_recently_view_repo(self, user_id, repo_id):
+        key = '%s:%s' % (FEED_TYPE['RECENTLY_VIEW_REPO'], user_id)
+        self.redis.zrem(key, repo_id)
+
+    def add_recently_active_repo_now(self, user_id, repo_id):
+        timestamp = int(time.time())
+        return self.add_recently_active_repo(user_id, timestamp, repo_id)
+
+    def add_recently_active_repo(self, user_id, timestamp, repo_id):
+        key = '%s:%s' % (FEED_TYPE['RECENTLY_ACTIVE_REPO'], user_id)
+        self.redis.zadd(key, -timestamp, repo_id)
+        self.redis.zremrangebyrank(key, 10, 20)
+
+    def remove_recently_active_repo(self, user_id, repo_id):
+        key = '%s:%s' % (FEED_TYPE['RECENTLY_ACTIVE_REPO'], user_id)
+        self.redis.zrem(key, repo_id)
+
     def add_comm_feed(self, user_id, timestamp, feed_id):
         key = '%s:%s' % (FEED_TYPE['COMM'], user_id)
         self.redis.zadd(key, -timestamp, feed_id)
@@ -160,6 +188,14 @@ class FeedAction():
 
     def get_comm_feeds(self, user_id, start, num_items):
         key = '%s:%s' % (FEED_TYPE['COMM'], user_id)
+        return self.redis.zrange(key, start, num_items, withscores=True)
+
+    def list_recently_view_repo(self, user_id, start, num_items):
+        key = '%s:%s' % (FEED_TYPE['RECENTLY_VIEW_REPO'], user_id)
+        return self.redis.zrange(key, start, num_items, withscores=True)
+
+    def list_recently_active_repo(self, user_id, start, num_items):
+        key = '%s:%s' % (FEED_TYPE['RECENTLY_ACTIVE_REPO'], user_id)
         return self.redis.zrange(key, start, num_items, withscores=True)
 
     """ get and set user last position """

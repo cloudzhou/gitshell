@@ -117,6 +117,7 @@ urlpatterns = patterns('gitshell',
     url(r'^(\w+)/-/watch/user/?$', 'gsuser.views.watch_user'),
     url(r'^(\w+)/-/repo/?$', 'repo.views.user_repo'),
     url(r'^(\w+)/-/repo/(\d+)/?$', 'repo.views.user_repo_paging'),
+    url(r'^(\w+)/-/repo/recently/?$', 'repo.views.recently'),
     url(r'^(\w+)/-/repo/create/?$', 'repo.views.create'),
 
     # repo
