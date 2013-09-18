@@ -55,4 +55,14 @@ class TeamManager():
             x.team_user = GsuserManager.get_userprofile_by_id(x.team_user_id)
         return teamMembers
 
+    @classmethod
+    def get_current_user(self, user, userprofile):
+        current_user_id = userprofile.current_user_id
+        if current_user_id != 0 and current_user_id != userprofile.id:
+            teamMember = TeamManager.get_teamMember_by_userId_teamUserId(userprofile.id, current_user_id)
+            if teamMember:
+                current_user = GsuserManager.get_user_by_id(current_user_id)
+                if current_user:
+                    return current_user
+        return user
 

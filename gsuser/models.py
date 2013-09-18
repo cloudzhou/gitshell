@@ -171,17 +171,6 @@ class GsuserManager():
         return get(UserEmail, id)
 
     @classmethod
-    def get_current_user(self, user, userprofile):
-        current_user_id = userprofile.current_user_id
-        if current_user_id != 0 and current_user_id != userprofile.id:
-            teamMember = TeamManager.get_teamMember_by_userId_teamUserId(userprofile.id, current_user_id)
-            if teamMember:
-                current_user = GsuserManager.get_user_by_id(current_user_id)
-                if current_user:
-                    return current_user
-        return user
-
-    @classmethod
     def map_users(self, user_ids):
         users = self.list_user_by_ids(user_ids)
         userprofiles = self.list_userprofile_by_ids(user_ids)

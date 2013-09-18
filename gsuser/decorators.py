@@ -13,9 +13,9 @@ def repo_permission_check(function):
             if repo is None:
                 return HttpResponseRedirect('/help/error/')
             # half private, code is keep
-            if repo.auth_type == 2:
-                if not RepoManager.is_repo_member(repo, request.user):
-                    return HttpResponseRedirect('/help/error/')
+            is_allowed_access_repo = RepoManager.is_allowed_access_repo(repo, request.user)
+            if not is_allowed_access_repo:
+                return HttpResponseRedirect('/help/error/')
         if request.user.is_authenticated():
             feedAction = FeedAction()
             feedAction.add_recently_view_repo_now(request.user.id, repo.id)
@@ -42,3 +42,5 @@ def repo_source_permission_check(function):
     wrap.__name__=function.__name__
 
     return wrap
+
+

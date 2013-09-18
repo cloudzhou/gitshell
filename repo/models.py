@@ -7,6 +7,7 @@ from gitshell.objectscache.da import query, query_first, queryraw, execute, coun
 from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
+from gitshell.team.models import TeamManager
 
 KEEP_REPO_NAME = ['active', 'watch', 'recommend', 'repo']
 
@@ -329,6 +330,26 @@ class RepoManager():
                 return True
             member = self.get_repo_member(repo.id, user.id)
             if member is not None:
+                return True
+        return False
+
+    @classmethod
+    def is_allowed_access_repo(self, repo, user):
+        if repo is None or user is None:
+            return False
+        if repo.auth_type != 2:
+            return True
+        if user.is_authenticated():
+            # repo owner
+            if repo.user_id == user.id:
+                return True
+            # repo member
+            member = self.get_repo_member(repo.id, user.id)
+            if member:
+                return True
+            # team member
+            teamMember = TeamManager.get_teamMember_by_userId_teamUserId(user.id, repo.user_id)
+            if teamMember:
                 return True
         return False
 

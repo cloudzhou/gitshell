@@ -1079,7 +1079,7 @@ def recently(request, user_name):
             recently_active_repo.append(repo_dict[x])
         else:
             feedAction.remove_recently_active_repo(request.user.id, x)
-    current_user = GsuserManager.get_current_user(request.user, request.userprofile)
+    current_user = TeamManager.get_current_user(request.user, request.userprofile)
     recently_update_repo = RepoManager.list_repo_by_userId(current_user.id, 0, 5)
     return json_httpResponse({'result': 'success', 'cdoe': 200, 'message': 'recently view, active, update repo', 'recently_view_repo': recently_view_repo, 'recently_active_repo': recently_active_repo, 'recently_update_repo': recently_update_repo})
 
