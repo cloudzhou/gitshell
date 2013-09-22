@@ -167,8 +167,9 @@ def create(request, user_name, repo_name):
     issueForm.fill_assigned(repo)
     error = u''
     if request.method == 'POST':
-        issue.user_id = request.user.id
+        issue.user_id = repo.user_id
         issue.repo_id = repo.id
+        issue.creator_user_id = request.user.id
         issueForm = IssueForm(request.POST, instance = issue)
         issueForm.fill_assigned(repo)
         if issueForm.is_valid():

@@ -599,6 +599,24 @@ class RepoManager():
         return pullRequests
 
     @classmethod
+    def list_pullRequest_by_teamUserId_pullUserId(self, team_user_id, pullUser_id):
+        offset = 0
+        row_count = 100
+        pullRequests = query(PullRequest, None, 'pullrequest_l_descUserId_pullUserId', [team_user_id, pullUser_id, offset, row_count])
+        for pullRequest in pullRequests:
+            pullRequest.fillwith()
+        return pullRequests
+
+    @classmethod
+    def list_pullRequest_by_teamUserId_mergeUserId(self, team_user_id, mergeUser_id):
+        offset = 0
+        row_count = 100
+        pullRequests = query(PullRequest, None, 'pullrequest_l_descUserId_mergeUserId', [team_user_id, mergeUser_id, offset, row_count])
+        for pullRequest in pullRequests:
+            pullRequest.fillwith()
+        return pullRequests
+
+    @classmethod
     def count_pullRequest_by_descRepoId(self, descRepo_id, status):
         _count = count(PullRequest, descRepo_id, 'pullrequest_c_descRepoId', [descRepo_id, status])
         return _count

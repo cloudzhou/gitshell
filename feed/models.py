@@ -56,6 +56,8 @@ class Feed(BaseModel):
         return self.feed_type >= FEED_TYPE.MERGE_CREATE_PULL_REQUEST and self.feed_type <= FEED_TYPE.MERGE_COMMENT_ON_PULL_REQUEST
 
 class NotifMessage(BaseModel):
+    user_id = models.IntegerField(default=0)
+    repo_id = models.IntegerField(default=0)
     notif_cate = models.SmallIntegerField(default=0)
     notif_type = models.SmallIntegerField(default=0)
     from_user_id = models.IntegerField(default=0)
@@ -106,6 +108,7 @@ class NotifMessage(BaseModel):
         return self.notif_type == NOTIF_TYPE.AT_ISSUE
     def is_at_issue_comment(self):
         return self.notif_type == NOTIF_TYPE.AT_ISSUE_COMMENT
+
     def is_issue_cate(self):
         return self.notif_cate == NOTIF_CATE.ISSUES
     def is_pull_request_cate(self):
@@ -135,14 +138,19 @@ class FeedManager():
 
     @classmethod
     def list_notifmessage_by_userId(self, user_id, offset, row_count):
-        notifMessages = query(NotifMessage, user_id, 'notifmessage_l_userId', [user_id, offset, row_count])
+        notifMessages = query(NotifMessage, user_id, 'notifmessage_l_toUserId', [user_id, offset, row_count])
+        return self._fillwith_notifMessages(notifMessages)
+
+    @classmethod
+    def list_notifmessage_by_teamUserId_toUserId(self, team_user_id, to_user_id, offset, row_count):
+        notifMessages = query(NotifMessage, None, 'notifmessage_l_userId_toUserId', [team_user_id, to_user_id, offset, row_count])
         return self._fillwith_notifMessages(notifMessages)
 
     @classmethod
     def list_notifmessage_by_userId_betweenTime_notifTypes(self, user_id, from_time, to_time, notif_types, offset, row_count):
         notifMessages = []
         if notif_types == 'all':
-            notifMessages = query(NotifMessage, user_id, 'notifmessage_l_userId_modifyTime', [user_id, from_time, to_time, offset, row_count])
+            notifMessages = query(NotifMessage, user_id, 'notifmessage_l_toUserId_modifyTime', [user_id, from_time, to_time, offset, row_count])
         else:
             filtered_notif_types = []
             split_notif_types = notif_types.split(',')
@@ -189,7 +197,7 @@ class FeedManager():
 
     @classmethod
     def get_notifmessage_by_userId_notifType_relativeId(self, user_id, notif_type, relative_id):
-        notifMessage = query_first(NotifMessage, user_id, 'notifmessage_s_userId_notifType_relativeId', [user_id, notif_type, relative_id])
+        notifMessage = query_first(NotifMessage, user_id, 'notifmessage_s_toUserId_notifType_relativeId', [user_id, notif_type, relative_id])
         return notifMessage
 
     @classmethod

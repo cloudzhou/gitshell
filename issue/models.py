@@ -6,8 +6,9 @@ from gitshell.objectscache.models import BaseModel, CacheKey
 from gitshell.objectscache.da import query, query_first, queryraw, execute, count, get, get_many, get_version, get_sqlkey, get_raw, get_raw_many
 
 class Issue(BaseModel):
-    repo_id = models.IntegerField()
     user_id = models.IntegerField()
+    repo_id = models.IntegerField()
+    creator_user_id = models.IntegerField()
     subject = models.CharField(max_length=128, default='')
     tracker = models.IntegerField(default=0)
     status = models.IntegerField(default=0) 
@@ -78,6 +79,14 @@ class IssueManager():
             rawsql_id = 'issue_l_cons_create'
         issues = query(Issue, repo_id, rawsql_id, [repo_id, offset, row_count]) 
         return issues
+
+    @classmethod
+    def list_issues_by_teamUserId_assigned(self, team_user_id, assigned, orderby, offset, row_count):
+        rawsql_id = 'issue_l_userId_assigned_modify'
+        if orderby == 'create_time':
+            rawsql_id = 'issue_l_userId_assigned_create'
+        assigned_issues = query(Issue, None, rawsql_id, [team_user_id, assigned, offset, row_count]) 
+        return assigned_issues
 
     @classmethod
     def list_assigned_issues(self, assigned, orderby, offset, row_count):

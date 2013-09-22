@@ -142,3 +142,4 @@ def _get_user_userprofile(request, username):
         return (current_user, current_userprofile)
     return (request.user, request.userprofile)
 
+
