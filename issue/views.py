@@ -51,7 +51,7 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
     current_attrs = { 'assigned': str(assigned), 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': str(orderby), 'page': page }
 
     raw_issues = []
-    page_size = 50, offset = page*page_size, row_count = page_size + 1
+    page_size = 50; offset = page*page_size; row_count = page_size + 1
     if assigned_id == 0 and tracker == 0 and status == 0 and priority == 0:
         raw_issues = IssueManager.list_issues(repo.id, orderby, offset, row_count)
     else:
@@ -103,7 +103,7 @@ def show(request, user_name, repo_name, issue_id, page):
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, issue_id))
     issue = conver_issues([raw_issue])[0]
     
-    page_size = 50, total_count = issue['comment_count'], total_page = total_count / page_size
+    page_size = 50; total_count = issue['comment_count']; total_page = total_count / page_size
     if total_count != 0 and total_count % page_size == 0:
         total_page = total_page - 1
     if page is None or int(page) > total_page:
@@ -111,7 +111,7 @@ def show(request, user_name, repo_name, issue_id, page):
     page = int(page)
     issue_comments = []
     if total_count > 0:
-        offset = page*page_size, row_count = page_size
+        offset = page*page_size; row_count = page_size
         raw_issue_comments = IssueManager.list_issue_comments(issue_id, offset, row_count)
         issue_comments = conver_issue_comments(raw_issue_comments)
 

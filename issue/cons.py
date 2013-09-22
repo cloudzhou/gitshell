@@ -3,6 +3,7 @@
 import time
 from gitshell.issue.models import Issue
 from gitshell.gsuser.models import GsuserManager
+from gitshell.repo.models import RepoManager
 from django.forms.models import model_to_dict
 
 class IssueAttrs():
@@ -84,7 +85,7 @@ def conver_issue_comments(raw_issue_comments):
         issue_comment['create_time'] = time.mktime(raw_issue_comment.create_time.timetuple())
         if raw_issue_comment.user_id in userprofiledict:
             issue_comment['username'] = userprofiledict[raw_issue_comment.user_id].username
-            issue_comment['imgurl'] = user_img_map[raw_issue_comment.user_id].imgurl
+            issue_comment['imgurl'] = userprofiledict[raw_issue_comment.user_id].imgurl
         issue_comments.append(issue_comment)
     return issue_comments
 

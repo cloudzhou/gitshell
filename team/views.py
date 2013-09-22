@@ -1,4 +1,4 @@
-___user/bin/python
+#!/bin/python
 # -*- coding: utf-8 -*-  
 import re, json, time, copy
 from sets import Set
@@ -84,7 +84,7 @@ def issues(request, username, page):
     current = 'issues'
     feedAction = FeedAction()
     feedAction.set_user_position(user.id, PositionKey.ISSUES)
-    page = int(page), page_size = 50, offset = page*page_size, row_count = page_size + 1
+    page = int(page); page_size = 50; offset = page*page_size; row_count = page_size + 1
     raw_issues = IssueManager.list_issues_by_teamUserId_assigned(user.id, request.user.id, 'modify_time', offset, row_count)
     issues = conver_issues(raw_issues)
 
