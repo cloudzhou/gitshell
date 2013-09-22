@@ -2,7 +2,7 @@ import os, re, hashlib, base64
 from django.contrib.auth import authenticate
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.models import User
-from gitshell.repo.models import RepoManager
+from gitshell.repo.models import RepoManager, REPO_PERMISSION
 from gitshell.gsuser.models import GsuserManager
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
 from gitshell.settings import REPO_PATH
@@ -39,12 +39,12 @@ def http_auth(request):
             # if orgi_request_uri.endswith('?service=git-receive-pack') or action == 'git-receive-pack':
             if 'git-receive-pack' in orgi_request_uri:
                 user = _http_authenticate_user(request)
-                if not RepoManager.is_repo_member(repo, user):
+                if not RepoManager.is_allowed_access_repo(repo, user, REPO_PERMISSION.WRITE):
                     return unauthorized_httpResponse
             return HttpResponse(status=200)
         else:
             user = _http_authenticate_user(request)
-            if RepoManager.is_repo_member(repo, user):
+            if RepoManager.is_allowed_access_repo(repo, user, REPO_PERMISSION.WRITE):
                 return HttpResponse(status=200)
 
     except Exception, e:
@@ -106,11 +106,12 @@ def keyauth(request, fingerprint, command):
     if userPubkey is not None:
         return response_full_git_command(quote, pre_command, user, repo)
 
-    # member of the repo
     userpubkeys = KeyauthManager.list_userpubkey_by_fingerprint(fingerprint)
     for userpubkey in userpubkeys:
+        # member of the repo
         repoMember = RepoManager.get_repo_member(repo.id, userpubkey.user_id)
-        if repoMember is not None:
+        teamMember = RepoManager.get_teamMember_by_userId_teamUserId(user.id, userpubkey.user_id)
+        if repoMember or teamMember:
             return response_full_git_command(quote, pre_command, user, repo)
     return not_git_command()
 

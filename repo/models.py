@@ -325,7 +325,7 @@ class RepoManager():
     def is_repo_member(self, repo, user):
         if user is None:
             return False
-        if user.is_authenticated():
+        if user.id
             if repo.user_id == user.id:
                 return True
             member = self.get_repo_member(repo.id, user.id)
@@ -334,12 +334,10 @@ class RepoManager():
         return False
 
     @classmethod
-    def is_allowed_access_repo(self, repo, user):
+    def is_allowed_access_repo(self, repo, user, repoPermission):
         if repo is None or user is None:
             return False
-        if repo.auth_type != 2:
-            return True
-        if user.is_authenticated():
+        if user.id:
             # repo owner
             if repo.user_id == user.id:
                 return True
@@ -351,6 +349,10 @@ class RepoManager():
             teamMember = TeamManager.get_teamMember_by_userId_teamUserId(user.id, repo.user_id)
             if teamMember:
                 return True
+        if repoPermission == REPO_PERMISSION.WRITE:
+            return False
+        if repo.auth_type != 2:
+            return True
         return False
 
     @classmethod
@@ -700,6 +702,13 @@ class RepoManager():
             repo_vo['visibly'] = repo.visibly
             repo_vo_dict[repo.id] = repo_vo
         return repo_vo_dict
+
+class REPO_PERMISSION:
+
+    NONE = -1
+    WEB_VIEW = 0
+    READ_ONLY = 1
+    WRITE = 2
 
 class PULL_STATUS:
 
