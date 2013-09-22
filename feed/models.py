@@ -142,8 +142,8 @@ class FeedManager():
         return self._fillwith_notifMessages(notifMessages)
 
     @classmethod
-    def list_notifmessage_by_teamUserId_toUserId(self, team_user_id, to_user_id, offset, row_count):
-        notifMessages = query(NotifMessage, None, 'notifmessage_l_userId_toUserId', [team_user_id, to_user_id, offset, row_count])
+    def list_notifmessage_by_toUserId_teamUserId(self, to_user_id, team_user_id, offset, row_count):
+        notifMessages = query(NotifMessage, to_user_id, 'notifmessage_l_toUserId_userId', [to_user_id, team_user_id, offset, row_count])
         return self._fillwith_notifMessages(notifMessages)
 
     @classmethod

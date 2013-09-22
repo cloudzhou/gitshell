@@ -105,7 +105,7 @@ def notif(request, username):
     current = 'notif'
     feedAction = FeedAction()
     feedAction.set_user_position(user.id, PositionKey.NOTIF)
-    notifMessages = FeedManager.list_notifmessage_by_teamUserId_toUserId(user.id, request.user.id, 0, 500)
+    notifMessages = FeedManager.list_notifmessage_by_toUserId_teamUserId(request.user.id, user.id, 0, 500)
     if userprofile.unread_message != 0:
         userprofile.unread_message = 0
         userprofile.save()
