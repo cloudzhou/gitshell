@@ -325,7 +325,7 @@ class RepoManager():
     def is_repo_member(self, repo, user):
         if user is None:
             return False
-        if user.id
+        if user.id:
             if repo.user_id == user.id:
                 return True
             member = self.get_repo_member(repo.id, user.id)

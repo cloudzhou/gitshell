@@ -110,6 +110,7 @@ def keyauth(request, fingerprint, command):
     for userpubkey in userpubkeys:
         # member of the repo
         repoMember = RepoManager.get_repo_member(repo.id, userpubkey.user_id)
+        # member of the team user
         teamMember = RepoManager.get_teamMember_by_userId_teamUserId(user.id, userpubkey.user_id)
         if repoMember or teamMember:
             return response_full_git_command(quote, pre_command, user, repo)

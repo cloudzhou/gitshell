@@ -672,7 +672,9 @@ def stats(request, user_name, repo_name):
 @login_required
 def settings(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
+    if repo is None:
+        raise Http404
+    if repo.user_id != request.user.id and not TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, repo.user_id):
         raise Http404
     refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'settings'; error = u''
     repoForm = RepoForm(instance = repo)
