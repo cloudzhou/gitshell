@@ -49,10 +49,9 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
         assigned_id = assigned_user.id
     tracker = int(tracker); status = int(status); priority = int(priority); page = int(page)
     current_attrs = { 'assigned': str(assigned), 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': str(orderby), 'page': page }
+
     raw_issues = []
-    page_size = 50
-    offset = page*page_size
-    row_count = page_size + 1
+    page_size = 50, offset = page*page_size, row_count = page_size + 1
     if assigned_id == 0 and tracker == 0 and status == 0 and priority == 0:
         raw_issues = IssueManager.list_issues(repo.id, orderby, offset, row_count)
     else:
@@ -61,14 +60,7 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
         statuses = STATUSES_VAL if status == 0 else [status]
         priorities = PRIORITIES_VAL if priority == 0 else [priority] 
         raw_issues = IssueManager.list_issues_cons(repo.id, assigned_ids, trackeres, statuses, priorities, orderby, offset, row_count)
-    reporter_ids = [o.user_id for o in raw_issues]
-    reporters = GsuserManager.list_user_by_ids(list(set(reporter_ids)-set(member_ids)))
-    username_map = {}
-    for member in members:
-        username_map[member.id] = member.username
-    for reporter in reporters:
-        username_map[reporter.id] = reporter.username
-    issues = conver_issues(raw_issues, username_map, {repo.id: repo.name})
+    issues = conver_issues(raw_issues)
 
     hasPre = False ; hasNext = False
     if page > 0:
@@ -109,34 +101,19 @@ def show(request, user_name, repo_name, issue_id, page):
             raw_issue.comment_count = raw_issue.comment_count + 1
             raw_issue.save()
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, issue_id))
-    username_map = {}
-    users = GsuserManager.list_user_by_ids([raw_issue.user_id, raw_issue.assigned])
-    for user in users:
-        username_map[user.id] = user.username
-    issue = conver_issues([raw_issue], username_map, {repo.id: repo.name})[0]
+    issue = conver_issues([raw_issue])[0]
     
-    page_size = 50
-    total_count = issue['comment_count']
-    total_page = total_count / page_size
+    page_size = 50, total_count = issue['comment_count'], total_page = total_count / page_size
     if total_count != 0 and total_count % page_size == 0:
         total_page = total_page - 1
     if page is None or int(page) > total_page:
         page = total_page
     page = int(page)
-    user_img_map = {}
     issue_comments = []
     if total_count > 0:
-        offset = page*page_size
-        row_count = page_size
+        offset = page*page_size, row_count = page_size
         raw_issue_comments = IssueManager.list_issue_comments(issue_id, offset, row_count)
-        user_ids = [o.user_id for o in raw_issue_comments]
-        users = GsuserManager.list_user_by_ids(user_ids)
-        userprofiles = GsuserManager.list_userprofile_by_ids(user_ids)
-        for user in users:
-            username_map[user.id] = user.username
-        for userprofile in userprofiles:
-            user_img_map[userprofile.id] = userprofile.imgurl 
-        issue_comments = conver_issue_comments(raw_issue_comments, username_map, user_img_map)
+        issue_comments = conver_issue_comments(raw_issue_comments)
 
     member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
     member_ids.insert(0, repo.user_id)

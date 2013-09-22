@@ -26,16 +26,16 @@
 
     {%if issue_comments%}
         {%for issue_comment in issue_comments%}
-            <section data-user-name="{{issue_comment.user_id}}" class="comment user-plugin">
+            <section data-user-name="{{issue_comment.username}}" class="comment user-plugin">
                 <figure class="avatar">
-                    <img src="https://gravatar.com/avatar/{{ issue_comment.user_img }}?s=32" alt="{{issue.comment}}">
+                    <img src="https://gravatar.com/avatar/{{ issue_comment.imgurl }}?s=32" alt="{{issue.comment}}">
                 </figure>
                 <div class="info">
                     <p class="comment-data">{{issue_comment.content}}</p>
                     <p class="meta">
-                        <a href="/{{issue_comment.user_id}}/">{{issue_comment.user_id}}</a>
+                        <a href="/{{issue_comment.username}}/">{{issue_comment.username}}</a>
                         <span class="unixtime">{{issue_comment.create_time}}</span>
-                        <a class="refComment" href="javascript:void(0)" value="{{issue_comment.user_id}}">回复</a>
+                        <a class="refComment" href="javascript:void(0)" value="{{issue_comment.username}}">回复</a>
                         <a class="rmComment hide" value="{{issue_comment.id}}" href="javascript:void(0)">删除</a>
                     </p>
                 </div>

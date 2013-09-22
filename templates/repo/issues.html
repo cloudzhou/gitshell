@@ -23,7 +23,7 @@
           <a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/" class="txt">{{issue.subject|truncatechars:100}}</a>
 				</p>
 				<div class="meta">
-					<span>作者:<a href="/{{ user.username }}/">{{ issue.user_id }}</a></span>
+					<span>作者:<a href="/{{ user.username }}/">{{ issue.username }}</a></span>
           {% if user.id == repo.user_id %}
               <a href="javascript: void(0)" rel="tooltip" data-original-title="拖动到上面做属性更改"><i class="icon-ellipsis-vertical"></i></a>
           {% else %}

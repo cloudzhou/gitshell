@@ -1,4 +1,4 @@
-#!/user/bin/python
+___user/bin/python
 # -*- coding: utf-8 -*-  
 import re, json, time, copy
 from sets import Set
@@ -57,7 +57,7 @@ def pull_merge(request, username):
     current = 'pull'
     feedAction = FeedAction()
     feedAction.set_user_position(user.id, PositionKey.PULL)
-    pullRequests = RepoManager.list_pullRequest_by_mergeUserId(user.id)
+    pullRequests = RepoManager.list_pullRequest_by_teamUserId_mergeUserId(user.id, request.user.id)
     response_dictionary = {'current': current, 'pullRequests': pullRequests}
     return render_to_response('team/pull_merge.html',
                           response_dictionary,
@@ -68,7 +68,7 @@ def pull_request(request, username):
     current = 'pull'
     feedAction = FeedAction()
     feedAction.set_user_position(user.id, PositionKey.PULL)
-    pullRequests = RepoManager.list_pullRequest_by_pullUserId(user.id)
+    pullRequests = RepoManager.list_pullRequest_by_teamUserId_pullUserId(user.id, request.user.id)
     response_dictionary = {'current': current, 'pullRequests': pullRequests}
     return render_to_response('team/pull_request.html',
                           response_dictionary,
@@ -84,25 +84,9 @@ def issues(request, username, page):
     current = 'issues'
     feedAction = FeedAction()
     feedAction.set_user_position(user.id, PositionKey.ISSUES)
-    page = int(page)
-    page_size = 50
-    offset = page*page_size
-    row_count = page_size + 1
-    raw_issues = IssueManager.list_assigned_issues(user.id, 'modify_time', offset, row_count)
-    username_map = {}
-    reponame_map = {}
-    for raw_issue in raw_issues:
-        if raw_issue.user_id not in username_map:
-            username_map[raw_issue.user_id] = ''
-        if raw_issue.assigned not in username_map:
-            username_map[raw_issue.assigned] = ''
-        if raw_issue.repo_id not in reponame_map:
-            reponame_map[raw_issue.repo_id] = ''
-    repos = RepoManager.list_repo_by_ids(reponame_map.keys())
-    users = GsuserManager.list_user_by_ids(username_map.keys())
-    reponame_map = dict([(x.id, x.name) for x in repos])
-    username_map = dict([(x.id, x.username) for x in users])
-    issues = conver_issues(raw_issues, username_map, reponame_map)
+    page = int(page), page_size = 50, offset = page*page_size, row_count = page_size + 1
+    raw_issues = IssueManager.list_issues_by_teamUserId_assigned(user.id, request.user.id, 'modify_time', offset, row_count)
+    issues = conver_issues(raw_issues)
 
     hasPre = False ; hasNext = False
     if page > 0:
@@ -121,7 +105,7 @@ def notif(request, username):
     current = 'notif'
     feedAction = FeedAction()
     feedAction.set_user_position(user.id, PositionKey.NOTIF)
-    notifMessages = FeedManager.list_notifmessage_by_userId(user.id, 0, 100)
+    notifMessages = FeedManager.list_notifmessage_by_teamUserId_toUserId(user.id, request.user.id, 0, 500)
     if userprofile.unread_message != 0:
         userprofile.unread_message = 0
         userprofile.save()
