@@ -50,4 +50,13 @@ insert into gsuser_useremail select 0, now(), now(), 0, id, email, 1, 1, 1 from 
 create index gsuser_useremail_uid_idx on gsuser_useremail (visibly, user_id)
 create index feed_notifsetting_uid_idx on feed_notifsetting (visibly, user_id)
 
+alter table issue_issue add COLUMN  `creator_user_id` int(11) NOT NULL after user_id;
+update issue_issue set creator_user_id = user_id;
+alter table issue_issue drop `user_id`;
+alter table issue_issue add COLUMN `user_id` int(11) NOT NULL after `visibly`;
+update issue_issue set user_id = (select user_id from repo_repo where repo_id=issue_issue.repo_id limit 1);
+
+alter table feed_notifmessage add COLUMN `repo_id` int(11) NOT NULL after `visibly`
+alter table feed_notifmessage add COLUMN `user_id` int(11) NOT NULL after `visibly`;
+
 

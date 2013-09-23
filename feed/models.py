@@ -56,6 +56,8 @@ class Feed(BaseModel):
         return self.feed_type >= FEED_TYPE.MERGE_CREATE_PULL_REQUEST and self.feed_type <= FEED_TYPE.MERGE_COMMENT_ON_PULL_REQUEST
 
 class NotifMessage(BaseModel):
+    user_id = models.IntegerField(default=0)
+    repo_id = models.IntegerField(default=0)
     notif_cate = models.SmallIntegerField(default=0)
     notif_type = models.SmallIntegerField(default=0)
     from_user_id = models.IntegerField(default=0)
@@ -68,6 +70,8 @@ class NotifMessage(BaseModel):
     relative_id = models.IntegerField(default=0)
 
     # field without database
+    username = ""
+    reponame = ""
     relative_name = ""
     relative_obj = {}
 
@@ -80,6 +84,35 @@ class NotifMessage(BaseModel):
             to_user_id = to_user_id,
             relative_id = relative_id,
         )
+        if not relative_id:
+            return notifMessage
+        # without AT_MERGE_COMMENT
+        if notifMessage.is_at_commit():
+            commitHistory = RepoManager.get_commit_by_id(relative_id)
+            if commitHistory:
+                repo = RepoManager.get_repo_by_id(commitHistory.repo_id)
+                if repo:
+                    notifMessage.user_id = repo.user_id
+                    notifMessage.repo_id = repo.id
+        elif notifMessage.is_at_issue() or notifMessage.is_issue_cate():
+            issue = IssueManager.get_issue_by_id(relative_id)
+            if issue:
+                notifMessage.user_id = issue.user_id
+                notifMessage.repo_id = issue.repo_id
+        elif notifMessage.is_at_merge() or notifMessage.is_pull_request_cate():
+            pullRequest = RepoManager.get_pullRequest_by_id(relative_id)
+            if pullRequest:
+                repo = RepoManager.get_repo_by_id(pullRequest.desc_repo_id)
+                if repo:
+                    notifMessage.user_id = repo.user_id
+                    notifMessage.repo_id = repo.id
+        elif notifMessage.is_at_issue_comment():
+            issue_comment = IssueManager.get_issue_comment(relative_id)
+            if issue_comment:
+                issue = IssueManager.get_issue_by_id(issue_comment.issue_id)
+                if issue:
+                    notifMessage.user_id = issue.user_id
+                    notifMessage.repo_id = issue.repo_id
         return notifMessage
 
     @classmethod
@@ -106,6 +139,7 @@ class NotifMessage(BaseModel):
         return self.notif_type == NOTIF_TYPE.AT_ISSUE
     def is_at_issue_comment(self):
         return self.notif_type == NOTIF_TYPE.AT_ISSUE_COMMENT
+
     def is_issue_cate(self):
         return self.notif_cate == NOTIF_CATE.ISSUES
     def is_pull_request_cate(self):
@@ -135,14 +169,19 @@ class FeedManager():
 
     @classmethod
     def list_notifmessage_by_userId(self, user_id, offset, row_count):
-        notifMessages = query(NotifMessage, user_id, 'notifmessage_l_userId', [user_id, offset, row_count])
+        notifMessages = query(NotifMessage, user_id, 'notifmessage_l_toUserId', [user_id, offset, row_count])
+        return self._fillwith_notifMessages(notifMessages)
+
+    @classmethod
+    def list_notifmessage_by_toUserId_teamUserId(self, to_user_id, team_user_id, offset, row_count):
+        notifMessages = query(NotifMessage, to_user_id, 'notifmessage_l_toUserId_userId', [to_user_id, team_user_id, offset, row_count])
         return self._fillwith_notifMessages(notifMessages)
 
     @classmethod
     def list_notifmessage_by_userId_betweenTime_notifTypes(self, user_id, from_time, to_time, notif_types, offset, row_count):
         notifMessages = []
         if notif_types == 'all':
-            notifMessages = query(NotifMessage, user_id, 'notifmessage_l_userId_modifyTime', [user_id, from_time, to_time, offset, row_count])
+            notifMessages = query(NotifMessage, user_id, 'notifmessage_l_toUserId_modifyTime', [user_id, from_time, to_time, offset, row_count])
         else:
             filtered_notif_types = []
             split_notif_types = notif_types.split(',')
@@ -171,6 +210,9 @@ class FeedManager():
                         issue.username = repo.username
                         issue.reponame = repo.name
                 notifMessage.relative_obj = issue
+            elif notifMessage.is_at_merge() or notifMessage.is_pull_request_cate():
+                pullRequest = RepoManager.get_pullRequest_by_id(notifMessage.relative_id)
+                notifMessage.relative_obj = pullRequest
             elif notifMessage.is_at_issue_comment():
                 issue_comment = IssueManager.get_issue_comment(notifMessage.relative_id)
                 if not issue_comment: 
@@ -182,14 +224,11 @@ class FeedManager():
                         issue_comment.username = repo.username
                         issue_comment.reponame = repo.name
                 notifMessage.relative_obj = issue_comment
-            elif notifMessage.is_at_merge() or notifMessage.is_pull_request_cate():
-                pullRequest = RepoManager.get_pullRequest_by_id(notifMessage.relative_id)
-                notifMessage.relative_obj = pullRequest
         return notifMessages
 
     @classmethod
     def get_notifmessage_by_userId_notifType_relativeId(self, user_id, notif_type, relative_id):
-        notifMessage = query_first(NotifMessage, user_id, 'notifmessage_s_userId_notifType_relativeId', [user_id, notif_type, relative_id])
+        notifMessage = query_first(NotifMessage, user_id, 'notifmessage_s_toUserId_notifType_relativeId', [user_id, notif_type, relative_id])
         return notifMessage
 
     @classmethod

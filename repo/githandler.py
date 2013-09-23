@@ -1,4 +1,3 @@
-#!/python
 # -*- coding: utf-8 -*-
 import os, re, pipes, sys, traceback, codecs
 import time, json, hashlib, shutil

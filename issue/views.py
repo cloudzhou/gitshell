@@ -33,13 +33,9 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
     if repo is None:
         raise Http404
     user_id = request.user.id
-    member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
-    member_ids.insert(0, repo.user_id)
-    if user_id != repo.user_id and user_id in member_ids:
-        member_ids.remove(user_id)
-        member_ids.insert(0, user_id)
-    members = GsuserManager.list_user_by_ids(member_ids)
-    assigneds = [o.username for o in members]
+    memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
+    memberUsers = _let_request_user_first(memberUsers, user_id)
+    assigneds = [x.username for x in memberUsers]
     assigneds.insert(0, '0')
     if assigned is None:
         assigned = assigneds[0]
@@ -49,10 +45,9 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
         assigned_id = assigned_user.id
     tracker = int(tracker); status = int(status); priority = int(priority); page = int(page)
     current_attrs = { 'assigned': str(assigned), 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': str(orderby), 'page': page }
+
     raw_issues = []
-    page_size = 50
-    offset = page*page_size
-    row_count = page_size + 1
+    page_size = 50; offset = page*page_size; row_count = page_size + 1
     if assigned_id == 0 and tracker == 0 and status == 0 and priority == 0:
         raw_issues = IssueManager.list_issues(repo.id, orderby, offset, row_count)
     else:
@@ -61,14 +56,7 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
         statuses = STATUSES_VAL if status == 0 else [status]
         priorities = PRIORITIES_VAL if priority == 0 else [priority] 
         raw_issues = IssueManager.list_issues_cons(repo.id, assigned_ids, trackeres, statuses, priorities, orderby, offset, row_count)
-    reporter_ids = [o.user_id for o in raw_issues]
-    reporters = GsuserManager.list_user_by_ids(list(set(reporter_ids)-set(member_ids)))
-    username_map = {}
-    for member in members:
-        username_map[member.id] = member.username
-    for reporter in reporters:
-        username_map[reporter.id] = reporter.username
-    issues = conver_issues(raw_issues, username_map, {repo.id: repo.name})
+    issues = conver_issues(raw_issues)
 
     hasPre = False ; hasNext = False
     if page > 0:
@@ -109,42 +97,23 @@ def show(request, user_name, repo_name, issue_id, page):
             raw_issue.comment_count = raw_issue.comment_count + 1
             raw_issue.save()
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, issue_id))
-    username_map = {}
-    users = GsuserManager.list_user_by_ids([raw_issue.user_id, raw_issue.assigned])
-    for user in users:
-        username_map[user.id] = user.username
-    issue = conver_issues([raw_issue], username_map, {repo.id: repo.name})[0]
+    issue = conver_issues([raw_issue])[0]
     
-    page_size = 50
-    total_count = issue['comment_count']
-    total_page = total_count / page_size
+    page_size = 50; total_count = issue['comment_count']; total_page = total_count / page_size
     if total_count != 0 and total_count % page_size == 0:
         total_page = total_page - 1
     if page is None or int(page) > total_page:
         page = total_page
     page = int(page)
-    user_img_map = {}
     issue_comments = []
     if total_count > 0:
-        offset = page*page_size
-        row_count = page_size
+        offset = page*page_size; row_count = page_size
         raw_issue_comments = IssueManager.list_issue_comments(issue_id, offset, row_count)
-        user_ids = [o.user_id for o in raw_issue_comments]
-        users = GsuserManager.list_user_by_ids(user_ids)
-        userprofiles = GsuserManager.list_userprofile_by_ids(user_ids)
-        for user in users:
-            username_map[user.id] = user.username
-        for userprofile in userprofiles:
-            user_img_map[userprofile.id] = userprofile.imgurl 
-        issue_comments = conver_issue_comments(raw_issue_comments, username_map, user_img_map)
+        issue_comments = conver_issue_comments(raw_issue_comments)
 
-    member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
-    member_ids.insert(0, repo.user_id)
-    if raw_issue.user_id != repo.user_id and request.user.id in member_ids:
-        member_ids.remove(request.user.id)
-        member_ids.insert(0, request.user.id)
-    members = GsuserManager.list_user_by_ids(member_ids)
-    assigneds = [o.username for o in members]
+    memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
+    memberUsers = _let_request_user_first(memberUsers, request.user.id)
+    assigneds = [x.username for x in memberUsers]
 
     has_issue_modify_right = _has_issue_modify_right(request, raw_issue, repo)
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'issueCommentForm': issueCommentForm, 'page': page, 'total_page': range(0, total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority, 'has_issue_modify_right': has_issue_modify_right}
@@ -167,8 +136,9 @@ def create(request, user_name, repo_name):
     issueForm.fill_assigned(repo)
     error = u''
     if request.method == 'POST':
-        issue.user_id = request.user.id
+        issue.user_id = repo.user_id
         issue.repo_id = repo.id
+        issue.creator_user_id = request.user.id
         issueForm = IssueForm(request.POST, instance = issue)
         issueForm.fill_assigned(repo)
         if issueForm.is_valid():
@@ -325,6 +295,15 @@ def comment_delete(request, user_name, repo_name, comment_id):
     issue.comment_count = issue.comment_count - 1
     issue.save()
     return _json_ok()
+
+def _let_request_user_first(memberUsers, user_id):
+    new_memberUsers = []
+    for x in memberUsers:
+        if x.id == user_id:
+            new_memberUsers.insert(0, x)
+            continue
+        new_memberUsers.append(x)
+    return new_memberUsers
 
 def _has_issue_modify_right(request, issue, repo):
     return issue is not None and (request.user.id == issue.user_id or request.user.id == repo.user_id)

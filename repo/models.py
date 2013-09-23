@@ -7,7 +7,9 @@ from gitshell.objectscache.da import query, query_first, queryraw, execute, coun
 from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
-from gitshell.gsuser.middleware import KEEP_REPO_NAME
+from gitshell.team.models import TeamManager
+
+KEEP_REPO_NAME = ['active', 'watch', 'recommend', 'repo']
 
 class Repo(BaseModel):
     user_id = models.IntegerField()
@@ -286,6 +288,25 @@ class RepoManager():
         return list(CommitHistory.objects.filter(visibly=0).filter(repo_id=repo_id).filter(commit_id__in=commit_ids))
 
     @classmethod
+    def list_repo_team_memberUser(self, repo_id):
+        repo = self.get_repo_by_id(repo_id)
+        if not repo:
+            return []
+        repoemembers = self.list_repomember(repo_id)
+        user_ids = [x.user_id for x in repoemembers]
+        userprofile = GsuserManager.get_userprofile_by_id(repo.user_id)
+        if not userprofile:
+            return []
+        if userprofile.is_team_account == 0:
+            user_ids.insert(0, repo.user_id)
+        if userprofile.is_team_account == 1:
+            teamMembers = TeamManager.list_teamMember_by_teamUserId(userprofile.id)
+            for x in teamMembers:
+                if x.user_id not in user_ids:
+                    user_ids.append(x.user_id)
+        return GsuserManager.list_userprofile_by_ids(user_ids)
+
+    @classmethod
     def list_repomember(self, repo_id):
         repoemembers = query(RepoMember, repo_id, 'repomember_l_repoId', [repo_id])
         return repoemembers
@@ -323,12 +344,34 @@ class RepoManager():
     def is_repo_member(self, repo, user):
         if user is None:
             return False
-        if user.is_authenticated():
+        if user.id:
             if repo.user_id == user.id:
                 return True
             member = self.get_repo_member(repo.id, user.id)
             if member is not None:
                 return True
+        return False
+
+    @classmethod
+    def is_allowed_access_repo(self, repo, user, repoPermission):
+        if repo is None or user is None:
+            return False
+        if user.id:
+            # repo owner
+            if repo.user_id == user.id:
+                return True
+            # repo member
+            member = self.get_repo_member(repo.id, user.id)
+            if member:
+                return True
+            # team member
+            teamMember = TeamManager.get_teamMember_by_userId_teamUserId(user.id, repo.user_id)
+            if teamMember:
+                return True
+        if repoPermission == REPO_PERMISSION.WRITE:
+            return False
+        if repo.auth_type != 2:
+            return True
         return False
 
     @classmethod
@@ -577,6 +620,24 @@ class RepoManager():
         return pullRequests
 
     @classmethod
+    def list_pullRequest_by_teamUserId_pullUserId(self, team_user_id, pullUser_id):
+        offset = 0
+        row_count = 100
+        pullRequests = query(PullRequest, None, 'pullrequest_l_descUserId_pullUserId', [team_user_id, pullUser_id, offset, row_count])
+        for pullRequest in pullRequests:
+            pullRequest.fillwith()
+        return pullRequests
+
+    @classmethod
+    def list_pullRequest_by_teamUserId_mergeUserId(self, team_user_id, mergeUser_id):
+        offset = 0
+        row_count = 100
+        pullRequests = query(PullRequest, None, 'pullrequest_l_descUserId_mergeUserId', [team_user_id, mergeUser_id, offset, row_count])
+        for pullRequest in pullRequests:
+            pullRequest.fillwith()
+        return pullRequests
+
+    @classmethod
     def count_pullRequest_by_descRepoId(self, descRepo_id, status):
         _count = count(PullRequest, descRepo_id, 'pullrequest_c_descRepoId', [descRepo_id, status])
         return _count
@@ -660,6 +721,13 @@ class RepoManager():
             repo_vo['visibly'] = repo.visibly
             repo_vo_dict[repo.id] = repo_vo
         return repo_vo_dict
+
+class REPO_PERMISSION:
+
+    NONE = -1
+    WEB_VIEW = 0
+    READ_ONLY = 1
+    WRITE = 2
 
 class PULL_STATUS:
 

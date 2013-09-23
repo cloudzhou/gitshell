@@ -25,6 +25,7 @@
           {% if userprofile.prirepo == 0 and userprofile.pubrepo == 0 %}
           <li><a href="/settings/change_username_email/"{%if current == 'change_username_email'%} class="active"{%endif%}><span>修改邮箱</span></a></li>
           {% endif %}
+          <li><a href="/settings/team/"{%if current == 'team'%} class="active"{%endif%}><span>团队账户</span></a></li>
           <li><a href="/settings/destroy/"{%if current == 'destroy'%} class="active"{%endif%}><span>删除账户</span></a></li>
         </ul>
         <hr>

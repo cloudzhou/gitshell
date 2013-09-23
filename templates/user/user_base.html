@@ -63,15 +63,15 @@
               <span class="muted">仓库</span>
           </li>
           <li>
-            <a href="/{{ gsuser.username }}/watch/repo/">{{ gsuserprofile.watchrepo }}</a>
+            <a href="/{{ gsuser.username }}/-/watch/repo/">{{ gsuserprofile.watchrepo }}</a>
             <span class="muted"><i class="icon-heart-empty"></i>关注仓库</span>
           </li>
           <li>
-            <a href="/{{ gsuser.username }}/watch/user/">{{ gsuserprofile.watch }}</a>
+            <a href="/{{ gsuser.username }}/-/watch/user/">{{ gsuserprofile.watch }}</a>
             <span class="muted"><i class="icon-user"></i>关注</span>
           </li>
           <li>
-            <a href="/{{ gsuser.username }}/watch/user/">{{ gsuserprofile.be_watched }}</a>
+            <a href="/{{ gsuser.username }}/-/watch/user/">{{ gsuserprofile.be_watched }}</a>
             <span class="muted"><i class="icon-group"></i>粉丝</span>
           </li>
         </ul>
@@ -103,7 +103,7 @@
                   </form>
           </section>
           <section class="item">
-              <h2 class="heading">关注<a href="/{{gsuser.username}}/watch/user/" class="more">more</a></h2>
+              <h2 class="heading">关注<a href="/{{gsuser.username}}/-/watch/user/" class="more">more</a></h2>
               <div class="colspan">
                   {% for watch_user in watch_users %}
                   <a href="/{{watch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ watch_user.username }}" data-content="{% if tweet != "" %}{{ watch_user.tweet }}{% else %}这家伙真懒{%endif%}">
@@ -113,7 +113,7 @@
               </div>
           </div>
           <div class="item">
-              <h2 class="heading">被关注<a href="/{{gsuser.username}}/watch/user/" class="more">more</a></h2>
+              <h2 class="heading">被关注<a href="/{{gsuser.username}}/-/watch/user/" class="more">more</a></h2>
               <div class="colspan">
                   {% for bewatch_user in bewatch_users %}
                   <a href="/{{bewatch_user.username}}/" class="span user-span" data-toggle="popover" title="{{ bewatch_user.username }}" data-content="{{ bewatch_user.tweet }}">
