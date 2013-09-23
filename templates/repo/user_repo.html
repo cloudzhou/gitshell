@@ -11,32 +11,35 @@
   </div>
 </div>
 
-<div class="content user-repos">
-  <div class="container bubble">
-
-    <div class="primary">
+<div class="content">
+  <div class="container">
+    <div class="user-repos inner bubble">
 
       {% load humanize %}
 
       {% for repo in repo_list %}
         <section class="repo c_repo">
 
+          <ul class="meta">
+            <li><a href="#"><span class="count">{{repo.commit}}</span><span class="meta-type">提交</span></a></li>
+            <li><a href="#"><span class="count">{{repo.fork}}</span><span class="meta-type">派生</span></a></li>
+            <li><a href="#"><span class="count">{{repo.watch}}</span><span class="meta-type">关注</span></a></li>
+          </ul>
+
+          <figure class="repo-avatar">
+            <img src="/static/img/repo-avatar48.png" alt="{{repo.name}}">
+            <span class="private"><i class="icon-lock"></i></span>
+          </figure>
           <div class="summary">
             <div class="heading">
               <h3><a href="/{{user_name}}/{{repo.name}}/">{{repo.name}}</a></h3>
-              <p class="origin">fork自<a href="#">yuwen</a><span class="divider">/</span><a href="#">gitshell</a></p>
+              <p class="origin"><i class="icon-caret-right"></i>Fork自<a href="#">yuwen</a><span class="divider">/</span><a href="#">gitshell</a></p>
             </div>
 
             <div class="detail">
               <p class="desc">{{repo.desc}}</p>
             </div>
           </div>
-
-          <ul class="meta">
-            <li><a href="#"><span class="count">{{repo.commit}}</span><span class="meta-type">提交</span></a></li>
-            <li><a href="#"><span class="count">{{repo.fork}}</span><span class="meta-type">派生</span></a></li>
-            <li><a href="#"><span class="count">{{repo.watch}}</span><span class="meta-type">关注</span></a></li>
-          </ul>
 
         </section>
       {% endfor %}
@@ -49,8 +52,7 @@
         <li><a href="#">尾页</a></li>
       </ul>
 
-    </div>
-
+    {% comment %}
     <aside class="sidebar">
 
       <div class="create section">
@@ -60,7 +62,6 @@
         </div>
       </div>
 
-      {% comment %}
         <section class="capacities section">
           <div class="inner">
           <div class="item">
@@ -78,7 +79,6 @@
             </div>
           </div>
         </section>
-      {% endcomment %}
 
       <section class="activity section">
         <h2 class="heading">最近活动的仓库</h2>
@@ -89,7 +89,9 @@
         </ul>
       </section>
     </aside>
+    {% endcomment %}
 
+    </div>
   </div>
 </div>
 

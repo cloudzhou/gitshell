@@ -1,74 +1,95 @@
 {% extends "settings/base.html" %}
 {% block container-right %}
-    <h2 class="heading">消息设置</h2>
-    <div>
-        <dl>
-            <dt>提到你的</dt>
-            <dd>
-                {% for x in notif_type_choice.at %}
-                <input id="notif-{{x.value}}" type="checkbox" class="notif-type" data-value="{{x.value}}" value="{{x.value}}"{%if x.value in notifSetting.get_notif_types%} checked="checked"{%endif%}>
-                <label for="notif-{{x.value}}">{{x.key}}</label>
-                {% endfor %}
-            </dd>
-            <dt>Pull Request</dt>
-            <dd>
-                {% for x in notif_type_choice.merge %}
-                <input id="notif-{{x.value}}" type="checkbox" class="notif-type" data-value="{{x.value}}" value="{{x.value}}"{%if x.value in notifSetting.get_notif_types%} checked="checked"{%endif%}>
-                <label for="notif-{{x.value}}">{{x.key}}</label>
-                {% endfor %}
-            </dd>
-            <dt>Issue</dt>
-            <dd>
-                {% for x in notif_type_choice.issue %}
-                <input id="notif-{{x.value}}" type="checkbox" class="notif-type" data-value="{{x.value}}" value="{{x.value}}"{%if x.value in notifSetting.get_notif_types%} checked="checked"{%endif%}>
-                <label for="notif-{{x.value}}">{{x.key}}</label>
-                {% endfor %}
-            </dd>
-            <dt>通知频率</dt>
-            <dd>
-                <select id="notif-fqcy">
-                    {% for x in notif_fqcy_choice %}
-                    <option value="{{x.value}}"{%if x.value == notifSetting.notif_fqcy%} selected="selected"{%endif%}>{{x.key}}</option>
-                    {% endfor %}
-                </select>
-            </dd>
-            <dt>通过邮箱</dt>
-                <select id="notif-email">
-                    {% for x in useremails %}
-                    <option value="{{x.email}}"{%if x.email == notifSetting.email%} selected="selected"{%endif%}>{{x.email}}</option>
-                    {% endfor %}
-                </select>
-            <dd></dd>
-        </dl>
-    </div>
+<h2 class="heading">消息设置</h2>
+<p class="info">设置接收哪些消息以邮件的方式通知你</p>
+<dl class="notif-options">
+  <dt>@你的</dt>
+  <dd>
+  {% for x in notif_type_choice.at %}
+  <span class="option{%if x.value in notifSetting.get_notif_types%} selected{%endif%}">
+    <input id="notif-{{x.value}}" type="checkbox" class="notif-type" data-value="{{x.value}}" value="{{x.value}}"{%if x.value in notifSetting.get_notif_types%} checked="checked"{%endif%}>
+    <label for="notif-{{x.value}}">{{x.key}}</label>
+  </span>
+  {% endfor %}
+  </dd>
+  <dt>合并请求</dt>
+  <dd>
+  {% for x in notif_type_choice.merge %}
+  <span class="option{%if x.value in notifSetting.get_notif_types%} selected{%endif%}">
+    <input id="notif-{{x.value}}" type="checkbox" class="notif-type" data-value="{{x.value}}" value="{{x.value}}"{%if x.value in notifSetting.get_notif_types%} checked="checked"{%endif%}>
+    <label for="notif-{{x.value}}">{{x.key}}</label>
+  </span>
+  {% endfor %}
+  </dd>
+  <dt>Issue</dt>
+  <dd>
+  {% for x in notif_type_choice.issue %}
+  <span class="option{%if x.value in notifSetting.get_notif_types%} selected{%endif%}">
+    <input id="notif-{{x.value}}" type="checkbox" class="notif-type" data-value="{{x.value}}" value="{{x.value}}"{%if x.value in notifSetting.get_notif_types%} checked="checked"{%endif%}>
+    <label for="notif-{{x.value}}">{{x.key}}</label>
+  </span>
+  {% endfor %}
+  </dd>
+  <dt>发送频率</dt>
+  <dd>
+  <span class="option">
+    <select id="notifFqcy">
+      {% for x in notif_fqcy_choice %}
+      <option value="{{x.value}}"{%if x.value == notifSetting.notif_fqcy%} selected="selected"{%endif%}>{{x.key}}</option>
+      {% endfor %}
+    </select>
+  </span>
+  </dd>
+  <dt>接收邮箱</dt>
+  <dd>
+  <span class="option email">
+    <select id="notifEmail">
+      {% for x in useremails %}
+      <option value="{{x.email}}"{%if x.email == notifSetting.email%} selected="selected"{%endif%}>{{x.email}}</option>
+      {% endfor %}
+    </select>
+  </span>
+  </dd>
+</dl>
+<p class="alert hide" id="notice"></p>
 {% endblock %}
 {% block js %}
 <script>
-$(function(){
-    $('.notif-type').click(function(){
-        var types = []
-        $('.notif-type').each(function(index){
-            if(this.checked) {
-                var type = $(this).val();
-                types.push(type)
-            }
-        });
-        types.sort();
-        var types_str = types.join(',');
-        $.post('/settings/notif/types/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'types': types_str}, function(json){
-        });
+  $(function(){
+    var checkCtrl = $('.notif-type');
+    checkCtrl.click(function(){
+      var checkCtrlWrap = $(this).closest('.option'),
+          types = [];
+      checkCtrl.each(function(index){
+        if(this.checked) {
+          var type = $(this).val();
+          types.push(type)
+        }
     });
-    $('#notif-fqcy').change(function(){
-        var fqcy = $('option:selected', this).val();
-        $.post('/settings/notif/fqcy/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'fqcy': fqcy}, function(json){
-        });
+    types.sort();
+    var types_str = types.join(',');
+    var changeClass = function(){
+          $('#notice').text('保存成功').fadeIn().delay(1000).fadeOut();
+          if(!checkCtrlWrap.hasClass('selected')){
+            checkCtrlWrap.addClass('selected');
+          } else {
+            checkCtrlWrap.removeClass('selected');
+          }
+       };
+    $.post('/settings/notif/types/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'types': types_str}, function(json){})
+      .done(function(){ changeClass(); });
     });
-    $('#notif-email').change(function(){
-        var email = $('option:selected', this).val();
-        $.post('/settings/notif/email/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'email': email}, function(json){
-        });
+
+    $('#notifFqcy').change(function(){
+      var fqcy = $('option:selected', this).val();
+      $.post('/settings/notif/fqcy/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'fqcy': fqcy}, function(json){})
+      .done(function(){ changeClass(); });
     });
-})
+    $('#notifEmail').change(function(){
+      var email = $('option:selected', this).val();
+      $.post('/settings/notif/email/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'email': email}, function(json){})
+      .done(function(){ changeClass(); });
+    });
+  });
 </script>
 {% endblock %}
-

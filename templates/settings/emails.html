@@ -1,80 +1,78 @@
 {% extends "settings/base.html" %}
 
 {% block container-right %}
-<div>
-    <h2 class="heading">管理邮箱</h2>
-    <table class="table email">
-        <colgroup>
-            <col width="">
-            <col width="action">
-        </colgroup>
-        <tbody>
-            {% for useremail in useremails %}
-            <tr>
-                <td class="name">
-                    {{ useremail.email }}
-                    {% if useremail.is_primary == 1 %}
-                    <label data-id="{{ useremail.id }}" data-email="{{ useremail.email }}" class="label label-success">默认邮箱</label>
-                    {% endif %}
-                </td>
-                <td class="action">
-                    {% if useremail.is_verify == 1 and useremail.is_primary == 0 %}
-                        <button data-id="{{ useremail.id }}" data-email="{{ useremail.email }}" class="primary-email btn btn-success">设置为默认</button>
-                    {% endif %}
-                    {% if useremail.is_verify == 0 %}
-                    <button data-id="{{ useremail.id }}" data-email="{{ useremail.email }}" class="verify-email btn btn-danger">验证</button>
-                    {% endif %}
-                    <button data-id="{{ useremail.id }}" data-email="{{ useremail.email }}" class="remove-email btn btn">删除</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-<div>
-<p>添加新的邮箱</p>
-<input id="id_email" type="text" name="email" maxlength="64" class="input-xlarge">
-<button id="add-email" class="add-email btn btn-success">添加</button>
-</div>
+<section class="row">
+  <h2 class="heading">管理邮箱</h2>
+  <ul class="emails">
+    {% for useremail in useremails %}
+    <li{% if useremail.is_primary == 1 %} class="primary-email"{% endif %}>
+      <div class="summary">
+        {% if useremail.is_primary == 1 %}
+        <span data-id="{{ useremail.id }}" data-email="{{ useremail.email }}" class="label label-mini label-success"><i class="icon-ok"></i></span>
+        {% endif %}
+        <span class="email{%if useremail.is_verify == 0%} unverified{%endif%}">{{ useremail.email }}</span>
+        {% if useremail.is_verify == 0 %}
+        <span class="info">还没有验证,不可用。<a href="#" data-id="{{useremail.id}}" data-email="{{useremail.email}}" class="verifyEmail">现在验证</a></span>
+        {% endif %}
+      </div>
+      <div class="action">
+        {% if useremail.is_primary == 1 %}
+        <span class="text-warning">主邮箱无法删除</span>
+        {% else %}
+        <button data-id="{{ useremail.id }}" data-email="{{ useremail.email }}" class="btn btn-mini removeEmail" type="submit">删除</button>
+        {% endif %}
+        {% if useremail.is_verify == 1 and useremail.is_primary == 0 %}
+        <button data-id="{{ useremail.id }}" data-email="{{ useremail.email }}" class="btn btn-mini btn-success primaryEmail" type="submit">设为主邮箱</button>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="row">
+  <h2 class="heading">添加新的邮箱</h2>
+  <form>
+    <input id="email" type="email" name="email" maxlength="64">
+    <button id="addEmail" class="btn btn-success" type="submit">添加</button>
+  </form>
+</section>
 {% endblock %}
 
 {% block js %}
 <script>
-/*global jQuery, window */
-$(function(){
-    $('#add-email').click(function(){
-        var email = $('#id_email').val();
-        $.post('/settings/email/add/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'email': email}, function(json){
-            window.location.href = '/settings/emails/';
-        });
+  $(function(){
+    $('#addEmail').click(function(){
+      var email = $('#email').val();
+      $.post('/settings/email/add/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'email': email}, function(json){
+        window.location.href = '/settings/emails/';
+      });
     });
-    $('.primary-email').click(function(){
-        var useremail_id = $(this).data('id');
-        $.post('/settings/email/primary/' + useremail_id + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            window.location.href = '/settings/emails/';
-        });
+    $('.primaryEmail').click(function(){
+      var useremail_id = $(this).data('id');
+      $.post('/settings/email/primary/' + useremail_id + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        window.location.href = '/settings/emails/';
+      });
     });
-    $('.verify-email').click(function(){
-        var useremail_id = $(this).data('id');
-        var email = $(this).data('email');
-        var verify_button = $(this);
-        $.post('/settings/email/verify/' + useremail_id + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            var via = json.via;
-            if(via != '') {
-                verify_button.after('<button class="btn"><a target="_blank" href="http://' + via + '">访问 ' + via + ' 进行验证</a></button>');
-            } else {
-                verify_button.after('<button class="btn"></span>收取邮件 ' + email + ' 进行验证</span></button>');
-            }
-            verify_button.hide();
-        });
+    $('.verifyEmail').click(function(){
+      var useremail_id = $(this).data('id');
+      var email = $(this).data('email');
+      var noticeMsg = $(this).closest('.info');
+      $.post('/settings/email/verify/' + useremail_id + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        var via = json.via;
+        if(!via) {
+          noticeMsg.html('邮件已经发送，<a href="#">收取邮件' + email + '进行验证</a>');
+        } else {
+          noticeMsg.html('邮件已经发送, <a target="_blank" href="https://' + via + '">登陆' + via + '进行验证</a>');
+        }
+      });
     });
-    $('.remove-email').click(function(){
-        var useremail_id = $(this).data('id');
-        $.post('/settings/email/remove/' + useremail_id + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            window.location.href = '/settings/emails/';
-        });
+    $('.removeEmail').click(function(){
+      var useremail_id = $(this).data('id');
+      $.post('/settings/email/remove/' + useremail_id + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        window.location.href = '/settings/emails/';
+      });
     });
-});
+  });
 </script>
 {% endblock %}
-

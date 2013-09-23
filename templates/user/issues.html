@@ -2,153 +2,137 @@
 
 {% block subcontainer %}
 
-  {% if issues %}
-    <div class="issues bubble">
-      {% for issue in issues %}
-        <section class="issue-item" data="{{issue.id}}">
+{% if issues %}
+<div class="issues bubble">
+  {% for issue in issues %}
+  <section class="issue-item" data="{{issue.id}}">
 
-          <div class="tracker">
-            <span class="issue-id">#{{issue.id}}</span>
-            <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
-          </div>
+    <div class="tracker">
+      <span class="label issue-id">#{{issue.id}}</span>
+      <span class="label status {%if issue.status == "新建"%}open{%elif issue.status == "已指派"%}assigned{%elif issue.status == "进行中"%}processing{%elif issue.status == "已解决"%}resolved{%elif issue.status == "已关闭"%}closed{%elif issue.status == "已拒绝"%}rejected{%endif%}"><i class="icon-{%if issue.status == "新建"%}bookmark-empty{%elif issue.status == "已指派"%}resize-horizontal{%elif issue.status == "进行中"%}spinner{%elif issue.status == "已解决"%}ok{%elif issue.status == "已关闭"%}remove{%elif issue.status == "已拒绝"%}trash{%endif%}"></i>{{issue.status}}</span>
+    </div>
 
-          <div class="summary">
+    <div class="summary">
 
-            <div class="title">
-              {% comment %}
-                {% if issue.status %}
-                  <span class="label">{{issue.status}}</span>
-                {% endif %}
-                {% if issue.priority %}
-                  <span class="label">{{issue.priority}}</span>
-                {% endif %}
-                {% if issue.category %}
-                  <span class="label">{{issue.category}}</span>
-                {% endif %}
-              {% endcomment %}
-              <h3 class="heading">
-                <a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">{{issue.subject}}</a>
-              </h3>
-              <a href="/{{user.username}}/{{issue.reponame}}/" class="hide">{{issue.reponame}}</a>
-            </div>
-
-
-            <div class="meta">
-              <a href="/{{issue.name}}/">{{issue.username}}</a>
-              <span class="unixtime">{{issue.modify_time}}</span>
-              <span>
-                <i class="icon-comments-alt"></i>
-                <a href="#">{{issue.comments.count}}</a>
-              </span>
-            </div>
-
-            <div id="id_tr_{{issue.id}}" data="{{issue.id}}" class="comment">
-              <input id="id_comment_{{issue.id}}" class="c_comment">
-              <input id="id_repo_id_{{issue.id}}" class="hide" value="{{issue.repo_id}}">
-              <button class="c_button btn btn-mini btn-primary" type="submit">回复</button>
-            </div>
-
-            <div id="id_label_{{issue.id}}" class="c_label actions hide">
-              <span class="c_fixed_label label label-mini">解决</span>
-              <span class="c_close_label label label-mini">关闭</span>
-              <span class="c_reject_label label label-mini">拒绝</span>
-            </div>
-
-          </div>
-
-          <figure class="avatar">
-            <img src="https://gravatar.com/avatar/{{issue.username.imgurl}}?s=34" alt="{{issue.username}}">
-          </figure>
-
-        </section>
-      {% endfor %}
-      <input id="id_action" class="hide">
-    {% else %}
-      <div class="issue-item">
-        <p>没有 Issues 信息</p>
+      <div class="title">
+        <h3 class="heading">
+          <a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">{{issue.subject}}</a>
+          <a href="/{{user.username}}/{{issue.reponame}}/" class="label reponame">@{{issue.reponame}}</a>
+          <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
+          {% comment %}
+          {% if issue.status %}
+          <span class="label label-warning">{{issue.status}}</span>
+          {% endif %}
+          {% if issue.priority %}
+          <span class="label label-success">{{issue.priority}}</span>
+          {% endif %}
+          {% endcomment %}
+        </h3>
       </div>
-    {% endif %}
 
-    <ul class="pagination">
-      {#if hasPre#}
-        <li><a href="/dashboard/issues/0/">首页</a></li>
-        <li><a href="/dashboard/issues/{{page|add:"-1"}}/">前一页</a></li>
-      {#endif#}
-      {#if hasPre or hasNext#}
-        <li class="active">第{{page|add:"1"}}页</li>
-      {#endif#}
-      {#if hasNext#}
-        <li><a href="/dashboard/issues/{{page|add:"+1"}}/">后一页</a></li>
-      {#endif#}
-    </ul>
+
+      <div class="meta">
+        <a href="/{{issue.name}}/">{{issue.username}}</a>
+        <span class="unixtime">{{issue.modify_time}}</span>
+      </div>
+
+      <div id="id_label_{{issue.id}}" class="c_label actions hide">
+        <span class="c_fixed_label btn btn-success">解决</span>
+        <span class="c_close_label btn">关闭</span>
+        <span class="c_reject_label btn btn-danger">拒绝</span>
+      </div>
+
+    </div>
+
+  </section>
+  {% endfor %}
+  <input id="id_action" class="hide">
+  {% else %}
+  <div class="issue-item">
+    <p>没有 Issues 信息</p>
   </div>
+  {% endif %}
+
+  <ul class="pagination">
+    {#if hasPre#}
+    <li><a href="/dashboard/issues/0/">首页</a></li>
+    <li><a href="/dashboard/issues/{{page|add:"-1"}}/">前一页</a></li>
+    {#endif#}
+    {#if hasPre or hasNext#}
+    <li class="active">第{{page|add:"1"}}页</li>
+    {#endif#}
+    {#if hasNext#}
+    <li><a href="/dashboard/issues/{{page|add:"+1"}}/">后一页</a></li>
+    {#endif#}
+  </ul>
+</div>
 
 
 {% endblock %}
 
 {% block js %}
-  <script>
-    $(function(){
-        moment.lang('zh-cn');
-        $('.issue-item').live('mouseover mouseout', function(event) {
-            var id = $(this).attr('data');
-            if(event.type == 'mouseover') {
-                $('#id_label_'+id).show();
-            } else {
-                $('#id_label_'+id).hide();
-            }
-        });
-        $('.c_fixed_label').click(function(event) {
-            var id = $(this).parents('tr').attr('data');
-            setTimeout(
-                function(event) {
-            $('#id_tr_'+id).show();
-            $('#id_action').val('fixed');
-            $('#id_tr_'+id+' .c_button').text('解决');
-            $('#id_tr_'+id+' .c_comment').focus();
-                }
-            , 250)
-        });
-        $('.c_close_label').click(function(event) {
-            var id = $(this).parents('tr').attr('data');
-            setTimeout(
-                function(event) {
-            $('#id_tr_'+id).show();
-            $('#id_action').val('close');
-            $('#id_tr_'+id+' .c_button').text('关闭');
-            $('#id_tr_'+id+' .c_comment').focus();
-                }
-            , 250)
-        });
-        $('.c_reject_label').click(function(event) {
-            var id = $(this).parents('tr').attr('data');
-            setTimeout(
-                function(event) {
-            $('#id_tr_'+id).show();
-            $('#id_action').val('reject');
-            $('#id_tr_'+id+' .c_button').text('拒绝');
-            $('#id_tr_'+id+' .c_comment').focus();
-                }
-            , 250)
-        });
-        $('.c_comment').blur(function(event) {
-            var id = $(this).parents('tr').attr('data');
-            setTimeout(
-                function(event) {
-                    $('#id_tr_'+id).hide();
-                }
-            , 350)
-        });
-        $('.c_button').click(function(event) {
-            var id = $(this).parents('tr').attr('data');
-            $('#id_tr_'+id).hide();
-            var comment = $('#id_comment_'+id).val();
-            var repo_id = $('#id_repo_id_'+id).val();
-            var action = $('#id_action').val();
-            $.post('/ajax/home/do_issue/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'issue_id': id, 'repo_id': repo_id, 'comment': comment, 'action': action}, function(json){
-                window.location = window.location
-            });
-        });
+<script>
+  $(function(){
+    moment.lang('zh-cn');
+    $('.issue-item').live('mouseover mouseout', function(event) {
+      var id = $(this).attr('data');
+      if(event.type == 'mouseover') {
+        $('#id_label_'+id).show();
+      } else {
+        $('#id_label_'+id).hide();
+      }
     });
-  </script>
+    $('.c_fixed_label').click(function(event) {
+      var id = $(this).parents('tr').attr('data');
+      setTimeout(
+        function(event) {
+          $('#id_tr_'+id).show();
+          $('#id_action').val('fixed');
+          $('#id_tr_'+id+' .c_button').text('解决');
+          $('#id_tr_'+id+' .c_comment').focus();
+        }
+        , 250)
+    });
+    $('.c_close_label').click(function(event) {
+      var id = $(this).parents('tr').attr('data');
+      setTimeout(
+        function(event) {
+          $('#id_tr_'+id).show();
+          $('#id_action').val('close');
+          $('#id_tr_'+id+' .c_button').text('关闭');
+          $('#id_tr_'+id+' .c_comment').focus();
+        }
+        , 250)
+    });
+    $('.c_reject_label').click(function(event) {
+      var id = $(this).parents('tr').attr('data');
+      setTimeout(
+        function(event) {
+          $('#id_tr_'+id).show();
+          $('#id_action').val('reject');
+          $('#id_tr_'+id+' .c_button').text('拒绝');
+          $('#id_tr_'+id+' .c_comment').focus();
+        }
+        , 250)
+    });
+    $('.c_comment').blur(function(event) {
+      var id = $(this).parents('tr').attr('data');
+      setTimeout(
+        function(event) {
+          $('#id_tr_'+id).hide();
+        }
+        , 350)
+    });
+    $('.c_button').click(function(event) {
+      var id = $(this).parents('tr').attr('data');
+      $('#id_tr_'+id).hide();
+      var comment = $('#id_comment_'+id).val();
+      var repo_id = $('#id_repo_id_'+id).val();
+      var action = $('#id_action').val();
+      $.post('/ajax/home/do_issue/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'issue_id': id, 'repo_id': repo_id, 'comment': comment, 'action': action}, function(json){
+        window.location = window.location
+      });
+    });
+  });
+</script>
 {% endblock %}

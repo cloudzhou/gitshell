@@ -1,63 +1,55 @@
 {% extends "repo/repo.html" %}
 {% block subcontainer %}
-<style type="text/css">
-#id_assigned, #id_tracker, #id_status, #id_priority, #id_category { width: 100px; }
-#id_merge_content { height: 200px; width: 600px; }
-</style>
-    <h3 style="border-bottom:1px solid #EEEEEE; margin-bottom:15px;">
-        创建issue<small>&nbsp;创建issue是一件认真的事情，提交前请检查</small>
-    </h3>
-    <div>
-        <form class="form-inline" action="" method="post">
-            {% csrf_token %}
-            <div style="margin-bottom: 10px">
-                分配给 {{ issueForm.assigned }}
-                {{ issueForm.tracker }}
-                {{ issueForm.status }}
-                {{ issueForm.priority }}
-                类别 {{ issueForm.category }}
-            </div>
-            <div style="margin-bottom: 10px;">
-                <textarea maxlength="1024" name="merge_content" cols="40" rows="10" id="id_merge_content" placeholder="第一行自动作为标题，简单明了描述问题，标题之后作为内容"></textarea>
-            </div>
-            {% if error %}
-            <div class="alert">
-                <a data-dismiss="alert" class="close">×</a>
-                <strong>出错了！</strong> {{ error }}
-            </div>
-            {% endif %}
-            <button id="i_submit" style="margin-right: 0px;" class="btn btn-primary" type="submit">确定</button>
-            <div class="hidden">{{ issueForm.content }}</div>
-            <div class="hidden">{{ issueForm.subject }}</div>
-        </form>
+<div class="issue-form inner bubble">
+  <h2 class="heading">创建issue</h2>
+  {% if error %}
+  <div class="alert">
+    <a data-dismiss="alert" class="close"><i class="icon-remove"></i></a>
+    <p><strong>出错了！</strong>{{ error }}</p>
+  </div>
+  {% endif %}
+  <form class="form" method="post">
+    {% csrf_token %}
+    <div class="hide">{{ issueForm.content }}</div>
+    <div class="hide">{{ issueForm.subject }}</div>
+    <div class="fields">
+      <span class="group"><b>分配给</b>{{ issueForm.assigned }}{{ issueForm.tracker }}{{ issueForm.status }}{{ issueForm.priority }}</span><span class="group"><b>类别</b>{{ issueForm.category }}</span>
     </div>
+    <div class="fields">
+      <textarea name="merge_content" id="mergeContent" placeholder="第一行自动作为标题，简单明了描述问题，标题之后作为内容"></textarea>
+    </div>
+    <div class="actions">
+      <button id="iSubmit" class="btn btn-primary" type="submit">确定</button>
+    </div>
+  </form>
+</div>
 {% endblock %}
 {% block subjs %}
 <script>
-$(function(){
-    $('#id_category').attr('placeholder', '优化，安全...');
-    $('#i_submit').click(function(){
-        var line_arr = $('#id_merge_content').val().split('\n');
-        if($('#id_merge_content').val() != '') {
-            var subject = line_arr[0];
-            line_arr.shift();
-            var content = line_arr.join('\n');
-            $('#id_subject').val(subject);
-            if(content == '' || content == "\n") {
-                content = '无';
-            }
-            $('#id_content').val(content);
-            if($('#id_category').val() == '') {
-                $('#id_category').val('无');
-            }
-            return true;
+  $(function(){
+    $('#category').attr('placeholder', '优化，安全...');
+    $('#iSubmit').click(function(){
+      var line_arr = $('#mergeContent').val().split('\n');
+      if($('#mergeContent').val() != '') {
+        var subject = line_arr[0];
+        line_arr.shift();
+        var content = line_arr.join('\n');
+        $('#subject').val(subject);
+        if(content == '' || content == "\n") {
+          content = '无';
         }
-        return false;
+        $('#content').val(content);
+        if($('#category').val() == '') {
+          $('#category').val('无');
+        }
+        return true;
+      }
+      return false;
     });
-    $('.c_unixtime').each(function(index){ 
-        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-        $(this).show();
+    $('.unixtime').each(function(index){ 
+      $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+      $(this).show();
     });
-});
+  });
 </script>
 {% endblock %}

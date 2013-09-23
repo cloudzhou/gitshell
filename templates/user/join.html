@@ -13,8 +13,8 @@
     <div class="container">
     {% ifequal step '0' %}
       <div class="auth-container">
-        <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn github-btn"><i class="icon-github"></i>用 GitHub 账户直接登录</a>
-          <hr>
+        <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn btn-success github-btn"><i class="icon-github"></i>用 GitHub 账户直接登录</a>
+          <div class="divider"><span>或</span></div>
           <div class="alert alert-error hide">
             <p id="usernameAlert">用户名已经存在</p>
             <p id="emailAlert">邮箱已经存在</p>
@@ -27,7 +27,6 @@
           {% endif %}
             <form class="form" method="post">
               <fieldset>
-                <legend>注册</legend>
                 {% csrf_token %}
                 {{ joinForm.username }}
                 {{ joinForm.email }}
@@ -36,7 +35,6 @@
                 <button id="joinSubmit" class="btn btn-primary" type="submit">注册</button>
               </fieldset>
             </form>
-            <p>当你点击注册的时候表示你接受Gitshell的<a href="/help/#service">服务条款</a>和<a href="/help/">隐私政策</a>.</p>
         </div>
       {% endifequal %}
 
@@ -98,8 +96,8 @@ cat ~/.ssh/gitshell.com_rsa.pub</pre>
             <pre class="command well">
  git config --global user.name "your_name"
  git config --global user.email "your_email"</pre>
-          {% endif %}
-          <p>如果不想 global，在每个仓库里面执行 git config ，去掉 --global 参数</p>
+ {% endif %}
+ <p>如果不想 global，在每个仓库里面执行 git config ，去掉 --global 参数</p>
         </li>
         <li>
           <p>祝贺，现在您已经熟悉了Git的操作，如果还有什么不懂的问题，可以联系 <a href="mailto:support@gitshell.com">support@gitshell.com</a>，或者官方微博<a target="_blank" href="http://weibo.com/gitshell">http://weibo.com/gitshell</a></p>
@@ -117,76 +115,76 @@ cat ~/.ssh/gitshell.com_rsa.pub</pre>
       </aside>
     </section>
   </article>
-    {% endifequal %}
-    {% ifequal step '4' %}
-      <div class="guide failure">
-        <div class="alert alert-warning">
-          <p>注册失败，可能是激活url Token过期，请重新通过<a href="/join/0/">注册</a>获取激活url，如果这种情况持续出现，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="/static/img/sina_logo.png"/>gitshell</a></p>
-        </div>
-      </div>
-    {% endifequal %}
+  {% endifequal %}
+  {% ifequal step '4' %}
+  <div class="guide failure">
+    <div class="alert alert-warning">
+      <p>注册失败，可能是激活url Token过期，请重新通过<a href="/join/0/">注册</a>获取激活url，如果这种情况持续出现，请联系<a href="mailto:support@gitshell.com">support@gitshell.com</a> 或者 <a target="_blank" href="http://weibo.com/gitshell"><img src="/static/img/sina_logo.png"/>gitshell</a></p>
+    </div>
+  </div>
+  {% endifequal %}
 </div>{#/.container#}
 </div>{#/.content#}
 {% endblock %}
 
 {% block js %}
 <script>
-$(function(){
-  var join_init = function() {
+  $(function(){
+    var join_init = function() {
       $('#username').attr('placeholder', '用户名');
       $('#email').attr('placeholder', '邮箱');
       $('#password').attr('placeholder', '密码,包含数字和字母');
-  };
+    };
 
-{% ifequal step '0' %}
+    {% ifequal step '0' %}
     join_init();
-{% endifequal %}
+    {% endifequal %}
 
     var md5_user_passwd = function() {
-        $('#password').val(window.md5($('#unencryptPassword').val()));
+      $('#password').val(window.md5($('#unencryptPassword').val()));
     };
     $('#joinSubmit').on('click', md5_user_passwd);
 
     $('#username').change(function(){
-        $('#usernameFormat').hide();
-        $('#usernameAlert').hide();
-        var username = $(this).val();
-        if(!username.match(/^[a-zA-Z0-9_]+$/)) {
-            $('#usernameFormat').show();
-        }
-        $.post('/ajax/user/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', username: username}, function(json){
-            if(json.is_user_exist) {
-                $('#usernameAlert').show();
-            } else {
-                $('#usernameAlert').hide();
-            };
-        });
+      $('#usernameFormat').hide();
+      $('#usernameAlert').hide();
+      var username = $(this).val();
+      if(!username.match(/^[a-zA-Z0-9_]+$/)) {
+        $('#usernameFormat').show();
+      }
+      $.post('/ajax/user/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', username: username}, function(json){
+        if(json.is_user_exist) {
+          $('#usernameAlert').show();
+        } else {
+          $('#usernameAlert').hide();
+        };
+      });
     });
     $('#email').change(function(){
-        var email = $(this).val();
-        $.post('/ajax/user/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', email: email}, function(json){
-            if(json.is_user_exist) {
-                $('#emailAlert').show();
-            } else {
-                $('#emailAlert').hide();
-            };
-        });
+      var email = $(this).val();
+      $.post('/ajax/user/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', email: email}, function(json){
+        if(json.is_user_exist) {
+          $('#emailAlert').show();
+        } else {
+          $('#emailAlert').hide();
+        };
+      });
     });
     function goto_button() {
-        var prmstr = window.location.search.substr(1);
-        var prmarr = prmstr.split ("&");
-        var params = {};
-    
-        for ( var i = 0; i < prmarr.length; i++) {
-            var tmparr = prmarr[i].split("=");
-            params[tmparr[0]] = tmparr[1];
-        }
-        var _goto = params['goto'];
-        if(_goto != '') {
-            $('#gotoA').attr('href', 'http://' + _goto);
-            $('#gotoDomain').text(_goto);
-            $('#gotoA').show();
-        }
+      var prmstr = window.location.search.substr(1);
+      var prmarr = prmstr.split ("&");
+      var params = {};
+
+      for ( var i = 0; i < prmarr.length; i++) {
+        var tmparr = prmarr[i].split("=");
+        params[tmparr[0]] = tmparr[1];
+      }
+      var _goto = params['goto'];
+      if(_goto != '') {
+        $('#gotoA').attr('href', 'http://' + _goto);
+        $('#gotoDomain').text(_goto);
+        $('#gotoA').show();
+      }
     }
     goto_button();
 
@@ -200,7 +198,7 @@ $(function(){
           $(this).find('i').removeClass('icon-double-angle-down').addClass('icon-double-angle-right').end().find('span').text('没有收到邮件?');
           $('blockquote.contact').slideUp();
         }
-    );
-});
+        );
+  });
 </script>
 {% endblock %}

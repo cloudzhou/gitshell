@@ -9,96 +9,95 @@
 
 {% block subcontainer %}
 
-		<div class="files bubble" id="resize-container">
-			<div class="file-browser" id="file-browser">
-        {% include "repo/branch_nav.html" %}
-        {#<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="btn btn-mini">Commits</a>#}
-				<ul class="nav nav-list">
-          {% for file_attrs in tree.tree %}
-          {%if file_attrs.type == 'tree'%}
-						<li class="tree-node">
-              <span title="{{file_attrs.relative_path}}" class="fold"><img src="/static/img/file_dir.png" alt="dir">{{file_attrs.relative_path}}</span>
-							<ul class="nav nav-list">
-								<li class="tree-node">
-									<span class="fold"><img src="/static/img/file_dir.png" alt="">dir 1</span>
-								<ul class="nav nav-list">
-									<li><a href="#"><img src="/static/img/file_txt.png" alt="">Inner file 1</a></li>
-									<li><a href="#"><img src="/static/img/file_txt.png" alt="">Inner file 2</a></li>
-									<li><a href="#"><img src="/static/img/file_txt.png" alt="">Inner file 3</a></li>
-								</ul>
-								</li>
-								<li><a href="#"><img src="/static/img/file_txt.png" alt="">file 1</a></li>
-								<li><a href="#"><img src="/static/img/file_txt.png" alt="">file 2</a></li>
-							</ul>
-						</li>
-						{% else %}
-							<li><a href="#"><img src="/static/img/file_txt.png" alt="txt">{{ file_attrs.relative_path }}</a></li>
-						{% endif %}
-					{% endfor %}
-				</ul>
-			</div>
+<div class="files bubble" id="resize-container">
+  <div class="file-browser" id="file-browser">
+    {% include "repo/branch_nav.html" %}
+    {#<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="btn btn-mini">Commits</a>#}
+    <ul class="nav nav-list">
+      {% for file_attrs in tree.tree %}
+      {%if file_attrs.type == 'tree'%}
+      <li class="tree-node">
+        <span title="{{file_attrs.relative_path}}" class="fold"><img src="/static/img/file_dir.png" alt="dir">{{file_attrs.relative_path}}</span>
+        <ul class="nav nav-list">
+          <li class="tree-node">
+            <span class="fold"><img src="/static/img/file_dir.png" alt="">dir 1</span>
+            <ul class="nav nav-list">
+              <li><a href="#" class="file"><img src="/static/img/file_txt.png" alt="">Inner file 1</a></li>
+              <li><a href="#" class="file"><img src="/static/img/file_txt.png" alt="">Inner file 2</a></li>
+              <li><a href="#" class="file"><img src="/static/img/file_txt.png" alt="">Inner file 3</a></li>
+            </ul>
+          </li>
+          <li><a href="#" class="file"><img src="/static/img/file_txt.png" alt="">file 1</a></li>
+          <li><a href="#" class="file"><img src="/static/img/file_txt.png" alt="">file 2</a></li>
+        </ul>
+      </li>
+      {% else %}
+      <li><a href="#" class="file"><img src="/static/img/file_txt.png" alt="txt">{{ file_attrs.relative_path }}</a></li>
+      {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
 
-			<div class="table-container" id="source">
-				<div class="theme-selector">
-					<a href="#" id="switcher">Color Scheme</a>
-					<ul class="theme-list clearfix" id="themes">
-            <li class="active"><a href="#"><i class="icon-ok"></i>Default</a></li>
-						<li><a href="#">Github</a></li>
-						<li><a href="#">Sunburst</a></li>
-						<li><a href="#">Solarized</a></li>
-						<li><a href="#">Mustang</a></li>
-						<li><a href="#">Twilight</a></li>
-						<li><a href="#">Mac Classic</a></li>
-						<li><a href="#">Google Code</a></li>
-						<li><a href="#">xCode</a></li>
-						<li><a href="#">Tomorrow</a></li>
-					</ul>
-				</div>
-				<table class="table">
-					<tbody>
-						{% if not tree %}
-							<tr>
-								<td><p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码。</p></td>
-							</tr>
-            {% endif %}
-            {% for file_attrs in tree.tree %}
-              <tr>
-                <td class="icon">
-                    <!--dir and file image-->
-                    {% if file_attrs.type == 'tree' %}
-                        <i class="icon-folder-open"></i>
-                    {% else %}
-                        <i class="icon-file"></i>
-                    {% endif %}
-                </td>
-                <td class="file-name">
-                    <a href="/{{user_name}}/{{repo_name}}/{%if file_attrs.type == 'tree'%}tree{%else%}blob{%endif%}/{{refs}}/{%if path != '.' %}{{path}}{%endif%}{{file_attrs.relative_path}}" title="{{file_attrs.relative_path}}">{{file_attrs.relative_path}}</a>
-                </td>
-                <td class="commit-info">
-                    {% if file_attrs.last_commit_message|length > 80 %}
-                        <a href="javascript:void(0)" data-toggle="popover" data-content="{{file_attrs.last_commit_message}}" data-placement="bottom" class="commit">{{file_attrs.last_commit_message|truncatechars:80}}</a>
-                    {% else %}
-                        <a href="javascript:void(0)" class="commit">{{file_attrs.last_commit_message}}</a>
-                    {% endif %}
-                    {% if file_attrs.real_author_name == '' %}
-                    <span>@{{file_attrs.author_name}}</span>
-                    {% else %}
-                    <a href="/{{file_attrs.real_author_name}}/" class="commiter">@{{file_attrs.author_name}}</a>
-                    {% endif %}
-                </td>
-                <td class="date">
-                    <span class="date unixtime">{{file_attrs.author_time}}</span></td>
-                </td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        {% if readme_md %}
-        <div id="README.md" class="readme">
-          <div id="id_readme_md" class="markdown hide">{{readme_md}}</div>
-        </div>
-        {% endif %}
+  <div class="table-container" id="source">
+    <div class="theme-selector">
+      <a href="#" id="switcher">Color Scheme</a>
+      <ul class="theme-list clearfix" id="themes">
+        <li class="active"><a href="#"><i class="icon-ok"></i>Default</a></li>
+        <li><a href="#">Github</a></li>
+        <li><a href="#">Sunburst</a></li>
+        <li><a href="#">Solarized</a></li>
+        <li><a href="#">Mustang</a></li>
+        <li><a href="#">Twilight</a></li>
+        <li><a href="#">Mac Classic</a></li>
+        <li><a href="#">Google Code</a></li>
+        <li><a href="#">xCode</a></li>
+        <li><a href="#">Tomorrow</a></li>
+      </ul>
     </div>
+    <table class="table">
+      <tbody>
+        {% if not tree %}
+        <tr>
+          <td><p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码。</p></td>
+        </tr>
+        {% endif %}
+        {% for file_attrs in tree.tree %}
+        <tr>
+          <td class="icon">
+            {% if file_attrs.type == 'tree' %}
+            <span><img src="/static/img/file_dir.png" alt="dir"></span>
+            {% else %}
+            <span><img src="/static/img/file_txt.png" alt="file"></span>
+            {% endif %}
+          </td>
+          <td class="file-name">
+            <a href="/{{user_name}}/{{repo_name}}/{%if file_attrs.type == 'tree'%}tree{%else%}blob{%endif%}/{{refs}}/{%if path != '.' %}{{path}}{%endif%}{{file_attrs.relative_path}}" title="{{file_attrs.relative_path}}">{{file_attrs.relative_path}}</a>
+          </td>
+          <td class="commit-info">
+            {% if file_attrs.last_commit_message|length > 80 %}
+            <a href="javascript:void(0)" data-toggle="popover" data-content="{{file_attrs.last_commit_message}}" data-placement="bottom" class="commit">{{file_attrs.last_commit_message|truncatechars:80}}</a>
+            {% else %}
+            <a href="javascript:void(0)" class="commit">{{file_attrs.last_commit_message}}</a>
+            {% endif %}
+            {% if file_attrs.real_author_name == '' %}
+            <span class="commiter">@{{file_attrs.author_name}}</span>
+            {% else %}
+            <a href="/{{file_attrs.real_author_name}}/" class="commiter">@{{file_attrs.author_name}}</a>
+            {% endif %}
+          </td>
+          <td class="date">
+            <span class="date unixtime">{{file_attrs.author_time}}</span></td>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if readme_md %}
+  <div id="README.md" class="readme">
+    <div id="id_readme_md" class="markdown hide">{{readme_md}}</div>
+  </div>
+  {% endif %}
+</div>
 
 {% endblock %}
 
@@ -109,96 +108,96 @@
 <script src="/static/js/app/caja/html-css-sanitizer-minified.js"></script>
 {% endif %}
 <script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
-	<script src="/static/js/jquery-ui-1.10.3.custom.min.js"></script>
-	<script src="/static/js/treeview.js"></script>
-	<script>
-		$(function(){
-			// File browser resizable & treeview
-			$("#file-browser").resizable({
-				handles: "e",
-				grid: 10,
-				minWidth: 200,
-				maxWidth: 300
-			});
-
-			$("#file-browser > .nav").treeview({
-				collapsed: true,
-				//unique: true,
-				animated: "fast"
-			});
-
-			$("#file-browser").bind("resize",
-				function(event, ui){
-					var fileBrowserWidth = $("#file-browser").width();
-					$("#source").css("margin-left", fileBrowserWidth);
-				}
-			);
-
-			// Color Scheme
-      var switcher = $("#switcher"),
-          themes = $("#themes");
-			switcher.click(
-				function(e){
-					e.preventDefault();
-					themes.slideToggle(100);
-				}
-			);
-
-			// Bootstrap/popover
-			$('[data-toggle="popover"]').hover(
-				function(){
-					$(this).popover('show');
-				}, function(){
-					$(this).popover('hide');
-				}
-			);
-
-		});
-	</script>
+<script src="/static/js/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="/static/js/treeview.js"></script>
 <script>
-$(function(){
+  $(function(){
+    // File browser resizable & treeview
+    $("#file-browser").resizable({
+      handles: "e",
+      grid: 10,
+      minWidth: 200,
+      maxWidth: 300
+    });
+
+    $("#file-browser > .nav").treeview({
+      collapsed: true,
+      //unique: true,
+      animated: "fast"
+    });
+
+    $("#file-browser").bind("resize",
+      function(event, ui){
+        var fileBrowserWidth = $("#file-browser").width();
+        $("#source").css("margin-left", fileBrowserWidth);
+      }
+      );
+
+    // Color Scheme
+    var switcher = $("#switcher"),
+        themes = $("#themes");
+    switcher.click(
+        function(e){
+          e.preventDefault();
+          themes.slideToggle(100);
+        }
+        );
+
+    // Bootstrap/popover
+    $('[data-toggle="popover"]').hover(
+        function(){
+          $(this).popover('show');
+        }, function(){
+          $(this).popover('hide');
+        }
+        );
+
+  });
+</script>
+<script>
+  $(function(){
     set_path_href = function() {
-        var base_href_path = '/{{user_name}}/{{repo_name}}/tree/{{refs}}/';
-        var path = '{{path}}';
-        if(path == '.') {
-            return;
+      var base_href_path = '/{{user_name}}/{{repo_name}}/tree/{{refs}}/';
+      var path = '{{path}}';
+      if(path == '.') {
+        return;
+      }
+      var paths = path.split('/');
+      path_href_html = '';
+      for(x in paths) {
+        subpath = paths[x];
+        if(subpath == '') {
+          break;
         }
-        var paths = path.split('/');
-        path_href_html = '';
-        for(x in paths) {
-            subpath = paths[x];
-            if(subpath == '') {
-                break;
-            }
-            base_href_path = (base_href_path + subpath + '/');
-            if(path.substr(-1) === "/") {
-                if(x != (paths.length-2)) {
-                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
-                } else {
-                    path_href_html = (path_href_html + ' ' + subpath + ' /');
-                }
-            } else {
-                if(x != (paths.length-1)) {
-                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
-                } else {
-                    path_href_html = (path_href_html + ' ' + subpath);
-                }
-            }
+        base_href_path = (base_href_path + subpath + '/');
+        if(path.substr(-1) === "/") {
+          if(x != (paths.length-2)) {
+            path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+          } else {
+            path_href_html = (path_href_html + ' ' + subpath + ' /');
+          }
+        } else {
+          if(x != (paths.length-1)) {
+            path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+          } else {
+            path_href_html = (path_href_html + ' ' + subpath);
+          }
         }
-        $('#repo-path').html(path_href_html);
+      }
+      $('#repo-path').html(path_href_html);
     };
     set_path_href();
 
     {% if readme_md %}
-        marked.setOptions({ gfm: true, tables: true, breaks: false, pedantic: false, sanitize: false, smartLists: true, smartypants: false, langPrefix: 'lang-' });
-        var html = $('#id_readme_md').html();
-        html = $('<div/>').html(html).text();
-        var sanitized_html = html_sanitize(marked(html), function(url) { return url; }, function(id) { return id; })
-        $('#id_readme_md').html(sanitized_html);
-        $('#id_readme_md').show();
+    marked.setOptions({ gfm: true, tables: true, breaks: false, pedantic: false, sanitize: false, smartLists: true, smartypants: false, langPrefix: 'lang-' });
+    var html = $('#id_readme_md').html();
+    html = $('<div/>').html(html).text();
+    var sanitized_html = html_sanitize(marked(html), function(url) { return url; }, function(id) { return id; })
+      $('#id_readme_md').html(sanitized_html);
+    $('#id_readme_md').show();
     {% endif %}
     $('[data-toggle="popover"]').popover({ animation: false });
-});
+  });
 </script>
 
 {% endblock %}

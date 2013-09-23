@@ -5,112 +5,113 @@
 
 {% block subcontainer %}
 <div class="commits bubble">
-
+  <div class="header">
     {% include "repo/branch_nav.html" %}
-
-    {% for commit in commits %}
-        <section class="commit colspan">
-            <div class="commiter user-plugin span">
-                <figure class="avatar"><img src="https://gravatar.com/avatar/{{commit.author_imgurl}}?s=30" alt="{{commit.committer_name}}"></figure>
-                <div class="info">
-                    <p class="msg"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/">{{commit.commit_message|truncatechars:80}}</a></p>
-                    <p class="meta">
-                    {% if commit.real_committer_name == '' %}
-                    <span>{{commit.committer_name}}</span>
-                    {% else %}
-                    <a href="/{{commit.real_committer_name}}/">{{commit.committer_name}}</a>
-                    {% endif %}
-                    <span class="date unixtime">{{commit.committer_date}}</span></p>
-                </div>
-            </div>
-            <span class="hash span"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/" class="btn label-mini btn-info">{{commit.commit_hash}}</a></span>
-        </section>
-    {% endfor %}
-
-		{% if not commits %}
-			<section class="commit">
-				<p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有提交信息，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
-			</section>
-		{% endif %}
-
-    <ul class="pagination">
-      <li><a href="#"><img src="/static/img/icons/pagination-previous.png" alt="">上一页</a></li>
-      <li><a href="#">1</a></li>
-      <li><a href="#">2</a></li>
-      <li><a href="#">3</a></li>
-      <li><a href="#">4</a></li>
-      <li><a href="#">5</a></li>
-      <li><a href="#">6</a></li>
-      <li><a href="#">7</a></li>
-      <li><a href="#">8</a></li>
-      <li><a href="#">下一页<img src="/static/img/icons/pagination-next.png" alt=""></a></li>
-    </ul>
-
+    <h2 class="heading"><span class="count">1008</span>个提交</h2>
   </div>
+  {% for commit in commits %}
+  <section class="commit">
+    <div class="commiter">
+      <figure class="avatar"><img src="https://gravatar.com/avatar/{{commit.author_imgurl}}?s=40" alt="{{commit.committer_name}}"></figure>
+      <div class="summary">
+        <p class="msg"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/">{{commit.commit_message|truncatechars:80}}</a></p>
+        <p class="meta">
+          {% if commit.real_committer_name == '' %}
+          <span>{{commit.committer_name}}</span>
+          {% else %}
+          <a href="/{{commit.real_committer_name}}/">{{commit.committer_name}}</a>
+          {% endif %}
+          <span class="date unixtime">{{commit.committer_date}}</span></p>
+      </div>
+    </div>
+    <span class="hash"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/" class="btn label-mini btn-info">{{commit.commit_hash}}</a></span>
+  </section>
+  {% endfor %}
+
+  {% if not commits %}
+  <section class="commit">
+    <p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有提交信息，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
+  </section>
+  {% endif %}
+
+  <ul class="pagination">
+    <li><a href="#"><img src="/static/img/icons/pagination-previous.png" alt="">上一页</a></li>
+    <li><a href="#">1</a></li>
+    <li><a href="#">2</a></li>
+    <li><a href="#">3</a></li>
+    <li><a href="#">4</a></li>
+    <li><a href="#">5</a></li>
+    <li><a href="#">6</a></li>
+    <li><a href="#">7</a></li>
+    <li><a href="#">8</a></li>
+    <li><a href="#">下一页<img src="/static/img/icons/pagination-next.png" alt=""></a></li>
+  </ul>
+
+</div>
 {% endblock %}
 
 {% block subjs %}
 <script>
-$(function(){
+  $(function(){
     set_path_href = function() {
-        var base_href_path = '/{{user_name}}/{{repo_name}}/commits/{{refs}}/';
-        var path = '{{path}}';
-        if(path == '.') {
-            return;
+      var base_href_path = '/{{user_name}}/{{repo_name}}/commits/{{refs}}/';
+      var path = '{{path}}';
+      if(path == '.') {
+        return;
+      }
+      var paths = path.split('/');
+      path_href_html = '';
+      for(x in paths) {
+        subpath = paths[x];
+        if(subpath == '') {
+          break;
         }
-        var paths = path.split('/');
-        path_href_html = '';
-        for(x in paths) {
-            subpath = paths[x];
-            if(subpath == '') {
-                break;
-            }
-            base_href_path = (base_href_path + subpath + '/');
-            if(path.substr(-1) === "/") {
-                if(x != (paths.length-2)) {
-                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
-                } else {
-                    path_href_html = (path_href_html + ' ' + subpath + ' /');
-                }
-            } else {
-                if(x != (paths.length-1)) {
-                    path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
-                } else {
-                    path_href_html = (path_href_html + ' ' + subpath);
-                }
-            }
+        base_href_path = (base_href_path + subpath + '/');
+        if(path.substr(-1) === "/") {
+          if(x != (paths.length-2)) {
+            path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+          } else {
+            path_href_html = (path_href_html + ' ' + subpath + ' /');
+          }
+        } else {
+          if(x != (paths.length-1)) {
+            path_href_html = (path_href_html + ' <a href="' + base_href_path + '">' + subpath + '</a> /');
+          } else {
+            path_href_html = (path_href_html + ' ' + subpath);
+          }
         }
-        $('#repo-path').html(path_href_html);
+      }
+      $('#repo-path').html(path_href_html);
     };
     set_path_href();
     {# TODO add compare diff #}
     var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
     $('.c_diff_commit').click(function() {
-        commit_hash = $(this).attr('value');
-        pre_commit_hash = $(this).closest('tr').next().next().find('.c_diff_commit').attr('value')
-        if(pre_commit_hash === undefined) {
-            return
-        }
-        label = $('#i_label_' + commit_hash).text()
-        if(label == '+') {
-            pre_html = $('#i_pre_' + commit_hash).html()
-            if(pre_html != '') {
-                $('#i_label_' + commit_hash).text('-')
-                $('#i_diff_' + commit_hash).show();
-                return
-            }
-            repoComparer.from_refs = pre_commit_hash;
-            repoComparer.to_refs = commit_hash;
-            repoComparer.path = '{{path}}';
-            repoComparer.loadDiff($('#i_pre_' + commit_hash), null, function() {
-                $('#i_label_' + commit_hash).text('-');
-                $('#i_diff_' + commit_hash).show();
-            });
-        } else {
-            $('#i_label_' + commit_hash).text('+')
-            $('#i_diff_' + commit_hash).hide();
-        }
+      commit_hash = $(this).attr('value');
+      pre_commit_hash = $(this).closest('tr').next().next().find('.c_diff_commit').attr('value')
+      if(pre_commit_hash === undefined) {
+        return
+      }
+    label = $('#i_label_' + commit_hash).text()
+      if(label == '+') {
+        pre_html = $('#i_pre_' + commit_hash).html()
+      if(pre_html != '') {
+        $('#i_label_' + commit_hash).text('-')
+      $('#i_diff_' + commit_hash).show();
+    return
+      }
+    repoComparer.from_refs = pre_commit_hash;
+    repoComparer.to_refs = commit_hash;
+    repoComparer.path = '{{path}}';
+    repoComparer.loadDiff($('#i_pre_' + commit_hash), null, function() {
+      $('#i_label_' + commit_hash).text('-');
+      $('#i_diff_' + commit_hash).show();
     });
-});
+      } else {
+        $('#i_label_' + commit_hash).text('+')
+          $('#i_diff_' + commit_hash).hide();
+      }
+    });
+  });
 </script>
 {% endblock %}

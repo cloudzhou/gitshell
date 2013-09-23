@@ -227,10 +227,10 @@ class FeedManager():
         message = ''
         if orgi_issue is None and current_issue is not None:
             feed_type = FEED_TYPE.ISSUES_CREATE
-            message = 'create issue'
+            message = '新建了Issue'
         if orgi_issue is not None and (orgi_issue.subject != current_issue.subject or orgi_issue.content != current_issue.content or orgi_issue.category != current_issue.category):
             feed_type = FEED_TYPE.ISSUES_UPDATE
-            message = 'update issue'
+            message = '更新了Issue'
         # status update
         status_changes = []
         if orgi_issue is not None:
@@ -341,7 +341,7 @@ class FeedManager():
         message = ''
         if issueStatus == ISSUE_STATUS.ASSIGNED:
             notif_type = NOTIF_TYPE.ISSUE_ASSIGNED
-            message = 'assigned'
+            message = '指派了'
             exists_notifMessage = self.get_notifmessage_by_userId_notifType_relativeId(issue.assigned, notif_type, issue.id)
             if exists_notifMessage:
                 return
@@ -360,7 +360,7 @@ class FeedManager():
         notif_type = NOTIF_TYPE.MERGE_CREATE_PULL_REQUEST
         message = ''
         if pullStatus == PULL_STATUS.NEW:
-            message = 'created'
+            message = '新建了'
             merge_user_profile = GsuserManager.get_userprofile_by_id(pullRequest.merge_user_id)
             if merge_user_profile is not None:
                 notifMessage = NotifMessage.create(NOTIF_CATE.MERGE, NOTIF_TYPE.MERGE_CREATE_PULL_REQUEST, pullRequest.pull_user_id, pullRequest.merge_user_id, pullRequest.id)
@@ -371,16 +371,16 @@ class FeedManager():
             return
         if pullStatus == PULL_STATUS.MERGED_FAILED:
             notif_type = NOTIF_TYPE.MERGE_MERGED_FAILED_PULL_REQUEST
-            message = 'merge failed'
+            message = '合并失败'
         elif pullStatus == PULL_STATUS.MERGED:
             notif_type = NOTIF_TYPE.MERGE_MERGED_PULL_REQUEST
-            message = 'merged'
+            message = '合并了'
         elif pullStatus == PULL_STATUS.REJECTED:
             notif_type = NOTIF_TYPE.MERGE_REJECTED_PULL_REQUEST
-            message = 'rejected'
+            message = '拒绝了'
         elif pullStatus == PULL_STATUS.CLOSE:
             notif_type = NOTIF_TYPE.MERGE_CLOSE_PULL_REQUEST
-            message = 'closed'
+            message = '关闭了'
         pull_user_profile = GsuserManager.get_userprofile_by_id(pullRequest.pull_user_id)
         if pull_user_profile is not None:
             notifMessage = NotifMessage.create(NOTIF_CATE.MERGE, notif_type, pullRequest.merge_user_id, pullRequest.pull_user_id, pullRequest.id)
@@ -485,8 +485,8 @@ class NOTIF_FQCY:
     PER_1DAY = 1440
 
     NOTIF_FQCY_CHOICE = [
-        {'key': u'永远不', 'value': -1},
-        {'key': u'尽可能快', 'value': 0},
+        {'key': u'拒绝接收所有邮件', 'value': -1},
+        {'key': u'立即发送', 'value': 0},
         {'key': u'5分钟', 'value': 5},
         {'key': u'15分钟', 'value': 15},
         {'key': u'30分钟', 'value': 30},
@@ -530,11 +530,11 @@ class NOTIF_TYPE:
 
     NOTIF_TYPE_CHOICE = {
         'at': [
-            {'key': u'Commit 提交信息', 'value': 0},
-            {'key': u'Pull Request 内容', 'value': 10},
-            {'key': u'Pull Request 评论', 'value': 11},
-            {'key': u'Issue 内容', 'value': 30},
-            {'key': u'Issue 评论', 'value': 31},
+            {'key': u'Commit提交信息', 'value': 0},
+            {'key': u'合并请求内容', 'value': 10},
+            {'key': u'合并请求评论', 'value': 11},
+            {'key': u'Issue内容', 'value': 30},
+            {'key': u'Issue评论', 'value': 31},
         ],
         'merge': [
             {'key': u'需要你参与', 'value': 100},

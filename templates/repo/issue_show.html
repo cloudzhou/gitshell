@@ -1,173 +1,178 @@
 {% extends "repo/repo.html" %}
 
-{% block bubble_inner_class_name %} issues{% endblock %}
-
 {% block subcontainer %}
-    <div class="cIssue issue">
-        <h3 id="issueSubject" class="heading"><span class="label">#{{issue.id}}</span>{{issue.subject}}</h3>
-        <div class="data">
-            <p class="content">{{issue.content}}</p>
-            <p class="meta clearfix">
-                <span class="assiged">
-                    <img src="https://gravatar.com/avatar/{{ issue.reporter_imgurl}}?s=20" alt="{{issue.username}}">
-                    <a href="/{{issue.username}}/">{{issue.username}}</a>
-                    <span>&rarr;</span>
-                    <img src="https://gravatar.com/avatar/{{ issue.assiged_imgurl}}?s=20" alt="{{issue.assiged}}">
-                    <a href="/{{issue.assigned}}/">{{issue.assigned}}</a>
-                </span>
-                <span class="unixtime">{{issue.modify_time}}</span>
-                <span class="actions">
-                    <a href="" rel="tooltip" data-original-title="可拖动到上面"><i class="icon-bell"></i></a>
-                    <a id="issueEdit" href="/{{user_name}}/{{repo_name}}/issues/edit/{{issue.id}}/">修改</a>
-                </span>
-            </p>
-        </div>
+<div class="issue-show inner bubble">
+  <ul class="breadcrumb">
+    <li><a href="/{{repo_name}}/issues/">Issues</a><span class="divider">/</span></li>
+    <li class="active"><span>#{{issue.id}}</span></li>
+  </ul>
+  <p class="hide">您没有添加评论的权限，请<a href="#">登陆</a></p>
+  <div class="issue cIssue">
+    <figure class="avatar">
+      <img src="https://gravatar.com/avatar/{{ issue.reporter_imgurl}}?s=55" alt="{{issue.username}}">
+    </figure>
+    <div class="detail">
+      <h3 id="issueSubject" class="heading">{{issue.subject}}
+      <span class="actions">
+        {#<a href="#" rel="tooltip" data-original-title="可拖动到上面"><i class="icon-bell"></i></a>#}
+        <a id="issueEdit" href="/{{user_name}}/{{repo_name}}/issues/edit/{{issue.id}}/"><i class="icon-pencil"></i>修改</a>
+      </span>
+      </h3>
+      <p class="meta">
+        <span class="assign">{#<img src="https://gravatar.com/avatar/{{ issue.reporter_imgurl}}?s=15" alt="{{issue.username}}">#}由<a href="/{{issue.username}}/">{{issue.username}}</a>指派给{#<img src="https://gravatar.com/avatar/{{ issue.assiged_imgurl}}?s=15" alt="{{issue.assiged}}">#}<a href="/{{issue.assigned}}/">{{issue.assigned}}</a></span>
+        <time class="unixtime" pubdate="pubdate">{{issue.modify_time}}</time>
+      </p>
+      <div class="content">{{issue.content}}</div>
     </div>
+  </div>
 
-    {%if issue_comments%}
-        {%for issue_comment in issue_comments%}
-            <section data-user-name="{{issue_comment.user_id}}" class="comment user-plugin">
-                <figure class="avatar">
-                    <img src="https://gravatar.com/avatar/{{ issue_comment.user_img }}?s=32" alt="{{issue.comment}}">
-                </figure>
-                <div class="info">
-                    <p class="comment-data">{{issue_comment.content}}</p>
-                    <p class="meta">
-                        <a href="/{{issue_comment.user_id}}/">{{issue_comment.user_id}}</a>
-                        <span class="unixtime">{{issue_comment.create_time}}</span>
-                        <a class="refComment" href="javascript:void(0)" value="{{issue_comment.user_id}}">回复</a>
-                        <a class="rmComment hide" value="{{issue_comment.id}}" href="javascript:void(0)">删除</a>
-                    </p>
-                </div>
-            </section>
-        {%endfor%}
-    {%endif%}
-
-    <div data-user-name="{{user_name}}" class="comment user-plugin">
-      <form id="comment" action="" method="post">
-          {% csrf_token %}
-          <figure class="avatar">
-            <img src="https://gravatar.com/avatar/{{user_name}}?s=32" alt="{{user_name}}">
-          </figure>
-          <div id="commentContent" class="info">
-            {{ issueCommentForm.content }}
-            <button id="submit" class="btn btn-primary" type="submit">发表评论</button>
-            <p class="meta">不可修改，严谨发言</p>
-          </div>
-      </form>
+  {%if issue_comments%}
+  {%for issue_comment in issue_comments%}
+  <section data-user-name="{{issue_comment.user_id}}" class="comment">
+    <figure class="avatar">
+      <img src="https://gravatar.com/avatar/{{ issue_comment.user_img }}?s=55" alt="{{issue.comment}}">
+    </figure>
+    <div class="detail">
+      <div class="meta">
+        <a href="/{{issue_comment.user_id}}/">{{issue_comment.user_id}}</a>
+        <time class="unixtime" pubdate="pubdate">{{issue_comment.create_time}}</time>
+      </div>
+      <div class="content">{{issue_comment.content}}</div>
+      <div class="actions">
+        <a class="rmComment hide" value="{{issue_comment.id}}" href="javascript:void(0)"><i class="icon-remove"></i>删除</a>
+        <a class="refComment" href="javascript:void(0)" value="{{issue_comment.user_id}}"><i class="icon-reply"></i>回复</a>
+      </div>
     </div>
+  </section>
+  {%endfor%}
+  {%endif%}
 
-    {%if total_page|length > 1%}
-      <ul class="pagination">
-          {%for i in total_page%}
-            {%if i == page%}
-              <li class="active"><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
-            {%else%}
-              <li><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
-            {%endif%}
-          {%endfor%}
-      </ul>
+  <div data-user-name="{{user_name}}" class="comment">
+    <figure class="avatar">
+      <img src="https://gravatar.com/avatar/{{user_name}}?s=55" alt="{{user_name}}">
+    </figure>
+    <form id="comment" class="detail" method="post">
+      {% csrf_token %}
+      <div id="commentContent" class="content">
+        {{ issueCommentForm.content }}
+        <p class="meta">评论不可修改</p>
+        <button id="submit" class="btn btn-primary" type="submit">发表评论</button>
+      </div>
+    </form>
+  </div>
+
+  {%if total_page|length > 1%}
+  <ul class="pagination">
+    {%for i in total_page%}
+    {%if i == page%}
+    <li class="active"><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
+    {%else%}
+    <li><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
     {%endif%}
-
+    {%endfor%}
+  </ul>
+  {%endif%}
+</div>
 {% endblock %}
 
 {% block subjs %}
 <script src="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.21/jquery-ui.min.js"></script>
 <script>
-$(function(){
+  $(function(){
     {% if has_issue_modify_right %}
     $('.issue .data').live('mouseover mouseout', function(event) {
-        if (event.type == 'mouseover') {
-            $('#issueEdit').show();
-        } else {
-            $('#issueEdit').hide();
-        }
+      if (event.type == 'mouseover') {
+        $('#issueEdit').show();
+      } else {
+        $('#issueEdit').hide();
+      }
     });
     {% endif %}
     $('.comment').live('mouseover mouseout', function(event) {
-        if (event.type == 'mouseover') {
-            var issues_user_name = $(this).attr('data-user-name');
-            if('{{user.username}}' == '{{user_name}}' || issues_user_name == '{{user.username}}') {
-                $(this).find('.rmComment').show();
-            }
-        } else {
-            $(this).find('.rmComment').hide();
+      if (event.type == 'mouseover') {
+        var issues_user_name = $(this).attr('data-user-name');
+        if('{{user.username}}' == '{{user_name}}' || issues_user_name == '{{user.username}}') {
+          $(this).find('.rmComment').show();
         }
+      } else {
+        $(this).find('.rmComment').hide();
+      }
     });
     $('.dragSetting').mouseover(function() {
-        $('.createIssuesBtn').hide();
-        $('#issuesCondition').show();
+      $('.createIssuesBtn').hide();
+      $('#issuesCondition').show();
     });
     $('.rmComment').click(function(){
-        var comment_id = $(this).attr('value');
-        $.ajax({
-            url: '/{{user_name}}/{{repo_name}}/issues/comment/delete/' + comment_id + '/',
-            type: 'POST',
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-            },
-            success: function(json){
-                window.location = '/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{page}}/'
-            },
-        });
+      var comment_id = $(this).attr('value');
+      $.ajax({
+        url: '/{{user_name}}/{{repo_name}}/issues/comment/delete/' + comment_id + '/',
+        type: 'POST',
+        data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        dataType: 'json',
+        timeout: 10000,
+        error: function(){
+        },
+        success: function(json){
+          window.location = '/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{page}}/'
+        },
+      });
     });
     $('.rmComment').blur(function(){
-        setTimeout(
-            function(event) {
-                $(this).hide();
-            }
+      setTimeout(
+        function(event) {
+          $(this).hide();
+        }
         , 300);
     });
     $('#submit').mouseover(function(){
-        $('#commentContent').show();
-        $('#idContent').focus();
+      $('#commentContent').show();
+      $('#idContent').focus();
     });
     $('#submit').click(function(){
-        if($('#idContent').val() != '') {
-            $(this).submit();
-            return true;
-        }
-        return false;
+      if($('#idContent').val() != '') {
+        $(this).submit();
+        return true;
+      }
+      return false;
     });
     $('.refComment').click(function(){
-        var ref_username = $(this).attr('value');
-        $('#idContent').val($('#idContent').val() + ' @' + ref_username + ' ');
-        $('#commentContent').show();
-        $('#idContent').focus();
-        var val = $('#idContent').val();
-        $('#idContent').val('')
-        $('#idContent').val(val)
+      var ref_username = $(this).attr('value');
+      $('#idContent').val($('#idContent').val() + ' @' + ref_username + ' ');
+      $('#commentContent').show();
+      $('#idContent').focus();
+      var val = $('#idContent').val();
+      $('#idContent').val('')
+      $('#idContent').val(val)
     });
     $('.cIssue').tooltip({
       selector: "a[rel=tooltip]"
     })
     $('.dragSetting').draggable({
-        cursor: 'move',
-        revert: true
+      cursor: 'move',
+      revert: true
     });
     $('.issuesAttr').droppable({
-        accept: '.dragSetting',
-        hoverClass: 'issuesAttrHovered',
-        drop: handleIssueDrop,
+      accept: '.dragSetting',
+      hoverClass: 'issuesAttrHovered',
+      drop: handleIssueDrop,
     });
     function handleIssueDrop(event, ui){
-        var issue_id = ui.draggable.attr('value');
-        var issue_attr = $(this).attr('value');
-        $.ajax({
-            url: '/{{user_name}}/{{repo_name}}/issues/update/' + {{issue.id}} + '/' + issue_attr + '/',
-            type: 'POST',
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-            },
-            success: function(json){
-                window.location = '/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{page}}/'
-            },
-        });
+      var issue_id = ui.draggable.attr('value');
+      var issue_attr = $(this).attr('value');
+      $.ajax({
+        url: '/{{user_name}}/{{repo_name}}/issues/update/' + {{issue.id}} + '/' + issue_attr + '/',
+        type: 'POST',
+        data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        dataType: 'json',
+        timeout: 10000,
+        error: function(){
+        },
+        success: function(json){
+          window.location = '/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{page}}/'
+        },
+      });
     }
-});
+  });
 </script>
 {% endblock %}
+        <p class="meta">不可修改，严谨发言</p>

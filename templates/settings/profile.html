@@ -3,8 +3,9 @@
 {% block container-right %}
     <form class="form-horizontal form" action="" method="post">
       <fieldset>
-        <legend class="title">个人信息<span class="ps">详细的个人信息可以让他人更好了解你</span></legend>
+        <legend class="title">个人信息</legend>
         {% csrf_token %}
+        {% comment %}
         <div class="control-group">
             <label for="id_imgurl" class="control-label">个人头像</label>
             <div class="controls avatar">
@@ -12,13 +13,14 @@
                 <span>通过 <a target="_blank" href="http://cn.gravatar.com/">Gravatar</a> 修改个人头像</span>
             </div>
         </div>
+        {% endcomment %}
         <div class="control-group">
             <label class="control-label">GitHub账户关联</label>
             <div class="controls">
             {% if thirdpartyUser %}
               <a target="_blank" href="https://github.com/{{ thirdpartyUser.tp_username }}/" class="label label-success"><i class="icon-ok"></i>已关联 ({{ thirdpartyUser.tp_username }})</a>
             {% else %}
-            <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/" class="btn btn-primary"><i class="icon-github"></i>关联 GitHub 账户</a>
+            <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/" class="btn btn-danger"><i class="icon-github"></i>关联 GitHub 账户</a>
             {% endif %}
             </div>
         </div>

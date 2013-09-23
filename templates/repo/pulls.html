@@ -1,47 +1,68 @@
 {% extends "repo/repo.html" %}
-
-{% block bubble_inner_class_name %} pulls{% endblock %}
-
 {% block subcontainer %}
-    <header class="header">
-        <h1 class="heading">合并请求</h1>
-    </header>
+<div class="pulls inner bubble">
+  <div class="header">
+    <h2 class="heading">合并请求</h2>
+  </div>
 
-    {% if pullRequests %}
-        <table class="table">
-            <colgroup>
-                <col width="16%">
-                <col width="49%">
-                <col width="10%">
-                <col width="15%">
-                <col width="10%">
-            </colgroup>
-            <tbody>
-                {% for pullRequest in pullRequests %}
-                    <tr>
-                        <td class="title">
-                            <a href="/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/">#{{pullRequest.id}} {{pullRequest.short_title}}</a>
-                        </td>
-                        <td class="branch">
-                            <span class="master">
-                                <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/">{{pullRequest.desc_refname}}</a>
-                            </span>
-                            <i class="icon-long-arrow-left"></i>
-                            <span class="sub-branch">
-                                <a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/">{{pullRequest.source_refname}}</a>
-                            </span>
-                        </td>
-                        <td class="description">{{pullRequest.short_desc}}</td>
-                        <td class="puller">
-                            <img src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=16" alt="{{ gsuser.username }}"><a class="meta" href="/{{pullRequest.pull_user.username}}/">{{pullRequest.pull_user.username}}</a>
-                        </td>
-                        <td class="status"><span class="label label-mini {{pullRequest.status_label}}">{{pullRequest.status_view}}</span></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p class="text-error">当前仓库还没有 Pull Request。<a href="/{{ user_name }}/{{ repo_name }}/pull/new/" class="btn btn-success"><i class="octicon octicon-git-pull-request"></i>合并请求</a></p>
-    {% endif %}
+  {% if pullRequests %}
 
+  <section class="pull-item">
+    <div class="widget">
+      <span class="status open">Open</span>
+      <span class="branches">
+        <a href="#" class="from branch">3.2.0-wip</a>
+        <span class="arrow-right"><i class="icon-long-arrow-right"></i></span>
+        <a href="#" class="to branch">master</a>
+      </span>
+    </div>
+    <div class="summary">
+      <h3 class="heading">
+        <a href="#">重排了格式</a>
+        <span class="id">#12</span>
+      </h3>
+      <div class="desc">
+        <p>改成了标题式，比较醒目，也可以避免嵌套列表的问题。（markdown的嵌套列表，各家的解析都不一样。</p>
+      </div>
+      <div class="meta">
+        <img src="https://gravatar.com/avatar/{{pullRequest.pull_user.username}}?s=16" alt="{{pullRequest.pull_user.username}}">
+        <a href="#">mingming1222</a>
+        <time class="unixtime" pubdate="pubdate">4天前创建</time>
+      </div>
+    </div>
+  </section>
+
+  {% for pullRequest in pullRequests %}
+  <section class="pull-item">
+    <div class="widget">
+      <span class="status {{pullRequest.status_label}}">{{pullRequest.status_view}}</span>
+      <span class="branches">
+        <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/" class="from branch">{{pullRequest.desc_refname}}</a>
+        <span class="arrow-right"><i class="icon-long-arrow-right"></i></span>
+        <a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/" class="to branch">{{pullRequest.source_refname}}</a>
+      </span>
+    </div>
+    <div class="summary">
+      <h3 class="heading">
+        <a href="/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/">{{pullRequest.short_title}}</a>
+        <span class="id">#{{pullRequest.id}}</span>
+      </h3>
+      <div class="desc unavailable">
+        {% if pullRequest.short_desc %}
+        <p>{{pullRequest.short_desc}}</p>
+        {% else %}
+        <p>没有介绍内容</p>
+        {% endif %}
+      </div>
+      <div class="meta">
+        <a href="/{{pullRequest.pull_user.username}}/">{{pullRequest.pull_user.username}}</a>
+        <time class="unixtime" pubdate="pubdate">4天前创建</time>
+      </div>
+    </div>
+  </section>
+  {% endfor %}
+  {% else %}
+  <p class="info">没有合并请求。<a href="/{{ user_name }}/{{ repo_name }}/pull/new/" class="btn btn-success"><i class="octicon octicon-git-pull-request"></i>创建合并请求</a></p>
+  {% endif %}
+</div>
 {% endblock %}

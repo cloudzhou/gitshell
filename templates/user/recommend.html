@@ -3,60 +3,60 @@
 {% block primary %}
 
 <div class="span primary">
-    <h2 class="heading">评论</h2>
-    {% for recommend in recommends %}
-        <div class="c_td_recommend user-plugin">
-            <figure class="avatar"><img src="https://gravatar.com/avatar/{{ recommend.imgurl }}?s=40" alt="{{ recommend.username}}"></figure>
-            <div class="info">
-                <p class="name"><a href="/{{recommend.username}}/">{{recommend.username}}</a></p>
-                <p class="meta">{{recommend.content}}</p>
-                <span class="actions">
-                    <a class="c_rm_recommend" value="{{ recommend.id }}" href="javascript:void(0)"><i class="icon-close"></i></a>
-                    <a value="{{ recommend.id }}" class="c_rm_rf_recommend btn btn-mini btn-danger hide">确定删除该评论？</button>
-                </span>
-            </div>
-        </div>
-    {% endfor %}
+  <h2 class="heading">评论</h2>
+  {% for recommend in recommends %}
+  <div class="c_td_recommend user-plugin">
+    <figure class="avatar"><img src="https://gravatar.com/avatar/{{ recommend.imgurl }}?s=40" alt="{{ recommend.username}}"></figure>
+    <div class="info">
+      <p class="name"><a href="/{{recommend.username}}/">{{recommend.username}}</a></p>
+      <p class="meta">{{recommend.content}}</p>
+      <span class="actions">
+        <a class="c_rm_recommend" value="{{ recommend.id }}" href="javascript:void(0)"><i class="icon-close"></i></a>
+        <a value="{{ recommend.id }}" class="c_rm_rf_recommend btn btn-mini btn-danger hide">确定删除该评论？</button>
+      </span>
+    </div>
+  </div>
+  {% endfor %}
 </div>
 {% endblock %}
 {% block subjs %}
 <script>
-$(function(){
+  $(function(){
     $('.c_td_recommend').bind('mouseover mouseout', function(event) {
-        if (event.type == 'mouseover') {
-            if('{{gsuser.username}}' == '{{user.username}}') {
-                $(this).find('.c_rm_recommend').show();
-            }
-        } else {
-            $(this).find('.c_rm_recommend').hide();
+      if (event.type == 'mouseover') {
+        if('{{gsuser.username}}' == '{{user.username}}') {
+          $(this).find('.c_rm_recommend').show();
         }
+      } else {
+        $(this).find('.c_rm_recommend').hide();
+      }
     });
     $('.c_rm_recommend').click(function(){
-        $(this).next().show();
-        $(this).next().focus();
+      $(this).next().show();
+      $(this).next().focus();
     });
     $('.c_rm_rf_recommend').blur(function(){
-        setTimeout(
-            function(event) {
-                $(this).hide();
-            }
+      setTimeout(
+        function(event) {
+          $(this).hide();
+        }
         , 300);
     });
     $('.c_rm_rf_recommend').click(function(){
-        var recommend_id = $(this).attr('value');
-        $.ajax({
-            url: '/ajax/user/{{gsuser.username}}/recommend/delete/' + recommend_id + '/',
-            type: 'POST',
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-            },
-            success: function(json){
-                window.location = window.location;
-            },
-        });
+      var recommend_id = $(this).attr('value');
+      $.ajax({
+        url: '/ajax/user/{{gsuser.username}}/recommend/delete/' + recommend_id + '/',
+        type: 'POST',
+        data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        dataType: 'json',
+        timeout: 10000,
+        error: function(){
+        },
+        success: function(json){
+          window.location = window.location;
+        },
+      });
     });
-});
+  });
 </script>
 {% endblock %}

@@ -1,35 +1,49 @@
 {% extends "repo/repo.html" %}
 
 {% block subcontainer %}
+
+<div class="issues inner bubble">
 	<div class="sidebar">
 		{% include "repo/condition.html" %}
 	</div>
 
 	<div class="primary issue-list">
-    <ul class="sort btn-group">
-      <li><a href="/{{user_name}}/{{repo_name}}/issues/create/" class="btn btn-mini btn-success">新建</a></li>
-      <li class="leader">排序:</li>
-      <li>{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn btn-mini first">更新</a>{%else%}<span class="btn btn-mini btn-disable first">更新</span>{%endif%}</li>
-      <li>{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn btn-mini last">创建</a>{%else%}<span class="btn btn-mini btn-disable last">创建</span>{%endif%}</li>
-    </ul>
+    <div class="header">
+      <a href="/{{user_name}}/{{repo_name}}/issues/create/" class="btn btn-success new-issue-btn">添加一个Issue</a>
+      <ul class="sortable clearfix">
+        <li>{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn first">更新</a>{%else%}<span class="btn btn-disable first">更新</span>{%endif%}</li>
+        <li>{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn last">创建</a>{%else%}<span class="btn btn-disable last">创建</span>{%endif%}</li>
+      </ul>
+    </div>
 		{% for issue in issues %}
 		<section class="issue">
-			<figure class="avatar span">
-        <img src="https://gravatar.com/avatar/{{issue.reporter_imgurl}}/?s=35" alt="{{issue.reporter_imgurl}}">
+      {% comment %}
+			<figure class="avatar">
+        <img src="https://gravatar.com/avatar/{{issue.reporter_imgurl}}/?s=40" alt="{{issue.reporter_imgurl}}">
 			</figure>
-			<div class="data">
-				<p class="title">
+      {% endcomment %}
+      <div class="tracker">
+        <span class="label issue-id">#{{issue.id}}</span>
+        <span class="label status {%if issue.status == "新建"%}open{%elif issue.status == "已指派"%}assigned{%elif issue.status == "进行中"%}processing{%elif issue.status == "已解决"%}resolved{%elif issue.status == "已关闭"%}closed{%elif issue.status == "已拒绝"%}rejected{%endif%}"><i class="icon-{%if issue.status == "新建"%}bookmark-empty{%elif issue.status == "已指派"%}resize-horizontal{%elif issue.status == "进行中"%}spinner{%elif issue.status == "已解决"%}ok{%elif issue.status == "已关闭"%}remove{%elif issue.status == "已拒绝"%}trash{%endif%}"></i>{{issue.status}}</span>
+      </div>
+			<div class="summary">
+        <div class="title">
+          <h3 class="heading">
+            <a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/" class="txt">{{issue.subject|truncatechars:100}}</a>
+            <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
+          </h3>
           <span class="issue-id">#{{issue.id}}</span>
-          <a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/" class="txt">{{issue.subject|truncatechars:100}}</a>
-				</p>
+        </div>
 				<div class="meta">
-					<span>作者:<a href="/{{ user.username }}/">{{ issue.user_id }}</a></span>
+					<a href="/{{ user.username }}/">{{ user.username }}</a>
+          <time class="unixtime hide date" pubdate="pubdate">{%if orderby == 'modify_time'%}{{issue.modify_time}}{%else%}{{issue.create_time}}{%endif%}</time>
+          {% comment %}
           {% if user.id == repo.user_id %}
-              <a href="javascript: void(0)" rel="tooltip" data-original-title="拖动到上面做属性更改"><i class="icon-ellipsis-vertical"></i></a>
+              <a href="javascript: void(0)" rel="tooltip" data-original-title="拖动到上面做属性更改">拖动</a>
           {% else %}
               <a href="javascript: void(0)" rel="tooltip"><i class="icon-ellipsis-vertical"></i></a>
           {% endif %}
-          <span class="unixtime hide date">{%if orderby == 'modify_time'%}{{issue.modify_time}}{%else%}{{issue.create_time}}{%endif%}</span>
+          {% endcomment %}
 				</div>
 			</div>
 		</section>
@@ -51,6 +65,8 @@
       {% endif %}
     </ul>
 	</div>
+
+</div>
 
 {% endblock %}
 

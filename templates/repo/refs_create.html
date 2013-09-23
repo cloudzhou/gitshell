@@ -1,73 +1,78 @@
 {% extends "repo/repo.html" %}
 {% block subcontainer %}
-<h2 class="refs_create_header heading">
-    创建分支
-</h2>
-<hr>
-<div class="refs-create">
-    基于
-    <select id="base-refs-name">
-        {% for branch in refs_meta.branches %}
-        <option value="{{branch}}"{%if refs == branch%}selected="selected"{%endif%}>{{branch}}</option>
-        {% endfor %}
-    </select>
-    创建
-    <select id="branch-or-tag">
-        <option value="branch">分支</option>
-        <option value="tag">标签</option>
-    </select>
-    <input id="new-refs-name" type="text" name="new_refs_name" maxlength="24" placeholder="新的 分支/标签 名字" class="input-xlarge">
-    <a id="refs-create-btn" href="javascript:;" class="btn btn-mini btn-success">确定</a>
-<div>
+<div class="tags bubble">
+
+  <h2 class="heading">创建分支</h2>
+
+  <div class="refs-create">
+    <form>
+      <fieldset>
+        <label>基于</label>
+        <select id="baseRefsName">
+          {% for branch in refs_meta.branches %}
+          <option value="{{branch}}"{%if refs == branch%}selected="selected"{%endif%}>{{branch}}</option>
+          {% endfor %}
+        </select>
+        <label>创建</label>
+        <select id="branchOrTag">
+          <option value="branch">分支</option>
+          <option value="tag">标签</option>
+        </select>
+        <input id="newRefsName" type="text" name="newRefsName" maxlength="24" placeholder="名">
+        <a id="refsCreateBtn" href="javascript:;" class="btn btn-mini btn-success">确定</a>
+      </fieldset>
+    </form>
+  </div>
+
+</div>
 {% endblock %}
 {% block subjs %}
 <script>
-$(function(){
+  $(function(){
     var branch_or_tag_select = function(){
-        var branch_or_tag = $('#branch-or-tag option:selected').val();
-        if(branch_or_tag == 'branch') {
-            $('.refs_create_header').text('创建分支');
-            $('.repo-tabs li').removeClass('active');
-            $('.branches-nav').addClass('active');
-            $('.repo-tabs li .label').removeClass('label-success');
-            $('.branches-nav .label').addClass('label-success');
-            window.location.hash = '#target_branch';
-        }else if(branch_or_tag == 'tag') {
-            $('.refs_create_header').text('创建标签');
-            $('.repo-tabs li').removeClass('active');
-            $('.tags-nav').addClass('active');
-            $('.repo-tabs li .label').removeClass('label-success');
-            $('.tags-nav .label').addClass('label-success');
-            window.location.hash = '#target_tag';
-        }
+      var branch_or_tag = $('#branchOrTag option:selected').val();
+      if(branch_or_tag == 'branch') {
+        $('.repo-tabs li').removeClass('active');
+        $('.branches-nav').addClass('active');
+        $('.repo-tabs li .label').removeClass('label-success');
+        $('.branches-nav .label').addClass('label-success');
+        window.location.hash = '#target_branch';
+      }else if(branch_or_tag == 'tag') {
+        $('.refs_create_header').text('创建标签');
+        $('.repo-tabs li').removeClass('active');
+        $('.tags-nav').addClass('active');
+        $('.repo-tabs li .label').removeClass('label-success');
+        $('.tags-nav .label').addClass('label-success');
+        window.location.hash = '#target_tag';
+      }
     };
-    $('#branch-or-tag').change(branch_or_tag_select);
+    $('#branchOrTag').change(branch_or_tag_select);
     var hash = window.location.hash;
     if(hash == '#target_tag') {
-        $('#branch-or-tag option').eq(1).prop('selected', true);
-        branch_or_tag_select();
+      $('#branchOrTag option').eq(1).prop('selected', true);
+      branch_or_tag_select();
     } 
-    $('#refs-create-btn').click(function(){
-        var base_refs_name = $('#base-refs-name option:selected').val();
-        var branch_or_tag = $('#branch-or-tag option:selected').val();
-        var new_refs_name = $('#new-refs-name').val();
-        var refs_create_url = 'refs/branch/create';
+    $('#refsCreateBtn').click(function(){
+      var base_refs_name = $('#baseRefsName option:selected').val();
+      var branch_or_tag = $('#branchOrTag option:selected').val();
+      var new_refs_name = $('#newRefsName').val();
+      var refs_create_url = 'refs/branch/create';
+      if(branch_or_tag == 'tag') {
+        refs_create_url = 'refs/tag/create';
+      }
+      if(!base_refs_name.match(/^[a-zA-Z0-9_\.\-]+$/) || !new_refs_name.match(/^[a-zA-Z0-9_\.\-]+$/)) {
+        window.alert('分支、标签只允许使用 [a-zA-Z0-9_.-] 内的字符');
+        return false;
+      }
+      var request_url = _.sprintf('/%s/%s/%s/%s/%s/', '{{user_name}}', '{{repo_name}}', refs_create_url, new_refs_name, base_refs_name);
+      $.post(request_url, {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
         if(branch_or_tag == 'tag') {
-            refs_create_url = 'refs/tag/create';
+          window.location.href = _.sprintf('/%s/%s/', '{{user_name}}/{{repo_name}}/tags', new_refs_name);
+          return true;
         }
-        if(!base_refs_name.match(/^[a-zA-Z0-9_\.\-]+$/) || !new_refs_name.match(/^[a-zA-Z0-9_\.\-]+$/)) {
-            window.alert('分支、标签只允许使用 [a-zA-Z0-9_.-] 内的字符');
-            return false;
-        }
-        var request_url = _.sprintf('/%s/%s/%s/%s/%s/', '{{user_name}}', '{{repo_name}}', refs_create_url, new_refs_name, base_refs_name);
-        $.post(request_url, {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            if(branch_or_tag == 'tag') {
-                window.location.href = _.sprintf('/%s/%s/', '{{user_name}}/{{repo_name}}/tags', new_refs_name);
-                return true;
-            }
-            window.location.href = _.sprintf('/%s/%s/', '{{user_name}}/{{repo_name}}/branches', new_refs_name);
-        });
+        window.location.href = _.sprintf('/%s/%s/', '{{user_name}}/{{repo_name}}/branches', new_refs_name);
+      });
     });
-});
+  });
 </script>
 {% endblock %}

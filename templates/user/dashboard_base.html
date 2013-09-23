@@ -12,7 +12,7 @@
           <li{% if current == 'feed' %} class="active"{% endif %}><a href="/dashboard/feed/">好友</a></li>
         {% else %}
           <li{% if current == 'notif' %} class="active"{% endif %}><a href="/dashboard/notif/">最新事件</a></li>
-          <li{% if current == 'todo' %} class="active"{% endif %}><a href="/dashboard/todo/">Todo<span class="remove"><i class="icon-remove"></i></span></a></li>
+          {#<li{% if current == 'todo' %} class="active"{% endif %}><a href="/dashboard/todo/">Todo<span class="remove"><i class="icon-remove"></i></span></a></li>#}
           {% if current == 'pull' %}
             <li class="dropdown active">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">合并请求<span><i class="icon-caret-down"></i></span></a>

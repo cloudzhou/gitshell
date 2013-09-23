@@ -1,165 +1,155 @@
 {% extends "repo/repo.html" %}
 
-{% block repo_container_class_name %} pulls bubble{% endblock %}
-
 {% block subcontainer %}
-
-  <h2 class="heading">创建一个合并请求</h2>
+<div class="pull-form inner bubble">
+  <h2 class="heading">创建合并请求</h2>
   {# <a href="/{{user_name}}/{{repo_name}}/pulls/">{{repo_name}}</a> #}
 
   {# create pull request #}
-        <div class="repo-refs colspan bubble">
-            <div class="ref span">
-                <span>仓库:</span>
-                <select id="sourceRepo">
-                    {% for repo in pull_repo_list %}
-                        {% if repo.id == source_repo.id %}
-                            <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
-                        {% else %}
-                            <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
-                        {% endif %}
-                    {% endfor %}
-                </select>
-                <br/>
-                <span>分支:</span>
-                <select id="sourceRefs">
-                </select>
-            </div>
-            <div class="span chevron"><i class="icon-chevron-right"></i></div>
-            <div class="ref span">
-                <span>仓库:</span>
-                <select id="descRepo">
-                    {% for repo in pull_repo_list %}
-                        {% if repo.username == desc_repo.username and repo.name == desc_repo.name %}
-                            <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
-                        {% else %}
-                            <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
-                        {% endif %}
-                    {% endfor %}
-                </select>
-                <br/>
-                <span>分支:</span>
-                <select id="descRefs">
-                </select>
-            </div>
-          </div>
+  <div class="repo-refs colspan">
+    <div class="ref span">
+      <select id="sourceRepo" class="hide">
+        {% for repo in pull_repo_list %}
+        {% if repo.id == source_repo.id %}
+        <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+        {% else %}
+        <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+        {% endif %}
+        {% endfor %}
+      </select>
+      <select id="sourceRefs"></select>
+    </div>
+    <div class="span chevron"><i class="icon-caret-right"></i></div>
+    <div class="ref span">
+      <select id="descRepo" class="hide">
+        {% for repo in pull_repo_list %}
+        {% if repo.username == desc_repo.username and repo.name == desc_repo.name %}
+        <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+        {% else %}
+        <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+        {% endif %}
+        {% endfor %}
+      </select>
+      <select id="descRefs"></select>
+    </div>
+  </div>
 
-
-                <form id="pullForm" method="post" action="" class="form-horizontal hide">
-                  <input id="sourceRepoSelect" type="hidden" value="" name="source_repo">
-                  <input id="sourceRefsSelect" type="hidden" value="" name="source_refs">
-                  <input id="descRepoSelect" type="hidden" value="" name="desc_repo">
-                  <input id="descRefsSelect" type="hidden" value="" name="desc_refs">
-                  <div class="control-group">
-                    <label class="control-label" for="title">* 标题</label>
-                    <div class="controls">
-                      <input id="title" name="title" type="text" maxlength="64" placeholder="输入标题，说明此次Pull Request的主要更改。">
-                    </div>
-                  </div>
-                  <div class="control-group">
-                      <label class="control-label" for="desc">描述</label>
-                      <div class="controls">
-                        <textarea id="desc" name="desc" maxlength="2048"></textarea>
-                      </div>
-                  </div>
-                  <div class="control-group">
-                    <div id="submit" class="controls">
-                      <button type="submit" class="btn btn-primary" id="pullSubmit">创建合并请求</button>
-                    </div>
-                  </div>
-                  <div id="alert" class="alert hide">
-                    <a class="close" data-dismiss="alert"><i class="icon-remove"></i></a>
-                    <p>* 请输入标题，选择来源仓库、分支和目标仓库、分支</p>
-                  </div>
-                  <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
-                </form>
-                <div id="commitsDiff"></div>
+  <form id="pullForm" method="post" action="" class="form-horizontal hide">
+    <input id="sourceRepoSelect" type="hidden" value="" name="source_repo">
+    <input id="sourceRefsSelect" type="hidden" value="" name="source_refs">
+    <input id="descRepoSelect" type="hidden" value="" name="desc_repo">
+    <input id="descRefsSelect" type="hidden" value="" name="desc_refs">
+    <div class="control-group">
+      <label class="control-label" for="title">* 标题</label>
+      <div class="controls">
+        <input id="title" name="title" type="text" maxlength="64" placeholder="输入标题，说明此次Pull Request的主要更改。">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="desc">描述</label>
+      <div class="controls">
+        <textarea id="desc" name="desc" maxlength="2048"></textarea>
+      </div>
+    </div>
+    <div class="control-group">
+      <div id="submit" class="controls">
+        <button type="submit" class="btn btn-primary" id="pullSubmit">创建合并请求</button>
+      </div>
+    </div>
+    <div id="alert" class="alert hide">
+      <a class="close" data-dismiss="alert"><i class="icon-remove"></i></a>
+      <p>* 请输入标题，选择来源仓库、分支和目标仓库、分支</p>
+    </div>
+    <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
+  </form>
+  <div id="commitsDiff"></div>
+</div>
 {% endblock %}
 
 {% block subjs %}
 <script>
-$(function(){
+  $(function(){
     var global_repo_branch_map = {};
     var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
     function compare() {
-        var source_repo = $('#sourceRepo option:selected').val();
-        var source_refs = $('#sourceRefs option:selected').val();
-        var desc_repo = $('#descRepo option:selected').val();
-        var desc_refs  = $('#descRefs option:selected').val();
-        var source_username = source_repo.split('/')[0];
-        var desc_username = desc_repo.split('/')[0];
-        if(source_refs === undefined || desc_refs === undefined) {
-            return;
+      var source_repo = $('#sourceRepo option:selected').val();
+      var source_refs = $('#sourceRefs option:selected').val();
+      var desc_repo = $('#descRepo option:selected').val();
+      var desc_refs  = $('#descRefs option:selected').val();
+      var source_username = source_repo.split('/')[0];
+      var desc_username = desc_repo.split('/')[0];
+      if(source_refs === undefined || desc_refs === undefined) {
+        return;
+      }
+      repoComparer.from_refs = desc_refs;
+      repoComparer.to_refs = source_refs;
+      repoComparer.setPullUsername(desc_username, source_username);
+      $('#pullForm').hide();
+      repoComparer.renderCompare($('#commitsDiff'), function(json){
+        if(json.allow_merge) {
+          $('#pullForm').show();
         }
-        repoComparer.from_refs = desc_refs;
-        repoComparer.to_refs = source_refs;
-        repoComparer.setPullUsername(desc_username, source_username);
-        $('#pullForm').hide();
-        repoComparer.renderCompare($('#commitsDiff'), function(json){
-            if(json.allow_merge) {
-                $('#pullForm').show();
-            }
-        });
+      });
     }
     function fullfill_options(repo_select, refs_select, default_refs) {
-        var repo = repo_select.attr('value');
-        var tmp_global_repo_branch_map = global_repo_branch_map;
-        if(tmp_global_repo_branch_map.hasOwnProperty(repo)) {
-            refs_select.find('option').remove();
-            var branches = tmp_global_repo_branch_map[repo];
-            for(x in branches) {
-                var branch = branches[x];
-                if(branch == default_refs) {
-                    refs_select.append('<option selected="selected" value='+ branch +'>'+ branch +'</option>');
-                } else {
-                    refs_select.append('<option value='+ branch +'>'+ branch +'</option>');
-                }
-            }
-            return tmp_global_repo_branch_map[repo];
+      var repo = repo_select.attr('value');
+      var tmp_global_repo_branch_map = global_repo_branch_map;
+      if(tmp_global_repo_branch_map.hasOwnProperty(repo)) {
+        refs_select.find('option').remove();
+        var branches = tmp_global_repo_branch_map[repo];
+        for(x in branches) {
+          var branch = branches[x];
+          if(branch == default_refs) {
+            refs_select.append('<option selected="selected" value='+ branch +'>'+ branch +'</option>');
+          } else {
+            refs_select.append('<option value='+ branch +'>'+ branch +'</option>');
+          }
         }
-        $.post('/' + repo + '/refs/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            refs_select.find('option').remove();
-            var branches = json.refs_meta.branches;
-            for(x in branches) {
-                var branch = branches[x];
-                if(branch == default_refs) {
-                    refs_select.append('<option selected="selected" value='+ branch +'>'+ branch +'</option>');
-                } else {
-                    refs_select.append('<option value='+ branch +'>'+ branch +'</option>');
-                }
-            }
-            tmp_global_repo_branch_map[repo] = branches;
-            // FIX BUG, multi compare() call
-            compare();
-        });
-        global_repo_branch_map = tmp_global_repo_branch_map;
+        return tmp_global_repo_branch_map[repo];
+      }
+      $.post('/' + repo + '/refs/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        refs_select.find('option').remove();
+        var branches = json.refs_meta.branches;
+        for(x in branches) {
+          var branch = branches[x];
+          if(branch == default_refs) {
+            refs_select.append('<option selected="selected" value='+ branch +'>'+ branch +'</option>');
+          } else {
+            refs_select.append('<option value='+ branch +'>'+ branch +'</option>');
+          }
+        }
+        tmp_global_repo_branch_map[repo] = branches;
+        // FIX BUG, multi compare() call
+        compare();
+      });
+      global_repo_branch_map = tmp_global_repo_branch_map;
     };
     fullfill_options($('#sourceRepo'), $('#sourceRefs'), '{{source_refs}}');
     fullfill_options($('#descRepo'), $('#descRefs'), '{{desc_refs}}');
     $('#sourceRepo').change(function(){
-        fullfill_options($(this), $('#sourceRefs'));
+      fullfill_options($(this), $('#sourceRefs'));
     });
     $('#descRepo').change(function(){
-        fullfill_options($(this), $('#descRefs'));
+      fullfill_options($(this), $('#descRefs'));
     });
     $('#sourceRefs').change(function(){
-        compare();
+      compare();
     });
     $('#descRefs').change(function(){
-        compare();
+      compare();
     });
     $('#pullForm').submit(function() {
-        if($('#title').val() == '' || $('#sourceRepo option:selected').val() == '' || $('#sourceRefs option:selected').val() == '' || $('#descRepo option:selected').val() == '' || $('#descRefs option:selected').val() == '') {
-            $('#alert').show();
-            return false;
-        }
-        $('#sourceRepoSelect').val($('#sourceRepo option:selected').val());
-        $('#sourceRefsSelect').val($('#sourceRefs option:selected').val());
-        $('#descRepoSelect').val($('#descRepo option:selected').val());
-        $('#descRefsSelect').val($('#descRefs option:selected').val());
-        return true;
+      if($('#title').val() == '' || $('#sourceRepo option:selected').val() == '' || $('#sourceRefs option:selected').val() == '' || $('#descRepo option:selected').val() == '' || $('#descRefs option:selected').val() == '') {
+        $('#alert').show();
+        return false;
+      }
+      $('#sourceRepoSelect').val($('#sourceRepo option:selected').val());
+      $('#sourceRefsSelect').val($('#sourceRefs option:selected').val());
+      $('#descRepoSelect').val($('#descRepo option:selected').val());
+      $('#descRefsSelect').val($('#descRefs option:selected').val());
+      return true;
     });
 
-});
+  });
 </script>
 {% endblock %}

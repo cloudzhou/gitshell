@@ -678,11 +678,11 @@ class PULL_STATUS:
     }
 
     LABEL_MAP = {
-        0 : 'label-info',
-        1 : 'label-warning',
-        2 : 'label-success',
-        3 : 'label-important',
-        4 : 'label-inverse',
+        0 : 'open',
+        1 : 'failure',
+        2 : 'merge',
+        3 : 'rejected',
+        4 : 'closed',
     }
 
 

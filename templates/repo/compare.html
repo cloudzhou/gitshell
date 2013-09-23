@@ -3,9 +3,8 @@
 {% block container_class_name %} repo{% endblock %}
 
 {% block subcontainer %}
+<div class="compare inner bubble">
   {# TODO css for diff #}
-
-
   {% comment %}
     <header class="header">
         <h1 class="heading">
@@ -23,9 +22,9 @@
   {% endcomment %}
 
   {# compare #}
-  <div class="repo-refs colspan bubble">
+  <h2 class="heading">比较</h2>
+  <div class="repo-refs colspan">
     <div class="ref span">
-      <span>分支：</span>
       <select id="sourceRefs" class="select2">
         {% for branch in refs_meta.branches %}
           <option value="{{ branch }}" {%if branch == from_refs %} selected="selected" {%endif%}>{{ branch }}</option>
@@ -37,7 +36,6 @@
     </div>
     <div class="span chevron"><i class="icon-random"></i></div>
     <div class="ref span">
-        <span>分支：</span>
         <select id="descRefs">
             {% for branch in refs_meta.branches %}
             <option value="{{ branch }}" {%if branch == to_refs %} selected="selected" {%endif%}>{{ branch }}</option>
@@ -55,55 +53,55 @@
     <pre id="mergeOutput" class="shell"></pre>
     <a id="mergeAfter" href="/{{user_name}}/{{repo_name}}/refs/graph/{{to_refs}}/" class="btn btn-primary pull-right">确定</a>
   </div>
-
+</div>
 {% endblock %}
 {% block subjs %}
 <script>
-$(function(){
+  $(function(){
     var global_repo_branch_map = {};
     $('#mergePullrequest').tooltip({
       selector: "a[rel=tooltip]"
     });
     $('#sourceRefs, #descRefs').change(function(){
-        var source_refs = $('#sourceRefs').attr('value');
-        var desc_refs = $('#descRefs').attr('value');
-        window.location.href = '/{{ user_name }}/{{ repo_name }}/compare/' + source_refs + '...' + desc_refs + '/';
+      var source_refs = $('#sourceRefs').attr('value');
+      var desc_refs = $('#descRefs').attr('value');
+      window.location.href = '/{{ user_name }}/{{ repo_name }}/compare/' + source_refs + '...' + desc_refs + '/';
     });
     var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '{{to_refs}}', '{{from_refs}}');
     repoComparer.renderCompare($('#commitsDiff'), function(json){
-        if(json.allow_merge) {
-            $('#mergePullrequest').show();
-        }
+      if(json.allow_merge) {
+        $('#mergePullrequest').show();
+      }
     });
     $('#merge').click(function(){
-        $('#commitsDiff').hide();
-        $('#mergeResult').show();
-        $('#mergeOutput').show();
-        var i = 0;
-        var interval = setInterval(function() {
-            i = i + 1;
-            var j = i % 4;
-            var html = '正在进行 Merge，请耐心等候'
-            for (var k = 0; k < j; k++) {
-                html = html + '.'
-            }
-            $('#mergeOutput').html(html);
-        }, 500);
-        $('html, body').animate({ scrollTop: 0 }, 'fast');
-        $.post('/{{user_name}}/{{repo_name}}/merge/{{from_refs}}...{{to_refs}}/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            if(json.result == 'success') {
-                clearInterval(interval);
-                $('#mergeOutput').html(json.output);
-                if(json.returncode != 0) {
-                    $('#mergeAfter').attr('href', '/{{user_name}}/{{repo_name}}/compare/{{from_refs}}...{{to_refs}}/');
-                    $('#mergeAfter > button').removeClass('btn-primary').addClass('btn-danger').text('合并失败，请检查是否 存在冲突 或者 non-fast-forward');
-                }
-                $('#mergeAfter').show();
-            }
-        });
-        return false;
+      $('#commitsDiff').hide();
+      $('#mergeResult').show();
+      $('#mergeOutput').show();
+      var i = 0;
+      var interval = setInterval(function() {
+        i = i + 1;
+        var j = i % 4;
+        var html = '正在进行 Merge，请耐心等候'
+        for (var k = 0; k < j; k++) {
+          html = html + '.'
+        }
+      $('#mergeOutput').html(html);
+      }, 500);
+      $('html, body').animate({ scrollTop: 0 }, 'fast');
+      $.post('/{{user_name}}/{{repo_name}}/merge/{{from_refs}}...{{to_refs}}/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        if(json.result == 'success') {
+          clearInterval(interval);
+          $('#mergeOutput').html(json.output);
+          if(json.returncode != 0) {
+            $('#mergeAfter').attr('href', '/{{user_name}}/{{repo_name}}/compare/{{from_refs}}...{{to_refs}}/');
+            $('#mergeAfter > button').removeClass('btn-primary').addClass('btn-danger').text('合并失败，请检查是否 存在冲突 或者 non-fast-forward');
+          }
+          $('#mergeAfter').show();
+        }
+      });
+      return false;
     });
-})
+  })
 </script>
 {% endblock %}
 

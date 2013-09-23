@@ -18,12 +18,12 @@ class UserprofileForm(forms.ModelForm):
                 self.fields[key].required = False
 
 class DoSshpubkeyForm(forms.Form):
-    pubkey_id = forms.IntegerField()
-    action = forms.CharField(max_length=12)
+    pubkey_id = forms.IntegerField(widget=forms.TextInput(attrs={'id': 'pubkeyId'}))
+    action = forms.CharField(max_length=12,widget=forms.TextInput(attrs={'id':'action'}))
 
 class SshpubkeyForm(forms.Form):
-    pubkey_name = forms.CharField(max_length=12)
-    pubkey = forms.CharField(max_length=1024, widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}))
+    pubkey_name = forms.CharField(max_length=12,widget=forms.TextInput(attrs={'id': 'pubkeyName'}))
+    pubkey = forms.CharField(max_length=1024, widget=forms.Textarea(attrs={'cols': 50, 'rows': 5, 'id': 'pubkey'}))
 
 class ChangepasswordForm(forms.Form):
     password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False))

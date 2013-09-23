@@ -113,13 +113,14 @@ def emails(request):
 @login_required
 @require_http_methods(["POST"])
 def email_add(request):
+    print 'email_add'
     useremails = GsuserManager.list_useremail_by_userId(request.user.id)
     if len(useremails) >= 50:
         return json_httpResponse({'code': 500, 'message': 'hit max email count(50)'})
     email = request.POST.get('email')
     for x in useremails:
         if email == x.email:
-            return json_httpResponse({'code': 500, 'message': u'添加邮箱 %s 失败，邮箱已经存在' % email})
+            return json_httpResponse({'code': 500, 'message': u'%s已经添加过了' % email})
     user = request.user
     if email and email_re.match(email):
         userEmail = UserEmail(user_id = user.id, email = email, is_verify = 0, is_primary = 0, is_public = 1)
@@ -280,6 +281,3 @@ def key_to_fingerprint(pubkey):
     key = base64.b64decode(pubkey)
     fp_plain = hashlib.md5(key).hexdigest()
     return ':'.join(a+b for a,b in zip(fp_plain[::2], fp_plain[1::2]))    
-
-
-

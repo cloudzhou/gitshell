@@ -1,70 +1,115 @@
 {% extends "user/dashboard_base.html" %}
 
 {% block subcontainer %}
+<div class="pulls bubble">
+  <div class="header">
+    <h2 class="heading">我创建的</h2>
+    <span class="sortable btn-group">
+      <a href="#" class="btn btn-mini btn-disable first">Open</a>
+      <a href="#" class="btn btn-mini middle">Closed</a>
+      <a href="#" class="btn btn-mini last">Rejected</a>
+    </span>
+  </div>
 
-	<div class="pulls bubble">
-    <div class="pulls-head">
-      <h2 class="heading">我创建的</h2>
-      <p>等待合并的<a href="#" class="count">12</a>, 已经关闭的<a href="#" class="count">1</a>, 被拒绝的<a href="#" class="count">2</a></p>
+  {% if pullRequests %}
+  {% comment %}
+  {% for pullRequest in pullRequests %}
+  <section class="pull-item">
+    <div class="widget">
+      <span class="status {{pullRequest.status_label}}">{{pullRequest.status_view}}</span>
+      <span class="branches">
+        <a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/" class="from branch" title="{{pullRequest.source_refname}}">{{pullRequest.source_refname|truncatechars:10}}</a>
+        <span class="arrow-right"><i class="icon-long-arrow-right"></i></span>
+        <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/" class="to branch" title="{{pullRequest.desc_refname}}">{{pullRequest.desc_refname}}</a>
+      </span>
     </div>
+    <div class="summary">
+      <h3 class="heading">
+        <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/pull/{{pullRequest.id}}/">{{pullRequest.short_title}}</a>
+        <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/pull/{{pullRequest.id}}/" class="id">#{{pullRequest.id}}</a>
+      </h3>
+      <div class="desc">
+        <p>{{pullRequest.short_desc}}</p>
+      </div>
+      <div class="meta">
+        <img src="https://gravatar.com/avatar/{{pullRequest.desc_repo.username}}?s=16" alt="{{pullRequest.desc_repo.username}}">
+        <a href="#">{{pullRequest.desc_repo.username}}</a>
+        <time class="unixtime" pubdate="pubdate">4天前创建</time>
+      </div>
+    </div>
+  </section>
+  {% endfor %}
+  {% endcomment %}
+  <section class="pull-item">
+    <div class="widget">
+      <span class="status closed">Closed</span>
+      <span class="branches">
+        <a href="#" class="from branch">3.2.0-wip</a>
+        <span class="arrow-right"><i class="icon-long-arrow-right"></i></span>
+        <a href="#" class="to branch">master</a>
+      </span>
+    </div>
+    <div class="summary">
+      <h3 class="heading">
+        <a href="#">重排了格式</a>
+        <span class="id">#12</span>
+      </h3>
+      <div class="desc">
+        <p>改成了标题式，比较醒目，也可以避免嵌套列表的问题。（markdown的嵌套列表，各家的解析都不一样。</p>
+      </div>
+      <div class="meta">
+        <img src="https://gravatar.com/avatar/{{pullRequest.pull_user.username}}?s=16" alt="{{pullRequest.pull_user.username}}">
+        <a href="#">mingming1222</a>
+        <time class="unixtime" pubdate="pubdate">4天前创建</time>
+      </div>
+    </div>
+  </section>
 
-			{% if pullRequests %}
-				{% for pullRequest in pullRequests %}
-            <section class="pull-item">
+  <section class="pull-item">
+    <div class="widget">
+      <span class="status open">Open</span>
+      <span class="branches">
+        <a href="#" class="from branch">3.2.0-wip</a>
+        <span class="arrow-right"><i class="icon-long-arrow-right"></i></span>
+        <a href="#" class="to branch">master</a>
+      </span>
+    </div>
+    <div class="summary">
+      <h3 class="heading">
+        <a href="#">更新FAQ页面（现在已经beta，邀请码和私有项目不同了）</a>
+        <span class="id">#08</span>
+      </h3>
+      <div class="desc unavailable">
+        <p>没有介绍内容</p>
+      </div>
+      <div class="meta">
+        <img src="https://gravatar.com/avatar/{{pullRequest.pull_user.username}}?s=16" alt="{{pullRequest.pull_user.username}}">
+        <a href="#">yuwen</a>
+        <time class="unixtime" pubdate="pubdate">4天前创建</time>
+      </div>
+    </div>
+  </section>
 
-              <div class="pull">
-
-                <figure class="avatar">
-                  <img src="https://gravatar.com/avatar/{{pullRequest.desc_repo.username}}?s=38" alt="{{pullRequest.pull_user.username}}">
-                </figure>
-
-                <div class="info">
-
-                  <h3 class="heading">
-                    <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/pull/{{pullRequest.id}}/">{##{{pullRequest.id}}#}{{pullRequest.short_title}}</a>
-                    <span class="label label-mini {{pullRequest.status_label}}">{{pullRequest.status_view}}</span>
-                  </h3>
-
-                  <div class="branches hide">
-
-                    <span class="puller">
-                      我想把
-                    </span>
-
-                    <span class="sub"><a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<span{# href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/"#}>{{pullRequest.source_refname}}</span>
-                    </span>合并到
-                    <span class="master"><a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<span{# href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/"#}>{{pullRequest.desc_refname}}</span>
-                    </span>
-
-                  </div>
-
-                  <p class="desc">{{pullRequest.short_desc}}</p>
-
-                </div>
-
-            </div>
-            </section>
-				{% endfor %}
-			{% else %}
-        <div class="pull-item wall">
-					<p>您还没有发起 Pull Request</p>
-				</div>
-			{% endif %}
-	</div>
+  {% else %}
+  <div class="pull-item wall">
+    <p>没有Pull Request</p>
+  </div>
+  {% endif %}
+</div>
 
 
 {% endblock %}
 
 {% block js %}
-  <script>
-    $(function(){
-        moment.lang('zh-cn');
-        $('#pullMerge').click(function(){
-            window.location.href = '/dashboard/pull/';
-        });
-        $('#pullRequest').click(function(){
-            window.location.href = '/dashboard/pull/request/';
-        });
+<script>
+  $(function(){
+    moment.lang('zh-cn');
+    $('#pullMerge').click(function(){
+      window.location.href = '/dashboard/pull/';
     });
-  </script>
+    $('#pullRequest').click(function(){
+      window.location.href = '/dashboard/pull/request/';
+    });
+  });
+</script>
 {% endblock %}

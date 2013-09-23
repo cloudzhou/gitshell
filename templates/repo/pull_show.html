@@ -14,118 +14,125 @@
               <div class="span10">
                 <a id="id_merge_after" class="hide" href="/{{user_name}}/{{repo_name}}/pulls/"><button class="btn btn-primary pull-right">确定</button></a>
               </div>
-          </div>
-        {% endcomment %}
+            </div>
+            {% endcomment %}
 
-        <ul class="nav nav-tabs">
-          <li class="active"><a href="#summary" data-toggle="tab">合并请求</a></li>
-          <li><a href="#commits" class="cPullRequestAction" data-toggle="tab" data-action="commit">Commits</a></li>
-          <li><a href="#diffs" class="cPullRequestAction" data-toggle="tab" data-action="diff">Diff</a></li>
-        </ul>
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#summary" data-toggle="tab">简介</a></li>
+              <li><a href="#commits" class="cPullRequestAction" data-toggle="tab" data-action="commit">提交</a></li>
+              <li><a href="#diffs" class="cPullRequestAction" data-toggle="tab" data-action="diff">代码差异</a></li>
+            </ul>
 
-        <div class="tab-content">
-          <section class="tab-pane bubble active" id="summary">
-            <h2 class="heading">#{{pullRequest.id}} 合并请求</h2>
-            <div class="refs">
-              <p>请求把{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}合并到{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}}</p>
+            <div class="tab-content pulls">
+              <section class="tab-pane bubble active" id="summary">
+                <div class="refs">
+                  <span class="pull-id">#{{pullRequest.id}}</span>
+                  <p class="txt">请求把<span class="hash label label-mini">{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}</span>合并到<span class="hash label label-mini">{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}}</span></p>
+                </div>
+                <div class="pull">
+                  <figure class="avatar">
+                    <img src="https://gravatar.com/avatar/{{pullRequest.desc_repo.username}}?s=55" alt="{{pullRequest.desc_repo.username}}">
+                  </figure>
+                  <div class="detail">
+                    <h3 class="heading">{{pullRequest.title}}重排了格式</h3>
+                    <div class="desc">
+                      <p>改成了标题式，比较醒目，也可以避免嵌套列表的问题。（markdown的嵌套列表，各家的解析都不一样。</p>
+                      <p>{{pullRequest.desc}}</p>
+                    </div>
+
+                    {% if is_owner %}
+                    <div class="actions">
+                      <a class="btn btn-primary" href="javascript: void(0)">开始合并</a>
+                      <a class="btn btn-danger" href="javascript: void(0)">拒绝</a>
+                      <a class="btn btn-inverse" href="javascript: void(0)">关闭</a>
+                      <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </section>
+
+              <section class="tab-pane bubble" id="commits">
+              </section>
+
+              <section class="tab-pane bubble" id="diffs">
+              </section>
+
             </div>
 
-            <div class="detail">
-              <h3>{{pullRequest.title}}</h3>
-              <p>{{pullRequest.desc}}</p>
-            </div>
+            {% endblock %}
 
-            {% if is_owner %}
-              <div class="actions">
-                <a class="btn btn-primary" data-original-title="将尝试合并该请求，进行分支合并" rel="tooltip" href="javascript: void(0)">开始合并</a>
-                <a class="btn btn-danger" data-original-title="由于各种原因，你可能不同意此次合并请求，请和发起者做好沟通" rel="tooltip" href="javascript: void(0)">拒绝</a>
-                <a class="btn btn-inverse" data-original-title="由于各种原因，不再需要此次合并分支，将进行关闭" rel="tooltip" href="javascript: void(0)">关闭</a>
-                <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
-              </div>
-            {% endif %}
-          </section>
+            {% block subjs %}
+            <script>
+              $(function(){
+                var global_repo_branch_map = {};
 
-        <section class="tab-pane bubble" id="commits">
-        </section>
+                $('a[data-toggle="tooltip"]').tooltip();
+                $('.nav-tabs').tabs();
 
-        <section class="tab-pane bubble" id="diffs">
-        </section>
+                var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
 
-      </div>
+                repoComparer.setPullUsername('{{pullRequest.desc_repo.username}}', '{{pullRequest.source_repo.username}}');
+                repoComparer.from_refs = '{{pullRequest.desc_refname}}';
+                repoComparer.to_refs = '{{pullRequest.source_refname}}';
+                repoComparer.renderCompare($('#commitsDiff'), null);
 
-{% endblock %}
+                $('a.cPullRequestAction').click(
+                  function() {
+                    var action = $(this).data('action');
+                    $('.ajaxLoader').show();
+                    if(action == 'commit') {
+                      load_commit_meta();
+                    } else if(action == 'diff') {
+                      load_diff_meta();
+                    }
+                  }
+                  );
 
-{% block subjs %}
-<script>
-$(function(){
-    var global_repo_branch_map = {};
-
-    $('a[data-toggle="tooltip"]').tooltip();
-    $('.nav-tabs').tabs();
-
-    var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
-
-    repoComparer.setPullUsername('{{pullRequest.desc_repo.username}}', '{{pullRequest.source_repo.username}}');
-    repoComparer.from_refs = '{{pullRequest.desc_refname}}';
-    repoComparer.to_refs = '{{pullRequest.source_refname}}';
-    repoComparer.renderCompare($('#commitsDiff'), null);
-
-    $('a.cPullRequestAction').click(
-      function() {
-        var action = $(this).data('action');
-        $('.ajaxLoader').show();
-        if(action == 'commit') {
-            load_commit_meta();
-        } else if(action == 'diff') {
-            load_diff_meta();
-        }
-      }
-    );
-
-    $('#id_pull_merge').click(function(){
-        $('#id_merge_output').show();
-        var i = 0;
-        var interval = setInterval(function() {
-            i = i + 1;
-            var j = i % 4;
-            var html = '正在进行 Pull Request，请耐心等候'
-            for (var k = 0; k < j; k++) {
-                html = html + '.'
-            }
-            $('#id_merge_output').html(html);
-        }, 500);
-        $('html, body').animate({ scrollTop: 0 }, 'fast');
-        $('#id_merge_process').show();
-        $('#id_merge_action').hide();
-        $.post('/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/merge/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            if(json.result == 'success') {
-                clearInterval(interval);
-                $('#id_merge_output').html(json.output);
-                if(json.returncode != 0) {
-                    $('#id_merge_after').attr('href', '/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/');
-                    $('#id_merge_after > button').removeClass('btn-primary').addClass('btn-danger').text('合并失败，请检查是否 存在冲突 或者 non-fast-forward');
-                }
-                $('#id_merge_after').show();
-            }
-        });
-        return false;
-    });
-    $('#id_pull_reject').click(function(){
-        $.post('/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/reject/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            if(json.result == 'success') {
-                window.location.href = '/{{user_name}}/{{repo_name}}/pulls/';
-            }
-        });
-        return false;
-    });
-    $('#id_pull_close').click(function(){
-        $.post('/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/close/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            if(json.result == 'success') {
-                window.location.href = '/{{user_name}}/{{repo_name}}/pulls/';
-            }
-        });
-        return false;
-    });
-});
-</script>
-{% endblock %}
+                $('#id_pull_merge').click(function(){
+                  $('#id_merge_output').show();
+                  var i = 0;
+                  var interval = setInterval(function() {
+                    i = i + 1;
+                    var j = i % 4;
+                    var html = '正在进行 Pull Request，请耐心等候'
+                    for (var k = 0; k < j; k++) {
+                      html = html + '.'
+                    }
+                  $('#id_merge_output').html(html);
+                  }, 500);
+                  $('html, body').animate({ scrollTop: 0 }, 'fast');
+                  $('#id_merge_process').show();
+                  $('#id_merge_action').hide();
+                  $.post('/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/merge/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+                    if(json.result == 'success') {
+                      clearInterval(interval);
+                      $('#id_merge_output').html(json.output);
+                      if(json.returncode != 0) {
+                        $('#id_merge_after').attr('href', '/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/');
+                        $('#id_merge_after > button').removeClass('btn-primary').addClass('btn-danger').text('合并失败，请检查是否 存在冲突 或者 non-fast-forward');
+                      }
+                      $('#id_merge_after').show();
+                    }
+                  });
+                  return false;
+                });
+                $('#id_pull_reject').click(function(){
+                  $.post('/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/reject/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+                    if(json.result == 'success') {
+                      window.location.href = '/{{user_name}}/{{repo_name}}/pulls/';
+                    }
+                  });
+                  return false;
+                });
+                $('#id_pull_close').click(function(){
+                  $.post('/{{user_name}}/{{repo_name}}/pull/{{pullRequest.id}}/close/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+                    if(json.result == 'success') {
+                      window.location.href = '/{{user_name}}/{{repo_name}}/pulls/';
+                    }
+                  });
+                  return false;
+                });
+              });
+            </script>
+            {% endblock %}
