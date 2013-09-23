@@ -19,7 +19,7 @@ from gitshell.feed.feed import AttrKey, FeedAction
 from gitshell.feed.models import FeedManager, FEED_TYPE, NOTIF_TYPE
 from gitshell.repo.Forms import RepoForm, RepoMemberForm
 from gitshell.repo.githandler import GitHandler
-from gitshell.repo.models import Repo, RepoManager, PullRequest, PULL_STATUS, KEEP_REPO_NAME
+from gitshell.repo.models import Repo, RepoManager, PullRequest, PULL_STATUS, KEEP_REPO_NAME, REPO_PERMISSION
 from gitshell.gsuser.models import GsuserManager
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.team.models import TeamManager
@@ -329,6 +329,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         raise Http404
     refs = _get_current_refs(request.user, repo, None, True); path = '.'
 
+    memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
     # pull action
     if request.method == 'POST':
         source_repo = request.POST.get('source_repo', '')
@@ -337,6 +338,8 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         desc_refs = request.POST.get('desc_refs', '')
         title = request.POST.get('title', '')
         desc = request.POST.get('desc', '')
+        merge_user_id = int(request.POST.get('merge_user_id', repo.user.id))
+        merge_user_id = _get_merge_user_id(merge_user_id, memberUsers, repo)
         if source_repo == '' or source_refs == '' or desc_repo == '' or desc_refs == '' or title == '' or '/' not in source_repo or '/' not in desc_repo:
             return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         if not RepoManager.is_allowed_refsname_pattern(source_refs) or not RepoManager.is_allowed_refsname_pattern(desc_refs):
@@ -347,7 +350,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         desc_pull_repo = RepoManager.get_repo_by_name(desc_username, desc_reponame)
         if not _has_pull_right(request, source_pull_repo, desc_pull_repo):
             return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
-        pullRequest = PullRequest.create(request.user.id, desc_pull_repo.user_id, source_pull_repo.user_id, source_pull_repo.id, source_refs, desc_pull_repo.user_id, desc_pull_repo.id, desc_refs, title, desc, 0, PULL_STATUS.NEW)
+        pullRequest = PullRequest.create(request.user.id, merge_user_id, source_pull_repo.user_id, source_pull_repo.id, source_refs, desc_pull_repo.user_id, desc_pull_repo.id, desc_refs, title, desc, 0, PULL_STATUS.NEW)
         pullRequest.save()
         pullRequest.fillwith()
         FeedManager.notif_pull_request_status(pullRequest, pullRequest.status)
@@ -356,7 +359,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
 
     pull_repo_list = _list_pull_repo(request, repo)
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list}
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list, 'memberUsers': memberUsers}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_new.html',
                           response_dictionary,
@@ -370,7 +373,8 @@ def pull_show(request, user_name, repo_name, pullRequest_id):
     refs = _get_current_refs(request.user, repo, None, True); path = '.'
     pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequest': pullRequest}
+    has_repo_pull_action_right = _has_repo_pull_action_right(request, repo, pullRequest)
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequest': pullRequest, 'has_repo_pull_action_right': has_repo_pull_action_right}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_show.html',
                           response_dictionary,
@@ -441,7 +445,7 @@ def pull_merge(request, user_name, repo_name, pullRequest_id):
     if args is None:
         return json_httpResponse({'returncode': 128, 'output': 'merge failed', 'result': 'failed'})
     (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
-    if not _has_pull_right(request, source_repo, desc_repo):
+    if not _has_pull_right(request, source_repo, desc_repo) or not _has_repo_pull_action_right(request, desc_repo, pullRequest):
         return json_httpResponse({'result': 'failed'})
     if desc_repo is None or desc_repo.user_id != request.user.id:
         return json_httpResponse({'result': 'failed'})
@@ -468,10 +472,13 @@ def pull_merge(request, user_name, repo_name, pullRequest_id):
 @require_http_methods(["POST"])
 def pull_reject(request, user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
+    if repo is None:
         return json_httpResponse({'result': 'failed'})
     pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     if pullRequest is None:
+        return json_httpResponse({'result': 'failed'})
+    desc_repo = RepoManager.get_repo_by_id(pullRequest.desc_repo_id)
+    if desc_repo is None or not _has_repo_pull_action_right(request, desc_repo, pullRequest):
         return json_httpResponse({'result': 'failed'})
     pullRequest.status = PULL_STATUS.REJECTED
     pullRequest.save()
@@ -484,10 +491,13 @@ def pull_reject(request, user_name, repo_name, pullRequest_id):
 @require_http_methods(["POST"])
 def pull_close(request, user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
+    if repo is None:
         return json_httpResponse({'result': 'failed'})
     pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     if pullRequest is None:
+        return json_httpResponse({'result': 'failed'})
+    desc_repo = RepoManager.get_repo_by_id(pullRequest.desc_repo_id)
+    if desc_repo is None or not _has_repo_pull_action_right(request, desc_repo, pullRequest):
         return json_httpResponse({'result': 'failed'})
     pullRequest.status = PULL_STATUS.CLOSE
     pullRequest.save()
@@ -1219,19 +1229,29 @@ def _list_pull_repo(request, repo):
     pull_repo_list = [x for x in raw_pull_repo_list if _has_repo_pull_right(request, x)]
     return pull_repo_list
 
+def _has_repo_pull_action_right(request, repo, pullRequest):
+    if repo is None:
+        return False
+    if repo.user_id == request.user.id or pullRequest.merge_user_id == request.user.id:
+        return True
+    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, repo.user_id)
+    if teamMember and teamMember.is_admin == 1:
+        return True
+    return False
+
 def _has_repo_pull_right(request, repo):
     if repo is None:
         return False
-    if repo.auth_type != 0 and not RepoManager.is_repo_member(repo, request.user):
+    if repo.auth_type != 0 and not RepoManager.is_allowed_access_repo(repo, request.user, REPO_PERMISSION.WRITE):
         return False
     return True
 
 def _has_pull_right(request, source_pull_repo, desc_pull_repo):
     if source_pull_repo is None or desc_pull_repo is None:
         return False
-    if source_pull_repo.auth_type != 0 and not RepoManager.is_repo_member(source_pull_repo, request.user):
+    if source_pull_repo.auth_type != 0 and not RepoManager.is_allowed_access_repo(source_pull_repo, request.user, REPO_PERMISSION.WRITE):
         return False
-    if desc_pull_repo.auth_type != 0 and not RepoManager.is_repo_member(desc_pull_repo, request.user):
+    if desc_pull_repo.auth_type != 0 and not RepoManager.is_allowed_access_repo(desc_pull_repo, request.user, REPO_PERMISSION.WRITE):
         return False
     return True
 
@@ -1298,6 +1318,12 @@ def _get_readable_du(quote):
     if quote < 1073741824:
         return str(quote/1048576) + 'mb'
     return str(quote/1073741824) + 'g'
+
+def _get_merge_user_id(merge_user_id, memberUsers, repo):
+    for x in memberUsers:
+        if x.id == merge_user_id:
+            return merge_user_id
+    return repo.user_id
 
 def json_ok():
     return json_httpResponse({'result': 'ok'})

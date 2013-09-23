@@ -50,6 +50,7 @@
                   <input id="sourceRefsSelect" type="hidden" value="" name="source_refs">
                   <input id="descRepoSelect" type="hidden" value="" name="desc_repo">
                   <input id="descRefsSelect" type="hidden" value="" name="desc_refs">
+                  <input id="mergeUserIdSelect" type="hidden" value="" name="merge_user_id">
                   <div class="control-group">
                     <label class="control-label" for="title">* 标题</label>
                     <div class="controls">
@@ -60,6 +61,16 @@
                       <label class="control-label" for="desc">描述</label>
                       <div class="controls">
                         <textarea id="desc" name="desc" maxlength="2048"></textarea>
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <label class="control-label" for="desc">合并者</label>
+                      <div class="controls">
+                        <select id="mergeUserId">
+                            {% for memberUser in memberUsers %}
+                            <option value="{{memberUser.id}}">{{memberUser.username}}</option>
+                            {% endfor %}
+                        </select>
                       </div>
                   </div>
                   <div class="control-group">
@@ -157,6 +168,7 @@ $(function(){
         $('#sourceRefsSelect').val($('#sourceRefs option:selected').val());
         $('#descRepoSelect').val($('#descRepo option:selected').val());
         $('#descRefsSelect').val($('#descRefs option:selected').val());
+        $('#mergeUserIdSelect').val($('#mergeUserId option:selected').val());
         return true;
     });
 

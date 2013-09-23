@@ -35,7 +35,7 @@
               <p>{{pullRequest.desc}}</p>
             </div>
 
-            {% if is_owner %}
+            {% if has_repo_pull_action_right %}
               <div class="actions">
                 <a class="btn btn-primary" data-original-title="将尝试合并该请求，进行分支合并" rel="tooltip" href="javascript: void(0)">开始合并</a>
                 <a class="btn btn-danger" data-original-title="由于各种原因，你可能不同意此次合并请求，请和发起者做好沟通" rel="tooltip" href="javascript: void(0)">拒绝</a>
