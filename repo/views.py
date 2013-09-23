@@ -338,7 +338,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         desc_refs = request.POST.get('desc_refs', '')
         title = request.POST.get('title', '')
         desc = request.POST.get('desc', '')
-        merge_user_id = int(request.POST.get('merge_user_id', repo.user.id))
+        merge_user_id = int(request.POST.get('merge_user_id', repo.user_id))
         merge_user_id = _get_merge_user_id(merge_user_id, memberUsers, repo)
         if source_repo == '' or source_refs == '' or desc_repo == '' or desc_refs == '' or title == '' or '/' not in source_repo or '/' not in desc_repo:
             return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
