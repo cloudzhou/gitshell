@@ -174,6 +174,8 @@ rawsql = {
         'select * from team_teammember where visibly = 0 and user_id = %s and team_user_id = %s limit 0, 1',
     'teammember_l_userId':
         'select * from team_teammember where visibly = 0 and user_id = %s order by modify_time desc limit 0, 1000',
+    'teammember_l_teamUserId':
+        'select * from team_teammember where visibly = 0 and team_user_id = %s order by modify_time desc limit 0, 1000',
 }
 
 def get(model, pkid):

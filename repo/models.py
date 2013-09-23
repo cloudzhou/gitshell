@@ -288,6 +288,25 @@ class RepoManager():
         return list(CommitHistory.objects.filter(visibly=0).filter(repo_id=repo_id).filter(commit_id__in=commit_ids))
 
     @classmethod
+    def list_repo_team_memberUser(self, repo_id):
+        repo = self.get_repo_by_id(repo_id)
+        if not repo:
+            return []
+        repoemembers = self.list_repomember(repo_id)
+        user_ids = [x.user_id for x in repoemembers]
+        userprofile = GsuserManager.get_userprofile_by_id(repo.user_id)
+        if not userprofile:
+            return []
+        if userprofile.is_team_account == 0:
+            user_ids.insert(0, repo.user_id)
+        if userprofile.is_team_account == 1:
+            teamMembers = TeamManager.list_teamMember_by_teamUserId(userprofile.id)
+            for x in teamMembers:
+                if x.user_id not in user_ids:
+                    user_ids.append(x.user_id)
+        return GsuserManager.list_userprofile_by_ids(user_ids)
+
+    @classmethod
     def list_repomember(self, repo_id):
         repoemembers = query(RepoMember, repo_id, 'repomember_l_repoId', [repo_id])
         return repoemembers

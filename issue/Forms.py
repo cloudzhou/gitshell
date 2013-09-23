@@ -15,11 +15,8 @@ class IssueForm(forms.ModelForm):
     def fill_assigned(self, repo):
         if repo is None:
             return
-        members = RepoManager.list_repomember(repo.id)
-        user_ids = [ m.user_id for m in members ]
-        user_ids.insert(0, repo.user_id)
-        user_list = GsuserManager.list_user_by_ids(user_ids)
-        self.fields['assigned'] = forms.ChoiceField(choices=[ (o.id, o.username) for o in user_list ])
+        memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
+        self.fields['assigned'] = forms.ChoiceField(choices=[ (o.id, o.username) for o in memberUsers ])
 
     class Meta:
         model = Issue
