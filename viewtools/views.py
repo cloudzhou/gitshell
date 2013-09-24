@@ -24,10 +24,10 @@ def encoder(o, _encoder=json.encoder.encode_basestring):
     return _encoder(o)
 
 def obj2dict(obj):
-    id_set = Set()
-    return _recursion_obj2dict(id_set, obj)
+    id_dict = {}
+    return _recursion_obj2dict(id_dict, obj)
 
-def _recursion_obj2dict(id_set, obj):
+def _recursion_obj2dict(id_dict, obj):
     if obj is None:
         return None
     if isinstance(obj, basestring):
@@ -39,22 +39,22 @@ def _recursion_obj2dict(id_set, obj):
     if isinstance(obj, list):
         lobj = []
         for x in list(obj):
-            lobj.append(_recursion_obj2dict(id_set, x))
+            lobj.append(_recursion_obj2dict(id_dict, x))
         return lobj
     if isinstance(obj, dict):
         dobj = {}
         for key, value in dict(obj).items():
-            dobj[_recursion_obj2dict(id_set, key)] = _recursion_obj2dict(id_set, value)
+            dobj[_recursion_obj2dict(id_dict, key)] = _recursion_obj2dict(id_dict, value)
         return dobj
     if isinstance(obj, object):
         uuid = id(obj)
-        if uuid in id_set:
-            return None
-        id_set.add(uuid)
+        if uuid in id_dict:
+            return id_dict[uuid]
         _dict = {}
         for key, value in obj.__dict__.iteritems():
             if not key.startswith('_') and not callable(value):
-                _dict[_recursion_obj2dict(id_set, key)] = _recursion_obj2dict(id_set, value)
+                _dict[_recursion_obj2dict(id_dict, key)] = _recursion_obj2dict(id_dict, value)
+        id_dict[uuid] = _dict
         return _dict
     return obj
 

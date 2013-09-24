@@ -2,6 +2,7 @@
 import os, re, sys
 import json, time, urllib
 import shutil, copy, random
+from sets import Set
 from datetime import datetime, timedelta
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
@@ -18,16 +19,16 @@ from gitshell.feed.feed import AttrKey, FeedAction
 from gitshell.feed.models import FeedManager, FEED_TYPE, NOTIF_TYPE
 from gitshell.repo.Forms import RepoForm, RepoMemberForm
 from gitshell.repo.githandler import GitHandler
-from gitshell.repo.models import Repo, RepoManager, PullRequest, PULL_STATUS
+from gitshell.repo.models import Repo, RepoManager, PullRequest, PULL_STATUS, KEEP_REPO_NAME, REPO_PERMISSION
 from gitshell.gsuser.models import GsuserManager
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
+from gitshell.team.models import TeamManager
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
 from gitshell.settings import SECRET_KEY, REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, PULLREQUEST_REPO_PATH, logger
 from gitshell.daemon.models import EventManager
 from gitshell.objectscache.models import CacheKey
 from gitshell.viewtools.views import json_httpResponse
-from gitshell.gsuser.middleware import KEEP_REPO_NAME
 from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo, dropbox_share_direct
 
 lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml', 'go': 'Go'}
@@ -77,17 +78,22 @@ def user_repo_paging(request, user_name, pagenum):
 @repo_permission_check
 def repo(request, user_name, repo_name):
     refs = None; path = '.'; current = 'index'
-    return ls_tree(request, user_name, repo_name, refs, path, current)
+    return ls_tree(request, user_name, repo_name, refs, path, current, 'html')
 
 @repo_permission_check
 def tree_default(request, user_name, repo_name):
     refs = None; path = '.'; current = 'tree'
-    return ls_tree(request, user_name, repo_name, refs, path, current)
+    return ls_tree(request, user_name, repo_name, refs, path, current, 'html')
     
 @repo_permission_check
 def tree(request, user_name, repo_name, refs, path):
     current = 'tree'
-    return ls_tree(request, user_name, repo_name, refs, path, current)
+    return ls_tree(request, user_name, repo_name, refs, path, current, 'html')
+
+@repo_permission_check
+def tree_ajax(request, user_name, repo_name, refs, path):
+    current = 'tree'
+    return ls_tree(request, user_name, repo_name, refs, path, current, 'ajax')
 
 @repo_permission_check
 @repo_source_permission_check
@@ -103,7 +109,7 @@ def raw_blob(request, user_name, repo_name, refs, path):
     return HttpResponse(blob, content_type="text/plain; charset=utf-8")
 
 @repo_permission_check
-def ls_tree(request, user_name, repo_name, refs, path, current):
+def ls_tree(request, user_name, repo_name, refs, path, current, render_method):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -122,6 +128,8 @@ def ls_tree(request, user_name, repo_name, refs, path, current):
         readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, tree['readme_file'])
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'readme_md': readme_md}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    if render_method == 'ajax':
+        return json_httpResponse(response_dictionary)
     return render_to_response('repo/tree.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -328,6 +336,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         raise Http404
     refs = _get_current_refs(request.user, repo, None, True); path = '.'
 
+    memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
     # pull action
     if request.method == 'POST':
         source_repo = request.POST.get('source_repo', '')
@@ -336,6 +345,8 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         desc_refs = request.POST.get('desc_refs', '')
         title = request.POST.get('title', '')
         desc = request.POST.get('desc', '')
+        merge_user_id = int(request.POST.get('merge_user_id', repo.user_id))
+        merge_user_id = _get_merge_user_id(merge_user_id, memberUsers, repo)
         if source_repo == '' or source_refs == '' or desc_repo == '' or desc_refs == '' or title == '' or '/' not in source_repo or '/' not in desc_repo:
             return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
         if not RepoManager.is_allowed_refsname_pattern(source_refs) or not RepoManager.is_allowed_refsname_pattern(desc_refs):
@@ -346,7 +357,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         desc_pull_repo = RepoManager.get_repo_by_name(desc_username, desc_reponame)
         if not _has_pull_right(request, source_pull_repo, desc_pull_repo):
             return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
-        pullRequest = PullRequest.create(request.user.id, desc_pull_repo.user_id, source_pull_repo.user_id, source_pull_repo.id, source_refs, desc_pull_repo.user_id, desc_pull_repo.id, desc_refs, title, desc, 0, PULL_STATUS.NEW)
+        pullRequest = PullRequest.create(request.user.id, merge_user_id, source_pull_repo.user_id, source_pull_repo.id, source_refs, desc_pull_repo.user_id, desc_pull_repo.id, desc_refs, title, desc, 0, PULL_STATUS.NEW)
         pullRequest.save()
         pullRequest.fillwith()
         FeedManager.notif_pull_request_status(pullRequest, pullRequest.status)
@@ -355,7 +366,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
 
     pull_repo_list = _list_pull_repo(request, repo)
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list}
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list, 'memberUsers': memberUsers}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_new.html',
                           response_dictionary,
@@ -369,7 +380,8 @@ def pull_show(request, user_name, repo_name, pullRequest_id):
     refs = _get_current_refs(request.user, repo, None, True); path = '.'
     pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequest': pullRequest}
+    has_repo_pull_action_right = _has_repo_pull_action_right(request, repo, pullRequest)
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequest': pullRequest, 'has_repo_pull_action_right': has_repo_pull_action_right}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_show.html',
                           response_dictionary,
@@ -440,7 +452,7 @@ def pull_merge(request, user_name, repo_name, pullRequest_id):
     if args is None:
         return json_httpResponse({'returncode': 128, 'output': 'merge failed', 'result': 'failed'})
     (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
-    if not _has_pull_right(request, source_repo, desc_repo):
+    if not _has_pull_right(request, source_repo, desc_repo) or not _has_repo_pull_action_right(request, desc_repo, pullRequest):
         return json_httpResponse({'result': 'failed'})
     if desc_repo is None or desc_repo.user_id != request.user.id:
         return json_httpResponse({'result': 'failed'})
@@ -467,10 +479,13 @@ def pull_merge(request, user_name, repo_name, pullRequest_id):
 @require_http_methods(["POST"])
 def pull_reject(request, user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
+    if repo is None:
         return json_httpResponse({'result': 'failed'})
     pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     if pullRequest is None:
+        return json_httpResponse({'result': 'failed'})
+    desc_repo = RepoManager.get_repo_by_id(pullRequest.desc_repo_id)
+    if desc_repo is None or not _has_repo_pull_action_right(request, desc_repo, pullRequest):
         return json_httpResponse({'result': 'failed'})
     pullRequest.status = PULL_STATUS.REJECTED
     pullRequest.save()
@@ -483,10 +498,13 @@ def pull_reject(request, user_name, repo_name, pullRequest_id):
 @require_http_methods(["POST"])
 def pull_close(request, user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
+    if repo is None:
         return json_httpResponse({'result': 'failed'})
     pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     if pullRequest is None:
+        return json_httpResponse({'result': 'failed'})
+    desc_repo = RepoManager.get_repo_by_id(pullRequest.desc_repo_id)
+    if desc_repo is None or not _has_repo_pull_action_right(request, desc_repo, pullRequest):
         return json_httpResponse({'result': 'failed'})
     pullRequest.status = PULL_STATUS.CLOSE
     pullRequest.save()
@@ -671,7 +689,9 @@ def stats(request, user_name, repo_name):
 @login_required
 def settings(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
+    if repo is None:
+        raise Http404
+    if repo.user_id != request.user.id and not TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, repo.user_id):
         raise Http404
     refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'settings'; error = u''
     repoForm = RepoForm(instance = repo)
@@ -1008,14 +1028,25 @@ def create(request, user_name):
     thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
     repo = Repo()
     repo.user_id = request.user.id
-    repo.username = request.user.username
     repoForm = RepoForm(instance = repo)
+    repoForm.fill_username(request.userprofile)
     response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error, 'thirdpartyUser': thirdpartyUser, 'apply_error': request.GET.get('apply_error')}
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
+        repoForm.fill_username(request.userprofile)
         userprofile = request.userprofile
+        create_repo = repoForm.save(commit=False)
+        username = create_repo.username
+        if username != request.user.username:
+            team_user = GsuserManager.get_user_by_name(username)
+            if team_user:
+                teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, team_user.id)
+                if teamMember:
+                    create_repo.user_id = team_user.id
+                    create_repo.username = team_user.username
+                    userprofile = GsuserManager.get_userprofile_by_id(team_user.id)
         if (userprofile.pubrepo + userprofile.prirepo) >= 100:
-            error = u'您拥有的仓库数量已经达到 100 的限制。'
+            error = u'拥有的仓库数量已经达到 100 的限制。'
             return __response_create_repo_error(request, response_dictionary, error)
         if not repoForm.is_valid():
             error = u'输入正确的仓库名称[a-zA-Z0-9_-]，不能 - 开头，选择好语言和可见度，active、watch、recommend、repo是保留的名称。'
@@ -1029,24 +1060,47 @@ def create(request, user_name):
             error = u'仓库名称已经存在。'
             return __response_create_repo_error(request, response_dictionary, error)
         if userprofile.used_quote > userprofile.quote:
-            error = u'您剩余空间不足，总空间 %s kb，剩余 %s kb' % (userprofile.quote, userprofile.used_quote)
+            error = u'剩余空间不足，总空间 %s kb，剩余 %s kb' % (userprofile.quote, userprofile.used_quote)
             return __response_create_repo_error(request, response_dictionary, error)
+        create_repo.save()
+        userprofile.save()
         remote_git_url = request.POST.get('remote_git_url', '').strip()
         remote_username = request.POST.get('remote_username', '').strip()
         remote_password = request.POST.get('remote_password', '').strip()
-        create_repo = repoForm.save()
-        if create_repo.auth_type == 0:
-            userprofile.pubrepo = userprofile.pubrepo + 1
-        else:
-            userprofile.prirepo = userprofile.prirepo + 1
-        userprofile.save()
         remote_git_url = __validate_get_remote_git_url(remote_git_url, remote_username, remote_password)
         if remote_git_url is not None and remote_git_url != '':
             create_repo.status = 2
             create_repo.save()
         fulfill_gitrepo(create_repo, remote_git_url)
-        return HttpResponseRedirect('/%s/%s/' % (request.user.username, name))
+        return HttpResponseRedirect('/%s/%s/' % (userprofile.username, name))
     return render_to_response('repo/create.html', response_dictionary, context_instance=RequestContext(request))
+
+@login_required
+#@require_http_methods(["POST"])
+def recently(request, user_name):
+    feedAction = FeedAction()
+    _recently_view_repo = feedAction.list_recently_view_repo(request.user.id, 0, 10)
+    recently_view_repo_ids = [int(x[0]) for x in _recently_view_repo]
+    _recently_active_repo = feedAction.list_recently_active_repo(request.user.id, 0, 10)
+    recently_active_repo_ids = [int(x[0]) for x in _recently_active_repo]
+    unique_repo_ids = Set(recently_view_repo_ids + recently_active_repo_ids)
+    repo_dict = dict([(x.id, x) for x in RepoManager.list_repo_by_ids(unique_repo_ids)])
+
+    recently_view_repo = []
+    recently_active_repo = []
+    for x in recently_view_repo_ids:
+        if x in repo_dict and repo_dict[x]:
+            recently_view_repo.append(repo_dict[x])
+        else:
+            feedAction.remove_recently_view_repo(request.user.id, x)
+    for x in recently_active_repo_ids:
+        if x in repo_dict and repo_dict[x]:
+            recently_active_repo.append(repo_dict[x])
+        else:
+            feedAction.remove_recently_active_repo(request.user.id, x)
+    current_user = TeamManager.get_current_user(request.user, request.userprofile)
+    recently_update_repo = RepoManager.list_repo_by_userId(current_user.id, 0, 5)
+    return json_httpResponse({'result': 'success', 'cdoe': 200, 'message': 'recently view, active, update repo', 'recently_view_repo': recently_view_repo, 'recently_active_repo': recently_active_repo, 'recently_update_repo': recently_update_repo})
 
 def __response_create_repo_error(request, response_dictionary, error):
     response_dictionary['error'] = error
@@ -1113,7 +1167,7 @@ def delete(request, user_name, repo_name):
             shutil.move(abs_repopath, delete_path)
         feedAction = FeedAction()
         feedAction.delete_repo_feed(repo.id)
-        return HttpResponseRedirect('/%s/repo/' % request.user.username)
+        return HttpResponseRedirect('/%s/-/repo/' % request.user.username)
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'error': error}
     return render_to_response('repo/delete.html',
                           response_dictionary,
@@ -1182,19 +1236,29 @@ def _list_pull_repo(request, repo):
     pull_repo_list = [x for x in raw_pull_repo_list if _has_repo_pull_right(request, x)]
     return pull_repo_list
 
+def _has_repo_pull_action_right(request, repo, pullRequest):
+    if repo is None:
+        return False
+    if repo.user_id == request.user.id or pullRequest.merge_user_id == request.user.id:
+        return True
+    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, repo.user_id)
+    if teamMember and teamMember.is_admin == 1:
+        return True
+    return False
+
 def _has_repo_pull_right(request, repo):
     if repo is None:
         return False
-    if repo.auth_type != 0 and not RepoManager.is_repo_member(repo, request.user):
+    if repo.auth_type != 0 and not RepoManager.is_allowed_access_repo(repo, request.user, REPO_PERMISSION.WRITE):
         return False
     return True
 
 def _has_pull_right(request, source_pull_repo, desc_pull_repo):
     if source_pull_repo is None or desc_pull_repo is None:
         return False
-    if source_pull_repo.auth_type != 0 and not RepoManager.is_repo_member(source_pull_repo, request.user):
+    if source_pull_repo.auth_type != 0 and not RepoManager.is_allowed_access_repo(source_pull_repo, request.user, REPO_PERMISSION.WRITE):
         return False
-    if desc_pull_repo.auth_type != 0 and not RepoManager.is_repo_member(desc_pull_repo, request.user):
+    if desc_pull_repo.auth_type != 0 and not RepoManager.is_allowed_access_repo(desc_pull_repo, request.user, REPO_PERMISSION.WRITE):
         return False
     return True
 
@@ -1261,6 +1325,12 @@ def _get_readable_du(quote):
     if quote < 1073741824:
         return str(quote/1048576) + 'mb'
     return str(quote/1073741824) + 'g'
+
+def _get_merge_user_id(merge_user_id, memberUsers, repo):
+    for x in memberUsers:
+        if x.id == merge_user_id:
+            return merge_user_id
+    return repo.user_id
 
 def json_ok():
     return json_httpResponse({'result': 'ok'})

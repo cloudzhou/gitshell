@@ -6,6 +6,9 @@
     <meta content="Gitshell 专注git代码托管, 团队协同，项目开发" name="description">
     <meta content="Gitshell" name="author">
     <meta name="csrf-token" content="{{csrf_token}}">
+{% if user.is_authenticated %}
+    <meta name="username" content="{{user.username}}">
+{% endif %}
     <link href="/static/less/app/font-awesome/css/font-awesome.min.css?timestamp={{gitshell.timestamp}}" rel="stylesheet" type="text/css">
     {% if gitshell.mode == 'run' %}
     <link href="/static/less/min/gitshell.min.css?timestamp={{gitshell.timestamp}}" rel="stylesheet" type="text/css">
@@ -22,6 +25,7 @@
   <body id="gitshell" class="{% block body_class_name %}{% endblock %}">
     <nav class="navbar" role="navigation">
       <div class="container">
+<<<<<<< HEAD
         {% comment %}
         {% if user.is_authenticated %}
         <a class="brand" href="#" role="logo"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=28" alt=""><span>{{user.username}}</span></a>
@@ -98,24 +102,71 @@
                   <a href="/settings/">设置</a><br>
                   <a href="#" class="create-team-link"><em>添加团队账户</em></a>
                 </p>
+=======
+        <a class="brand" href="#" role="logo"><span>Gitshell</span></a>
+        <ul class="nav main-nav">
+          {% if user.is_authenticated %}
+            <li><a href="/dashboard/timeline/">信息流</a></li>
+            <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="/dashboard/notif/" class="todo">操作中心<span class="label-mini label-warning hide">{{userprofile.unread_message}}</span></a></li>
+            <li class="dropdown{% if mainnav == '/{{user.username}}/-/repo/' %}active{% endif %}">
+              <a href="javascript:;" class="dropdown-toggle repo-shortcut" data-toggle="dropdown">仓库<i class="icon-caret-down"></i></a>
+              <ul class="dropdown-menu repo-shortcut-ul">
+                <li class="all"><a href="/{{user.username}}/-/repo/">所有仓库</a></li>
+                <li class="repo-loading"><img src="/static/img/loading.gif"></li>
+                <li class="create"><a href="/{{user.username}}/-/repo/create/"><i class="icon-pencil"></i>新建仓库</a></li>
+              </ul>
+            </li>
+            <li class="create-repo"><a href="/{{user.username}}/-/repo/create/" class=""><span class="button"><i class="icon-pencil"></i>新建仓库</span></a></li>
+            </li>
+          {% else %}
+            <li><a href="/login/">注册</a></li>
+            <li><a href="/login/">登陆</a></li>
+          {% endif %}
+        </ul>
+        {% if user.is_authenticated %}
+          <ul class="nav userbar">
+            <li class="bell">
+              <a href="/dashboard/notif/"><i class="icon-bell"></i>{#userprofile.unread_message#}</a>
+            </li>
+            <li class="dropdown">
+              <a href="/{{ user.username }}/" class="dropdown-toggle" data-toggle="dropdown">
+                <i class="icon-cog"></i>
+              </a>
+              <div class="dropdown-menu" role="menu" aria-labelladby="dLable">
+                <div class="info">
+                  <div class="detail">
+                    <h2 class="heading">{{ user.username }}</h2>
+                    <p class="actions">
+                      <a href="/{{user.username}}/">个人主页</a><br>
+                      <a href="/settings/">设置</a>
+                    </p>
+                  </div>
+                  <div class="detail">
+                    <h2 class="heading">{{ user.username }}</h2>
+                    <p class="actions">
+                      <a href="/{{user.username}}/">个人主页</a><br>
+                      <a href="/settings/">设置</a>
+                    </p>
+                  </div>
+                  <figure class="avatar">
+                    <img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=80" alt="{{ user.username }}">
+                  </figure>
+>>>>>>> 0584c34ccf4aeaf4748d5fc6873578d74325dd29
               </div>
 
-              <figure class="avatar">
-                <img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=80" alt="{{ user.username }}">
-              </figure>
-
-            </div>
-
-            <div class="other">
-              <a href="/logout/" class="logout btn btn-mini">登出</a>
-              <span class="feedback">
-                <a href="/help/">帮助</a>
-                <span>·</span>
-                <a href="#">反馈</a>
-              </span>
-            </div>
-
-          </div>
+              <div class="other">
+                <a href="/logout/" class="logout btn btn-mini">登出</a>
+                <span class="feedback">
+                  <a href="/help/">帮助</a>
+                  <span>·</span>
+                  <a href="#">反馈</a>
+                </span>
+                <div>
+                  {% for teamMember in gs_teamMembers %}
+                    <a href="/{{user.username}}/-/user/switch/{{teamMember.team_user_id}}/">{{ teamMember.team_user.username }}</a>
+                  {% endfor %}
+                </div>
+              </div>
         </li>
       </ul>
       {% else %}
@@ -151,14 +202,6 @@
   {% else %}
   <script src="/static/js/gitshell-template.js"></script>
   <script src="/static/js/gitshell.js"></script>
-  <script>
-    $(function(){
-      $('.unixtime').each(function(index){
-        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-        $(this).show();
-      });
-    });
-  </script>
   {% endif %}
   {% block js %}{% endblock %}
   <script>

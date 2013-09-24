@@ -28,19 +28,19 @@
 
   {%if issue_comments%}
   {%for issue_comment in issue_comments%}
-  <section data-user-name="{{issue_comment.user_id}}" class="comment">
+  <section data-user-name="{{issue_comment.username}}" class="comment">
     <figure class="avatar">
-      <img src="https://gravatar.com/avatar/{{ issue_comment.user_img }}?s=55" alt="{{issue.comment}}">
+      <img src="https://gravatar.com/avatar/{{ issue_comment.imgurl }}?s=55" alt="{{issue.comment}}">
     </figure>
     <div class="detail">
       <div class="meta">
-        <a href="/{{issue_comment.user_id}}/">{{issue_comment.user_id}}</a>
+        <a href="/{{issue_comment.username}}/">{{issue_comment.username}}</a>
         <time class="unixtime" pubdate="pubdate">{{issue_comment.create_time}}</time>
       </div>
       <div class="content">{{issue_comment.content}}</div>
       <div class="actions">
         <a class="rmComment hide" value="{{issue_comment.id}}" href="javascript:void(0)"><i class="icon-remove"></i>删除</a>
-        <a class="refComment" href="javascript:void(0)" value="{{issue_comment.user_id}}"><i class="icon-reply"></i>回复</a>
+        <a class="refComment" href="javascript:void(0)" value="{{issue_comment.username}}"><i class="icon-reply"></i>回复</a>
       </div>
     </div>
   </section>

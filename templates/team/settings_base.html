@@ -1,0 +1,37 @@
+{% extends "team/dashboard_base.html" %}
+
+{% block subcontainer %}
+
+    <div class="sidebar" style="float: left">
+      <div class="inner">
+        <ul class="nav nav-list">
+          <li><a {%if sub_nav == 'profile' %}class="active" {%endif%}href="/{{teamUser.username}}/-/settings/profile/"{%if current == 'profile'%} class="active"{%endif%}><span>团队信息</span></a></li>
+          <li><a {%if sub_nav == 'members' %}class="active" {%endif%}href="/{{teamUser.username}}/-/settings/members/"{%if current == 'members'%} class="active"{%endif%}><span>成员管理</span></a></li>
+          <li><a {%if sub_nav == 'destroy' %}class="active" {%endif%}href="/{{teamUser.username}}/-/settings/destroy/"{%if current == 'destroy'%} class="active"{%endif%}><span>删除团队</span></a></li>
+        </ul>
+        <hr>
+        <ul class="repo-count">
+          <li>
+            <p>仓库数<span class="used">{{teamUserprofile.get_total_repo}}</span><span class="divider">/</span><span class="capacity">100</span></p>
+            <div class="progress">
+              <span class="bar" style="width: {{teamUserprofile.get_used_repo_percent}}%;"></span>
+            </div>
+          </li>
+          <li>
+            <p>仓库配额<span class="used">{{teamUserprofile.get_readable_used_quote}}</span><span class="divider">/</span><span class="capacity">{{teamUserprofile.get_readable_quote}}</span></p>
+            <div class="progress progress-danger">
+              <span class="bar" style="width: {{teamUserprofile.get_used_quote_percent}}%;"></span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="primary">
+      <div class="inner">
+        {% block container-right %}{% endblock %}
+      </div>
+    </div>
+
+{% endblock %}
+

@@ -103,20 +103,7 @@ def issues(request, page):
     offset = page*page_size
     row_count = page_size + 1
     raw_issues = IssueManager.list_assigned_issues(request.user.id, 'modify_time', offset, row_count)
-    username_map = {}
-    reponame_map = {}
-    for raw_issue in raw_issues:
-        if raw_issue.user_id not in username_map:
-            username_map[raw_issue.user_id] = ''
-        if raw_issue.assigned not in username_map:
-            username_map[raw_issue.assigned] = ''
-        if raw_issue.repo_id not in reponame_map:
-            reponame_map[raw_issue.repo_id] = ''
-    repos = RepoManager.list_repo_by_ids(reponame_map.keys())
-    users = GsuserManager.list_user_by_ids(username_map.keys())
-    reponame_map = dict([(x.id, x.name) for x in repos])
-    username_map = dict([(x.id, x.username) for x in users])
-    issues = conver_issues(raw_issues, username_map, reponame_map)
+    issues = conver_issues(raw_issues)
 
     hasPre = False ; hasNext = False
     if page > 0:
@@ -145,7 +132,7 @@ def notif(request):
     current = 'notif'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.NOTIF)
-    notifMessages = FeedManager.list_notifmessage_by_userId(request.user.id, 0, 100)
+    notifMessages = FeedManager.list_notifmessage_by_userId(request.user.id, 0, 500)
     if request.userprofile.unread_message != 0:
         request.userprofile.unread_message = 0
         request.userprofile.save()

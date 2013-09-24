@@ -40,7 +40,7 @@
                       <p>{{pullRequest.desc}}</p>
                     </div>
 
-                    {% if is_owner %}
+                    {% if has_repo_pull_action_right %}
                     <div class="actions">
                       <a class="btn btn-primary" href="javascript: void(0)">开始合并</a>
                       <a class="btn btn-danger" href="javascript: void(0)">拒绝</a>

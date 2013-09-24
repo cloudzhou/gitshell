@@ -1,0 +1,75 @@
+{% extends "settings/base.html" %}
+
+{% block container-right %}
+<div>
+    <h2 class="heading">创建团队</h2>
+</div>
+<div>
+    <form class="form-horizontal form" action="" method="post">
+      <fieldset>
+        {% csrf_token %}
+        <div class="control-group">
+            <label for="id_tweet" class="control-label">* 团队名字</label>
+            <div class="controls">
+                {{ teamprofileForm.username }}
+            </div>
+            <p id="usernameFormat" class="alert hide">用户名不符合规范，只允许[a-zA-Z0-9_]范围的字符</p>
+            <p id="usernameExist" class="alert hide">用户名已经存在</p>
+        </div>
+        <div class="control-group">
+            <label for="id_tweet" class="control-label">简介</label>
+            <div class="controls">
+                {{ teamprofileForm.tweet }}
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="id_nickname" class="control-label">别称</label>
+            <div class="controls">
+                {{ teamprofileForm.nickname }}
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="id_website" class="control-label">网站</label>
+            <div class="controls">
+                {{ teamprofileForm.website }}
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="id_company" class="control-label">公司</label>
+            <div class="controls">
+                {{ teamprofileForm.company }}
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button id="id_add_submit" class="btn" type="submit">确定</button>
+            </div>
+        </div>
+      </fieldset>
+    </form>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+$(function(){
+    $('#id_username').attr('placeholder', '[a-zA-Z0-9_]+');
+    $('#id_username').change(function(){
+        $('#usernameFormat').hide();
+        $('#usernameExist').hide();
+        var username = $(this).val();
+        if(!username.match(/^[a-zA-Z0-9_]+$/)) {
+            $('#usernameFormat').show();
+        }
+        $.post('/ajax/user/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', username: username}, function(json){
+            if(json.is_user_exist) {
+                $('#usernameExist').show();
+            } else {
+                $('#usernameExist').hide();
+            };
+        });
+    });
+});
+</script>
+{% endblock %}
+

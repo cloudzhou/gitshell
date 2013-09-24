@@ -31,6 +31,7 @@ table_ptkey_field = {
     'gsuser_useremail': 'user_id',
     'feed_notifmessage': 'to_user_id',
     'feed_notifsetting': 'user_id',
+    'team_teammember': 'user_id',
 }
 rawsql = {
     # userpubkey #
@@ -75,6 +76,10 @@ rawsql = {
         'select * from repo_pullrequest where visibly = 0 and pull_user_id = %s order by status, modify_time desc limit %s, %s',
     'pullrequest_l_mergeUserId':
         'select * from repo_pullrequest where visibly = 0 and merge_user_id = %s order by status, modify_time desc limit %s, %s',
+    'pullrequest_l_descUserId_pullUserId':
+        'select * from repo_pullrequest where visibly = 0 and desc_user_id = %s and pull_user_id = %s order by status, modify_time desc limit %s, %s',
+    'pullrequest_l_descUserId_mergeUserId':
+        'select * from repo_pullrequest where visibly = 0 and desc_user_id = %s and merge_user_id = %s order by status, modify_time desc limit %s, %s',
     'pullrequest_c_descRepoId':
         'select 0 as id, count(1) as count from repo_pullrequest where visibly = 0 and desc_repo_id = %s and status = %s',
     'pullrequest_c_pullUserId':
@@ -117,6 +122,10 @@ rawsql = {
         'select * from issue_issue where visibly = 0 and assigned = %s order by status, modify_time desc limit %s, %s',
     'issue_l_assigned_create':
         'select * from issue_issue where visibly = 0 and assigned = %s order by status, create_time desc limit %s, %s',
+    'issue_l_userId_assigned_modify':
+        'select * from issue_issue where visibly = 0 and user_id = %s and assigned = %s order by status, modify_time desc limit %s, %s',
+    'issue_l_userId_assigned_create':
+        'select * from issue_issue where visibly = 0 and user_id = %s and assigned = %s order by status, create_time desc limit %s, %s',
     'issue_s_id':
         'select * from issue_issue where visibly = 0 and repo_id = %s and id = %s limit 0,1',
     'issuecomment_l_issueId':
@@ -148,16 +157,25 @@ rawsql = {
     'scene_l_userId_name':
         'select * from todolist_scene where visibly = 0 and user_id = %s and name = %s',
     # feed #
-    'notifmessage_l_userId':
+    'notifmessage_l_toUserId':
         'select * from feed_notifmessage where visibly = 0 and to_user_id = %s order by modify_time desc limit %s, %s',
-    'notifmessage_l_userId_modifyTime':
+    'notifmessage_l_toUserId_userId':
+        'select * from feed_notifmessage where visibly = 0 and to_user_id = %s and user_id = %s order by modify_time desc limit %s, %s',
+    'notifmessage_l_toUserId_modifyTime':
         'select * from feed_notifmessage where visibly = 0 and to_user_id = %s and modify_time > %s and modify_time <= %s order by modify_time desc limit %s, %s',
-    'notifmessage_s_userId_notifType_relativeId':
+    'notifmessage_s_toUserId_notifType_relativeId':
         'select * from feed_notifmessage where visibly = 0 and to_user_id = %s and notif_type = %s and relative_id = %s limit 0, 1',
     'notifsetting_l_expectNotifTime':
         'select * from feed_notifsetting where visibly = 0 and expect_notif_time <= %s and notif_fqcy > 0 limit %s, %s',
     'notifsetting_s_userId':
         'select * from feed_notifsetting where visibly = 0 and user_id = %s limit 0, 1',
+    # team #
+    'teammember_s_userId_teamUserId':
+        'select * from team_teammember where visibly = 0 and user_id = %s and team_user_id = %s limit 0, 1',
+    'teammember_l_userId':
+        'select * from team_teammember where visibly = 0 and user_id = %s order by modify_time desc limit 0, 1000',
+    'teammember_l_teamUserId':
+        'select * from team_teammember where visibly = 0 and team_user_id = %s order by modify_time desc limit 0, 1000',
 }
 
 def get(model, pkid):
