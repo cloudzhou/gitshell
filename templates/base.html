@@ -25,15 +25,11 @@
   <body id="gitshell" class="{% block body_class_name %}{% endblock %}">
     <nav class="navbar" role="navigation">
       <div class="container">
-        {% if user.is_authenticated %}
-        <a class="brand" href="#" role="logo"><img src="https://gravatar.com/avatar/{{ userprofile.current_user.imgurl }}?s=28" alt=""><span>{{user.current_user.username}}</span></a>
-        {% else %}
         <a class="brand" href="#" role="logo"><span>Gitshell</span></a>
-        {% endif %}
         <ul class="nav main-nav">
           {% if user.is_authenticated %}
-            <li class="active"{# Fake #}><a href="{{urlRouter|route:'/dashboard/timeline/'}}">信息流</a></li>
-            <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="{{urlRouter|route:'/dashboard/notif/'}}" class="todo">操作中心<span class="label-mini label-warning hide">{{userprofile.unread_message}}</span></a></li>
+            <li><a href="/dashboard/timeline/">信息流</a></li>
+            <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="/dashboard/notif/" class="todo">操作中心<span class="label-mini label-warning hide">{{userprofile.unread_message}}</span></a></li>
             <li class="dropdown{% if mainnav == '/{{user.username}}/-/repo/' %}active{% endif %}">
               <a href="javascript:;" class="dropdown-toggle repo-shortcut" data-toggle="dropdown">仓库<i class="icon-caret-down"></i></a>
               <ul class="dropdown-menu repo-shortcut-ul">
@@ -52,7 +48,7 @@
         {% if user.is_authenticated %}
           <ul class="nav userbar">
             <li class="bell">
-              <a href="{{urlRouter|route:'/dashboard/notif/'}}"><i class="icon-bell"></i>{#userprofile.unread_message#}</a>
+              <a href="/dashboard/notif/"><i class="icon-bell"></i>{#userprofile.unread_message#}</a>
             </li>
             <li class="dropdown">
               <a href="/{{ user.username }}/" class="dropdown-toggle" data-toggle="dropdown">
