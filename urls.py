@@ -74,7 +74,6 @@ urlpatterns = patterns('gitshell',
 
     url(r'^(\w+)/-/settings/?$', 'team.views.settings'),
     url(r'^(\w+)/-/settings/profile/?$', 'team.views.profile'),
-    url(r'^(\w+)/-/settings/groups/?$', 'team.views.groups'),
     url(r'^(\w+)/-/settings/members/?$', 'team.views.members'),
 
     # user login logout join

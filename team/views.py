@@ -47,6 +47,7 @@ def timeline(request, username):
     pub_user_feeds = feedAction.get_pub_user_feeds(user.id, 0, 100)
     feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
     response_dictionary = {'current': current, 'feeds_as_json': feeds_as_json}
+    response_dictionary.update(_get_common_team_dict(request, user, userprofile))
     return render_to_response('team/timeline.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -59,6 +60,7 @@ def pull_merge(request, username):
     feedAction.set_user_position(user.id, PositionKey.PULL)
     pullRequests = RepoManager.list_pullRequest_by_teamUserId_mergeUserId(user.id, request.user.id)
     response_dictionary = {'current': current, 'pullRequests': pullRequests}
+    response_dictionary.update(_get_common_team_dict(request, user, userprofile))
     return render_to_response('team/pull_merge.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -70,6 +72,7 @@ def pull_request(request, username):
     feedAction.set_user_position(user.id, PositionKey.PULL)
     pullRequests = RepoManager.list_pullRequest_by_teamUserId_pullUserId(user.id, request.user.id)
     response_dictionary = {'current': current, 'pullRequests': pullRequests}
+    response_dictionary.update(_get_common_team_dict(request, user, userprofile))
     return render_to_response('team/pull_request.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -95,6 +98,7 @@ def issues(request, username, page):
         hasNext = True
         issues.pop()
     response_dictionary = {'current': current, 'issues': issues, 'page': page, 'hasPre': hasPre, 'hasNext': hasNext}
+    response_dictionary.update(_get_common_team_dict(request, user, userprofile))
     return render_to_response('team/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -110,9 +114,37 @@ def notif(request, username):
         userprofile.unread_message = 0
         userprofile.save()
     response_dictionary = {'current': current, 'notifMessages': notifMessages}
+    response_dictionary.update(_get_common_team_dict(request, user, userprofile))
     return render_to_response('team/notif.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+@login_required
+def settings(request, username):
+    return profile(request, username)
+
+@login_required
+def profile(request, username):
+    (user, userprofile) = _get_user_userprofile(request, username)
+    current = 'settings'; sub_nav = 'profile'
+    response_dictionary = {'current': current, 'sub_nav': sub_nav, 'teamUser': user, 'teamUserprofile': userprofile}
+    response_dictionary.update(_get_common_team_dict(request, user, userprofile))
+    return render_to_response('team/profile.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
+def members(request, username):
+    (user, userprofile) = _get_user_userprofile(request, username)
+    current = 'settings'; sub_nav = 'members'
+    response_dictionary = {'current': current, 'sub_nav': sub_nav}
+    response_dictionary.update(_get_common_team_dict(request, user, userprofile))
+    return render_to_response('team/members.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+def _get_common_team_dict(request, user, userprofile):
+    return {'teamUser': user, 'teamUserprofile': userprofile}
 
 def _get_user_userprofile(request, username):
     current_user = GsuserManager.get_user_by_name(username)

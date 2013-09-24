@@ -6,21 +6,21 @@
   <div class="subhead">
     <div class="container">
       <ul class="nav nav-tabs">
-          <li{% if current == 'timeline' %} class="active"{% endif %}><a href="{{urlRouter|route_context:'/dashboard/timeline/'}}">事件</a></li>
+          <li{% if current == 'timeline' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/dashboard/timeline/">事件</a></li>
           {% if current == 'pull' %}
             <li class="dropdown active">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">合并请求<span><i class="icon-caret-down"></i></span></a>
               <ul class="dropdown-menu">
-                <li><a id="pullMerge" href="{{urlRouter|route_context:'/dashboard/pull/merge/'}}">需要我处理的</a></li>
-                <li><a id="pullRequest"href="{{urlRouter|route_context:'/dashboard/pull/request/'}}">我创建的</a></li>
+                <li><a id="pullMerge" href="/{{teamUser.username}}/-/dashboard/pull/merge/">需要我处理的</a></li>
+                <li><a id="pullRequest"href="/{{teamUser.username}}/-/dashboard/pull/request/">我创建的</a></li>
               </ul>
             </li>
           {% else %}
-            <li><a href="{{urlRouter|route_context:'/dashboard/pull/'}}">合并请求</a></li>
+            <li><a href="/{{teamUser.username}}/-/dashboard/pull/">合并请求</a></li>
           {% endif %}
-          <li{% if current == 'issues' %} class="active"{% endif %}><a href="{{urlRouter|route_context:'/dashboard/issues/'}}">Issues</a></li>
-          <li{% if current == 'notif' %} class="active"{% endif %}><a href="{{urlRouter|route_context:'/dashboard/notif/'}}">通知</a></li>
-          <li{% if current == 'settings' %} class="active"{% endif %}><a href="{{urlRouter|route_context:'/settings/'}}">设置</a></li>
+          <li{% if current == 'issues' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/dashboard/issues/">Issues</a></li>
+          <li{% if current == 'notif' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/dashboard/notif/">通知</a></li>
+          <li{% if current == 'settings' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/settings/">设置</a></li>
     </div>
   </div>
 
