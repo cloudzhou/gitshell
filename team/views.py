@@ -16,6 +16,7 @@ from gitshell.issue.models import IssueManager, Issue, IssueComment
 from gitshell.issue.cons import conver_issues
 from gitshell.gsuser.models import GsuserManager
 from gitshell.gsuser.views import get_feeds_as_json
+from gitshell.gssettings.Form import TeamprofileForm
 from gitshell.team.models import TeamManager
 from gitshell.todolist.views import todo
 from gitshell.viewtools.views import json_httpResponse, obj2dict
@@ -127,7 +128,14 @@ def settings(request, username):
 def profile(request, username):
     (user, userprofile) = _get_user_userprofile(request, username)
     current = 'settings'; sub_nav = 'profile'
-    response_dictionary = {'current': current, 'sub_nav': sub_nav, 'teamUser': user, 'teamUserprofile': userprofile}
+    teamprofileForm = TeamprofileForm(instance = userprofile)
+    if request.method == 'POST':
+        teamprofileForm = TeamprofileForm(request.POST, instance = userprofile)
+        new_userprofile = teamprofileForm.save(commit=False)
+        new_userprofile.username = userprofile.username
+        new_userprofile.save()
+        return HttpResponseRedirect('/%s/-/settings/profile/' % username)
+    response_dictionary = {'current': current, 'sub_nav': sub_nav, 'teamUser': user, 'teamUserprofile': userprofile, 'teamprofileForm': teamprofileForm}
     response_dictionary.update(_get_common_team_dict(request, user, userprofile))
     return render_to_response('team/profile.html',
                           response_dictionary,

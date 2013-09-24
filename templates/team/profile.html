@@ -11,7 +11,7 @@
         <div class="control-group">
             <label for="id_tweet" class="control-label">* 团队名字</label>
             <div class="controls">
-                {{ teamprofileForm.username }}
+                <input id="id_username" type="text" name="username" value="{{teamUser.username}}" maxlength="30" placeholder="[a-zA-Z0-9_]+" readonly>
             </div>
             <p id="usernameFormat" class="alert hide">用户名不符合规范，只允许[a-zA-Z0-9_]范围的字符</p>
             <p id="usernameExist" class="alert hide">用户名已经存在</p>
