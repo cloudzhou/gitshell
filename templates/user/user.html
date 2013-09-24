@@ -2,74 +2,95 @@
 
 {% block primary %}
 
-  <div class="primary">
+<div class="primary">
 
-    <div class="item c_user_stats hide">
-        <h2 class="heading">统计</h2>
-        <div>
-            <div id="figure-a" class="figure lg">
-                <a href="/{{gsuser.username}}/-/stats/"><canvas id="id_month_container" width="700" height="250"></canvas></a>
-            </div>
-        </div>
+  <div class="item c_user_stats hide">
+    <h2 class="heading">统计</h2>
+    <div>
+      <div id="figure-a" class="figure lg">
+        <a href="/{{gsuser.username}}/-/stats/"><canvas id="id_month_container" width="700" height="250"></canvas></a>
+      </div>
     </div>
+  </div>
 
-    <ul class="nav nav-tabs" id="repoTab">
-      <li><a href="#repos" data-toggle="tab">仓库</a></li>
-      <li><a href="#watchedRepos" data-toggle="tab">关注仓库</a></li>
-      <li><a href="#followed" data-toggle="tab">关注用户</a></li>
-      <li><a href="#follower" data-toggle="tab">粉丝</a></li>
-    </ul>
+  <ul class="nav nav-tabs" id="repoTab">
+    <li><a href="#repos" data-toggle="tab">仓库</a></li>
+    <li><a href="#watchedRepos" data-toggle="tab">关注仓库</a></li>
+    <li><a href="#followed" data-toggle="tab">关注用户</a></li>
+    <li><a href="#follower" data-toggle="tab">粉丝</a></li>
+  </ul>
 
-    <div class="tab-content">
-      <section class="item tab-pane active" id="repos">
-        <ul class="repo-list">
-          {% for repo in repos %}
-            <li>
-              <div class="title">
-                <h3 class="heading"><a href="/{{gsuser.username}}/{{repo.name}}/">{{repo.name}}</a></h3>
-                <span class="meta"><time class="unixtime" pubdate>{{repo.modify_time|date:"U"}}</time>更新过</span>
-              </div>
-              <p class="desc">{{repo.desc}}</p>
-            </li>
-          {% endfor %}
-        </ul>
-        <a href="/{{gsuser.username}}/repo/" class="more">more</a>
-      </section>
+  <div class="tab-content">
+    <section class="item tab-pane active" id="repos">
+      <ul class="repo-list">
+        {% for repo in repos %}
+        <li>
+          <div class="title">
+            <h3 class="heading"><a href="/{{gsuser.username}}/{{repo.name}}/">{{repo.name}}</a></h3>
+            <span class="meta"><time class="unixtime" pubdate>{{repo.modify_time|date:"U"}}</time>更新过</span>
+          </div>
+          <p class="desc">{{repo.desc}}</p>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
 
-      <section class="item tab-pane" id="watchedRepos">
-        <ul class="repo-list">
-          {% for watch_repo in watch_repos %}
-            <li>
-              <div class="title">
-                <h3 class="heading"><a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a></h3>
-                <span class="meta"><time class="unixtime" pubdate>{{watch_repo.modify_time}}</time>更新过</span>
-              </div>
-              <p class="desc">{{watch_repo.desc}}</p>
-            </li>
-          {% endfor %}
-        </ul>
-        <a href="/{{gsuser.username}}/watch/repo/" class="more">more</a>
-      </section>
+    <section class="item tab-pane" id="watchedRepos">
+      <ul class="repo-list">
+        {% for watch_repo in watch_repos %}
+        <li>
+          <div class="title">
+            <h3 class="heading"><a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a></h3>
+            <span class="meta"><time class="unixtime" pubdate>{{watch_repo.modify_time}}</time>更新过</span>
+          </div>
+          <p class="desc">{{watch_repo.desc}}</p>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
 
-      <section class="item tab-pane" id="followed">
+    <section class="item tab-pane" id="followed">
+      {% if watch_users %}
+        {% for watch_user in watch_users %}
+          <div class="user">
+            <figure class="avatar">
+              <img src="https://gravatar.com/avatar/{{watch_user.imgurl}}?s=65" alt="">
+              <p class="name"><a href="/{{watch_user.username}}/" data-toggle="tooltip" title="{{watch_user.tweet}}">{{watch_user.username|truncatechars:"10"}}</a></p>
+            </figure>
+          </div>
+        {% endfor %}
+      {% else %}
         {% if user.username != gsuser.username %}
-          <p class="alert alert-info">这家伙是典型的装逼汉，一个人也不关注。<a href="#">骂他一句吧</a></p>
+        <p class="alert alert-info">一个人都没关注。</p>
         {% else %}
-          <p class="alert alert-info">切，都什么人，我才JB懒得关注他们呢。</p>
+        <p class="alert alert-info">还没有关注任何人。</p>
         {% endif %}
-      </section>
+      {% endif %}
 
-      <section class="item tab-pane" id="follower">
+    </section>
+
+    <section class="item tab-pane" id="follower">
+      {% if bewatch_users %}
+        {% for bewatch_user in bewatch_users %}
+          <div class="user">
+            <figure class="avatar">
+              <img src="https://gravatar.com/avatar/{{bewatch_user.imgurl}}?s=65" alt="">
+              <p class="name"><a href="/{{bewatch_user.username}}/" data-toggle="tooltip" title="{{bewatch_user.tweet}}">{{bewatch_user.username|truncatechars:"10"}}</a></p>
+            </figure>
+          </div>
+        {% endfor %}
+      {% else %}
         {% if user.username != gsuser.username %}
-          <p class="alert alert-info">哎呀，这家伙真可怜还没有粉丝，<a href="#">成为他的第一个粉丝</a>，安慰他一下。</p>
+        <p class="alert alert-info">哎呀，这家伙真可怜还没有粉丝，<a href="#">成为他的第一个粉丝</a>，安慰他一下。</p>
         {% else %}
-        <p class="alert alert-info">居然没有人粉我? 难道不知道我是Github上的{{user.username}}吗？<a href="#">导入我在Github上的项目</a></p>
+        <p class="alert alert-info">没有人粉我? <a href="#">导入Github上的项目</a>提升自己的活跃度</p>
         {% endif %}
-      </section>
-
-    </div>
+      {% endif %}
+    </section>
 
   </div>
+
+</div>
 
 {% endblock %}
 {% block subjs %}
@@ -77,161 +98,161 @@
 <script src="/static/js/min/markdown.min.js?timestamp={{gitshell.timestamp}}"></script>
 <script>
   $(function(){
-      $(".user-span").popover({ animation: false, placement: "bottom" });
-      $("#repoTab a:first").tab("show");
+    $(".user-span").popover({ animation: false, placement: "bottom" });
+    $("#repoTab a:first").tab("show");
   });
 </script>
 <script>
-$(function(){
+  $(function(){
     moment.lang('zh-cn');
-{% if gsuserprofile.resume %}
+    {% if gsuserprofile.resume %}
     var resume_md_converter = function() {
-        var converter = new Markdown.getSanitizingConverter();
-        var html = converter.makeHtml($('#userResumeContent').html());
-        $('#userResumeContent').html(html);
-        $('#userResumeContent').css("padding", "0 10px").show();
+      var converter = new Markdown.getSanitizingConverter();
+      var html = converter.makeHtml($('#userResumeContent').html());
+      $('#userResumeContent').html(html);
+      $('#userResumeContent').css("padding", "0 10px").show();
     };
     resume_md_converter();
-{% endif %}
+    {% endif %}
     $('#idContent').attr('placeholder', '跟他打个招呼吧');
     $('#idContent').click(function() {
-            $('#recommendSubmit').show();
+      $('#recommendSubmit').show();
     });
     $('#idContent').blur(function() {
-            setTimeout(
-                function(event) {
-                    $('#recommendSubmit').hide();
-                }
-            , 200)
+      setTimeout(
+        function(event) {
+          $('#recommendSubmit').hide();
+        }
+        , 200)
     });
     var orgi_feeds = {{ feeds_as_json|safe }}
     var sorted_feeds = []
-    var do_orgi_feeds = function() {
+      var do_orgi_feeds = function() {
         all_ids = []
-        all_feeds = []
-        for (x in orgi_feeds) {
+          all_feeds = []
+          for (x in orgi_feeds) {
             all_feeds = all_feeds.concat(orgi_feeds[x]);
-        } 
+          } 
         all_feeds.sort(function(a,b) {
-            return a[1] - b[1];
+          return a[1] - b[1];
         })
         var i = 0;
         var pre_feed_id = 0;
         for (x in all_feeds) {
-            feed_id = all_feeds[x][0]
+          feed_id = all_feeds[x][0]
             if(pre_feed_id != feed_id) {
-                i++;
-                all_ids.push(feed_id);
+              i++;
+              all_ids.push(feed_id);
             }
-            pre_feed_id = feed_id
+          pre_feed_id = feed_id
             if(i >= 5) { break; }
         }
         all_ids_str = all_ids.join('_');
         $.ajax({
-            url: '/ajax/feed/ids/',
-            type: 'POST',
-            data: {'ids_str': all_ids_str, csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType: 'json',
-            timeout: 10000,
-            error: function(){
-                //alert('');
-            },
-            success: function(json){
-                ordered_date = []
-                ordered_date_reponame = {}
-                display_feeds_map = {}
-                feeds = json.feeds
-                gravatarmap = json.gravatarmap
-                feeds.sort(function(a,b) {
-                    return b.committer_date - a.committer_date;
-                })
-                html = []
-                for(x in feeds) {
-                    feed = feeds[x]
-                    if(feed.relative_obj === undefined) {
-                        continue;
-                    }
-                    if(feed.feed_type == 0) {
-                        commit = feed.relative_obj;
-                        feed_date_str = moment(new Date(commit.committer_date*1000)).fromNow();
-                        html.push('<li><span>' + commit.subject + '</span> at <a href="/' + commit.user_name + '/' + commit.repo_name + '/">' + commit.repo_name + '</a>' + ' <time class="modified" pubdate="pubdate">' + feed_date_str + '</time></li>');
-                    } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
-                        issue = feed.relative_obj;
-                        action = 'create issue';
-                        detail = '';
-                        if(feed.feed_type == 300) {
-                            action = 'create issue';
-                        } else if(feed.feed_type == 301) {
-                            action = 'update issue';
-                        } else if(feed.feed_type == 302) {
-                            action = 'change issue';
-                            detail = feed.first_refname;
-                        }
-                        html.push('<li><span>' + action + ' #' + ' on <a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></span><time class="date" pubdate="pubdate">' + moment(new Date(issue.create_time*1000)).fromNow() + '</time></li>')
-                    }
-                }
-                $('#lastestActive').html(html.join(''));
-                if(feeds.length == 0) {
-                    $('#lastestActive').html('<p>还没有活跃信息</p>');
-                }
+          url: '/ajax/feed/ids/',
+          type: 'POST',
+          data: {'ids_str': all_ids_str, csrfmiddlewaretoken: '{{ csrf_token }}'},
+          dataType: 'json',
+          timeout: 10000,
+          error: function(){
+            //alert('');
+          },
+          success: function(json){
+            ordered_date = []
+          ordered_date_reponame = {}
+        display_feeds_map = {}
+        feeds = json.feeds
+          gravatarmap = json.gravatarmap
+          feeds.sort(function(a,b) {
+            return b.committer_date - a.committer_date;
+          })
+        html = []
+          for(x in feeds) {
+            feed = feeds[x]
+              if(feed.relative_obj === undefined) {
+                continue;
+              }
+            if(feed.feed_type == 0) {
+              commit = feed.relative_obj;
+              feed_date_str = moment(new Date(commit.committer_date*1000)).fromNow();
+              html.push('<li><span>' + commit.subject + '</span> at <a href="/' + commit.user_name + '/' + commit.repo_name + '/">' + commit.repo_name + '</a>' + ' <time class="modified" pubdate="pubdate">' + feed_date_str + '</time></li>');
+            } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
+              issue = feed.relative_obj;
+              action = 'create issue';
+              detail = '';
+              if(feed.feed_type == 300) {
+                action = 'create issue';
+              } else if(feed.feed_type == 301) {
+                action = 'update issue';
+              } else if(feed.feed_type == 302) {
+                action = 'change issue';
+                detail = feed.first_refname;
+              }
+              html.push('<li><span>' + action + ' #' + ' on <a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></span><time class="date" pubdate="pubdate">' + moment(new Date(issue.create_time*1000)).fromNow() + '</time></li>')
             }
+          }
+        $('#lastestActive').html(html.join(''));
+        if(feeds.length == 0) {
+          $('#lastestActive').html('<p>还没有活跃信息</p>');
+        }
+          }
         });
-    };
+      };
     do_orgi_feeds();
 
     var last30days = {{last30days}};
     var last30daysAsCat = [];
     for(x in last30days) {
-        last30daysAsCat.push(new Date(last30days[x]*1000).getDate());
+      last30daysAsCat.push(new Date(last30days[x]*1000).getDate());
     }
     last30daysAsCat.reverse()
-    var last30days_commit = {{last30days_commit}};
+      var last30days_commit = {{last30days_commit}};
     var last30daysAsData = [];
     for(x in last30days) {
-        if(last30days[x] in last30days_commit) {
-            last30daysAsData.push(last30days_commit[last30days[x]]);
-            continue;
-        }
-        last30daysAsData.push(0);
+      if(last30days[x] in last30days_commit) {
+        last30daysAsData.push(last30days_commit[last30days[x]]);
+        continue;
+      }
+      last30daysAsData.push(0);
     }
     last30daysAsData.reverse();
 
     function get_max(chart_data) {
-        var max = 0;
-        for(x in chart_data) {
-            if(chart_data[x] > max) {
-                max = chart_data[x];
-            }
+      var max = 0;
+      for(x in chart_data) {
+        if(chart_data[x] > max) {
+          max = chart_data[x];
         }
-        return max;
+      }
+      return max;
     }
     function get_steps(max) {
-        var steps = 3;
-        if(max > steps) {
-            steps = 10;
-        }
-        return steps;
+      var steps = 3;
+      if(max > steps) {
+        steps = 10;
+      }
+      return steps;
     }
     if(Object.keys(last30days_commit).length > 0) {
-        $('.c_user_stats').show();
-        var max = get_max(last30daysAsData);
-        var steps = get_steps(max);
-        var lineChartData = {
-            labels : last30daysAsCat,
-            datasets : [
-                {
-                    fillColor : "rgba(151,187,205,0.5)",
-                    strokeColor : "rgba(151,187,205,0.5)",
-                    pointColor : "rgba(151,187,205,0.5)",
-                    pointStrokeColor : "#fff",
-                    data : last30daysAsData
-                }
-            ]
-        };
-        var ctx = document.getElementById("id_month_container").getContext("2d");
-        new Chart(ctx).Line(lineChartData, {scaleShowLabels : true, scaleOverride: true, scaleSteps: steps, scaleStepWidth: Math.ceil(max / steps), scaleStartValue: 0, scaleFontColor : "#767C8D"});
+      $('.c_user_stats').show();
+      var max = get_max(last30daysAsData);
+      var steps = get_steps(max);
+      var lineChartData = {
+        labels : last30daysAsCat,
+        datasets : [
+        {
+          fillColor : "rgba(151,187,205,0.5)",
+          strokeColor : "rgba(151,187,205,0.5)",
+          pointColor : "rgba(151,187,205,0.5)",
+          pointStrokeColor : "#fff",
+          data : last30daysAsData
+        }
+        ]
+      };
+      var ctx = document.getElementById("id_month_container").getContext("2d");
+      new Chart(ctx).Line(lineChartData, {scaleShowLabels : true, scaleOverride: true, scaleSteps: steps, scaleStepWidth: Math.ceil(max / steps), scaleStartValue: 0, scaleFontColor : "#767C8D"});
     }
 
-});
+  });
 </script>
 {% endblock %}

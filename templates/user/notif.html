@@ -12,56 +12,47 @@
     </div>
 
     <div class="summary">
+      {#<img src="https://gravatar.com/avatar/{{notifMessage.relative_name}}?s=15" alt="{{notifMessage.relative_name}}">#}
       <time class="unixtime" pubdate="pubdate">{{notifMessage.relative_obj.modify_time|date:"U"}}</time>
-      <p>
-      <a href="/{{notifMessage.relative_name}}/" class="user">{#<img src="https://gravatar.com/avatar/{{notifMessage.relative_name}}?s=15" alt="{{notifMessage.relative_name}}">#}{{notifMessage.relative_name}}</a>
+      <p class="title">
+      <a href="/{{notifMessage.relative_name}}/" class="user">{{notifMessage.relative_name}}</a>
       {% if notifMessage.relative_obj %}
-      {% if notifMessage.notif_type == 0 %}
-      <span class="path">在</span>
-      {# notif parent #}
-      <span class="parent">
-      <a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/">{{notifMessage.relative_obj.repo_name}}</a>:<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commits/{{notifMessage.relative_obj.get_short_refname}}/">{{notifMessage.relative_obj.get_short_refname}}</a>
-      </span>
-      <span class="action-type">提交了一个Commit</span>
-      {# subject #}
-      <a href="#{#此处Commit的连接地址#}" class="notif-title"><span class="subject">{{notifMessage.relative_obj.subject|truncatechars:80}}</span></a>
+        {% if notifMessage.notif_type == 0 %}
+        {% comment %}
+        <span class="parent">
+        <a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/">{{notifMessage.relative_obj.repo_name}}</a>:<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commits/{{notifMessage.relative_obj.get_short_refname}}/">{{notifMessage.relative_obj.get_short_refname}}</a>
+        </span>
+        {% endcomment %}
+        <span class="action-type">提交更新到</span>
+        <a href="#{#此处Commit的连接地址#}" class="notif-title">{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}</a></p>
+        <p class="subject"><span class="hash">{{notifMessage.relative_obj.hash}}</span>{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
 
-      {% elif notifMessage.notif_type == 30 %}
-      <span class="path">在</span>
-      {# notif parent #}
-      <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/" class="parent">{{notifMessage.relative_obj.reponame}}</a>
-      <span class="action-type">issue</span>
-      {# subject #}
-      <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/" class="notif-title"><span class="id">#{{notifMessage.relative_obj.id}}</span><span class="subject">{{notifMessage.relative_obj.subject|truncatechars:80}}</span></a>
+        {% elif notifMessage.notif_type == 30 %}
+        <span class="action-type">创建问题</span>
+        <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.reponame}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
+        <p class="subject">{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
 
-      {% elif notifMessage.notif_type == 31 %}
-      <span class="path">在</span>
-      {# notif parent #}
-      <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/" class="parent">{{notifMessage.relative_obj.reponame}}</a>
-      <span class="action-type">评论了Issue</span>
-      {# subject #}
-      <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.issue_id}}/" class="notif-title"><span class="id">#{{notifMessage.relative_obj.issue_id}}</span><span class="subject">{{notifMessage.relative_obj.content|truncatechars:80}}</span></a>
+        {% elif notifMessage.notif_type == 31 %}
+        <span class="action-type">评论问题</span>
+        <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.issue_id}}/" class="notif-title">{{notifMessage.relative_obj.reponame}}<span class="id">#{{notifMessage.relative_obj.issue_id}}</span></a></p>
+        <p class="subject">{{notifMessage.relative_obj.content|truncatechars:80}}</p>
 
-      {% elif notifMessage.notif_type == 10 %}
-      <span class="action-type">在合并请求中@你:</span>
-      {# notif title #}
-      <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/" class="notif-title"><span class="id">#{{notifMessage.relative_obj.id}}</span><span class="subject">{{notifMessage.relative_obj.short_title|truncatechars:80}}</span></a>
+        {% elif notifMessage.notif_type == 10 %}
+        <span class="action-type">在合并请求中@你:</span>
+        <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.reponame}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
+        <p class="subject">{{notifMessage.relative_obj.short_title|truncatechars:80}}</p>
 
-      {% elif notifMessage.notif_type >= 100 and notifMessage.notif_type <= 105 %}
-      <span class="action-type">{{notifMessage.message}}合并请求</span>
-      {# notif title #}
-      <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/" class="notif-title"><span class="id">#{{notifMessage.relative_obj.id}}</span><span class="subject">{{notifMessage.relative_obj.short_title|truncatechars:80}}</span></a>
+        {% elif notifMessage.notif_type >= 100 and notifMessage.notif_type <= 105 %}
+        <span class="action-type">{{notifMessage.message}}合并请求</span>
+        <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.reponame}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
+        <p class="subject">{{notifMessage.relative_obj.short_title|truncatechars:80}}</p>
 
-      {% elif notifMessage.notif_type == 300 %}
-      <span class="path">在</span>
-      {# notif parent #}
-      <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/" class="parent">{{notifMessage.relative_obj.reponame}}</a>
-      <span class="action-type">{{notifMessage.message}} issue</span>
-      {# issue subject #}
-      <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/" class="notif-title"><span class="id">#{{notifMessage.relative_obj.id}}</span><span class="subject">{{notifMessage.relative_obj.subject|truncatechars:80}}</span></a>
+        {% elif notifMessage.notif_type == 300 %}
+        <span class="action-type">{{notifMessage.message}} issue</span>
+        <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.reponame}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
+        <p class="subject">{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
+        {% endif %}
       {% endif %}
-      {% endif %}
-      </p>
     </div>
   </div>
 

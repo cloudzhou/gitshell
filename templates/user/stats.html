@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 
 {% load gstools %}
-
-{% block css %}
-{% endblock %}
-{% block container_class_name %} user{% endblock %}
+{% block container_class_name %}user-stats{% endblock %}
 {% block container %}
+<div class="content">
+  <div class="container">
+    <div class="inner bubble">
     <div class="graphs-container">
         <div id="day_stats_div" class="hide">
-            <h4 class="heading">最近 24 小时</h4>
+            <h4 class="heading">最近24小时</h4>
             <canvas class="user_chart" id="day_stats" width="1000" height="250"></canvas>
         </div>
         <div id="week_stats_div" class="hide">
-            <h4 class="heading">最近 7 天</h4>
+            <h4 class="heading">最近7天</h4>
             <canvas class="user_chart" id="week_stats" width="1000" height="250"></canvas>
         </div>
         <div id="month_stats_div">
-            <h4 class="heading">最近 30 天</h4>
+            <h4 class="heading">最近30天</h4>
             <canvas class="user_chart" id="month_stats" width="1000" height="250"></canvas>
         </div>
         <div id="year_stats_div">
-            <h4 class="heading">最近 12 月</h4>
+            <h4 class="heading">最近12月</h4>
             <canvas class="user_chart" id="year_stats" width="1000" height="250"></canvas>
         </div>
     </div>
@@ -39,7 +39,7 @@
       {% endfor %}
     </div>
     {% endif %}
-    <div class="graphs-container">
+    <div class="graphs-container hide">
       <h4 class="heading">
           仓库配额
           <span class="used">{{gsuserprofile.get_readable_used_quote}}</span>
@@ -51,6 +51,9 @@
       </div>
     </div>
     
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block js %}

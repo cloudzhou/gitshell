@@ -22,11 +22,14 @@
   <body id="gitshell" class="{% block body_class_name %}{% endblock %}">
     <nav class="navbar" role="navigation">
       <div class="container">
+        {% comment %}
         {% if user.is_authenticated %}
         <a class="brand" href="#" role="logo"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=28" alt=""><span>{{user.username}}</span></a>
         {% else %}
         <a class="brand" href="#" role="logo"><span>Gitshell</span></a>
         {% endif %}
+        {% endcomment %}
+        <a class="brand" href="#" role="logo"><span>Gitshell</span></a>
         <ul class="nav main-nav">
           {% if user.is_authenticated %}
           <li class="active"{# Fake #}><a href="/dashboard/timeline/">信息流</a></li>
@@ -92,7 +95,8 @@
                 <h2 class="heading">{{ user.username }}</h2>
                 <p class="actions">
                   <a href="/{{user.username}}/">个人主页</a><br>
-                  <a href="/settings/">设置</a>
+                  <a href="/settings/">设置</a><br>
+                  <a href="#" class="create-team-link"><em>添加团队账户</em></a>
                 </p>
               </div>
 
