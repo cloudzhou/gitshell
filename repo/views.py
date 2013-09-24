@@ -78,17 +78,22 @@ def user_repo_paging(request, user_name, pagenum):
 @repo_permission_check
 def repo(request, user_name, repo_name):
     refs = None; path = '.'; current = 'index'
-    return ls_tree(request, user_name, repo_name, refs, path, current)
+    return ls_tree(request, user_name, repo_name, refs, path, current, 'html')
 
 @repo_permission_check
 def tree_default(request, user_name, repo_name):
     refs = None; path = '.'; current = 'tree'
-    return ls_tree(request, user_name, repo_name, refs, path, current)
+    return ls_tree(request, user_name, repo_name, refs, path, current, 'html')
     
 @repo_permission_check
 def tree(request, user_name, repo_name, refs, path):
     current = 'tree'
-    return ls_tree(request, user_name, repo_name, refs, path, current)
+    return ls_tree(request, user_name, repo_name, refs, path, current, 'html')
+
+@repo_permission_check
+def tree_ajax(request, user_name, repo_name, refs, path):
+    current = 'tree'
+    return ls_tree(request, user_name, repo_name, refs, path, current, 'ajax')
 
 @repo_permission_check
 @repo_source_permission_check
@@ -104,7 +109,7 @@ def raw_blob(request, user_name, repo_name, refs, path):
     return HttpResponse(blob, content_type="text/plain; charset=utf-8")
 
 @repo_permission_check
-def ls_tree(request, user_name, repo_name, refs, path, current):
+def ls_tree(request, user_name, repo_name, refs, path, current, render_method):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -123,6 +128,8 @@ def ls_tree(request, user_name, repo_name, refs, path, current):
         readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, tree['readme_file'])
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'readme_md': readme_md}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    if render_method == 'ajax':
+        return json_httpResponse(response_dictionary)
     return render_to_response('repo/tree.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
