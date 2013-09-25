@@ -298,9 +298,12 @@ def team_create(request):
             teamprofile.id = team.id
             teamprofile.email = email
             teamprofile.imgurl = hashlib.md5(team.email.lower()).hexdigest()
+            teamprofile.is_team_account = 1
             teamprofile.save()
             teamMember = TeamMember(team_user_id = team.id, user_id = request.user.id, group_id = 0, permission = 2, is_admin = 1)
             teamMember.save()
+            request.userprofile.is_join_team = 1
+            request.userprofile.save()
             return HttpResponseRedirect('/settings/team/')
     response_dictionary = {'current': current, 'teamprofileForm': teamprofileForm}
     return render_to_response('settings/team_create.html',

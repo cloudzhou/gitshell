@@ -16,18 +16,18 @@
             <tr>
                 <td class="name">
                     <a href="/{{ teamMember.team_user.username }}/">{{ teamMember.team_user.username }}</a>
+                    {% if teamMember.has_admin_rights %}
+                        <button class="btn btn-mini btn-success">管理员</button>
+                    {% endif %}
                 </td>
                 <td class="rights">
-                    {% if teamMember.has_admin_rights %}
-                        <button class="btn btn-success">管理员</button>
-                    {% endif %}
-                    <input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-pull" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_read_rights %} checked="checked"{% endif %}>
+                    <!--input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-pull" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_read_rights %} checked="checked"{% endif %}>
                     <label for="rights-{{teamMember.id}}">Pull</label>
                     <input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-push" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_write_rights %} checked="checked"{% endif %}>
-                    <label for="rights-{{teamMember.id}}">Push</label>
+                    <label for="rights-{{teamMember.id}}">Push</label-->
                 </td>
                 <td class="action">
-                    <button data-id="{{ teamMember.id }}" class="leave-team btn">退出</button>
+                    <button data-id="{{ teamMember.id }}" data-team-username="{{ teamMember.team_user.username }}" class="leave-team btn btn-mini">退出</button>
                 </td>
             </tr>
             {% endfor %}
@@ -53,7 +53,12 @@ $(function(){
     });
     $('.leave-team').click(function(){
         var team_id = $(this).data('id');
-        $.post('/settings/team/leave/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'teamMember_id': teamMember_id}, function(json){
+        var team_username = $(this).data('team-username');
+        $.post('/'+team_username+'/-/settings/team/member/leave/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            if(json.code != 200) {
+                window.alert(json.message);
+                return;
+            }
             window.location.href = '/settings/team/';
         });
     });

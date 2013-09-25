@@ -172,6 +172,20 @@ def add_member(request, username):
 
 @login_required
 @require_http_methods(["POST"])
+def member_leave(request, username):
+    (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
+    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
+    if not teamMember:
+        return _response_not_manage_rights(request)
+    teamMembers = TeamManager.list_teamMember_by_teamUserId(teamMember.team_user_id)
+    if _has_other_admin_teamMember(request, teamMember, teamMembers):
+        teamMember.visibly = 1
+        teamMember.save()
+        return json_httpResponse({'code': 200, 'message': u'用户退出成功'})
+    return json_httpResponse({'code': 500, 'message': u'用户退出失败，一个团队帐号至少需要保留一个管理员'})
+
+@login_required
+@require_http_methods(["POST"])
 def remove_member(request, username):
     (manage_teamMember, teamMember) = _get_teamMember_by_manageTeamMemberId(request)
     if not teamMember or not teamMember.has_admin_rights():
