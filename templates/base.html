@@ -30,9 +30,9 @@
           {% if user.is_authenticated %}
           <li class="active"{# Fake #}><a href="/dashboard/timeline/">信息流</a></li>
           <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="/dashboard/notif/" class="todo">操作中心<span class="label-mini label-warning hide">{{userprofile.unread_message}}</span></a></li>
-          <li class="dropdown{% if mainnav == '/{{user.username}}/repo/' %}active{% endif %}">
+          <li class="dropdown repo-shortcut{% if mainnav == '/{{user.username}}/repo/' %} active{% endif %}">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">仓库<i class="icon-caret-down"></i></a>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu repo-shortcut-ul">
               <li class="all"><a href="/{{user.username}}/-/repo/">所有仓库</a></li>
               <li class="repo-loading"><img src="/static/img/loading.gif"></li>
               <li class="create"><a href="/{{user.username}}/-/repo/create/"><i class="icon-pencil"></i>新建仓库</a></li>
@@ -103,7 +103,7 @@
         </li>
       </ul>
       {% else %}
-      <p class="welcome-msg">请<a href="/login/"{%if mainnav == 'login'%}class="active"{%endif%}>登录</a>,或者<a href="/join/0/"{%if mainnav == 'eoin'%}class="active"{%endif%}>注册</a></p>
+      <p class="welcome-msg">请<a href="/login/"{%if mainnav == 'login'%}class="active"{%endif%}>登录</a>,或者<a href="/join/0/"{%if mainnav == 'join'%}class="active"{%endif%}>注册</a></p>
       {% endif %}
     </div>
   </nav>
