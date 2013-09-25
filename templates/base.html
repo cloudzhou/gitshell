@@ -30,7 +30,7 @@
           {% if user.is_authenticated %}
           <li class="active"{# Fake #}><a href="/dashboard/timeline/">信息流</a></li>
           <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="/dashboard/notif/" class="todo">操作中心<span class="label-mini label-warning hide">{{userprofile.unread_message}}</span></a></li>
-          <li class="dropdown repo-shortcut{% if mainnav == '/{{user.username}}/repo/' %} active{% endif %}">
+          <li class="dropdown repo-shortcut{% if mainnav == '/{{user.username}}/-/repo/' %} active{% endif %}">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">仓库<i class="icon-caret-down"></i></a>
             <ul class="dropdown-menu repo-shortcut-ul">
               <li class="all"><a href="/{{user.username}}/-/repo/">所有仓库</a></li>
@@ -38,7 +38,7 @@
               <li class="create"><a href="/{{user.username}}/-/repo/create/"><i class="icon-pencil"></i>新建仓库</a></li>
             </ul>
           </li>
-          <li class="create-repo"><a href="/{{user.username}}/repo/create/" class=""><span class="button"><i class="icon-pencil"></i>新建仓库</span></a></li>
+          <li class="create-repo"><a href="/{{user.username}}/-/repo/create/" class=""><span class="button"><i class="icon-pencil"></i>新建仓库</span></a></li>
         </li>
         {% else %}
         <li><a href="/login/">注册</a></li>
