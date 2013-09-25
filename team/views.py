@@ -118,6 +118,23 @@ def notif(request, username):
                           context_instance=RequestContext(request))
 
 @login_required
+def repo(request, username):
+    (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
+    current = 'repo'
+    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
+    repos = []
+    # is team member
+    if teamMember:
+        repos = RepoManager.list_repo_by_userId(teamUser.id, 0, 1000)
+    else:
+        repos = RepoManager.list_unprivate_repo_by_userId(teamUser.id, 0, 1000)
+    response_dictionary = {'current': current, 'repos': repos}
+    response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
+    return render_to_response('team/repo.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
 def settings(request, username):
     return profile(request, username)
 

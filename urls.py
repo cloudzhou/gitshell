@@ -46,6 +46,7 @@ urlpatterns = patterns('gitshell',
     url(r'^(\w+)/-/dashboard/pull/merge/?$', 'team.views.pull_merge'),
     url(r'^(\w+)/-/dashboard/pull/request/?$', 'team.views.pull_request'),
     url(r'^(\w+)/-/dashboard/notif/?$', 'team.views.notif'),
+    url(r'^(\w+)/-/dashboard/repo/?$', 'team.views.repo'),
 
     # settings
     url(r'^settings/?$', 'gssettings.views.profile'),
