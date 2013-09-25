@@ -206,6 +206,38 @@ def cancal_admin(request, username):
         return json_httpResponse({'code': 200, 'message': u'赋予管理员权限'})
     return json_httpResponse({'code': 500, 'message': u'解除管理员失败，一个团队帐号至少需要保留一个管理员'})
 
+@login_required
+def destroy(request, username):
+    (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
+    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
+    if not teamMember or not teamMember.has_admin_rights():
+        return _response_not_manage_rights(request)
+    current = 'settings'; sub_nav = 'destroy'
+    response_dictionary = {'current': current, 'sub_nav': sub_nav}
+    response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
+    return render_to_response('team/destroy.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
+@require_http_methods(["POST"])
+def destroy_confirm(request, username):
+    (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
+    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
+    if not teamMember or not teamMember.has_admin_rights():
+        return _response_not_manage_rights(request)
+    teamRepos = RepoManager.list_repo_by_userId(teamUser.id, 0, 1000)
+    for teamRepo in teamRepos:
+        RepoManager.delete_repo(teamUser, teamUserprofile, teamRepo)
+    teamMembers = TeamManager.list_teamMember_by_teamUserId(teamUser.id)
+    for teamMember in teamMembers:
+        teamMember.visibly = 1
+        teamMember.save()
+    teamUser.delete()
+    teamUserprofile.visibly = 1
+    teamUserprofile.save()
+    return json_httpResponse({'code': 200, 'message': u'已经删除了团队帐号'})
+
 def _get_teamMember_by_manageTeamMemberId(request):
     teamMember_id = int(request.POST.get('teamMember_id', 0))
     manage_teamMember = TeamManager.get_teamMember_by_id(teamMember_id)

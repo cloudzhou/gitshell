@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-  
-import os, time, re
+import os, time, re, shutil
+from datetime import datetime
 from django.db import models
 from django.core.cache import cache
 from gitshell.objectscache.models import BaseModel, CacheKey
 from gitshell.objectscache.da import query, query_first, queryraw, execute, count, get, get_many, get_version, get_sqlkey, get_raw, get_raw_many
-from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH
+from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
 from gitshell.team.models import TeamManager
@@ -676,6 +677,22 @@ class RepoManager():
         if repo.used_quote < 0:
             repo.used_quote = 0
         userprofile.save()
+        repo.save()
+
+    @classmethod
+    def delete_repo(self, user, userprofile, repo):
+        repo.visibly = 1
+        repo.last_push_time = datetime.now()
+        userprofile.used_quote = userprofile.used_quote - repo.used_quote
+        if userprofile.used_quote < 0:
+            userprofile.used_quote = 0
+        userprofile.save()
+        delete_path = '%s/%s' % (DELETE_REPO_PATH, repo.id)
+        abs_repopath = repo.get_abs_repopath()
+        if os.path.exists(abs_repopath):
+            shutil.move(abs_repopath, delete_path)
+        feedAction = FeedAction()
+        feedAction.delete_repo_feed(repo.id)
         repo.save()
 
     @classmethod

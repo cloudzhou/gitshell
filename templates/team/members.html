@@ -92,6 +92,7 @@ $(function(){
         $.post('/{{teamUser.username}}/-/settings/team/member/cancal/admin/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'teamMember_id': teamMember_id}, function(json){
             if(json.code != 200) {
                 window.alert(json.message);
+                return;
             }
             if(json.code == 200 && is_yourself) {
                 window.location.href = '/{{teamUser.username}}/-/dashboard/';
@@ -113,6 +114,7 @@ $(function(){
         $.post('/{{teamUser.username}}/-/settings/team/member/remove/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'teamMember_id': teamMember_id}, function(json){
             if(json.code != 200) {
                 window.alert(json.message);
+                return;
             }
             if(json.code == 200 && is_yourself) {
                 window.location.href = '/{{user.username}}/dashboard/';

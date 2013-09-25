@@ -1,0 +1,32 @@
+{% extends "team/settings_base.html" %}
+{% block container-right %}
+    <h2 class="heading">删除团队帐号</h2>
+    <div class="destroy-account">
+        <p>gitshell 是一个纯粹的开发者社区，没有太多的私人社交信息，事实上，我们非常谨慎的添加社交元素，为了保证社区的纯洁和安静。</p>
+        <p class="warn">删除团队操作是不可逆的行为，将导致以下后果：</p>
+        <ol>
+          <li>团队帐号不可用</li>
+          <li>所有的成员信息、关系不可见</li>
+          <li>所有的团队仓库不可用</li>
+          <li>其他和团队帐号有关的</li>
+        </ol>
+        <p class="info">尽可能的不要删除团队帐号以导致引用不完整的情况，如果你还确定这么做，请点击 <button class="team-destroy btn btn-danger">删除 {{teamUser.username}} 团队帐号</button></p>
+    </div>
+{% endblock %}
+{% block js %}
+<script>
+$(function(){
+    $('.team-destroy').click(function(){
+        if(window.confirm('你确定要删除 {{teamUser.username}} 团队帐号')) {
+            $.post('/{{teamUser.username}}/-/settings/destroy_confirm/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+                if(json.code != 200) {
+                    window.alert(json.message);
+                    return;
+                }
+                window.location.href = '/dashboard/';
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

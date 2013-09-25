@@ -1152,21 +1152,10 @@ def delete(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    gsuser = GsuserManager.get_userprofile_by_id(request.user.id)
+    user = GsuserManager.get_user_by_name(user_name)
+    userprofile = GsuserManager.get_userprofile_by_name(user_name)
     if request.method == 'POST':
-        repo.visibly = 1
-        repo.last_push_time = datetime.now()
-        gsuser.used_quote = gsuser.used_quote - repo.used_quote
-        if gsuser.used_quote < 0:
-            gsuser.used_quote = 0
-        gsuser.save()
-        repo.save()
-        delete_path = '%s/%s' % (DELETE_REPO_PATH, repo.id)
-        abs_repopath = repo.get_abs_repopath()
-        if os.path.exists(abs_repopath):
-            shutil.move(abs_repopath, delete_path)
-        feedAction = FeedAction()
-        feedAction.delete_repo_feed(repo.id)
+        RepoManager.delete_repo(user, userprofile, repo)
         return HttpResponseRedirect('/%s/-/repo/' % request.user.username)
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'error': error}
     return render_to_response('repo/delete.html',

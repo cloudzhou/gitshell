@@ -78,6 +78,8 @@ urlpatterns = patterns('gitshell',
     url(r'^(\w+)/-/settings/team/member/remove/?$', 'team.views.remove_member'),
     url(r'^(\w+)/-/settings/team/member/grant/admin/?$', 'team.views.grant_admin'),
     url(r'^(\w+)/-/settings/team/member/cancal/admin/?$', 'team.views.cancal_admin'),
+    url(r'^(\w+)/-/settings/destroy/?$', 'team.views.destroy'),
+    url(r'^(\w+)/-/settings/destroy_confirm/?$', 'team.views.destroy_confirm'),
 
     # user login logout join
     url(r'^login/?$', 'gsuser.views.login'),
