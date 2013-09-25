@@ -20,7 +20,9 @@
           {% endif %}
           <li{% if current == 'issues' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/dashboard/issues/">Issues</a></li>
           <li{% if current == 'notif' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/dashboard/notif/">通知</a></li>
+          {% if has_admin_rights %}
           <li{% if current == 'settings' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/settings/">设置</a></li>
+          {% endif %}
     </div>
   </div>
 

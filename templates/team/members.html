@@ -1,0 +1,127 @@
+{% extends "team/settings_base.html" %}
+
+{% block container-right %}
+<div>
+    <h2 class="heading">
+        团队成员
+    </h2>
+    <input id="add-member" placeholder="成员的用户名或者邮箱"/><button class="add-team-member btn btn-mini btn-danger">添加新成员</button>
+    <table class="table team">
+        <colgroup>
+            <col width="">
+            <col width="action">
+        </colgroup>
+        <tbody>
+            {% for teamMember in teamMembers %}
+            <tr class="team-member">
+                <td class="name">
+                    <a href="/{{ teamMember.user.username }}/">{{ teamMember.user.username }}</a>
+                    {% if teamMember.has_admin_rights %}
+                        <button class="btn btn-mini btn-success">管理员</button>
+                    {% endif %}
+                </td>
+                <td class="rights">
+                    <!--input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-pull" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_read_rights %} checked="checked"{% endif %}>
+                    <label for="rights-{{teamMember.id}}">Pull</label>
+                    <input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-push" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_write_rights %} checked="checked"{% endif %}>
+                    <label for="rights-{{teamMember.id}}">Push</label-->
+                </td>
+                <td>
+                    <div class="action hide">
+                    {% if teamMember.has_admin_rights %}
+                        <button data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="cancal-team-admin btn btn-mini btn-danger">解除管理员</button>
+                    {% else %}
+                        <button data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="grant-team-admin btn btn-mini btn-danger">设置为管理员</button>
+                    {% endif %}
+                        <button data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="remove-team-member btn btn-mini btn-danger">移除</button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+$(function(){
+    $('.rights-pull').click(function(){
+        var teamMember_id = $(this).data('id');
+        $.post('/settings/team/rights/pull/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'teamMember_id': teamMember_id}, function(json){
+            window.location.href = '/{{teamUser.username}}/-/settings/members/';
+        });
+    });
+    $('.rights-push').click(function(){
+        var teamMember_id = $(this).data('id');
+        $.post('/settings/team/rights/push/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'teamMember_id': teamMember_id}, function(json){
+            window.location.href = '/{{teamUser.username}}/-/settings/members/';
+        });
+    });
+    $('.team-member').live('mouseover mouseout', function(event) {
+        if(event.type == 'mouseover') {
+            $(this).find('.action').show();
+        } else {
+            $(this).find('.action').hide();
+        }
+    });
+    $('.add-team-member').click(function(){
+        var username_or_email = $('#add-member').val();
+        $.post('/{{teamUser.username}}/-/settings/team/member/add/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'username_or_email': username_or_email}, function(json){
+            window.location.href = '/{{teamUser.username}}/-/settings/members/';
+        });
+    });
+
+    $('.grant-team-admin').click(function(){
+        var teamMember_id = $(this).data('id');
+        var user_id = $(this).data('user-id');
+        $.post('/{{teamUser.username}}/-/settings/team/member/grant/admin/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'teamMember_id': teamMember_id}, function(json){
+            window.location.href = '/{{teamUser.username}}/-/settings/members/';
+        });
+    });
+    $('.cancal-team-admin').click(function(){
+        var teamMember_id = $(this).data('id');
+        var user_id = $(this).data('user-id');
+        var is_yourself = (user_id == {{user.id}});
+        if(is_yourself) {
+            var is_confirm = window.confirm('你将解除自己作为管理员，这意味着你将失去这个团队的管理权限，你确定吗？');
+            if(!is_confirm) {
+                return;
+            }
+        }
+        $.post('/{{teamUser.username}}/-/settings/team/member/cancal/admin/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'teamMember_id': teamMember_id}, function(json){
+            if(json.code != 200) {
+                window.alert(json.message);
+            }
+            if(json.code == 200 && is_yourself) {
+                window.location.href = '/{{teamUser.username}}/-/dashboard/';
+                return;
+            }
+            window.location.href = '/{{teamUser.username}}/-/settings/members/';
+        });
+    });
+    $('.remove-team-member').click(function(){
+        var teamMember_id = $(this).data('id');
+        var user_id = $(this).data('user-id');
+        var is_yourself = (user_id == {{user.id}});
+        if(is_yourself) {
+            var is_confirm = window.confirm('你将移除自己，这意味着你将不属于这个团队，你确定吗？');
+            if(!is_confirm) {
+                return;
+            }
+        }
+        $.post('/{{teamUser.username}}/-/settings/team/member/remove/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'teamMember_id': teamMember_id}, function(json){
+            if(json.code != 200) {
+                window.alert(json.message);
+            }
+            if(json.code == 200 && is_yourself) {
+                window.location.href = '/{{user.username}}/dashboard/';
+                return;
+            }
+            window.location.href = '/{{teamUser.username}}/-/settings/members/';
+        });
+    });
+});
+</script>
+{% endblock %}
+

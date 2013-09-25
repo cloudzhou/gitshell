@@ -68,13 +68,16 @@ urlpatterns = patterns('gitshell',
     url(r'^settings/validate_email/(\w+)/?$', 'gssettings.views.validate_email'),
     url(r'^settings/team/?$', 'gssettings.views.team'),
     url(r'^settings/team/create/?$', 'gssettings.views.team_create'),
-    url(r'^settings/team/rights/pull/?$', 'gssettings.views.team_pull'),
-    url(r'^settings/team/rights/push/?$', 'gssettings.views.team_push'),
+    url(r'^settings/team/leave/?$', 'gssettings.views.team_leave'),
     url(r'^settings/destroy/?$', 'gssettings.views.destroy'),
 
     url(r'^(\w+)/-/settings/?$', 'team.views.settings'),
     url(r'^(\w+)/-/settings/profile/?$', 'team.views.profile'),
     url(r'^(\w+)/-/settings/members/?$', 'team.views.members'),
+    url(r'^(\w+)/-/settings/team/member/add/?$', 'team.views.add_member'),
+    url(r'^(\w+)/-/settings/team/member/remove/?$', 'team.views.remove_member'),
+    url(r'^(\w+)/-/settings/team/member/grant/admin/?$', 'team.views.grant_admin'),
+    url(r'^(\w+)/-/settings/team/member/cancal/admin/?$', 'team.views.cancal_admin'),
 
     # user login logout join
     url(r'^login/?$', 'gsuser.views.login'),
