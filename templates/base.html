@@ -25,6 +25,84 @@
   <body id="gitshell" class="{% block body_class_name %}{% endblock %}">
     <nav class="navbar" role="navigation">
       <div class="container">
+<<<<<<< HEAD
+        {% comment %}
+        {% if user.is_authenticated %}
+        <a class="brand" href="#" role="logo"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=28" alt=""><span>{{user.username}}</span></a>
+        {% else %}
+        <a class="brand" href="#" role="logo"><span>Gitshell</span></a>
+        {% endif %}
+        {% endcomment %}
+        <a class="brand" href="#" role="logo"><span>Gitshell</span></a>
+        <ul class="nav main-nav">
+          {% if user.is_authenticated %}
+          <li class="active"{# Fake #}><a href="/dashboard/timeline/">信息流</a></li>
+          <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="/dashboard/notif/" class="todo">操作中心<span class="label-mini label-warning hide">{{userprofile.unread_message}}</span></a></li>
+          <li class="dropdown{% if mainnav == '/{{user.username}}/repo/' %}active{% endif %}">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">仓库<i class="icon-caret-down"></i></a>
+            <ul class="dropdown-menu">
+              <li class="all"><a href="/{{user.username}}/repo/">所有仓库</a></li>
+              <li class="leader"><span>最近更新</span></li>
+              <li><a href="#">cloudzhou/gitshell</a></li>
+              <li><a href="#">yuwen/notes</a></li>
+              <li><a href="#">cloudzhou/scripts</a></li>
+              <li><a href="#">cloudzhou/gitshell_static</a></li>
+              {% comment %}
+              {% for repo in repo_list %}
+              <li><a href="/{{user_name}}/{{repo.name}}/">{{repo.name}}</a></li>
+              {% endfor %}
+              {% endcomment %}
+              <li class="create"><a href="/{{user.username}}/repo/create/"><i class="icon-pencil"></i>新建仓库</a></li>
+            </ul>
+          </li>
+          <li class="create-repo"><a href="/{{user.username}}/repo/create/" class=""><span class="button"><i class="icon-pencil"></i>新建仓库</span></a></li>
+        </li>
+        {% else %}
+        <li><a href="/login/">注册</a></li>
+        <li><a href="/login/">登陆</a></li>
+        {% endif %}
+      </ul>
+      {% if user.is_authenticated %}
+      <ul class="nav userbar">
+        {% comment %}
+        {% if userprofile.unread_message > 0 %}
+        <li class="msgs"><a href="/dashboard/notif/" class="label label-warning">{{userprofile.unread_message}}</a></li>
+        {% endif %}
+        {% endcomment %}
+
+        {% comment %}
+        <li class="dropdown bell">
+          <a href="/dashboard/notif/" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-bell"></i>{#userprofile.unread_message#}</a>
+          {# TODO | Notifications #}
+          <div class="dropdown-menu">
+            <div class="title">
+              <h2 class="heading">最新通知</h2>
+            </div>
+            <ul class="notif-list">
+              <li>yuwen更改了状态</li>
+              <li>yuwen更改了状态</li>
+              <li>yuwen更改了状态</li>
+              <li>yuwen更改了状态</li>
+            </ul>
+          </div>
+        </li>
+        {% endcomment %}
+        <li class="dropdown cong">
+          <a href="/{{ user.username }}/" class="dropdown-toggle" data-toggle="dropdown">
+            <i class="icon-cog"></i>
+          </a>
+          <div class="dropdown-menu" role="menu" aria-labelladby="dLable">
+
+            <div class="info">
+
+              <div class="detail">
+                <h2 class="heading">{{ user.username }}</h2>
+                <p class="actions">
+                  <a href="/{{user.username}}/">个人主页</a><br>
+                  <a href="/settings/">设置</a><br>
+                  <a href="#" class="create-team-link"><em>添加团队账户</em></a>
+                </p>
+=======
         <a class="brand" href="#" role="logo"><span>Gitshell</span></a>
         <ul class="nav main-nav">
           {% if user.is_authenticated %}
@@ -73,6 +151,7 @@
                   <figure class="avatar">
                     <img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=80" alt="{{ user.username }}">
                   </figure>
+>>>>>>> 0584c34ccf4aeaf4748d5fc6873578d74325dd29
               </div>
 
               <div class="other">

@@ -20,7 +20,7 @@
       <li class="repo-nav dropdown">
         <a href="/{{user_name}}/{{repo_name}}/" class="dropdown-toggle" data-toggle="dropdown">
           <strong>{{repo_name}}</strong>
-          <span><i class="icon-caret-down"></i></span>
+          <span class="btn btn-mini btn-success"><i class="icon-caret-down"></i></span>
         </a>
         <ul class="dropdown-menu nav nav-list">
           <li{% if current == 'index' or current == 'tree' or current == 'blob' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/" data-original-title="Code" rel="tooltip"><span><i class="icon-code"></i>代码</span></a></li>
@@ -110,23 +110,23 @@
         </div>
       </li>{# /cloneURL #}
       {% endif %}
-      <li><a href="/{{user_name}}/{{repo_name}}/pull/new/" class="btn btn-mini"><i class="icon-code-fork"></i>合并请求</a></li>
-      <li>
-        {% if is_watched_repo %}
-        <a class="btn btn-mini unwatch" data-original-title="Unwatch" rel="tooltip" href="javascript: void(0)">取消关注</a>
-        {% else %}
-        <a class="btn btn-mini watch" data-original-title="Watch" rel="tooltip" href="javascript: void(0)">关注</a>
-        {% endif %}
+      <li class="btn-group">
+        <a href="/{{user_name}}/{{repo_name}}/pull/new/" class="btn btn-mini first"><i class="icon-code-fork"></i>合并请求</a>
+        <a href="/{{user_name}}/{{repo_name}}/compare/" class="btn btn-mini last"><i class="icon-random"></i>比较</a>
       </li>
       <li class="btn-group">
-        {% if is_stared_repo %}
-        <a class="btn btn-mini unstar first" data-original-title="Unstar" rel="tooltip" href="javascript: void(0)">取消收藏</a>
+        {% if is_watched_repo %}
+        <a class="btn btn-mini unwatch first" data-original-title="Unwatch" rel="tooltip" href="javascript: void(0)">取消关注</a>
         {% else %}
-        <a class="btn btn-mini star first" data-original-title="Star" rel="tooltip" href="javascript: void(0)">收藏</a>
+        <a class="btn btn-mini watch first" data-original-title="Watch" rel="tooltip" href="javascript: void(0)">关注</a>
         {% endif %}
-        <span class="btn btn-mini count last" title="标星次数" href="/{{user_name}}/{{repo_name}}/clone_watch_star/">{{repo.star}}</span>
+        {% if is_stared_repo %}
+        <a class="btn btn-mini unstar last" data-original-title="Unstar" rel="tooltip" href="javascript: void(0)">取消收藏</a>
+        {% else %}
+        <a class="btn btn-mini star last" data-original-title="Star" rel="tooltip" href="javascript: void(0)">收藏</a>
+        {% endif %}
+        {#<span class="btn btn-mini count last" title="标星次数" href="/{{user_name}}/{{repo_name}}/clone_watch_star/">{{repo.star}}</span>#}
       </li>
-      <li><a href="/{{user_name}}/{{repo_name}}/compare/" class="btn btn-mini"><i class="icon-random"></i>比较</a></li>
       {% if has_fork_right %}
       <li class="btn-group">
         <a class="btn btn-mini fork first" data-original-title="Fork" rel="tooltip" href="javascript: void(0)">派生</a>
