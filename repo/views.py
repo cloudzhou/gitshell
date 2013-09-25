@@ -20,7 +20,7 @@ from gitshell.feed.models import FeedManager, FEED_TYPE, NOTIF_TYPE
 from gitshell.repo.Forms import RepoForm, RepoMemberForm
 from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, PullRequest, PULL_STATUS, KEEP_REPO_NAME, REPO_PERMISSION
-from gitshell.gsuser.models import GsuserManager
+from gitshell.gsuser.models import GsuserManager, Userprofile
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.team.models import TeamManager
 from gitshell.stats import timeutils
@@ -1076,7 +1076,7 @@ def create(request, user_name):
     return render_to_response('repo/create.html', response_dictionary, context_instance=RequestContext(request))
 
 @login_required
-#@require_http_methods(["POST"])
+@require_http_methods(["POST"])
 def recently(request, user_name):
     feedAction = FeedAction()
     _recently_view_repo = feedAction.list_recently_view_repo(request.user.id, 0, 10)
@@ -1102,6 +1102,24 @@ def recently(request, user_name):
     recently_update_repo = RepoManager.list_repo_by_userId(current_user.id, 0, 5)
     return json_httpResponse({'result': 'success', 'cdoe': 200, 'message': 'recently view, active, update repo', 'recently_view_repo': recently_view_repo, 'recently_active_repo': recently_active_repo, 'recently_update_repo': recently_update_repo})
 
+@login_required
+@repo_permission_check
+@require_http_methods(["POST"])
+def member_users(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        message = u'仓库不存在'
+        return json_httpResponse({'code': 404, 'result': 'failed', 'message': message})
+    memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
+    # only need username and id
+    filter_memberUsers = []
+    for memberUser in memberUsers:
+        userprofile = Userprofile()
+        userprofile.id = memberUser.id
+        userprofile.username = memberUser.username
+        filter_memberUsers.append(userprofile)
+    return json_httpResponse({'code': 200, 'result': 'success', 'message': u'列出仓库的所有用户', 'memberUsers': filter_memberUsers})
+    
 def __response_create_repo_error(request, response_dictionary, error):
     response_dictionary['error'] = error
     return render_to_response('repo/create.html', response_dictionary, context_instance=RequestContext(request))

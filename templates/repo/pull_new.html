@@ -23,11 +23,11 @@
     <div class="ref span">
       <select id="descRepo" class="hide">
         {% for repo in pull_repo_list %}
-        {% if repo.username == desc_repo.username and repo.name == desc_repo.name %}
-        <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
-        {% else %}
-        <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
-        {% endif %}
+          {% if repo.username == desc_repo.username and repo.name == desc_repo.name %}
+            <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+          {% else %}
+            <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+          {% endif %}
         {% endfor %}
       </select>
       <select id="descRefs"></select>
@@ -81,6 +81,7 @@
 <script>
   $(function(){
     var global_repo_branch_map = {};
+    var global_repo_memberUser_map = {};
     var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
     function compare() {
       var source_repo = $('#sourceRepo option:selected').val();
@@ -102,9 +103,10 @@
         }
       });
     }
-    function fullfill_options(repo_select, refs_select, default_refs) {
+    function fullfill_options(repo_select, refs_select, default_refs, source_or_desc) {
       var repo = repo_select.attr('value');
       var tmp_global_repo_branch_map = global_repo_branch_map;
+      var tmp_global_repo_memberUser_map = global_repo_memberUser_map;
       if(tmp_global_repo_branch_map.hasOwnProperty(repo)) {
         refs_select.find('option').remove();
         var branches = tmp_global_repo_branch_map[repo];
@@ -114,6 +116,13 @@
             refs_select.append('<option selected="selected" value='+ branch +'>'+ branch +'</option>');
           } else {
             refs_select.append('<option value='+ branch +'>'+ branch +'</option>');
+          }
+        }
+        if(source_or_desc == 'desc' && tmp_global_repo_memberUser_map.hasOwnProperty(repo)) {
+          $('#mergeUserId').find('option').remove();
+          var memberUsers = tmp_global_repo_memberUser_map[repo];
+          for(x in memberUsers) {
+            $('#mergeUserId').append('<option value='+ x.id +'>'+ x.username +'</option>');
           }
         }
         return tmp_global_repo_branch_map[repo];
@@ -130,18 +139,29 @@
           }
         }
         tmp_global_repo_branch_map[repo] = branches;
+        if(source_or_desc == 'desc') {
+          $.post('/' + repo + '/member_users/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            var memberUsers = json.memberUsers;
+            tmp_global_repo_memberUser_map[repo] = memberUsers;
+            $('#mergeUserId').find('option').remove();
+            for(x in memberUsers) {
+              $('#mergeUserId').append('<option value='+ x.id +'>'+ x.username +'</option>');
+            }
+          })
+        }
         // FIX BUG, multi compare() call
         compare();
       });
       global_repo_branch_map = tmp_global_repo_branch_map;
+      global_repo_memberUser_map = tmp_global_repo_memberUser_map;
     };
-    fullfill_options($('#sourceRepo'), $('#sourceRefs'), '{{source_refs}}');
-    fullfill_options($('#descRepo'), $('#descRefs'), '{{desc_refs}}');
+    fullfill_options($('#sourceRepo'), $('#sourceRefs'), '{{source_refs}}', 'source');
+    fullfill_options($('#descRepo'), $('#descRefs'), '{{desc_refs}}', 'desc');
     $('#sourceRepo').change(function(){
-      fullfill_options($(this), $('#sourceRefs'));
+      fullfill_options($(this), $('#sourceRefs'), '', 'source');
     });
     $('#descRepo').change(function(){
-      fullfill_options($(this), $('#descRefs'));
+      fullfill_options($(this), $('#descRefs'), '', 'desc');
     });
     $('#sourceRefs').change(function(){
       compare();
