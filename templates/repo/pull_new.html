@@ -8,20 +8,20 @@
   {# create pull request #}
   <div class="repo-refs colspan">
     <div class="ref span">
-      <select id="sourceRepo" class="hide">
+      <select id="sourceRepo">
         {% for repo in pull_repo_list %}
-        {% if repo.id == source_repo.id %}
-        <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
-        {% else %}
-        <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
-        {% endif %}
+          {% if repo.id == source_repo.id %}
+            <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+          {% else %}
+            <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+          {% endif %}
         {% endfor %}
       </select>
       <select id="sourceRefs"></select>
     </div>
     <div class="span chevron"><i class="icon-caret-right"></i></div>
     <div class="ref span">
-      <select id="descRepo" class="hide">
+      <select id="descRepo">
         {% for repo in pull_repo_list %}
           {% if repo.username == desc_repo.username and repo.name == desc_repo.name %}
             <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
@@ -145,7 +145,7 @@
             tmp_global_repo_memberUser_map[repo] = memberUsers;
             $('#mergeUserId').find('option').remove();
             for(x in memberUsers) {
-              $('#mergeUserId').append('<option value='+ x.id +'>'+ x.username +'</option>');
+              $('#mergeUserId').append('<option value='+ memberUsers[x].id +'>'+ memberUsers[x].username +'</option>');
             }
           })
         }
