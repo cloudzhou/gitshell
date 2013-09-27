@@ -64,11 +64,11 @@
 
     <ul class="repo-actions">
       {% if current == 'index' %}
-      <li class="dropdown">
-        <a href="#" class="btn btn-mini btn-primary dropdown-toggle" data-toggle="dropdown"><i class="icon-terminal"></i>Clone</a>
-        <div class="dropdown-menu url-container">
+      <li class="clone-url">
+        <a href="#" class="btn btn-mini btn-primary menu-toggle"><i class="icon-terminal"></i>Clone</a>
+        <div class="clone-menu">
           {% if repo.status != 0 %}
-          <p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
+          <p class="info">正在初始化...</p>
           {% endif %}
 
           {% if has_fork_right %}

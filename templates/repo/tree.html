@@ -40,7 +40,7 @@
 
   <div class="table-container" id="source">
     <div class="theme-selector">
-      <a href="#" id="switcher">Color Scheme</a>
+      <a href="#" id="switcher">代码高亮主题</a>
       <ul class="theme-list clearfix" id="themes">
         <li class="active"><a href="#"><i class="icon-ok"></i>Default</a></li>
         <li><a href="#">Github</a></li>
@@ -54,6 +54,12 @@
         <li><a href="#">Tomorrow</a></li>
       </ul>
     </div>
+  {% if readme_md %}
+  <div id="README.md" class="readme">
+    <div id="id_readme_md" class="markdown hide">{{readme_md}}</div>
+  </div>
+
+  {% else %}
     <table class="table">
       <tbody>
         {% if not tree %}
@@ -92,10 +98,6 @@
       {% endfor %}
     </tbody>
   </table>
-  {% if readme_md %}
-  <div id="README.md" class="readme">
-    <div id="id_readme_md" class="markdown hide">{{readme_md}}</div>
-  </div>
   {% endif %}
 </div>
 

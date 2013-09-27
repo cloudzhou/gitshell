@@ -5,7 +5,7 @@
   <div class="header">
     {% include "repo/branch_nav.html" %}
   </div>
-  <div id="logGraph">
+  <div id="logGraph" class="refs-graph">
   </div>
 </div>
 {% endblock %}
@@ -53,10 +53,9 @@
           var commit_hash = log_graph_line.substring(indexOfs[1], indexOfs[2]);
           var date_relative = log_graph_line.substring(indexOfs[3], indexOfs[4]+1);
           var author = '';
-          new_log_graph_splits.push(log_graph_line.substring(indexOfs[0], indexOfs[1]));
+          new_log_graph_splits.push('<span class="c_line">' + log_graph_line.substring(indexOfs[0], indexOfs[1]) + '</span>');
           new_log_graph_splits.push('<span class="c_commit_hash">' + commit_hash + '</span>');
           new_log_graph_splits.push(log_graph_line.substring(indexOfs[2], indexOfs[3]));
-          new_log_graph_splits.push('<span class="c_date_relative">' + date_relative + '</span>');
           new_log_graph_splits.push('<span class="c_commit">' + log_graph_line.substring(indexOfs[4]+1, indexOfs[5]) + '</span>');
           if(indexOfs[6] > indexOfs[5] && indexOfs[7] > indexOfs[6]) {
             author = log_graph_line.substring(indexOfs[5], indexOfs[6]);
@@ -91,6 +90,7 @@
             real_author = author.substring(lastBlank);
             new_log_graph_splits.push(author.substring(0, lastBlank) + '<span class="c_author">' + real_author + '</span>');
           }
+          new_log_graph_splits.push('<span class="c_date_relative">' + date_relative + '</span>');
           log_graph_line = new_log_graph_splits.join('')
         }
         htmls.push('<p>' + log_graph_line + '</p>');
