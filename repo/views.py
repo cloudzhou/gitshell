@@ -136,6 +136,14 @@ def ls_tree(request, user_name, repo_name, refs, path, current, render_method):
 
 @repo_permission_check
 def blob(request, user_name, repo_name, refs, path):
+    return _blob(request, user_name, repo_name, refs, path, 'html')
+
+@repo_permission_check
+def blob_ajax(request, user_name, repo_name, refs, path):
+    return _blob(request, user_name, repo_name, refs, path, 'ajax')
+    
+@repo_permission_check
+def _blob(request, user_name, repo_name, refs, path, render_method):
     current = 'blob'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path is None or path == '':
@@ -156,10 +164,12 @@ def blob(request, user_name, repo_name, refs, path):
     is_markdown = path.endswith('.markdown') or path.endswith('.md') or path.endswith('.mkd')
     response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'blob': blob, 'lang': lang, 'brush': brush, 'is_markdown': is_markdown}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
+    if render_method == 'ajax':
+        return json_httpResponse(response_dictionary)
     return render_to_response('repo/blob.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
-    
+
 @repo_permission_check
 def commit(request, user_name, repo_name, commit_hash):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
