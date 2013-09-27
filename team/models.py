@@ -38,10 +38,15 @@ class TeamGroup(BaseModel):
 class TeamManager():
     
     @classmethod
+    def get_teamMember_by_id(self, id):
+        return get(TeamMember, id)
+
+    @classmethod
     def get_teamMember_by_userId_teamUserId(self, user_id, team_user_id):
         teamMember = query_first(TeamMember, user_id, 'teammember_s_userId_teamUserId', [user_id, team_user_id])
         if not teamMember:
             return None
+        teamMember.user = GsuserManager.get_userprofile_by_id(teamMember.user_id)
         teamMember.team_user = GsuserManager.get_userprofile_by_id(teamMember.team_user_id)
         return teamMember
 
@@ -52,6 +57,7 @@ class TeamManager():
             return []
         teamMembers = query(TeamMember, user_id, 'teammember_l_userId', [user_id])
         for x in teamMembers:
+            x.user = GsuserManager.get_userprofile_by_id(x.user_id)
             x.team_user = GsuserManager.get_userprofile_by_id(x.team_user_id)
         return teamMembers
 
@@ -62,6 +68,7 @@ class TeamManager():
             return []
         teamMembers = query(TeamMember, None, 'teammember_l_teamUserId', [team_user_id])
         for x in teamMembers:
+            x.user = GsuserManager.get_userprofile_by_id(x.user_id)
             x.team_user = userprofile
         return teamMembers
 

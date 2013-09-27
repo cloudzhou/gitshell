@@ -46,6 +46,7 @@ urlpatterns = patterns('gitshell',
     url(r'^(\w+)/-/dashboard/pull/merge/?$', 'team.views.pull_merge'),
     url(r'^(\w+)/-/dashboard/pull/request/?$', 'team.views.pull_request'),
     url(r'^(\w+)/-/dashboard/notif/?$', 'team.views.notif'),
+    url(r'^(\w+)/-/dashboard/repo/?$', 'team.views.repo'),
 
     # settings
     url(r'^settings/?$', 'gssettings.views.profile'),
@@ -68,13 +69,19 @@ urlpatterns = patterns('gitshell',
     url(r'^settings/validate_email/(\w+)/?$', 'gssettings.views.validate_email'),
     url(r'^settings/team/?$', 'gssettings.views.team'),
     url(r'^settings/team/create/?$', 'gssettings.views.team_create'),
-    url(r'^settings/team/rights/pull/?$', 'gssettings.views.team_pull'),
-    url(r'^settings/team/rights/push/?$', 'gssettings.views.team_push'),
+    url(r'^settings/team/leave/?$', 'gssettings.views.team_leave'),
     url(r'^settings/destroy/?$', 'gssettings.views.destroy'),
 
     url(r'^(\w+)/-/settings/?$', 'team.views.settings'),
     url(r'^(\w+)/-/settings/profile/?$', 'team.views.profile'),
     url(r'^(\w+)/-/settings/members/?$', 'team.views.members'),
+    url(r'^(\w+)/-/settings/team/member/leave/?$', 'team.views.member_leave'),
+    url(r'^(\w+)/-/settings/team/member/add/?$', 'team.views.add_member'),
+    url(r'^(\w+)/-/settings/team/member/remove/?$', 'team.views.remove_member'),
+    url(r'^(\w+)/-/settings/team/member/grant/admin/?$', 'team.views.grant_admin'),
+    url(r'^(\w+)/-/settings/team/member/cancal/admin/?$', 'team.views.cancal_admin'),
+    url(r'^(\w+)/-/settings/destroy/?$', 'team.views.destroy'),
+    url(r'^(\w+)/-/settings/destroy_confirm/?$', 'team.views.destroy_confirm'),
 
     # user login logout join
     url(r'^login/?$', 'gsuser.views.login'),
@@ -172,6 +179,7 @@ urlpatterns = patterns('gitshell',
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/disable_dropbox_sync/?$', 'repo.views.disable_dropbox_sync'),
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/diff/([a-zA-Z0-9_\.\-]+)\.\.([a-zA-Z0-9_\.\-]+)/(\d+)/([^\@\#\$\&\\\*\"\'\<\>\|\;]*)$', 'repo.views.diff'),
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/diff/([a-zA-Z0-9_\.\-]+)\.\.([a-zA-Z0-9_\.\-]+)/(\d+)/?', 'repo.views.diff_default'),
+    url(r'^(\w+)/([a-zA-Z0-9_\-]+)/member_users/?$', 'repo.views.member_users'),
     
     # issue
     url(r'^(\w+)/([a-zA-Z0-9_\-]+)/issues/?$', 'issue.views.issues'),
