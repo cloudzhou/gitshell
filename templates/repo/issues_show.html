@@ -12,7 +12,7 @@
 		<header class="header">
 			<h1 class="heading">Gitshell Issues</h1>
 			<ul class="btn-group sort">
-				<li><a href="/{{user_name}}/{{repo_name}}/issues/create/0/" class="btn btn-mini btn-primary">创建 issues</a></li>
+				<li><a href="/{{user_name}}/{{repo_name}}/issues/create/0/" class="btn btn-mini btn-primary">创建问题</a></li>
 				<li class="leader">排序:</li>
 				<li class="first">{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn btn-mini first">更新</a>{%else%}<span class="btn btn-mini btn-disable">更新</span>{%endif%}</li>
 				<li class="last">{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn btn-mini last">创建</a>{%else%}<span class="btn btn-mini btn-disable">创建</span>{%endif%}</li>
@@ -42,7 +42,7 @@
 
 		{%if issue_comments%}
 			{%for issue_comment in issue_comments%}
-				<div data-user-name="{{issue_comment.user_id}}" class="comment user-plugin">
+				<div data-user-name="{{issue_comment.user_id}}" class="comment">
 					<figure class="avatar">
 						<img src="https://gravatar.com/avatar/{{ issue_comment.user_img }}?s=38" alt="{{issue.comment}}">
 					</figure>

@@ -2,52 +2,48 @@
 
 {% block subcontainer %}
 
-<div class="subhead">
-  <div class="container">
-    <h2 class="heading">我的仓库<span class="count">({{teamUserprofile.get_total_repo}})</span></h2>
-  </div>
-</div>
+{#<h2 class="heading">我的仓库<span class="count">({{teamUserprofile.get_total_repo}})</span></h2>#}
 
-<div class="content">
-  <div class="container">
-    <div class="user-repos inner bubble">
+<div class="user-repos inner bubble">
 
-      {% load humanize %}
+  {% load humanize %}
 
-      {% for repo in repos %}
-        <section class="repo c_repo">
+  {% if repos %}
+  {% for repo in repos %}
+  <section class="repo c_repo">
 
-          <ul class="meta">
-            <li><a href="#"><span class="count">{{repo.commit}}</span><span class="meta-type">提交</span></a></li>
-            <li><a href="#"><span class="count">{{repo.fork}}</span><span class="meta-type">派生</span></a></li>
-            <li><a href="#"><span class="count">{{repo.watch}}</span><span class="meta-type">关注</span></a></li>
-          </ul>
+    <ul class="meta">
+      <li><a href="#"><span class="count">{{repo.commit}}</span><span class="meta-type">提交</span></a></li>
+      <li><a href="#"><span class="count">{{repo.fork}}</span><span class="meta-type">派生</span></a></li>
+      <li><a href="#"><span class="count">{{repo.watch}}</span><span class="meta-type">关注</span></a></li>
+    </ul>
 
-          <figure class="repo-avatar">
-            <img src="/static/img/repo-avatar48.png" alt="{{repo.name}}">
-            <span class="private"><i class="icon-lock"></i></span>
-          </figure>
-          <div class="summary">
-            <div class="heading">
-              <h3><a href="/{{repo.username}}/{{repo.name}}/">{{repo.name}}</a></h3>
-            </div>
+    <figure class="repo-avatar">
+      <img src="/static/img/repo-avatar48.png" alt="{{repo.name}}">
+      <span class="private"><i class="icon-lock"></i></span>
+    </figure>
+    <div class="summary">
+      <div class="heading">
+        <h3><a href="/{{repo.username}}/{{repo.name}}/">{{repo.name}}</a></h3>
+      </div>
 
-            <div class="detail">
-              <p class="desc">{{repo.desc}}</p>
-            </div>
-          </div>
-
-        </section>
-      {% endfor %}
-
+      <div class="detail">
+        <p class="desc">{{repo.desc}}</p>
+      </div>
     </div>
-  </div>
+
+  </section>
+  {% endfor %}
+  {% else %}
+    <p class="alert alert-info">没有仓库</p>
+  {% endif %}
+
 </div>
 
 {% endblock %}
 
 {% block js %}
-    <script>
-    });
-    </script>
+<script>
+});
+</script>
 {% endblock %}

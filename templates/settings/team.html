@@ -1,38 +1,31 @@
 {% extends "settings/base.html" %}
 
 {% block container-right %}
-<div>
-    <h2 class="heading">
-      您加入的团队
-      <a href="/settings/team/create/" class="label label-success">创建新的团队</a>
-    </h2>
-    <table class="table team">
-        <colgroup>
-            <col width="">
-            <col width="action">
-        </colgroup>
-        <tbody>
-            {% for teamMember in teamMembers %}
-            <tr>
-                <td class="name">
-                    <a href="/{{ teamMember.team_user.username }}/">{{ teamMember.team_user.username }}</a>
-                    {% if teamMember.has_admin_rights %}
-                        <button class="btn btn-mini btn-success">管理员</button>
-                    {% endif %}
-                </td>
-                <td class="rights">
-                    <!--input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-pull" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_read_rights %} checked="checked"{% endif %}>
-                    <label for="rights-{{teamMember.id}}">Pull</label>
-                    <input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-push" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_write_rights %} checked="checked"{% endif %}>
-                    <label for="rights-{{teamMember.id}}">Push</label-->
-                </td>
-                <td class="action">
-                    <button data-id="{{ teamMember.id }}" data-team-username="{{ teamMember.team_user.username }}" class="leave-team btn btn-mini">退出</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<h2 class="heading">我的团队</h2>
+<table class="table team">
+  <tbody>
+    {% for teamMember in teamMembers %}
+    <tr>
+      <td class="name">
+        <a href="/{{ teamMember.team_user.username }}/"><img src="/static/img/teamavatar.png" alt="{{teamMember.team_user.username}}">{{ teamMember.team_user.username }}</a>
+        {% if teamMember.has_admin_rights %}
+          <span class="label">管理员</span>
+        {% endif %}
+      </td>
+      <td class="rights">
+        <!--input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-pull" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_read_rights %} checked="checked"{% endif %}>
+        <label for="rights-{{teamMember.id}}">Pull</label>
+        <input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-push" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_write_rights %} checked="checked"{% endif %}>
+        <label for="rights-{{teamMember.id}}">Push</label-->
+        </td>
+        <td class="action">
+          <button data-id="{{ teamMember.id }}" data-team-username="{{ teamMember.team_user.username }}" class="leave-team btn btn-mini">退出</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="create-team"><a href="/settings/team/create/" class="btn btn-success">创建新的团队</a></p>
 </div>
 {% endblock %}
 

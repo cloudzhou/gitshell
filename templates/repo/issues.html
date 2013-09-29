@@ -9,7 +9,7 @@
 
 	<div class="primary issue-list">
     <div class="header">
-      <a href="/{{user_name}}/{{repo_name}}/issues/create/" class="btn btn-success new-issue-btn">添加一个Issue</a>
+      <a href="/{{user_name}}/{{repo_name}}/issues/create/" class="btn btn-success new-issue-btn">添加一个问题</a>
       <ul class="sortable clearfix">
         <li>{%if orderby == 'create_time'%}<a id="i_modify_time" href="javascript:void(0)" class="btn first">更新</a>{%else%}<span class="btn btn-disable first">更新</span>{%endif%}</li>
         <li>{%if orderby == 'modify_time'%}<a id="i_create_time" href="javascript:void(0)" class="btn last">创建</a>{%else%}<span class="btn btn-disable last">创建</span>{%endif%}</li>
@@ -49,7 +49,7 @@
 		</section>
 		{% endfor %}
 		{% if not issues %}
-			<div class="issue"><p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有Issues，或者没有查看Issues权限，半公开和私有项目需要申请成为成员才能查看Issues</p></div>
+			<div class="issue"><p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有问题，或者没有查看问题的权限，半公开和私有项目需要申请成为成员才能查看.</p></div>
 		{% endif %}
 
     <ul class="pagination">

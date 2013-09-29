@@ -64,14 +64,14 @@ $(function(){
                                                 html.push('<li><h3 class="heading"><a href="#">' + commit.repo_name + '</a></h3><p>' + commit.subject + '<span class="modified">' + feed_date_str + '</span></p></li>')
                     } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
                         issue = feed.relative_obj;
-                        action = 'create issue';
+                        action = '新建问题';
                         detail = '';
                         if(feed.feed_type == 300) {
-                            action = 'create issue';
+                            action = '新建问题';
                         } else if(feed.feed_type == 301) {
-                            action = 'update issue';
+                            action = '更新问题';
                         } else if(feed.feed_type == 302) {
-                            action = 'change issue';
+                            action = '编辑问题';
                             detail = feed.first_refname;
                         }
                         feed_date_str = moment(new Date(issue.create_time*1000)).format('MM/DD');

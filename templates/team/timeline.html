@@ -2,8 +2,7 @@
 
 {% block subcontainer %}
 
-
-    <div class="feeds bubble">
+    <div class="feeds inner bubble">
 
       <div class="ajaxLoader">
         <p>请等待...</p>
@@ -105,14 +104,14 @@
                                 feed = display_feeds_map[feed_date][feed_reponame][0];
                                 if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
                                     var issue = feed.relative_obj;
-                                    var action = '创建了新的issue';
+                                    var action = '新建问题';
                                     var detail = '';
                                     if(feed.feed_type == 300) {
-                                        action = '创建了新的issue';
+                                        action = '新建问题';
                                     } else if(feed.feed_type == 301) {
-                                        action = '更新了issue';
+                                        action = '更新问题';
                                     } else if(feed.feed_type == 302) {
-                                        action = '更改了issue';
+                                        action = '更改问题';
                                         detail = feed.first_refname;
                                     }
                                     html.push('<li><span class="subject">' + action + '</span>在仓库<a href="/'+ issue.username + '/' + issue.reponame +'/" class="repo-name">' + issue.reponame + '</a>' + detail + '<a href="/'+issue.username+'/'+issue.reponame+'/issues/'+issue.id+'/" class="issue-id">#' + issue.id + issue.subject + '</a><span class="date">' + moment(new Date(issue.create_time*1000)).fromNow() + '</span></li>')
@@ -120,9 +119,9 @@
                                     var pullRequest = feed.relative_obj; 
                                     var action = ''
                                     if(feed.feed_type == 100) {
-                                        action = '创建了合并请求';
+                                        action = '新建合并请求';
                                     } else if(feed.feed_type == 101) {
-                                        action = '合并了合并请求';
+                                        action = '合并';
                                     } else if(feed.feed_type == 102) {
                                         action = '合并失败';
                                     } else if(feed.feed_type == 103) {
@@ -130,7 +129,7 @@
                                     } else if(feed.feed_type == 104) {
                                         action = '关闭合并';
                                     } else if(feed.feed_type == 105) {
-                                        action = '评论了合并请求';
+                                        action = '评论合并请求';
                                     }
                                     html.push('<li><span class="subject">' + action + '</span>在仓库<a href="/'+ pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name +'/" class="repo-name">' + pullRequest.desc_repo_name + '</a><a href="/'+pullRequest.desc_repo_username+'/'+pullRequest.desc_repo_name+'/pull/'+pullRequest.id+'/">#' + pullRequest.id + ' ' + pullRequest.short_title + '</a><time  class="date" pubdate>' + moment(new Date(pullRequest.create_time*1000)).fromNow() + '</time></li>');
                                 }
@@ -140,7 +139,7 @@
                     }
                     $('#newsfeed').append(html.join(''));
                     if(ordered_date.length == 0) {
-                        $('#newsfeed').append('还没有提交信息');
+                      $('#newsfeed').append('<p class="alert alert-info">还没有提交信息</p>');
                     }
                     $('.ajaxLoader').remove();
                 }

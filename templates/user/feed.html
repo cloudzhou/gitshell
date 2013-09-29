@@ -80,19 +80,19 @@
           commit = feed.relative_obj
           html.push('<section class="feed-item">');
           html.push('<span class="feed-type commit">合并请求</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=32"></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(commit.commiter_date*1000)).fromNow() +'</time><p class="title"><a href="/' + commit.author + '/" class="author">' + commit.author + '</a>提交更新到' + '<a href="/' + commit.user_name +'/' + commit.repo_name + '/" class="repo-name">' + commit.repo_name + '</a><ul class="subject commits">');
-          html.push('<li>' + '<img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=15" alt="">' + '<a href="/" class="hash">' + commit.commit_hash + '</a>' + '- <span class="commit-msg">' + commit.subject + '</span></li>');
+          html.push('<li>' + '<img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=15" alt="">' + '<a href="/' + commit.user_name + '/' + commit.repo_name + '/commit/' + commit.commit_hash + '/" class="hash">' + commit.commit_hash + '</a>' + '- <span class="commit-msg">' + commit.subject + '</span></li>');
           html.push('</ul></div>');
           html.push('</section>');
         } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
           issue = feed.relative_obj;
-          action = '创建问题';
+          action = '新建问题';
           detail = '';
           if(feed.feed_type == 300) {
-            action = '创建问题';
+            action = '新建问题';
           } else if(feed.feed_type == 301) {
             action = '更新问题';
           } else if(feed.feed_type == 302) {
-            action = '更改问题';
+            action = '编辑问题';
             detail = feed.first_refname;
           }
           html.push('<section class="feed-item">');
@@ -103,9 +103,9 @@
           var pullRequest = feed.relative_obj;
           var action = '';
           if(feed.feed_type == 100) {
-            action = '创建合并请求';
+            action = '新建合并请求';
           } else if(feed.feed_type == 101) {
-            action = '成功合并合并请求';
+            action = '合并';
           } else if(feed.feed_type == 102) {
             action = '合并失败';
           } else if(feed.feed_type == 103) {

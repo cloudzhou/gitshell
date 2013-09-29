@@ -763,11 +763,11 @@ class PULL_STATUS:
     }
 
     LABEL_MAP = {
-        0 : 'open',
-        1 : 'failure',
-        2 : 'merge',
-        3 : 'rejected',
-        4 : 'closed',
+        0 : '新建',
+        1 : '失败',
+        2 : '合并',
+        3 : '拒绝',
+        4 : '关闭',
     }
 
 

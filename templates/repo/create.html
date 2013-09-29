@@ -120,9 +120,6 @@
   /*global jQuery, window */
 $(function(){
   var edit_init = function() {
-    $('#id_name').addClass('input-xlarge');
-    $('#id_desc').addClass('input-xlarge');
-    $('#id_lang').addClass('input-xlarge');
     //$('#id_name').attr('placeholder', '必填，[A-Za-z0-9_-]，不能 - 开头');
     //$('#id_desc').attr('placeholder', '必填，提供什么功能，解决什么问题');
   },
@@ -197,7 +194,7 @@ return false;
 });
 var list_github_repo = function() {
   $('#id-github-repos').html('')
-    $('#id-repos-loading').show();
+  $('#id-repos-loading').show();
   $.get('/ajax/repo/list/github/', function(data) {
     htmls = [] 
     for(x in data) {
@@ -246,7 +243,7 @@ $('#id-choose-via-git-url').click(function(){
   $('.left-choose-repo').removeClass('active');
   $(this).addClass('active');
   $('.cl-right-create-repo').hide();
-  $('#id-source-repo-meta').show();
+  $('.source-repo-meta').show();
   $('#id-direct-create').show();
 });
 $('#id-refresh-repo').click(function() {

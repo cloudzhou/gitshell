@@ -28,11 +28,14 @@
 
       {#<li class="create-repo"><a href="/{{user.username}}/repo/create/" class=""><span class="button"><i class="icon-pencil"></i>新建仓库</span></a></li>#}
 
-      <a class="brand" href="#" role="logo"><span>Gitshell</span></a>
+      {% if user.is_authenticated %}
+        <a class="brand" href="/dashboard/feed/" role="logo"><span>Gitshell</span></a>
+      {% else %}
+        <a class="brand" href="/" role="logo"><span>Gitshell</span></a>
+      {% endif %}
       <ul class="nav main-nav">
         {% if user.is_authenticated %}
-          <li><a href="/dashboard/timeline/">信息流</a></li>
-          <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="/dashboard/notif/" class="todo">操作中心<span class="label-mini label-warning hide">{{userprofile.unread_message}}</span></a></li>
+          <li{% if mainnav == '/dashboard/notif' %} class="active"{% endif %}><a href="/dashboard/notif/" class="todo">工作台<span class="label-mini label-warning hide">{{userprofile.unread_message}}</span></a></li>
           <li class="dropdown{% if mainnav == '/{{user.username}}/-/repo/' %}active{% endif %}">
             <a href="javascript:;" class="dropdown-toggle repo-shortcut" data-toggle="dropdown">仓库<i class="icon-caret-down"></i></a>
             <ul class="dropdown-menu repo-shortcut-ul">
@@ -43,8 +46,8 @@
           </li>
           <li class="create-repo"><a href="/{{user.username}}/-/repo/create/"><span class="button"><i class="icon-pencil"></i>新建仓库</span></a></li>
         {% else %}
-          <li><a href="/login/">注册</a></li>
-          <li><a href="/login/">登陆</a></li>
+        <li><a href="/login/">工作台</a></li>
+        <li><a href="/login/">仓库</a></li>
         {% endif %}
       </ul>
 
@@ -85,13 +88,19 @@
                 <p class="actions">
                   <a href="/{{user.username}}/">个人主页</a><br>
                   <a href="/settings/">设置</a><br>
-                  <a href="#" class="create-team-link"><em>添加团队账户</em></a>
                 </p>
               </div>
               <figure class="avatar">
                 <img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=80" alt="{{ user.username }}">
               </figure>
             </div>
+
+            <ul class="team-accounts nav nav-list">
+              <li class="create"><a href="/settings/team/create/" class="create-team-link"><em>添加团队账户</em></a></li>
+              {% for teamMember in gs_teamMembers %}
+              <li><img src="/static/img/teamavatar.png" alt="{{teamMember.team_user.username}}"><a href="/{{user.username}}/-/user/switch/{{teamMember.team_user_id}}/">{{ teamMember.team_user.username }}</a></li>
+              {% endfor %}
+            </ul>
 
             <div class="other">
               <a href="/logout/" class="logout btn btn-mini">登出</a>
@@ -100,11 +109,6 @@
                 <span>·</span>
                 <a href="#">反馈</a>
               </span>
-              <div>
-                {% for teamMember in gs_teamMembers %}
-                <a href="/{{user.username}}/-/user/switch/{{teamMember.team_user_id}}/">{{ teamMember.team_user.username }}</a>
-                {% endfor %}
-              </div>
             </div>
           </div>
         </li>
@@ -123,11 +127,10 @@
   <footer class="footer" role="contentinfo">
     <div class="container">
       <ul class="nav">
-        <li><a href="/help/#about" class="about-gitshell">关于GitShell<i class="icon-sort"></i></a></li>
+        <li><a href="/help/#about" class="about-gitshell">关于GitShell</a></li>
         <li><a href="/help/#mission">我们的愿景</a></li>
         <li><a href="/help/#faq">FAQ</a></li>
-        <li><a href="/help/#join_login" class="free-join">注册</a></li>
-        <li><a href="/help/" class="help">帮助</a></li>
+        <li><a href="/help/">帮助</a></li>
         <li><a target="_blank" href="http://blog.gitshell.com">官方博客</a></li>
         <li><a href="/help/#contact">联系GitShell</a></li>
       </ul>

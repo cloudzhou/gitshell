@@ -2,8 +2,8 @@
 
 {% block subcontainer %}
 
+<div class="issues bubble">
   {% if issues %}
-    <div class="issues bubble">
       {% for issue in issues %}
         <section class="issue-item" data="{{issue.id}}">
 
@@ -65,7 +65,7 @@
       <input id="id_action" class="hide">
     {% else %}
       <div class="issue-item">
-        <p>没有 Issues 信息</p>
+        <p class="alert alert-info">没有 Issues 信息</p>
       </div>
     {% endif %}
 

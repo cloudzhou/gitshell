@@ -24,8 +24,8 @@
         </span>
         {% endcomment %}
         <span class="action-type">提交更新到</span>
-        <a href="#{#此处Commit的连接地址#}" class="notif-title">{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}</a></p>
-        <p class="subject"><span class="hash">{{notifMessage.relative_obj.hash}}</span>{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
+        <a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="notif-title">{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}</a></p>
+        <p class="subject"><a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="hash">{{notifMessage.relative_obj.commit_hash}}</a>{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
 
         {% elif notifMessage.notif_type == 30 %}
         <span class="action-type">创建问题</span>
@@ -48,7 +48,7 @@
         <p class="subject">{{notifMessage.relative_obj.short_title|truncatechars:80}}</p>
 
         {% elif notifMessage.notif_type == 300 %}
-        <span class="action-type">{{notifMessage.message}} issue</span>
+        <span class="action-type">{{notifMessage.message}}问题</span>
         <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.reponame}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
         <p class="subject">{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
         {% endif %}

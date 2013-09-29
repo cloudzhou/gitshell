@@ -6,13 +6,18 @@
     <div class="header">
       <h2 class="heading">需要我处理的</h2>
       <span class="sortable btn-group">
-        <a href="#" class="btn btn-mini btn-disable first">Open</a>
-        <a href="#" class="btn btn-mini last">Closed</a>
+        <a href="#" {# if current == '/dashboard/pull/' %}class="active"{% endif #} id="pullMerge" class="btn btn-mini first btn-disable">需要我处理的</a>
+        <a href="#" {# if current == '/dashboard/pull/request/' %}class="active"{% endif #} id="pullRequest" class="btn btn-mini last">我创建的</a>
       </span>
+      {% comment %}
+      <span class="sortable btn-group">
+        <a href="#" class="btn btn-mini btn-disable first">进行中</a>
+        <a href="#" class="btn btn-mini last">已处理</a>
+      </span>
+      {% endcomment %}
     </div>
 
     {% if pullRequests %}
-    {% comment %}
       {% for pullRequest in pullRequests %}
       <section class="pull-item">
         <div class="widget">
@@ -38,11 +43,11 @@
         </div>
       </section>
       {% endfor %}
-      {% endcomment %}
 
+      {% comment %}
       <section class="pull-item">
         <div class="widget">
-          <span class="status open">Open</span>
+          <span class="status open">处理中</span>
           <span class="branches">
             <a href="#" class="from branch">3.2.0-wip</a>
             <span class="arrow-right"><i class="icon-long-arrow-right"></i></span>
@@ -67,7 +72,7 @@
 
       <section class="pull-item">
         <div class="widget">
-          <span class="status open">Open</span>
+          <span class="status open">处理中</span>
           <span class="branches">
             <a href="#" class="from branch">3.2.0-wip</a>
             <span class="arrow-right"><i class="icon-long-arrow-right"></i></span>
@@ -92,7 +97,7 @@
 
       <section class="pull-item">
         <div class="widget">
-          <span class="status closed">Closed</span>
+          <span class="status closed">已处理</span>
           <span class="branches">
             <a href="#" class="from branch">3.2.0-wip</a>
             <span class="arrow-right"><i class="icon-long-arrow-right"></i></span>
@@ -117,7 +122,7 @@
 
       <section class="pull-item">
         <div class="widget">
-          <span class="status rejected">Rejected</span>
+          <span class="status rejected">已处理</span>
           <span class="branches">
             <a href="#" class="from branch">3.2.0-wip</a>
             <span class="arrow-right"><i class="icon-long-arrow-right"></i></span>
@@ -139,6 +144,7 @@
           </div>
         </div>
       </section>
+      {% endcomment %}
 
       {% else %}
       <div class="pull-item wall">

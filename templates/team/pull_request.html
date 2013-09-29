@@ -3,9 +3,12 @@
 {% block subcontainer %}
 
 	<div class="pulls bubble">
-    <div class="pulls-head">
+    <div class="header">
       <h2 class="heading">我创建的</h2>
-      <!--p>等待合并的<a href="#" class="count">12</a>, 已经关闭的<a href="#" class="count">1</a>, 被拒绝的<a href="#" class="count">2</a></p-->
+      <span class="sortable btn-group">
+        <a id="pullMerge" href="/{{teamUser.username}}/-/dashboard/pull/merge/" class="btn btn-mini first">需要我处理的</a>
+        <a id="pullRequest"href="/{{teamUser.username}}/-/dashboard/pull/request/" class="btn btn-mini btn-disable last">我创建的</a>
+      </span>
     </div>
 
 			{% if pullRequests %}
@@ -47,7 +50,7 @@
 				{% endfor %}
 			{% else %}
         <div class="pull-item wall">
-					<p>您还没有发起 Pull Request</p>
+					<p>没有合并请求。</p>
 				</div>
 			{% endif %}
 	</div>

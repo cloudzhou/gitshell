@@ -1,46 +1,38 @@
 {% extends "team/settings_base.html" %}
 
 {% block container-right %}
-<div>
-    <h2 class="heading">
-        团队成员
-    </h2>
-    <input id="add-member" placeholder="成员的用户名或者邮箱"/><button class="add-team-member btn btn-mini btn-danger">添加新成员</button>
-    <table class="table team">
-        <colgroup>
-            <col width="">
-            <col width="action">
-        </colgroup>
-        <tbody>
-            {% for teamMember in teamMembers %}
-            <tr class="team-member">
-                <td class="name">
-                    <a href="/{{ teamMember.user.username }}/">{{ teamMember.user.username }}</a>
-                    {% if teamMember.has_admin_rights %}
-                        <button class="btn btn-mini btn-success">管理员</button>
-                    {% endif %}
-                </td>
-                <td class="rights">
-                    <!--input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-pull" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_read_rights %} checked="checked"{% endif %}>
-                    <label for="rights-{{teamMember.id}}">Pull</label>
-                    <input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-push" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_write_rights %} checked="checked"{% endif %}>
-                    <label for="rights-{{teamMember.id}}">Push</label-->
-                </td>
-                <td>
-                    <div class="action hide">
-                    {% if teamMember.has_admin_rights %}
-                        <button data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="cancal-team-admin btn btn-mini btn-danger">解除管理员</button>
-                    {% else %}
-                        <button data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="grant-team-admin btn btn-mini btn-danger">设置为管理员</button>
-                    {% endif %}
-                        <button data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="remove-team-member btn btn-mini btn-danger">移除</button>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+<h2 class="heading">团队成员</h2>
+<table class="table team">
+  <tbody>
+    {% for teamMember in teamMembers %}
+    <tr>
+      <td class="name">
+        <a href="/{{ teamMember.user.username }}/"><img src="/static/img/teamavatar.png" alt="{{teamMember.team_user.username}}">{{ teamMember.user.username }}</a>
+        {% if teamMember.has_admin_rights %}
+        <span class="label label-mini">管理员</span>
+        {% endif %}
+      </td>
+      <td class="rights">
+        <!--input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-pull" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_read_rights %} checked="checked"{% endif %}>
+        <label for="rights-{{teamMember.id}}">Pull</label>
+        <input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-push" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_write_rights %} checked="checked"{% endif %}>
+        <label for="rights-{{teamMember.id}}">Push</label-->
+        </td>
+        <td>
+          <div class="action hide">
+            {% if teamMember.has_admin_rights %}
+            <button data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="cancal-team-admin btn btn-mini btn-danger">解除管理员</button>
+            {% else %}
+            <button data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="grant-team-admin btn btn-mini btn-danger">设置为管理员</button>
+            {% endif %}
+            <button data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="remove-team-member btn btn-mini btn-danger">移除</button>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="add-member"><input id="add-member" placeholder="成员的用户名或者邮箱"/><button class="add-team-member btn btn-danger">添加新成员</button></p>
 {% endblock %}
 
 {% block js %}

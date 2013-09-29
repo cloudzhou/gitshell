@@ -180,14 +180,14 @@
               html.push('<li><span>' + commit.subject + '</span> at <a href="/' + commit.user_name + '/' + commit.repo_name + '/">' + commit.repo_name + '</a>' + ' <time class="modified" pubdate="pubdate">' + feed_date_str + '</time></li>');
             } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
               issue = feed.relative_obj;
-              action = 'create issue';
+              action = '新建问题';
               detail = '';
               if(feed.feed_type == 300) {
-                action = 'create issue';
+                action = '新建问题';
               } else if(feed.feed_type == 301) {
-                action = 'update issue';
+                action = '更新问题';
               } else if(feed.feed_type == 302) {
-                action = 'change issue';
+                action = '编辑问题';
                 detail = feed.first_refname;
               }
               html.push('<li><span>' + action + ' #' + ' on <a href="/'+ issue.username + '/' + issue.reponame +'/">' + issue.reponame + '</a></span><time class="date" pubdate="pubdate">' + moment(new Date(issue.create_time*1000)).fromNow() + '</time></li>')

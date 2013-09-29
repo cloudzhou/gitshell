@@ -16,9 +16,9 @@
 
       <div class="title">
         <h3 class="heading">
-          <a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">{{issue.subject}}</a>
           <a href="/{{user.username}}/{{issue.reponame}}/" class="label reponame">@{{issue.reponame}}</a>
           <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
+          <a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">{{issue.subject}}</a>
           {% comment %}
           {% if issue.status %}
           <span class="label label-warning">{{issue.status}}</span>

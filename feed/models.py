@@ -266,10 +266,10 @@ class FeedManager():
         message = ''
         if orgi_issue is None and current_issue is not None:
             feed_type = FEED_TYPE.ISSUES_CREATE
-            message = '新建了Issue'
+            message = '新建了问题'
         if orgi_issue is not None and (orgi_issue.subject != current_issue.subject or orgi_issue.content != current_issue.content or orgi_issue.category != current_issue.category):
             feed_type = FEED_TYPE.ISSUES_UPDATE
-            message = '更新了Issue'
+            message = '更新了问题'
         # status update
         status_changes = []
         if orgi_issue is not None:
@@ -569,11 +569,11 @@ class NOTIF_TYPE:
 
     NOTIF_TYPE_CHOICE = {
         'at': [
-            {'key': u'Commit提交信息', 'value': 0},
+            {'key': u'提交信息', 'value': 0},
             {'key': u'合并请求内容', 'value': 10},
             {'key': u'合并请求评论', 'value': 11},
-            {'key': u'Issue内容', 'value': 30},
-            {'key': u'Issue评论', 'value': 31},
+            {'key': u'问题内容', 'value': 30},
+            {'key': u'问题评论', 'value': 31},
         ],
         'merge': [
             {'key': u'需要你参与', 'value': 100},

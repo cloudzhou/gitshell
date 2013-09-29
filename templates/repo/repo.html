@@ -16,7 +16,6 @@
 
     <ul class="breadcrumb">
       <li class="user"><a href="/{{user_name}}/">{{user_name}}</a><span class="divider">/</span></li>
-
       <li class="repo-nav dropdown">
         <a href="/{{user_name}}/{{repo_name}}/" class="dropdown-toggle" data-toggle="dropdown">
           <strong>{{repo_name}}</strong>
@@ -24,7 +23,7 @@
         </a>
         <ul class="dropdown-menu nav nav-list">
           <li{% if current == 'index' or current == 'tree' or current == 'blob' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/" data-original-title="Code" rel="tooltip"><span><i class="icon-code"></i>代码</span></a></li>
-          <li{% if current == 'issues' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/issues/" data-original-title="Issues" rel="tooltip"><span><i class="icon-bug"></i>议题/问题</span></a></li>
+          <li{% if current == 'issues' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/issues/" data-original-title="Issues" rel="tooltip"><span><i class="icon-bug"></i>问题</span></a></li>
           <li{% if current == 'compare' or current == 'pull' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/pulls/" data-original-title="Pull Request" rel="tooltip"><span><i class="icon-code-fork"></i>合并请求</span></a></li>
           {#<li{% if current == 'pulse' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/pulse/" data-original-title="Overview" rel="tooltip"><span><i class="icon-desktop"></i>Overview</span></a></li>#}
           {#<li{% if current == 'stats' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/stats/" data-original-title="Graph" rel="tooltip"><span><i class="icon-th"></i>统计</span></a></li>#}
@@ -33,7 +32,6 @@
           {% endif %}
         </ul>
       </li>
-
         {% comment %}
         {% if is_owner %}
         <sup class="{%if repo.dropbox_sync == 1%}synced{%endif%}"><a href="/{{user_name}}/{{repo_name}}/settings/#dropbox"><i class="icon-dropbox"></i></a></sup>
@@ -59,14 +57,13 @@
         </div>
         {% endif %}
         {% endcomment %}
-
     </ul>{# /breadcrumb #}
 
     <ul class="repo-actions">
       {% if current == 'index' %}
       <li class="clone-url">
-        <a href="#" class="btn btn-mini btn-primary menu-toggle"><i class="icon-terminal"></i>Clone</a>
-        <div class="clone-menu">
+        <a href="#" class="btn btn-mini btn-primary menu-toggle" id="cloneUrlToggle"><i class="icon-terminal"></i>Clone</a>
+        <div class="clone-menu" id="cloneMenu">
           {% if repo.status != 0 %}
           <p class="info">正在初始化...</p>
           {% endif %}
@@ -74,32 +71,32 @@
           {% if has_fork_right %}
           <dl class="url colspan">
 
-            <dt class="dropdown span">
+            <dt class="span">
             {% if is_repo_member %}
-              <a href="#" class="sshFork url-select btn dropdown-toggle active" data-toggle="dropdown">SSH<i class="icon-caret-down"></i></a>
-              <ul class="dropdown-menu nav nav-list">
-                <li><a href="#" class="sshFork url-select">SSH</a></li>
-                <li><a href="#" class="httpFork url-select">HTTPS</a></li>
+            <a href="#" class="btn" id="urlType"><span>SSH</span><i class="icon-caret-down"></i></a>
+              <ul class="nav nav-list" id="urlTypeMenu">
+                <li><a href="#" id="sshFork">SSH</a></li>
+                <li><a href="#" id="httpFork">HTTP</a></li>
                 {% if repo.auth_type == 0 %}
-                  <li><a href="#" class="gitFork url-select">GIT</a></li>
+                  <li><a href="#" id="gitFork">GIT</a></li>
                 {% endif %}
               </ul>
             {% else %}
-              <a href="#" class="httpFork url-select btn dropdown-toggle active">HTTPS<i class="icon-caret-down"></i></a>
+              <a href="#" class="btn dropdown-toggle" id="urlType">HTTP<i class="icon-caret-down"></i></a>
               <ul class="dropdown-menu nav nav-list">
-                <li><a href="#" class="httpFork url-select">HTTPS</a></li>
+                <li><a href="#" id="httpFork">HTTP</a></li>
                 {% if repo.auth_type == 0 %}
-                  <li><a href="#" class="gitFork url-select">GIT</a></li>
+                  <li><a href="#" id="gitFork">GIT</a></li>
                 {% endif %}
               </ul>
             {% endif %}
             </dt>
 
-            <dd class="url-holder btn-group span">
+            <dd class="url-holder">
             {% if is_repo_member %}
-            <input class="btn middle" id="urlData" type="text" value="git@gitshell.com:{{user_name}}/{{repo_name}}.git" readonly="readonly">
+            <input class="middle" id="urlData" type="text" value="git@gitshell.com:{{user_name}}/{{repo_name}}.git" readonly="readonly">
             {% elif repo.auth_type == 0 %}
-            <input class="btn middle" id="urlData" type="text" value="https://{{user_name}}@gitshell.com/{{user_name}}/{{repo_name}}.git" readonly="readonly">
+            <input class="middle" id="urlData" type="text" value="https://{{user_name}}@gitshell.com/{{user_name}}/{{repo_name}}.git" readonly="readonly">
             {% endif %}
             {#<span class="span" id="urlInfo">{% if is_repo_member %}读写{% elif repo.auth_type == 0 %}只读{% endif %}</span>#}
             </dd>
@@ -139,7 +136,6 @@
 
 
 
-
     <div class="content">
       <div class="container{% block repo_container_class_name %}{% endblock %}">
 
@@ -152,12 +148,11 @@
   <li{% if current == 'commits' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">提交<span class="label label-mini{% if current == 'commits' %} label-success{% endif %}">{{repo.commit}}</span></a></li>
   <li{% if current == 'branches' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/branches/{{refs}}/">分支<span class="label label-mini{% if current == 'branches' %} label-success{% endif %}">{{refs_meta.branch_count}}</span></a></li>
   <li{% if current == 'tags' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/tags/{{refs}}/">标签<span class="label label-mini{% if current == 'tags' %} label-success{% endif %}">{{refs_meta.tag_count}}</span></a></li>
-  <li{% if current == 'refs_graph' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/refs/graph/{{refs}}/">统计</a></li>
+  <li{% if current == 'refs_graph' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/refs/graph/{{refs}}/">分支图</a></li>
 </ul>
 {% endif %}
 
 {% block bubbleheader %}{% endblock %}
-
 {% block subcontainer %}{% endblock %}
 
     </div>
@@ -179,38 +174,57 @@
         }
       );
 
-      $(".sshFork, .httpFork, .gitFork").bind({
-        click: function(e) {
-          e.preventDefault();
-          $(this).addClass("active").siblings().removeClass("active");
-          switch(this.className) {
-            case "sshFork":
-              $('#urlData').val('git@gitshell.com:{{user_name}}/{{repo_name}}.git');
-              $('#urlInfo').text('读写');
-              break;
-            case "httpFork":
-              $('#urlData').val('https://gitshell.com/{{user_name}}/{{repo_name}}.git');
-              $('#urlInfo').text('读写');
-              break;
-            case "gitFork":
-              $('#urlData').val('git://gitshell.com/{{user_name}}/{{repo_name}}.git');
-              $('#urlInfo').text('只读');
-              break;
-          };
+      //$('#cloneMenu').css('height','120px').hide();
+
+      $('#cloneUrlToggle').click(function(e){
+        e.stopPropagation();
+        $('#cloneMenu').toggle();
+      });
+
+      $('#cloneMenu').children().click(function(e){
+        e.stopPropagation();
+      });
+
+      $('html').click(function(e) {
+        var target = $(e.target);
+        if(!target.is('#cloneMenu')){
+          $('#cloneMenu').hide();
         }
       });
 
-      $("#urlData").bind({
-        click: function() {
-          $(this).addClass("selected").select();
-        }
+      $('#urlType').click(function(e){
+        e.stopPropagation();
+        $('#urlTypeMenu').toggle();
       });
 
-      $("body").bind({
-        click: function(e) {
-          if(e.target.id != "urlData") {
-            $("#urlData").removeClass("selected");
-          }
+      $('#urlTypeMenu a').click(function(e) {
+        e.preventDefault();
+        var txt = $(this).text();
+        $('#urlType').find('span').text(txt);
+        $('#urlTypeMenu').hide();
+        switch(this.id) {
+          case 'sshFork':
+            $('#urlData').val('git@gitshell.com:{{user_name}}/{{repo_name}}.git');
+            //$('#urlInfo').text('读写');
+            break;
+          case 'httpFork':
+            $('#urlData').val('https://gitshell.com/{{user_name}}/{{repo_name}}.git');
+            //$('#urlInfo').text('读写');
+            break;
+          case 'gitFork':
+            $('#urlData').val('git://gitshell.com/{{user_name}}/{{repo_name}}.git');
+            //$('#urlInfo').text('只读');
+            break;
+        };
+      });
+
+      $('#urlData').click(function() {
+        $(this).addClass('selected').select();
+      });
+
+      $('html').click(function(e){
+        if(!e.target.is('#urlData')) {
+          $('#urlData').removeClass('selected');
         }
       });
 
