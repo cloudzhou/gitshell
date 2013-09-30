@@ -7,12 +7,15 @@
     <span class="caret"><i class="icon-caret-down"></i></span>
   </a>
   <ul class="dropdown-menu nav nav-list">
-    {# TODO Need divider for branch and tag split line TODO icon-ok goto right pull-righto #}
+    {% if refs_meta.branches %}
     {% for branch in refs_meta.branches %}
     <li{%if branch == refs %} class="active"{%endif%}>
       <a href="/{{user_name}}/{{repo_name}}/{%if current == 'index' or current == 'tree' or current == 'blob' %}tree{%endif%}{%if current == 'commits' %}commits{%endif%}{%if current == 'refs_graph' %}refs/graph{%endif%}/{{branch}}/">{%if branch == refs %}<i class="icon-ok"></i>{%endif%}<span>{{branch}}</span></a>
     </li>
     {% endfor %}
+    {% else %}
+    <div class="inner"><p class="alert alert-info">没有分支</p></div>
+    {% endif %}
     {% if refs_meta.tags|length > 0 %}
     <li class="divider"></li>
     {% endif %}

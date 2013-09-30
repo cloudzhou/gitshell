@@ -1,22 +1,22 @@
 {% extends "settings/base.html" %}
 {% block container-right %}
-    {% if validate_result == 'success' %}
-    <div class="alert alert-success">
-        <p>修改成功，根据您目前用户名和登录邮箱，请更新仓库 url，修改 git 相关属性：</p>
-        <p>&gt; git config --global user.name "{{user.username}}"</p>
-        <p>&gt; git config --global user.email "{{user.email}}"</p>
-    </div>
-    {% elif validate_result == 'token_expired' %}
-    <div class="alert alert-error">
-        <strong>更改邮箱失败，可能是URL Token过期，请重新通过 <a href="/settings/change_username_email/">修改用户名·登录邮箱</a> 进行更改，</strong>
-        <br>
-        <strong>如果这种情况持续出现，请联系 <a href="mailto:support@gitshell.com">support@gitshell.com</a></strong>
-    </div>
-    {% elif validate_result == 'user_exists' %}
-    <div class="alert" alert-error>
-        <strong>您要更改的邮箱已经存在了，请重新通过 <a href="/settings/change_username_email/">修改用户名·登录邮箱</a> 进行更改</strong>
-    </div>
-    {% endif %}
+{% if validate_result == 'success' %}
+<div class="alert alert-success">
+  <p>修改成功，根据您目前用户名和登录邮箱，请更新仓库 url，修改 git 相关属性：</p>
+  <p>&gt; git config --global user.name "{{user.username}}"</p>
+  <p>&gt; git config --global user.email "{{user.email}}"</p>
+</div>
+{% elif validate_result == 'token_expired' %}
+<div class="alert alert-error">
+  <strong>更改邮箱失败，可能是URL Token过期，请重新通过 <a href="/settings/change_username_email/">修改用户名·登录邮箱</a> 进行更改，</strong>
+  <br>
+  <strong>如果这种情况持续出现，请联系 <a href="mailto:support@gitshell.com">support@gitshell.com</a></strong>
+</div>
+{% elif validate_result == 'user_exists' %}
+<div class="alert" alert-error>
+  <strong>您要更改的邮箱已经存在了，请重新通过 <a href="/settings/change_username_email/">修改用户名·登录邮箱</a> 进行更改</strong>
+</div>
+{% endif %}
 {% endblock %}
 {% block js %}
 <script>

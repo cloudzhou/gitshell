@@ -2,79 +2,69 @@
 {% block container-right %}
     {% if thirdpartyUser and thirdpartyUser.init == 0 %}
     <div class="alert alert-error">
-        <p>我们尝试导入您 GitHub 账户的用户名和邮箱信息，</p>
-        <p>不过看来一些信息已经存在了，所以我们随机生成用户名或者邮箱，</p>
-        <p>请按照实际情况修改用户名或者邮箱，所有修改成功之后请刷新页面，看看是否改变为您希望的信息。</p>
+      <p>我们尝试导入您 GitHub 账户的用户名和邮箱信息，不过看来一些信息已经存在了，所以我们随机生成用户名或者邮箱，请按照实际情况修改用户名或者邮箱，所有修改成功之后请刷新页面，看看是否改变为您希望的信息。</p>
     </div>
     {% endif %}
     {% if thirdpartyUser and thirdpartyUser.init == 0 and thirdpartyUser.tp_username == user.username %}
     {% else %}
-    <h3 style="border-bottom:1px solid #EEEEEE; margin-bottom:15px;">
-        修改用户名<small>&nbsp;只允许[a-zA-Z0-9_]之内的字符</small>
-    </h3>
-    <div>
-        <form class="form-horizontal" action="" method="post">
-            <fieldset>
-                <div class="control-group">
-                    <label for="id_username" class="control-label">新用户名</label>
-                    <div class="controls">
-                        {% if thirdpartyUser and thirdpartyUser.init == 0 %}
-                        <input id="id_username" type="text" name="username" maxlength="30" value="{{thirdpartyUser.tp_username}}" placeholder="新的用户名">
-                        {% else %}
-                        <input id="id_username" type="text" name="username" maxlength="30" value="{{user.username}}" placeholder="新的用户名">
-                        {% endif %}
-                        <code id="id_username_alert" class="hide"></code>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <button id="id_username_change_submit" class="btn btn-danger" type="submit">我确定要修改用户名</button>
-                    </div>
-                </div>
-            </fieldset>
-        </form>
-    </div>
+    <h2 class="heading">修改用户名<em>只允许[a-zA-Z0-9_]之内的字符</em></h2>
+    <form class="form-horizontal" action="" method="post">
+      <fieldset>
+        <div class="control-group">
+          <label for="id_username" class="control-label">新用户名</label>
+          <div class="controls">
+            {% if thirdpartyUser and thirdpartyUser.init == 0 %}
+            <input id="id_username" type="text" name="username" maxlength="30" value="{{thirdpartyUser.tp_username}}" placeholder="新的用户名">
+            {% else %}
+            <input id="id_username" type="text" name="username" maxlength="30" value="{{user.username}}" placeholder="新的用户名">
+            {% endif %}
+            <code id="id_username_alert" class="hide"></code>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="controls">
+            <button id="id_username_change_submit" class="btn btn-danger" type="submit">我确定要修改用户名</button>
+          </div>
+        </div>
+      </fieldset>
+    </form>
     {% endif %}
     {% if thirdpartyUser and thirdpartyUser.init == 0 and thirdpartyUser.tp_email == user.email %}
     {% else %}
-    <h3 style="border-bottom:1px solid #EEEEEE; margin-bottom:15px;">
-        修改登录邮箱<small>&nbsp;使用常用邮箱</small>
-    </h3>
-    <div>
-        <form class="form-horizontal" action="" method="post">
-            <fieldset>
-                <div class="control-group">
-                    <label for="id_email" class="control-label">新登录邮箱</label>
-                    <div class="controls">
-                        {% if thirdpartyUser and thirdpartyUser.init == 0 %}
-                        <input id="id_email" type="text" name="email" maxlength="30" value="{{thirdpartyUser.tp_email}}" placeholder="新的登录Email">
-                        {% else %}
-                        <input id="id_email" type="text" name="email" maxlength="30" value="{{user.email}}" placeholder="新的登录Email">
-                        {% endif %}
-                        <code id="id_email_alert" class="hide"></code>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <button id="id_email_change_submit" class="btn btn-danger" type="submit">我确定要修改登录Email</button>
-                        <a id="id_email_goto" href="" target="_blank" class="hide"><button type="button" class="btn btn-success"></button></a>
-                    </div>
-                </div>
-            </fieldset>
-        </form>
-    </div>
+    <h2>修改登录邮箱<em>使用常用邮箱</em></h2>
+    <form class="form-horizontal" action="" method="post">
+      <fieldset>
+        <div class="control-group">
+          <label for="id_email" class="control-label">新登录邮箱</label>
+          <div class="controls">
+            {% if thirdpartyUser and thirdpartyUser.init == 0 %}
+            <input id="id_email" type="text" name="email" maxlength="30" value="{{thirdpartyUser.tp_email}}" placeholder="新的登录Email">
+            {% else %}
+            <input id="id_email" type="text" name="email" maxlength="30" value="{{user.email}}" placeholder="新的登录Email">
+            {% endif %}
+            <code id="id_email_alert" class="hide"></code>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="controls">
+            <button id="id_email_change_submit" class="btn btn-danger" type="submit">我确定要修改登录Email</button>
+            <a id="id_email_goto" href="" target="_blank" class="hide"><button type="button" class="btn btn-success"></button></a>
+          </div>
+        </div>
+      </fieldset>
+    </form>
     {% endif %}
-    <div class="alert">
-        <p>我们不鼓励修改用户名和登录邮箱，这些修改会对现有的仓库或者统计产生影响，</p>
-        <p>比如用户名由 username1 修改为 username2，</p>
-        <p>那么仓库 url: git@gitshell.com:username1/reponame.git 就必须对应修改为 url: git@gitshell.com:username2/reponame.git，</p>
-        <p>否则原有的仓库是不可用的，此外，当用户使用 @username1 的时候也改变了。总之会改变原有的关联属性。</p>
-        <p>在下面的情况下允许修改用户名和登录邮箱：</p>
-        <p>1）您的用户名，邮箱确实有了一些变更。</p>
-        <p>2）通过第三方登录，比如通过 <strong>github</strong> 登录，那么可能会给您生成随机用户名和登录邮箱，这时候可以修改为您喜欢的用户名和登录邮箱。</p>
-        <p>如果您确定修改了用户名和登录邮箱，请更新仓库 url，修改 git 相关属性：</p>
-        <p>&gt; git config --global user.name "yourname"</p>
-        <p>&gt; git config --global user.email "youremail"</p>
+    <div class="info">
+      <p>我们不鼓励修改用户名和登录邮箱，这些修改会对现有的仓库或者统计产生影响，</p>
+      <p>比如用户名由 username1 修改为 username2，</p>
+      <p>那么仓库 url: git@gitshell.com:username1/reponame.git 就必须对应修改为 url: git@gitshell.com:username2/reponame.git，</p>
+      <p>否则原有的仓库是不可用的，此外，当用户使用 @username1 的时候也改变了。总之会改变原有的关联属性。</p>
+      <p>在下面的情况下允许修改用户名和登录邮箱：</p>
+      <p>1）您的用户名，邮箱确实有了一些变更。</p>
+      <p>2）通过第三方登录，比如通过 <strong>github</strong> 登录，那么可能会给您生成随机用户名和登录邮箱，这时候可以修改为您喜欢的用户名和登录邮箱。</p>
+      <p>如果您确定修改了用户名和登录邮箱，请更新仓库 url，修改 git 相关属性：</p>
+      <p>&gt; git config --global user.name "yourname"</p>
+      <p>&gt; git config --global user.email "youremail"</p>
     </div>
 {% endblock %}
 {% block js %}

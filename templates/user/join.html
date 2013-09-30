@@ -43,7 +43,7 @@
         <header class="header">
           <h1 class="heading">哈哈哈，欢迎加入Gitshell的快乐家庭</h1>
         </header>
-        <p class="alert alert-info">我们已经发送了一封确认邮件到您的邮箱，您可以在<em>半小时</em>内激活。<a href="#" id="gotoA" target="_blank" class="btn btn-success hide">点击到<span id="gotoDomain"></span></a></p>
+        <p class="alert alert-info" style="padding: 15px 10px;">我们已经发送了一封确认邮件到您的邮箱，您可以在<em>半小时</em>内激活。<a href="#" id="gotoA" target="_blank" class="btn btn-success hide">点击到<span id="gotoDomain"></span></a></p>
         <p>部分不友好的运营商可能会拦截邮件，所以您需要留意一下垃圾邮件。<a href="#" class="readmore"><i class="icon-double-angle-right"></i><span>没有收到邮件？</span></a></p>
         <blockquote class="contact hide"><em>出乎您的意料，希望您自认倒霉吧</em>，但无论何时都可以与<a href="mailto:support@gitshell.com">support@gitshell.com</a>联络，或者在微博@我们<a target="_blank" href="http://weibo.com/gitshell">@gitshell</a>。</blockquote>
       </article>
@@ -51,7 +51,7 @@
 
     {% ifequal step '3' %}
     <article class="guide">
-      <p class="info">我们为您准备了一些入门的指导。当然，我们更相信您已经熟悉Git，如果您觉得"切，当然是了!"，那么尽可以潇洒地<a href="#">让它见鬼去<i class="icon-remove"></i></a>。</p>
+      <p class="info">我们为您准备了一些入门的指导。当然，我们更相信您已经熟悉Git，如果您觉得是的，那么可以<a href="/dashboard/feed/">直接跳过</a>。</p>
       <section class="tutorial">
         <h2 class="heading">快速入门：</h2>
         <p>如果您使用任何类unix系统，第一次配置 ssh 公钥密钥，请按照步骤，复制黑色背景字符，在终端执行命令，和编辑文件</p>
@@ -192,11 +192,11 @@ cat ~/.ssh/gitshell.com_rsa.pub</pre>
         function(e){
           e.preventDefault();
           $(this).find('i').removeClass('icon-double-angle-right').addClass('icon-double-angle-down').end().find('span').text('好吧,我知道了');
-          $('blockquote.contact').slideDown();
+          $('blockquote.contact').slideDown(100);
         }, function(e) {
           e.preventDefault();
           $(this).find('i').removeClass('icon-double-angle-down').addClass('icon-double-angle-right').end().find('span').text('没有收到邮件?');
-          $('blockquote.contact').slideUp();
+          $('blockquote.contact').slideUp(100);
         }
         );
   });

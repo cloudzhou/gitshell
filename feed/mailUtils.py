@@ -46,7 +46,7 @@ class Mailer():
         cache.set(random_hash + '_useremail_id', eid)
         active_url = 'https://gitshell.com/settings/email/verified/%s/' % random_hash
         header = u'[Gitshell]验证邮件地址'
-        body = u'尊敬的 %s：\n请点击下面的地址验证您在Gitshell的邮箱：\n%s\n----------\n此邮件由Gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % (user.username, active_url)
+        body = u'Hi, %s：\n请点击下面的地址验证您在Gitshell的邮箱：\n%s\n----------\n此邮件由Gitshell系统发出，请勿直接回复。' % (user.username, active_url)
         self.send_mail(header, body, self.default_sender, [email])
 
     def send_change_email(self, user, email):
@@ -54,7 +54,7 @@ class Mailer():
         cache.set(random_hash, email)
         active_url = 'https://gitshell.com/settings/validate_email/%s/' % random_hash
         header = u'[Gitshell]更改邮件地址'
-        body = u'尊敬的 %s：\n请点击下面的地址更改您在Gitshell的登录邮箱：\n%s\n----------\n此邮件由Gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % (user.username, active_url)
+        body = u'Hi, %s：\n请点击下面的地址更改您在Gitshell的登录邮箱：\n%s\n----------\n此邮件由Gitshell系统发出，请勿直接回复。' % (user.username, active_url)
         self.send_mail(header, body, self.default_sender, [email])
 
     def send_verify_account(self, email, username, password):
@@ -64,7 +64,7 @@ class Mailer():
         cache.set(random_hash + '_password', password)
         active_url = 'https://gitshell.com/join/%s/' % random_hash
         header = u'[Gitshell]注册邮件'
-        body = u'尊敬的Gitshell用户：\n感谢您选择了Gitshell，请点击下面的地址激活您在Gitshell的帐号：\n%s\n----------\n此邮件由Gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
+        body = u'Hi, Gitshell用户：\n感谢您选择了Gitshell，请点击下面的地址激活您在Gitshell的帐号：\n%s\n----------\n此邮件由Gitshell系统发出，请勿直接回复。' % active_url
         self.send_mail(header, body, self.default_sender, [email])
 
     def send_resetpassword(self, email):
@@ -76,32 +76,47 @@ class Mailer():
         self.send_mail(header, body, self.default_sender, [email])
 
 
-NOTIF_MAIL_TEMPLATE = """<html><head><title>{{title}}</title></head><body>
-<div id=":vt" style="overflow: hidden;"><div><div style="min-width:600px;margin:0 auto;padding:39px;font-family:'Helvetica Neue',Helvetica,Arial,Sans-serif;font-size:13px;line-height:1.7;background-color:#f5f5f5" marginheight="0" marginwidth="0">
-<table border="0" cellspacing="0" cellpadding="0" width="552" style="border:1px solid #dedede;border-bottom:2px solid #dedede;margin:0 auto;background-color:#ffffff"><tbody>
-          {% for notifMessage in notifMessages %}
-          <tr>
-            <td><a href="/{{notifMessage.relative_name}}/">@{{notifMessage.relative_name}}</a></td>
-            <td>
-                {% if notifMessage.notif_type == 0 %}
-                <span class="muted">commit: </span>{{notifMessage.relative_obj.subject}}
-                <span class="muted"><a href="/{{notifMessage.relative_obj.get_repo_username}}/">{{notifMessage.relative_obj.get_repo_username}}</a>/<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/">{{notifMessage.relative_obj.repo_name}}</a>:<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commits/{{notifMessage.relative_obj.get_short_refname}}/">{{notifMessage.relative_obj.get_short_refname}}</a></span>
-                {% elif notifMessage.notif_type == 30 %}
-                <span class="muted">issue: </span>{{notifMessage.relative_obj.subject}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
-                {% elif notifMessage.notif_type == 31 %}
-                <span class="muted">comment on issue: </span>{{notifMessage.relative_obj.content}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.issues_id}}/">#{{notifMessage.relative_obj.issues_id}}</a>
-                {% elif notifMessage.notif_type == 10 %}
-                <span class="muted">pull request 提到你: </span> <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}} {{notifMessage.relative_obj.short_title}}</a>
-                {% elif notifMessage.notif_type >= 100 and notifMessage.notif_type <= 105 %}
-                <span class="muted">{{notifMessage.message}} pull request: <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}} {{notifMessage.relative_obj.short_title}}</a>
-                {% elif notifMessage.notif_type == 300 %}
-                <span class="muted">{{notifMessage.message}} issue: {{notifMessage.relative_obj.subject}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
-                {% endif %}
-                <span class="unixtime">{{notifMessage.relative_obj.modify_time}}</span>
-            </td>
-          </tr>
-          {% endfor %}
-</tbody></table>
-</div></div></div></body></html>
+NOTIF_MAIL_TEMPLATE = """<html lang="en"><head><meta charset="utf-8"><title>{{title}}</title></head><body>
+<div id=":vt" style="overflow: hidden;">
+<table border="0" cellspacing="0" cellpadding="0" width="552" style="border:1px solid #dedede;border-bottom:2px solid #dedede;margin:0 auto;background-color:#ffffff; min-width:600px;margin:0 auto;padding:39px;font-family:'Helvetica Neue',Helvetica,Arial,Sans-serif;font-size:13px;line-height:1.7;background-color:#f5f5f5;"><tbody>
+  {% for notifMessage in notifMessages %}
+  <tr>
+    <td>
+      <p style="font-weight: bold;">
+      <a href="/{{notifMessage.relative_name}}/">@{{notifMessage.relative_name}}</a>
+      {% if notifMessage.notif_type == 0 %}
+      <span>提交更新: </span>{{notifMessage.relative_obj.subject}}
+      <span><a href="/{{notifMessage.relative_obj.get_repo_username}}/">{{notifMessage.relative_obj.get_repo_username}}</a>/<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/">{{notifMessage.relative_obj.repo_name}}</a>:<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commits/{{notifMessage.relative_obj.get_short_refname}}/">{{notifMessage.relative_obj.get_short_refname}}</a></span>
+
+
+      {% elif notifMessage.notif_type == 30 %}
+      <span>问题: </span>{{notifMessage.relative_obj.subject}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
+
+
+      {% elif notifMessage.notif_type == 31 %}
+      <span>评论了问题: </span>{{notifMessage.relative_obj.content}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.issues_id}}/">#{{notifMessage.relative_obj.issues_id}}</a>
+
+
+      {% elif notifMessage.notif_type == 10 %}
+      <span>在合并请求中提到你: </span> <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}} {{notifMessage.relative_obj.short_title}}</a>
+
+
+      {% elif notifMessage.notif_type >= 100 and notifMessage.notif_type <= 105 %}
+      <span>{{notifMessage.message}}合并请求: <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}} {{notifMessage.relative_obj.short_title}}</a>
+
+
+      {% elif notifMessage.notif_type == 300 %}
+      <span>{{notifMessage.message}}问题: {{notifMessage.relative_obj.subject}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
+      {% endif %}
+
+      <span>{{notifMessage.relative_obj.modify_time}}</span>
+      </p>
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+</div>
+</body></html>
 """
 
