@@ -17,6 +17,7 @@
     moment.lang('zh-cn');
     var orgi_feeds = {{ feeds_as_json|safe }};
     var sorted_feeds = [];
+    var feed_timestamp = {};
     var do_orgi_feeds = function() {
       all_ids = [];
       all_feeds = [];
@@ -30,12 +31,14 @@
       var pre_feed_id = 0;
       for (x in all_feeds) {
         feed_id = all_feeds[x][0];
+        timestamp = -all_feeds[x][1];
         if(pre_feed_id != feed_id) {
           i++;
           all_ids.push(feed_id);
         }
+        feed_timestamp[feed_id] = timestamp;
         pre_feed_id = feed_id;
-        if(i >= 100) { break; }
+        if(i >= 1000) { break; }
       }
       all_ids_str = all_ids.join('_');
       $.ajax({
@@ -45,7 +48,6 @@
         dataType: 'json',
         timeout: 10000,
         error: function(){
-          //alert('');
         },
         success: function(json){
           ordered_date = [];
@@ -54,12 +56,12 @@
           feeds = json.feeds;
           gravatar_dict = json.gravatar_dict;
           gravatar_userId_dict = json.gravatar_userId_dict;
-          feeds.sort(function(a,b) {
-            return b.committer_date - a.committer_date;
-          })
+          //feeds.sort(function(a,b) {
+          //  return b.committer_date - a.committer_date;
+          //})
           for(x in feeds) {
             feed = feeds[x];
-            feed_date_str = moment(new Date(feed.create_time*1000)).format('YY年MM月DD');
+            feed_date_str = moment(new Date(feed_timestamp[feed.id]*1000)).format('YY年MM月DD');
             if(!display_feeds_map[feed_date_str]) {
               ordered_date.push(feed_date_str);
               display_feeds_map[feed_date_str] = [];
@@ -80,7 +82,7 @@
               if(feed.feed_type == 0) {
                 commit = feed.relative_obj;
                 html.push('<section class="feed-item">');
-                html.push('<span class="feed-type commit">合并请求</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=32"></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(commit.commiter_date*1000)).fromNow() +'</time><p class="title"><a href="/' + commit.author + '/" class="author">' + commit.author + '</a>提交更新到' + '<a href="/' + commit.user_name +'/' + commit.repo_name + '/" class="repo-name">' + commit.repo_name + '</a><ul class="subject commits">');
+                html.push('<span class="feed-type commit">合并请求</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=32"></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(commit.committer_date*1000)).fromNow() +'</time><p class="title"><a href="/' + commit.author + '/" class="author">' + commit.author + '</a>提交更新到' + '<a href="/' + commit.user_name +'/' + commit.repo_name + '/" class="repo-name">' + commit.repo_name + '</a><ul class="subject commits">');
                 html.push('<li>' + '<img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=15" alt="">' + '<a href="/' + commit.user_name + '/' + commit.repo_name + '/commit/' + commit.commit_hash + '/" class="hash">' + commit.commit_hash + '</a>' + '- <span class="commit-msg">' + commit.subject + '</span></li>');
                 html.push('</ul></div>');
                 html.push('</section>');
@@ -97,7 +99,7 @@
                   detail = feed.first_refname;
                 }
                 html.push('<section class="feed-item">');
-                html.push('<span class="feed-type issue">问题</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=32" alt=""></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(issue.create_time*1000)).fromNow() + '</time><p class="title"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/" class="author">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>' + action + '<a href="/' + issue.username + '/' + issue.reponame + '/issues/' + issue.id + '/" class="repo-name">' + issue.username + '/' + issue.reponame + '#' + issue.id + '</a></p>');
+                html.push('<span class="feed-type issue">问题</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=32" alt=""></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(feed_timestamp[feed.id]*1000)).fromNow() + '</time><p class="title"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/" class="author">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>' + action + '<a href="/' + issue.username + '/' + issue.reponame + '/issues/' + issue.id + '/" class="repo-name">' + issue.username + '/' + issue.reponame + '#' + issue.id + '</a></p>');
                 html.push('<p class="subject"><span>' + issue.subject + '</span><span class="action">' + detail + '</span></p></div>');
                 html.push('</section>');
               } else if(feed.feed_type >= 100 && feed.feed_type <= 105) {
@@ -117,7 +119,7 @@
                   action = '评论合并请求';
                 }
                 html.push('<section class="feed-item">');
-                html.push('<span class="feed-type pull">合并请求</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=32" alt=""></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(pullRequest.create_time*1000)).fromNow() + '</time><p class="title"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/" class="author">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>' + action +  '<a href="/' + pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name + '/pull/' + pullRequest.id + '/">' + pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name + '#' + pullRequest.id + '</a></p>');
+                html.push('<span class="feed-type pull">合并请求</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=32" alt=""></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(feed_timestamp[feed.id]*1000)).fromNow() + '</time><p class="title"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/" class="author">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>' + action +  '<a href="/' + pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name + '/pull/' + pullRequest.id + '/">' + pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name + '#' + pullRequest.id + '</a></p>');
                 html.push('<p class="subject">' + pullRequest.short_title + '</p></div>');
                 html.push('</section>');
               }

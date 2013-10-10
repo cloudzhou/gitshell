@@ -259,7 +259,7 @@ def _fillwith_pull_event(request, feeds, usernames, userIds):
         if pullRequest is None:
             continue
         action = ''
-        pullRequest_view = {'id': pullRequest.id, 'desc_repo_username': pullRequest.desc_repo.username, 'desc_repo_name': pullRequest.desc_repo.name, 'short_title': pullRequest.short_title, 'create_time': time.mktime(pullRequest.create_time.timetuple())}
+        pullRequest_view = {'id': pullRequest.id, 'desc_repo_username': pullRequest.desc_repo.username, 'desc_repo_name': pullRequest.desc_repo.name, 'short_title': pullRequest.short_title, 'create_time': time.mktime(pullRequest.create_time.timetuple()), 'modify_time': time.mktime(pullRequest.modify_time.timetuple())}
         feed.relative_obj = pullRequest_view
 
 def _get_feed_ids(ids_str):
