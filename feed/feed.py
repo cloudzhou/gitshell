@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import redis, time
+from datetime import datetime
 from gitshell import settings
 
 
@@ -44,6 +45,11 @@ class AttrKey:
     # key-value
     SCENE_ID = 'scene_id'
     REFS = 'refs'
+    RECENTLY_TIME_FEED = 'rt_feed'
+    RECENTLY_TIME_TIMELINE = 'rt_timeline'
+    RECENTLY_TIME_PULL = 'rt_pull'
+    RECENTLY_TIME_ISSUES = 'rt_issues'
+    RECENTLY_TIME_NOTIF = 'rt_notif'
 
 """ all method about feed and redis """
 class FeedAction():
@@ -231,6 +237,22 @@ class FeedAction():
     def set_repo_attr(self, repo_id, attrKey, value):
         key = '%s:%s:%s' % ('r', repo_id, attrKey)
         self.redis.hset(REPO_ATTR, key, value)
+
+    """ user recently view timestamp """
+    def get_recently_timestamp(self, user_id, attrKey):
+        recently_timestamp =  self.get_user_attr(user_id, attrKey)
+        if recently_timestamp:
+            return recently_timestamp
+        timestamp = int(time.time())
+        return timestamp
+
+    def get_recently_timestamp_astime(self, user_id, attrKey):
+        recently_timestamp = self.get_recently_timestamp(user_id, attrKey)
+        return datetime.fromtimestamp(float(recently_timestamp))
+
+    def set_recently_timestamp_now(self, user_id, attrKey):
+        timestamp = int(time.time())
+        self.set_user_attr(user_id, attrKey, timestamp)
 
     """ remove repo feed """
     def delete_repo_feed(self, repo_id):
