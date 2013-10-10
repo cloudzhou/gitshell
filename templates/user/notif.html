@@ -6,7 +6,7 @@
 <div class="notifs bubble">
 
   {% for notifMessage in notifMessages %}
-  <div class="notif-item">
+  <div class="notif-item{%if notifMessage.relative_obj.modify_time > recently_timestamp_astime %} unread{%endif%}">
 
     <div class="notif-type{%if notifMessage.notif_type == 0%} type-commit{%elif notifMessage.notif_type >= 30 and notifMessage.notif_type <= 39 %} type-issue-comment{%elif notifMessage.notif_type == 10 %} type-at{%elif notifMessage.notif_type >= 100 and notifMessage.notif_type <= 105%} type-pull{%elif notifMessage.notif_type == 300%} type-issue{%endif%}">
     </div>

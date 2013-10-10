@@ -45,13 +45,15 @@ def feed(request):
     current = 'feed'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.FEED)
+    recently_timestamp = feedAction.get_recently_timestamp(request.user.id, AttrKey.RECENTLY_TIME_FEED)
     raw_watch_users = feedAction.get_watch_users(request.user.id, 0, 100)
     watch_user_ids = [int(x[0]) for x in raw_watch_users]
     raw_watch_repos = feedAction.get_watch_repos(request.user.id, 0, 100)
     watch_repo_ids = [int(x[0]) for x in raw_watch_repos]
 
     feeds_as_json = multi_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids)
-    response_dictionary = {'current': current, 'feeds_as_json' : feeds_as_json}
+    feedAction.set_recently_timestamp_now(request.user.id, AttrKey.RECENTLY_TIME_FEED)
+    response_dictionary = {'current': current, 'feeds_as_json' : feeds_as_json, 'recently_timestamp': recently_timestamp}
     return render_to_response('user/feed.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -60,10 +62,12 @@ def timeline(request):
     current = 'timeline'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.TIMELINE)
+    recently_timestamp = feedAction.get_recently_timestamp(request.user.id, AttrKey.RECENTLY_TIME_TIMELINE)
     pri_user_feeds = feedAction.get_pri_user_feeds(request.user.id, 0, 100)
     pub_user_feeds = feedAction.get_pub_user_feeds(request.user.id, 0, 100)
     feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
-    response_dictionary = {'current': current, 'feeds_as_json': feeds_as_json}
+    feedAction.set_recently_timestamp_now(request.user.id, AttrKey.RECENTLY_TIME_TIMELINE)
+    response_dictionary = {'current': current, 'feeds_as_json': feeds_as_json, 'recently_timestamp': recently_timestamp}
     return render_to_response('user/timeline.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -73,8 +77,10 @@ def pull_merge(request):
     current = 'pull'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.PULL)
+    recently_timestamp_astime = feedAction.get_recently_timestamp_astime(request.user.id, AttrKey.RECENTLY_TIME_PULL)
     pullRequests = RepoManager.list_pullRequest_by_mergeUserId(request.user.id)
-    response_dictionary = {'current': current, 'pullRequests': pullRequests}
+    feedAction.set_recently_timestamp_now(request.user.id, AttrKey.RECENTLY_TIME_PULL)
+    response_dictionary = {'current': current, 'pullRequests': pullRequests, 'recently_timestamp_astime': recently_timestamp_astime}
     return render_to_response('user/pull_merge.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -98,6 +104,7 @@ def issues(request, page):
     current = 'issues'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.ISSUES)
+    recently_timestamp = feedAction.get_recently_timestamp(request.user.id, AttrKey.RECENTLY_TIME_ISSUES)
     page = int(page)
     page_size = 50
     offset = page*page_size
@@ -111,7 +118,8 @@ def issues(request, page):
     if len(issues) > page_size:
         hasNext = True
         issues.pop()
-    response_dictionary = {'current': current, 'issues': issues, 'page': page, 'hasPre': hasPre, 'hasNext': hasNext}
+    feedAction.set_recently_timestamp_now(request.user.id, AttrKey.RECENTLY_TIME_ISSUES)
+    response_dictionary = {'current': current, 'issues': issues, 'page': page, 'hasPre': hasPre, 'hasNext': hasNext, 'recently_timestamp': recently_timestamp}
     return render_to_response('user/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -132,11 +140,13 @@ def notif(request):
     current = 'notif'
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.NOTIF)
+    recently_timestamp_astime = feedAction.get_recently_timestamp_astime(request.user.id, AttrKey.RECENTLY_TIME_NOTIF)
     notifMessages = FeedManager.list_notifmessage_by_userId(request.user.id, 0, 500)
     if request.userprofile.unread_message != 0:
         request.userprofile.unread_message = 0
         request.userprofile.save()
-    response_dictionary = {'current': current, 'notifMessages': notifMessages}
+    feedAction.set_recently_timestamp_now(request.user.id, AttrKey.RECENTLY_TIME_NOTIF)
+    response_dictionary = {'current': current, 'notifMessages': notifMessages, 'recently_timestamp_astime': recently_timestamp_astime}
     return render_to_response('user/notif.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
