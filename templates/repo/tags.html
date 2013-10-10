@@ -13,9 +13,9 @@
   </div>
   {% else %}
     {% if is_repo_member %}
-      <p class="info">没有标签.<a href="/{{user_name}}/{{repo_name}}/refs/create/master/#target_tag" class="btn btn-success">创建新标签</a></p>
+      <p class="alert alert-error">没有标签.<a href="/{{user_name}}/{{repo_name}}/refs/create/master/#target_tag" class="btn btn-success">创建新标签</a></p>
     {% else %}
-      <p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有标签，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
+      <p class="alert alert-error"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有标签，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
     {% endif %}
   {% endif %}
 </div>

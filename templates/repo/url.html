@@ -1,6 +1,6 @@
 <div class="url-container hide clearfix{% if current == 'index' or current == 'tree' %} visible{%else%} hide{%endif%}">
 	{% if repo.status != 0 %}
-		<p class="info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
+		<p class="alert alert-info">仓库正在初始化中...暂时不能提交、查看源代码，请耐心等候，稍后刷新。（这种情况很可能是初始化一个较大的仓库）</p>
 	{% endif %}
 	{% if has_fork_right %}
 		<dl class="url colspan">

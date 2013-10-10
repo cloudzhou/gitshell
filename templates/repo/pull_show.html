@@ -26,8 +26,7 @@
             <div class="tab-content pulls">
               <section class="tab-pane bubble active" id="summary">
                 <div class="refs">
-                  <span class="pull-id">#{{pullRequest.id}}</span>
-                  <p class="txt">请求把<span class="hash label label-mini">{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}</span>合并到<span class="hash label label-mini">{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}}</span></p>
+                  <p class="alert alert-info"><span class="pull-id">#{{pullRequest.id}}</span>请求把<span class="label label-success label-mini text-shadow-reverse">{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}</span>合并到<span class="label label-success label-mini text-shadow-reverse">{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}}</span></p>
                 </div>
                 <div class="pull">
                   <figure class="avatar">

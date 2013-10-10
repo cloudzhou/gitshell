@@ -79,7 +79,9 @@
         {% endcomment %}
         <li class="dropdown cong">
           <a href="/{{ user.username }}/" class="dropdown-toggle" data-toggle="dropdown">
-            <i class="icon-cog"></i>
+            <img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=16" alt="{{ user.username }}">
+            <span class="name">{{user.username}}</span>
+            <i class="icon-caret-down"></i>
           </a>
           <div class="dropdown-menu" role="menu" aria-labelladby="dLable">
             <div class="info">
@@ -127,12 +129,12 @@
   <footer class="footer" role="contentinfo">
     <div class="container">
       <ul class="nav">
-        <li><a href="/help/#about" class="about-gitshell">关于GitShell</a></li>
-        <li><a href="/help/#mission">我们的愿景</a></li>
-        <li><a href="/help/#faq">FAQ</a></li>
+        <li><a href="/help/#about" class="about-gitshell">关于Gitshell</a></li>
+        {#<li><a href="/help/#mission">我们的愿景</a></li>#}
+        {#<li><a href="/help/#faq">FAQ</a></li>#}
         <li><a href="/help/">帮助</a></li>
         <li><a target="_blank" href="http://blog.gitshell.com">官方博客</a></li>
-        <li><a href="/help/#contact">联系GitShell</a></li>
+        {#<li><a href="/help/#contact">联系Gitshell</a></li>#}
       </ul>
       <p class="copyright">&copy; <strong>Gitshell</strong> 2013 专注<a target="_blank" href="http://git-scm.com/">Git</a>代码托管<a class="muted" href="http://www.miitbeian.gov.cn">苏ICP备12042031号</a></p>
     </div>

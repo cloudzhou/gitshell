@@ -15,132 +15,134 @@
 <script>
   $(function(){
     moment.lang('zh-cn');
-    var orgi_feeds = {{ feeds_as_json|safe }}
-    var sorted_feeds = []
+    var orgi_feeds = {{ feeds_as_json|safe }};
+    var sorted_feeds = [];
     var do_orgi_feeds = function() {
-      all_ids = []
-    all_feeds = []
-    for (x in orgi_feeds) {
-      all_feeds = all_feeds.concat(orgi_feeds[x]);
-    } 
-  all_feeds.sort(function(a,b) {
-    return a[1] - b[1];
-  })
-  var i = 0;
-  var pre_feed_id = 0;
-  for (x in all_feeds) {
-    feed_id = all_feeds[x][0]
-    if(pre_feed_id != feed_id) {
-      i++;
-      all_ids.push(feed_id);
-    }
-    pre_feed_id = feed_id
-      if(i >= 100) { break; }
-  }
-  all_ids_str = all_ids.join('_');
-  $.ajax({
-    url: '/ajax/feed/ids/',
-    type: 'POST',
-    data: {'ids_str': all_ids_str, csrfmiddlewaretoken: '{{ csrf_token }}'},
-    dataType: 'json',
-    timeout: 10000,
-    error: function(){
-      //alert('');
-    },
-    success: function(json){
-      ordered_date = []
-    ordered_date_reponame = {}
-  display_feeds_map = {}
-  feeds = json.feeds
-    gravatar_dict = json.gravatar_dict
-    gravatar_userId_dict = json.gravatar_userId_dict
-    feeds.sort(function(a,b) {
-      return b.committer_date - a.committer_date;
-    })
-  for(x in feeds) {
-    feed = feeds[x];
-    feed_date_str = moment(new Date(feed.create_time*1000)).format('YY年MM月DD');
-    if(!display_feeds_map[feed_date_str]) {
-      ordered_date.push(feed_date_str);
-      display_feeds_map[feed_date_str] = [];
-    }
-    display_feeds_map[feed_date_str].push(feed);
-  }
-  padding_top = 0;
-  html = []
-    for(x in ordered_date) {
-      feed_date = ordered_date[x];
-      html.push('<section class="feed-group"><div class="feed-date"><time class="date" pubdate><i class="icon-time"></i>' + feed_date + '</time></div>');
-      for(y in display_feeds_map[feed_date]) {
-        feed = display_feeds_map[feed_date][y];
-        if(feed.relative_obj === undefined) {
-          continue;
+      all_ids = [];
+      all_feeds = [];
+      for (x in orgi_feeds) {
+        all_feeds = all_feeds.concat(orgi_feeds[x]);
+      } 
+      all_feeds.sort(function(a,b) {
+        return a[1] - b[1];
+      });
+      var i = 0;
+      var pre_feed_id = 0;
+      for (x in all_feeds) {
+        feed_id = all_feeds[x][0];
+        if(pre_feed_id != feed_id) {
+          i++;
+          all_ids.push(feed_id);
         }
-        if(feed.feed_type == 0) {
-          commit = feed.relative_obj
-          html.push('<section class="feed-item">');
-          html.push('<span class="feed-type commit">合并请求</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=32"></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(commit.commiter_date*1000)).fromNow() +'</time><p class="title"><a href="/' + commit.author + '/" class="author">' + commit.author + '</a>提交更新到' + '<a href="/' + commit.user_name +'/' + commit.repo_name + '/" class="repo-name">' + commit.repo_name + '</a><ul class="subject commits">');
-          html.push('<li>' + '<img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=15" alt="">' + '<a href="/' + commit.user_name + '/' + commit.repo_name + '/commit/' + commit.commit_hash + '/" class="hash">' + commit.commit_hash + '</a>' + '- <span class="commit-msg">' + commit.subject + '</span></li>');
-          html.push('</ul></div>');
-          html.push('</section>');
-        } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
-          issue = feed.relative_obj;
-          action = '新建问题';
-          detail = '';
-          if(feed.feed_type == 300) {
-            action = '新建问题';
-          } else if(feed.feed_type == 301) {
-            action = '更新问题';
-          } else if(feed.feed_type == 302) {
-            action = '编辑问题';
-            detail = feed.first_refname;
-          }
-          html.push('<section class="feed-item">');
-          html.push('<span class="feed-type issue">问题</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=32" alt=""></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(issue.create_time*1000)).fromNow() + '</time><p class="title"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/" class="author">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>' + action + '<a href="/' + issue.username + '/' + issue.reponame + '/issues/' + issue.id + '/" class="repo-name">' + issue.username + '/' + issue.reponame + '#' + issue.id + '</a></p>');
-          html.push('<p class="subject"><span>' + issue.subject + '</span><span class="action">' + detail + '</span></p></div>');
-          html.push('</section>');
-        } else if(feed.feed_type >= 100 && feed.feed_type <= 105) {
-          var pullRequest = feed.relative_obj;
-          var action = '';
-          if(feed.feed_type == 100) {
-            action = '新建合并请求';
-          } else if(feed.feed_type == 101) {
-            action = '合并';
-          } else if(feed.feed_type == 102) {
-            action = '合并失败';
-          } else if(feed.feed_type == 103) {
-            action = '拒绝合并请求';
-          } else if(feed.feed_type == 104) {
-            action = '关闭合并请求';
-          } else if(feed.feed_type == 105) {
-            action = '评论合并请求';
-          }
-          html.push('<section class="feed-item">');
-          html.push('<span class="feed-type pull">合并请求</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=32" alt=""></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(pullRequest.create_time*1000)).fromNow() + '</time><p class="title"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/" class="author">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>' + action +  '<a href="/' + pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name + '/pull/' + pullRequest.id + '/">' + pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name + '#' + pullRequest.id + '</a></p>');
-          html.push('<p class="subject">' + pullRequest.short_title + '</p></div>')
-          html.push('</section>');
-        }
+        pre_feed_id = feed_id;
+        if(i >= 100) { break; }
       }
-      html.push('</section>');
-      padding_top = 15;
-    }
-  $('#newsfeed').append(html.join(''));
-  /*
-     $('.feed-date').css('cursor', 'pointer');
-     $('.feed-date').click(
-     function(){
-     $(this).siblings('.feed-item').toggle();
-     }
-     );
-   */
-  if(ordered_date.length == 0) {
-    $('#newsfeed').append('<p>还没有 feed 信息，请多关注活跃开发者或者仓库</p>');
-  }
-  $('.ajaxLoader').remove()
-    }
-  });
+      all_ids_str = all_ids.join('_');
+      $.ajax({
+        url: '/ajax/feed/ids/',
+        type: 'POST',
+        data: {'ids_str': all_ids_str, csrfmiddlewaretoken: '{{ csrf_token }}'},
+        dataType: 'json',
+        timeout: 10000,
+        error: function(){
+          //alert('');
+        },
+        success: function(json){
+          ordered_date = [];
+          ordered_date_reponame = {};
+          display_feeds_map = {};
+          feeds = json.feeds;
+          gravatar_dict = json.gravatar_dict;
+          gravatar_userId_dict = json.gravatar_userId_dict;
+          feeds.sort(function(a,b) {
+            return b.committer_date - a.committer_date;
+          })
+          for(x in feeds) {
+            feed = feeds[x];
+            feed_date_str = moment(new Date(feed.create_time*1000)).format('YY年MM月DD');
+            if(!display_feeds_map[feed_date_str]) {
+              ordered_date.push(feed_date_str);
+              display_feeds_map[feed_date_str] = [];
+            }
+            display_feeds_map[feed_date_str].push(feed);
+          }
+          padding_top = 0;
+          html = [];
+          for(x in ordered_date) {
+            feed_date = ordered_date[x];
+            html.push('<section class="feed-group"><div class="feed-date"><time class="date" pubdate><i class="icon-time"></i>' + feed_date + '</time></div>');
+            for(y in display_feeds_map[feed_date]) {
+              feed = display_feeds_map[feed_date][y];
+              if(feed.relative_obj === undefined) {
+                continue;
+              }
+
+              if(feed.feed_type == 0) {
+                commit = feed.relative_obj;
+                html.push('<section class="feed-item">');
+                html.push('<span class="feed-type commit">合并请求</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=32"></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(commit.commiter_date*1000)).fromNow() +'</time><p class="title"><a href="/' + commit.author + '/" class="author">' + commit.author + '</a>提交更新到' + '<a href="/' + commit.user_name +'/' + commit.repo_name + '/" class="repo-name">' + commit.repo_name + '</a><ul class="subject commits">');
+                html.push('<li>' + '<img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=15" alt="">' + '<a href="/' + commit.user_name + '/' + commit.repo_name + '/commit/' + commit.commit_hash + '/" class="hash">' + commit.commit_hash + '</a>' + '- <span class="commit-msg">' + commit.subject + '</span></li>');
+                html.push('</ul></div>');
+                html.push('</section>');
+              } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
+                issue = feed.relative_obj;
+                action = '新建问题';
+                detail = '';
+                if(feed.feed_type == 300) {
+                  action = '新建问题';
+                } else if(feed.feed_type == 301) {
+                  action = '更新问题';
+                } else if(feed.feed_type == 302) {
+                  action = '编辑问题';
+                  detail = feed.first_refname;
+                }
+                html.push('<section class="feed-item">');
+                html.push('<span class="feed-type issue">问题</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=32" alt=""></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(issue.create_time*1000)).fromNow() + '</time><p class="title"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/" class="author">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>' + action + '<a href="/' + issue.username + '/' + issue.reponame + '/issues/' + issue.id + '/" class="repo-name">' + issue.username + '/' + issue.reponame + '#' + issue.id + '</a></p>');
+                html.push('<p class="subject"><span>' + issue.subject + '</span><span class="action">' + detail + '</span></p></div>');
+                html.push('</section>');
+              } else if(feed.feed_type >= 100 && feed.feed_type <= 105) {
+                var pullRequest = feed.relative_obj;
+                var action = '';
+                if(feed.feed_type == 100) {
+                  action = '新建合并请求';
+                } else if(feed.feed_type == 101) {
+                  action = '合并';
+                } else if(feed.feed_type == 102) {
+                  action = '合并失败';
+                } else if(feed.feed_type == 103) {
+                  action = '拒绝合并请求';
+                } else if(feed.feed_type == 104) {
+                  action = '关闭合并请求';
+                } else if(feed.feed_type == 105) {
+                  action = '评论合并请求';
+                }
+                html.push('<section class="feed-item">');
+                html.push('<span class="feed-type pull">合并请求</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=32" alt=""></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(pullRequest.create_time*1000)).fromNow() + '</time><p class="title"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/" class="author">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a>' + action +  '<a href="/' + pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name + '/pull/' + pullRequest.id + '/">' + pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name + '#' + pullRequest.id + '</a></p>');
+                html.push('<p class="subject">' + pullRequest.short_title + '</p></div>');
+                html.push('</section>');
+              }
+            }
+
+            html.push('</section>');
+            padding_top = 15;
+          }
+          $('#newsfeed').append(html.join(''));
+          /*
+             $('.feed-date').css('cursor', 'pointer');
+             $('.feed-date').click(
+             function(){
+             $(this).siblings('.feed-item').toggle();
+             }
+             );
+           */
+          if(ordered_date.length == 0) {
+            $('#newsfeed').append('<p>还没有 feed 信息，请多关注活跃开发者或者仓库</p>');
+          }
+          $('.ajaxLoader').remove();
+        }
+      });
     };
-  do_orgi_feeds();
+    do_orgi_feeds();
 
   });
 </script>

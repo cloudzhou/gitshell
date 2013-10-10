@@ -1,9 +1,14 @@
 {% extends "settings/base.html" %}
 
 {% block container-right %}
-    <h2 class="heading">GitHub账户关联</h2>
+    <h2 class="heading">GitHub关联账户</h2>
     {% if thirdpartyUser %}
-    <button class="btn" type="button"><i class="icon-github"></i>GitHub 账户 ({{ thirdpartyUser.tp_username }})</button><button id="id_github_relieve" class="btn btn-danger" type="button">解除绑定</button>
+    <ul class="relative-accounts">
+      <li>
+        <i class="icon-github"></i>{{ thirdpartyUser.tp_username }}
+        <a href="#" id="id_github_relieve" class="disconnect">解除绑定</a>
+      </li>
+    </ul>
     {% else %}
     <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/" class="btn btn-success"><i class="icon-github"></i>关联 GitHub 账户</a>
     {% endif %}

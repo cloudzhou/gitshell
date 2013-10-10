@@ -62,7 +62,7 @@
   </section>
   {% endfor %}
   {% else %}
-  <p class="info">没有合并请求。<a href="/{{ user_name }}/{{ repo_name }}/pull/new/" class="btn btn-success"><i class="octicon octicon-git-pull-request"></i>创建合并请求</a></p>
+  <p class="alert alert-error">没有合并请求。<a href="/{{ user_name }}/{{ repo_name }}/pull/new/" class="btn btn-success"><i class="octicon octicon-git-pull-request"></i>创建合并请求</a></p>
   {% endif %}
 </div>
 {% endblock %}

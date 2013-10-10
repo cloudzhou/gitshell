@@ -83,7 +83,7 @@
                   {% for auth_type in repoForm.auth_type %}
                     {{auth_type}}
                   {% endfor %}
-                  <span class="text-warning">半公开指仅源代码不公开,但用户可以查看仓库的其他信息</span>
+                  <span class="text-warning"><b>半公开</b>指仅仅源代码不公开</span>
                 </div>
               </div>
               <div class="control-group">
@@ -105,7 +105,7 @@
           <p class="alert">{{ apply_error }}</p>
           <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/" class="btn btn-small btn-success">退出当前 GitHub 账户，选择其他账户再次进行关联</a>
           {% else %}
-          <p class="connect-github info">您还没有关联 GitHub 账户，请点击这里 <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/" class="btn btn-small btn-success">进行关联</a>，关联之后可以直接使用 GitHub 帐号登录</p>
+          <p class="connect-github alert alert-info">您还没有关联 GitHub 账户，请点击这里 <a target="_blank" href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841&redirect_uri=https://gitshell.com/login/oauth/github/apply/" class="btn btn-small btn-success">进行关联</a>，关联之后可以直接使用 GitHub 帐号登录</p>
           {% endif %}
           {% endif %}
         </div>

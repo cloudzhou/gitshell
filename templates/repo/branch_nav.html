@@ -2,7 +2,7 @@
   <a href="javascript:void" data-toggle="dropdown" class="dropdown-toggle">
     <span class="branch">
       <span class="branch">{%if is_branch%}分支:{%elif is_tag%}标签:{%elif is_commit%}提交:{%endif%}</span>
-      <span class="branch-name">{{ refs }}</span>
+      <span class="branch-name" title="{{refs}}">{{ refs|truncatechars:'20' }}</span>
     </span>
     <span class="caret"><i class="icon-caret-down"></i></span>
   </a>
@@ -14,7 +14,7 @@
     </li>
     {% endfor %}
     {% else %}
-    <div class="inner"><p class="alert alert-info">没有分支</p></div>
+    <div class="inner"><div class="alert alert-info">没有分支</div></div>
     {% endif %}
     {% if refs_meta.tags|length > 0 %}
     <li class="divider"></li>

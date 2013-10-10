@@ -46,9 +46,7 @@
         <li><a href="#">Github</a></li>
         <li><a href="#">Sunburst</a></li>
         <li><a href="#">Solarized</a></li>
-        <li><a href="#">Mustang</a></li>
         <li><a href="#">Twilight</a></li>
-        <li><a href="#">Mac Classic</a></li>
         <li><a href="#">Google Code</a></li>
         <li><a href="#">xCode</a></li>
         <li><a href="#">Tomorrow</a></li>
@@ -64,7 +62,7 @@
       <tbody>
         {% if not tree %}
         <tr>
-          <td><p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码。</p></td>
+          <td><p class="alert alert-error"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码。</p></td>
         </tr>
         {% endif %}
         {% for file_attrs in tree.tree %}
@@ -133,7 +131,7 @@
         var fileBrowserWidth = $("#file-browser").width();
         $("#source").css("margin-left", fileBrowserWidth);
       }
-      );
+    );
 
     // Color Scheme
     var switcher = $("#switcher"),
@@ -143,7 +141,7 @@
           e.preventDefault();
           themes.slideToggle(100);
         }
-        );
+    );
 
     // Bootstrap/popover
     $('[data-toggle="popover"]').hover(

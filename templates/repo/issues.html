@@ -29,8 +29,8 @@
 			<div class="summary">
         <div class="title">
           <h3 class="heading">
-            <a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/" class="txt">{{issue.subject|truncatechars:100}}</a>
             <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
+            <a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/" class="txt">{{issue.subject|truncatechars:100}}</a>
           </h3>
           <span class="issue-id">#{{issue.id}}</span>
         </div>
@@ -49,7 +49,7 @@
 		</section>
 		{% endfor %}
 		{% if not issues %}
-			<div class="issue"><p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有问题，或者没有查看问题的权限，半公开和私有项目需要申请成为成员才能查看.</p></div>
+			<div class="issue"><p class="alert alert-error"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有问题，或者没有查看问题的权限，半公开和私有项目需要申请成为成员才能查看.</p></div>
 		{% endif %}
 
     <ul class="pagination">

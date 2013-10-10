@@ -13,9 +13,9 @@
   </div>
   {% else %}
     {% if is_repo_member %}
-    <p class="info">没有分支。<a href="#" class="btn btn-success">创建一个新的分支</a></p>
+    <p class="alert alert-error">没有分支。<a href="#" class="btn btn-success">创建一个新的分支</a></p>
     {% else %}
-    <p class="info"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有分支，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
+    <p class="alert alert-error"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有分支，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
     {% endif %}
   {% endif %}
 

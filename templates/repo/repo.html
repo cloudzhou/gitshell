@@ -25,7 +25,7 @@
           <li{% if current == 'index' or current == 'tree' or current == 'blob' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/" data-original-title="Code" rel="tooltip"><span><i class="icon-code"></i>代码</span></a></li>
           <li{% if current == 'issues' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/issues/" data-original-title="Issues" rel="tooltip"><span><i class="icon-bug"></i>问题</span></a></li>
           <li{% if current == 'compare' or current == 'pull' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/pulls/" data-original-title="Pull Request" rel="tooltip"><span><i class="icon-code-fork"></i>合并请求</span></a></li>
-          {#<li{% if current == 'pulse' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/pulse/" data-original-title="Overview" rel="tooltip"><span><i class="icon-desktop"></i>Overview</span></a></li>#}
+          <li{% if current == 'pulse' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/pulse/" data-original-title="Overview" rel="tooltip"><span><i class="icon-desktop"></i>总览</span></a></li>
           {#<li{% if current == 'stats' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/stats/" data-original-title="Graph" rel="tooltip"><span><i class="icon-th"></i>统计</span></a></li>#}
           {% if is_owner %}
           <li{% if current == 'settings' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/settings/" data-original-title="Setting" rel="tooltip"><span><i class="icon-wrench"></i>设置</span></a></li>
@@ -65,7 +65,7 @@
         <a href="#" class="btn btn-mini btn-primary menu-toggle" id="cloneUrlToggle"><i class="icon-terminal"></i>Clone</a>
         <div class="clone-menu" id="cloneMenu">
           {% if repo.status != 0 %}
-          <p class="info">正在初始化...</p>
+          <p class="alert alert-info">正在初始化...</p>
           {% endif %}
 
           {% if has_fork_right %}
@@ -145,9 +145,9 @@
 {% if current == 'index' or current == 'tree' or current == 'blob' or current == 'commits' or current == 'branches' or current == 'tags' or current == 'refs_graph' %}
 <ul class="nav nav-tabs">
   <li{% if current == 'index' or current == 'tree' or current == 'blob' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">代码</a></li>
-  <li{% if current == 'commits' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">提交<span class="label label-mini{% if current == 'commits' %} label-success{% endif %}">{{repo.commit}}</span></a></li>
-  <li{% if current == 'branches' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/branches/{{refs}}/">分支<span class="label label-mini{% if current == 'branches' %} label-success{% endif %}">{{refs_meta.branch_count}}</span></a></li>
-  <li{% if current == 'tags' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/tags/{{refs}}/">标签<span class="label label-mini{% if current == 'tags' %} label-success{% endif %}">{{refs_meta.tag_count}}</span></a></li>
+  <li{% if current == 'commits' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">提交{%if repo.commit%}<span class="label label-mini{% if current == 'commits' %} label-success{% endif %}">{{repo.commit}}</span>{%endif%}</a></li>
+  <li{% if current == 'branches' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/branches/{{refs}}/">分支{%if refs.branch_count%}<span class="label label-mini{% if current == 'branches' %} label-success{% endif %}">{{refs_meta.branch_count}}</span>{%endif%}</a></li>
+  <li{% if current == 'tags' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/tags/{{refs}}/">标签{%if refs_meta.tag_count%}<span class="label label-mini{% if current == 'tags' %} label-success{% endif %}">{{refs_meta.tag_count}}</span>{%endif%}</a></li>
   <li{% if current == 'refs_graph' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/refs/graph/{{refs}}/">分支图</a></li>
 </ul>
 {% endif %}
@@ -233,46 +233,35 @@
       //      copy: function() { return $("#urlData").val(); }
       //    });
 
-      $('.repo-actions-bar .watch').click(function() {
+      $('.repo-actions .watch').click(function() {
         $.post('/{{user_name}}/{{repo_name}}/watch/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
           window.location = window.location;
         });
       });
 
-      $('.repo-actions-bar .unwatch').click(function() {
+      $('.repo-actions .unwatch').click(function() {
         $.post('/{{user_name}}/{{repo_name}}/unwatch/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
           window.location = window.location;
         });
       });
 
-      $('.repo-actions-bar .star').click(function() {
+      $('.repo-actions .star').click(function() {
         $.post('/{{user_name}}/{{repo_name}}/star/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
           window.location = window.location;
         });
       });
 
-      $('.repo-actions-bar .unstar').click(function() {
+      $('.repo-actions .unstar').click(function() {
         $.post('/{{user_name}}/{{repo_name}}/unstar/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
           window.location = window.location;
         });
       });
 
-      $('.repo-actions-bar .fork').click(function() {
+      $('.repo-actions .fork').click(function() {
         $.post('/{{user_name}}/{{repo_name}}/fork/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
           window.location = '/{{user.username}}/{{repo_name}}/';
         });
       });
-      <!--TODO what for? -->
-        $('#toggle-arrow').click(
-            function(){
-              $(this).next('.url').slideToggle('fast');
-            }
-            );
-      $('#url').click(
-          function(){
-            $(this).toggleClass('active');
-          }
-          );
       $('.sidenav a.btn').tooltip();
       $('.branches .dropdown-toggle').click(function(event) {
         $('#i_git_url').select();

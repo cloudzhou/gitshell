@@ -5,6 +5,23 @@
 {% if notifMessages %}
 <div class="notifs bubble">
 
+  {# Unread message #}
+  <div class="notif-item unread">
+    <div class="notif-type type-commit"></div>
+    <div class="summary">
+      <time class="unixtime" pubdate="pubdate">1个月前</time>
+      <p class="title">
+        <a href="#" class="user">yuwen</a>
+        <span class="action-type">提交更新到</span>
+        <a href="#" class="notif-title">cloudzhou/test_private</a>
+      </p>
+      <p class="subject">
+        <a href="#" class="hash">2e9725e</a>Merge branch test of https://gitshell.com/cloudzhou/test_private/ into master...
+      </p>
+    </div>
+  </div>
+
+
   {% for notifMessage in notifMessages %}
   <div class="notif-item">
 
@@ -60,7 +77,7 @@
 
   {% else %}
   <div class="notif-item">
-    <p class="info">没有消息</p>
+    <p class="alert alert-info">没有消息</p>
   </div>
   {% endif %}
 
