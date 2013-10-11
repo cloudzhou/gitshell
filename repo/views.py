@@ -1038,6 +1038,7 @@ def create(request, user_name):
     thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
     repo = Repo()
     repo.user_id = request.user.id
+    repo.auth_type = 2
     repoForm = RepoForm(instance = repo)
     repoForm.fill_username(request.userprofile)
     response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error, 'thirdpartyUser': thirdpartyUser, 'apply_error': request.GET.get('apply_error')}
