@@ -226,7 +226,7 @@ def notif_email(request):
     email = request.POST.get('email', user.email)
     if email_re.match(email):
         useremail = GsuserManager.get_useremail_by_userId_email(user.id, email)
-        if useremail:
+        if useremail and useremail.is_verify == 1:
             notifSetting.email = email
             notifSetting.save()
     return json_httpResponse({'code': 200, 'message': u'成功修改邮箱 ' + email})

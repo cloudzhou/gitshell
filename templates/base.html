@@ -99,6 +99,7 @@
 
             <ul class="team-accounts nav nav-list">
               <li class="create"><a href="/settings/team/create/" class="create-team-link"><em>添加团队账户</em></a></li>
+              <li><img src="/static/img/teamavatar.png" alt="{{user.username}}"><a href="/{{user.username}}/-/user/switch/{{user.id}}/">{{ user.username }}</a></li>
               {% for teamMember in gs_teamMembers %}
               <li><img src="/static/img/teamavatar.png" alt="{{teamMember.team_user.username}}"><a href="/{{user.username}}/-/user/switch/{{teamMember.team_user_id}}/">{{ teamMember.team_user.username }}</a></li>
               {% endfor %}

@@ -45,7 +45,9 @@
   <span class="option email">
     <select id="notifEmail">
       {% for x in useremails %}
-      <option value="{{x.email}}"{%if x.email == notifSetting.email%} selected="selected"{%endif%}>{{x.email}}</option>
+        {% if x.is_verify == 1 %}
+          <option value="{{x.email}}"{%if x.email == notifSetting.email%} selected="selected"{%endif%}>{{x.email}}</option>
+        {% endif %}
       {% endfor %}
     </select>
   </span>
