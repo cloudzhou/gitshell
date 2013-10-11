@@ -21,7 +21,7 @@
       {% for pullRequest in pullRequests %}
       <section class="pull-item">
         <div class="widget">
-          <span class="status {{pullRequest.status_lable}}">{{pullRequest.status_view}}</span>
+          <span class="status {{pullRequest.status_label}}">{{pullRequest.status_view}}</span>
           <span class="branches">
             <a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/" class="from branch">{{pullRequest.source_refname}}</a>
             <span class="arrow-right"><i class="icon-long-arrow-right"></i></span>
@@ -38,7 +38,7 @@
           </div>
           <div class="meta">
             <a href="/{{pullRequest.pull_user.username}}/">{{pullRequest.pull_user.username}}</a>
-            <time class="unixtime" pubdate="pubdate">4天前创建</time>
+            <time class="unixtime" pubdate="pubdate">{{pullRequest.modify_time|date:"U"}}</time>
           </div>
         </div>
       </section>

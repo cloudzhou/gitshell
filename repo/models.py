@@ -138,6 +138,15 @@ class PullRequest(BaseModel):
     delete_refs = models.SmallIntegerField(default=0)
     status = models.IntegerField(default=0) 
 
+    pull_user = None
+    merge_user = None
+    source_repo = None
+    desc_repo = None
+    short_title = ''
+    short_desc = ''
+    status_view = '' 
+    status_label = ''
+
     @classmethod
     def create(self, pull_user_id, merge_user_id, source_user_id, source_repo_id, source_refname, desc_user_id, desc_repo_id, desc_refname, title, desc, delete_refs, status):
         pullRequest = PullRequest(
@@ -155,15 +164,6 @@ class PullRequest(BaseModel):
             status = status,
         )
         return pullRequest
-
-    pull_user = None
-    merge_user = None
-    source_repo = None
-    desc_repo = None
-    short_title = ''
-    short_desc = ''
-    status_view = '' 
-    status_label = ''
 
     def fillwith(self):
         self.pull_user = GsuserManager.get_user_by_id(self.pull_user_id)
@@ -763,11 +763,11 @@ class PULL_STATUS:
     }
 
     LABEL_MAP = {
-        0 : '新建',
-        1 : '失败',
-        2 : '合并',
-        3 : '拒绝',
-        4 : '关闭',
+        0 : 'new',
+        1 : 'failed',
+        2 : 'merged',
+        3 : 'rejected',
+        4 : 'closed',
     }
 
 
