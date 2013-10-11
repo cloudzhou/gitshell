@@ -19,8 +19,8 @@
       </span>
       </h3>
       <p class="meta">
-        <span class="assign">{#<img src="https://gravatar.com/avatar/{{ issue.reporter_imgurl}}?s=15" alt="{{issue.username}}">#}由<a href="/{{issue.username}}/">{{issue.username}}</a>指派给{#<img src="https://gravatar.com/avatar/{{ issue.assiged_imgurl}}?s=15" alt="{{issue.assiged}}">#}<a href="/{{issue.assigned}}/">{{issue.assigned}}</a></span>
-        <time class="unixtime" pubdate="pubdate">{{issue.modify_time}}</time>
+        <span class="assign">{#<img src="https://gravatar.com/avatar/{{ issue.reporter_imgurl}}?s=15" alt="{{issue.username}}">#}指派给{#<img src="https://gravatar.com/avatar/{{ issue.assiged_imgurl}}?s=15" alt="{{issue.assiged}}">#}<a href="/{{issue.assigned}}/">{{issue.assigned}}</a></span>
+        <time class="unixtime" pubdate="pubdate">{{issue.create_time}}</time>
       </p>
       <div class="content">{{issue.content}}</div>
     </div>

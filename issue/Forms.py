@@ -12,6 +12,9 @@ ASSIGNED_CHOICES = ()
 
 class IssueForm(forms.ModelForm):
 
+    category = forms.CharField(required=False)
+    content = forms.CharField(widget=forms.Textarea, required=False)
+
     def fill_assigned(self, repo):
         if repo is None:
             return

@@ -10,14 +10,11 @@
   {% endif %}
   <form class="form" method="post">
     {% csrf_token %}
-    <div class="hide">{{ issueForm.content }}</div>
-    <div class="hide">{{ issueForm.subject }}</div>
     <div class="fields">
       <span class="group"><b>分配给</b>{{ issueForm.assigned }}{{ issueForm.tracker }}{{ issueForm.status }}{{ issueForm.priority }}</span><span class="group"><b>类别</b>{{ issueForm.category }}</span>
     </div>
-    <div class="fields">
-      <textarea name="merge_content" id="mergeContent" placeholder="第一行自动作为标题，简单明了描述问题，标题之后作为内容"></textarea>
-    </div>
+    <div>{{ issueForm.subject }}</div>
+    <div>{{ issueForm.content }}</div>
     <div class="actions">
       <button id="iSubmit" class="btn btn-primary" type="submit">确定</button>
     </div>
@@ -27,29 +24,7 @@
 {% block subjs %}
 <script>
   $(function(){
-    $('#category').attr('placeholder', '优化，安全...');
-    $('#iSubmit').click(function(){
-      var line_arr = $('#mergeContent').val().split('\n');
-      if($('#mergeContent').val() != '') {
-        var subject = line_arr[0];
-        line_arr.shift();
-        var content = line_arr.join('\n');
-        $('#subject').val(subject);
-        if(content == '' || content == "\n") {
-          content = '无';
-        }
-        $('#content').val(content);
-        if($('#category').val() == '') {
-          $('#category').val('无');
-        }
-        return true;
-      }
-      return false;
-    });
-    $('.unixtime').each(function(index){ 
-      $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-      $(this).show();
-    });
+    $('#id_category').attr('placeholder', '优化，安全...');
   });
 </script>
 {% endblock %}
