@@ -266,10 +266,10 @@ class FeedManager():
         message = ''
         if orgi_issue is None and current_issue is not None:
             feed_type = FEED_TYPE.ISSUES_CREATE
-            message = '新建了问题'
+            message = u'新建了问题'
         if orgi_issue is not None and (orgi_issue.subject != current_issue.subject or orgi_issue.content != current_issue.content or orgi_issue.category != current_issue.category):
             feed_type = FEED_TYPE.ISSUES_UPDATE
-            message = '更新了问题'
+            message = u'更新了问题'
         # status update
         status_changes = []
         if orgi_issue is not None:
@@ -305,7 +305,6 @@ class FeedManager():
     def feed_pull_change(self, pullRequest, pullStatus):
         feed_cate = FEED_CATE.MERGE
         feed_type = FEED_TYPE.MERGE_CREATE_PULL_REQUEST
-        timestamp = float(time.mktime(pullRequest.modify_time.timetuple()))
         repo = pullRequest.desc_repo
         user = pullRequest.merge_user
         if pullStatus == PULL_STATUS.NEW:
@@ -322,6 +321,7 @@ class FeedManager():
         feed = Feed.create(user.id, repo.id, feed_cate, feed_type, pullRequest.id)
         feed.save()
         feedAction = FeedAction()
+        timestamp = float(time.mktime(feed.create_time.timetuple()))
         feedAction.add_repo_feed(repo.id, timestamp, feed.id)
         if repo.auth_type == 2:
             feedAction.add_pri_user_feed(user.id, timestamp, feed.id)
