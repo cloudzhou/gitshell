@@ -1035,16 +1035,18 @@ def create(request, user_name):
     error = u''
     if user_name != request.user.username:
         raise Http404
+    feedAction = FeedAction()
+    (owner_user_id, lang, auth_type) = feedAction.get_recently_create_repo_attr(request.user.id)
     thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
     repo = Repo()
     repo.user_id = request.user.id
     repo.auth_type = 2
-    repoForm = RepoForm(instance = repo)
-    repoForm.fill_username(request.userprofile)
+    repoForm = RepoForm(instance = repo, initial={'lang': lang, 'auth_type': auth_type})
+    repoForm.fill_username(request.userprofile, owner_user_id)
     response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error, 'thirdpartyUser': thirdpartyUser, 'apply_error': request.GET.get('apply_error')}
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
-        repoForm.fill_username(request.userprofile)
+        repoForm.fill_username(request.userprofile, owner_user_id)
         userprofile = request.userprofile
         create_repo = repoForm.save(commit=False)
         username = create_repo.username
@@ -1074,6 +1076,7 @@ def create(request, user_name):
             error = u'剩余空间不足，总空间 %s kb，剩余 %s kb' % (userprofile.quote, userprofile.used_quote)
             return __response_create_repo_error(request, response_dictionary, error)
         create_repo.save()
+        feedAction.set_recently_create_repo_attr(request.user.id, create_repo.user_id, create_repo.lang, create_repo.auth_type)
         userprofile.save()
         remote_git_url = request.POST.get('remote_git_url', '').strip()
         remote_username = request.POST.get('remote_username', '').strip()

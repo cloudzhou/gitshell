@@ -2,6 +2,7 @@
 from django import forms
 from django.forms.widgets import RadioSelect, CheckboxSelectMultiple
 from gitshell.repo.models import Repo, RepoManager
+from gitshell.feed.feed import AttrKey, FeedAction
 from gitshell.gsuser.models import GsuserManager
 from gitshell.team.models import TeamManager
 
@@ -10,13 +11,13 @@ AUTH_TYPE_CHOICES = (('2', '私有'), ('0', '公开'), ('1', '半公开'))
 
 class RepoForm(forms.ModelForm):
 
-    def fill_username(self, userprofile):
+    def fill_username(self, userprofile, owner_user_id):
+        feedAction = FeedAction()
         teamMembers = TeamManager.list_teamMember_by_userId(userprofile.id)
         username_choices = []
         username_choices.append((userprofile.username, userprofile.username))
-        current_user_id = userprofile.current_user_id
         for teamMember in teamMembers:
-            if teamMember.team_user_id == current_user_id:
+            if teamMember.team_user_id == owner_user_id:
                 username_choices.insert(0, (teamMember.team_user.username, teamMember.team_user.username))
                 continue
             username_choices.append((teamMember.team_user.username, teamMember.team_user.username))
