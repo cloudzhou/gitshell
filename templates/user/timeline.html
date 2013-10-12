@@ -98,7 +98,7 @@
 
               // feed_reponame.indexOf('#') != 0  #Commits#
               if(feed_reponame.indexOf('#') != 0) {
-                html.push('<section class="feed-item"><span class="feed-type commit">提交</span><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt="{{userprofile.imgurl}}"></figure><div class="detail"><p class="title"></a>提交更新到<a href="#">' + feed_reponame + '</a></p>');
+                html.push('<section class="feed-item"><span class="feed-type commit">提交</span><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt="{{userprofile.imgurl}}"></figure><div class="detail"><p class="title"></a>提交更新到 <a href="#">' + feed_reponame + '</a></p>');
                 html.push('<ul class="subject commits">');
                 for(z in display_feeds_map[feed_date][feed_reponame]) {
                   commit = display_feeds_map[feed_date][feed_reponame][z].relative_obj;
@@ -124,7 +124,11 @@
                     detail = feed.first_refname;
                   }
 
-                  html.push('<section class="feed-item"><span class="feed-type issue">问题</span><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt="{{userprofile.imgurl}}"></figure><div class="detail"><p class="title"><time class="date" pubdate="pubdate">' + moment(new Date(feed_timestamp[feed.id]*1000)).fromNow() + '</time>' + action + '<a href="/' + issue.username + '/' + issue.reponame + '/issues/' + issue.id + '/">' + issue.username +'/' + issue.reponame + '#' + issue.id + '</a></p><p class="subject">' + issue.subject + '<span class="action">' + detail + '</span></p></div></section>');
+                  html.push('<section class="feed-item"><span class="feed-type issue">问题</span><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt="{{userprofile.imgurl}}"></figure><div class="detail"><p class="title"><time class="date" pubdate="pubdate">' + moment(new Date(feed_timestamp[feed.id]*1000)).fromNow() + '</time>' + action + ' <a href="/' + issue.username + '/' + issue.reponame + '/issues/' + issue.id + '/">' + issue.username +'/' + issue.reponame + '#' + issue.id + '</a></p><p class="subject">' + issue.subject);
+                  if(detail != '') {
+                    html.push('<span class="action">' + detail + '</span>');
+                  }
+                  html.push('</p></div></section>');
 
                   // feed.feed_type >= 100 && feed.feed_type <= 105 #Pull Request#
                 } else if(feed.feed_type >= 100 && feed.feed_type <= 105) {
@@ -144,7 +148,7 @@
                     action = '评论合并请求';
                   }
 
-                  html.push('<section class="feed-item"><span class="feed-type pull">合并请求</span><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt="{{userprofile.imgurl}}"></figure><div class="detail"><p class="title"><time class="date" pubdate="pubdate">' + moment(new Date(feed_timestamp[feed.id]*1000)).fromNow() + '</time>' + action + '<a href="/'+ pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name +'/pull/' +  pullRequest.id + '">' + pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name + '#' + pullRequest.id + '</a></p><p class="subject">' + pullRequest.short_title + '</p></div></section>');
+                  html.push('<section class="feed-item"><span class="feed-type pull">合并请求</span><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt="{{userprofile.imgurl}}"></figure><div class="detail"><p class="title"><time class="date" pubdate="pubdate">' + moment(new Date(feed_timestamp[feed.id]*1000)).fromNow() + '</time>' + action + ' <a href="/'+ pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name +'/pull/' +  pullRequest.id + '">' + pullRequest.desc_repo_username + '/' + pullRequest.desc_repo_name + '#' + pullRequest.id + '</a></p><p class="subject">' + pullRequest.short_title + '</p></div></section>');
                 }// feed.feed_type >= 100 && feed.feed_type <= 105
 
               }// feed_reponame.indexOf('#') !!= 0

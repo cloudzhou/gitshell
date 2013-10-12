@@ -35,6 +35,7 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
     user_id = request.user.id
     memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
     memberUsers = _let_request_user_first(memberUsers, user_id)
+    member_ids = [x.id for x in memberUsers]
     assigneds = [x.username for x in memberUsers]
     assigneds.insert(0, '0')
     if assigned is None:

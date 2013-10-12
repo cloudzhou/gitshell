@@ -380,7 +380,7 @@ class FeedManager():
         message = ''
         if issueStatus == ISSUE_STATUS.ASSIGNED:
             notif_type = NOTIF_TYPE.ISSUE_ASSIGNED
-            message = '指派了'
+            message = u'指派了'
             exists_notifMessage = self.get_notifmessage_by_userId_notifType_relativeId(issue.assigned, notif_type, issue.id)
             if exists_notifMessage:
                 return
@@ -399,7 +399,7 @@ class FeedManager():
         notif_type = NOTIF_TYPE.MERGE_CREATE_PULL_REQUEST
         message = ''
         if pullStatus == PULL_STATUS.NEW:
-            message = '新建了'
+            message = u'新建了'
             merge_user_profile = GsuserManager.get_userprofile_by_id(pullRequest.merge_user_id)
             if merge_user_profile is not None:
                 notifMessage = NotifMessage.create(NOTIF_CATE.MERGE, NOTIF_TYPE.MERGE_CREATE_PULL_REQUEST, pullRequest.pull_user_id, pullRequest.merge_user_id, pullRequest.id)
@@ -410,16 +410,16 @@ class FeedManager():
             return
         if pullStatus == PULL_STATUS.MERGED_FAILED:
             notif_type = NOTIF_TYPE.MERGE_MERGED_FAILED_PULL_REQUEST
-            message = '合并失败'
+            message = u'合并失败'
         elif pullStatus == PULL_STATUS.MERGED:
             notif_type = NOTIF_TYPE.MERGE_MERGED_PULL_REQUEST
-            message = '合并了'
+            message = u'合并了'
         elif pullStatus == PULL_STATUS.REJECTED:
             notif_type = NOTIF_TYPE.MERGE_REJECTED_PULL_REQUEST
-            message = '拒绝了'
+            message = u'拒绝了'
         elif pullStatus == PULL_STATUS.CLOSE:
             notif_type = NOTIF_TYPE.MERGE_CLOSE_PULL_REQUEST
-            message = '关闭了'
+            message = u'关闭了'
         pull_user_profile = GsuserManager.get_userprofile_by_id(pullRequest.pull_user_id)
         if pull_user_profile is not None:
             notifMessage = NotifMessage.create(NOTIF_CATE.MERGE, notif_type, pullRequest.merge_user_id, pullRequest.pull_user_id, pullRequest.id)
