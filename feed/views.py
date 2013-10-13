@@ -48,6 +48,7 @@ def feed(request):
     recently_timestamp = feedAction.get_recently_timestamp(request.user.id, AttrKey.RECENTLY_TIME_FEED)
     raw_watch_users = feedAction.get_watch_users(request.user.id, 0, 100)
     watch_user_ids = [int(x[0]) for x in raw_watch_users]
+    watch_user_ids.append(request.user.id)
     raw_watch_repos = feedAction.get_watch_repos(request.user.id, 0, 100)
     watch_repo_ids = [int(x[0]) for x in raw_watch_repos]
 

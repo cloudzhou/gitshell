@@ -8,8 +8,8 @@
     <div class="container">
       <ul class="nav nav-tabs">
         {% if current == 'timeline' or current == 'feed' %}
-          <li{% if current == 'feed' %} class="active"{% endif %}><a href="/dashboard/feed/">关注</a></li>
-          <li{% if current == 'timeline' %} class="active"{% endif %}><a href="/dashboard/timeline/">我最近活跃</a></li>
+          <li{% if current == 'feed' %} class="active"{% endif %}><a href="/dashboard/feed/">动态</a></li>
+          <li{% if current == 'timeline' %} class="active"{% endif %}><a href="/dashboard/timeline/">只显示我</a></li>
         {% else %}
           <li{% if current == 'notif' %} class="active"{% endif %}><a href="/dashboard/notif/">最新事件</a></li>
           <li{% if current == 'pull' %} class="active"{% endif %}><a href="/dashboard/pull/">合并请求</a></li>

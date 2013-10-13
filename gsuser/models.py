@@ -136,6 +136,14 @@ class GsuserManager():
         return get(Userprofile, user_id)
     
     @classmethod
+    def get_userprofile_by_email(self, email):
+        try:
+            userprofile = Userprofile.objects.get(email=email)
+            return userprofile
+        except Userprofile.DoesNotExist:
+            return None 
+
+    @classmethod
     def get_userprofile_by_name(self, username):
         user = self.get_user_by_name(username)
         if user is None:
