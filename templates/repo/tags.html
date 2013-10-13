@@ -2,7 +2,6 @@
 
 {% block subcontainer %}
 <div class="tags bubble">
-  {% if repo_name.tags %}
   <div class="header">
     <h2 class="heading">
       标签 {%if is_repo_member%}<a href="/{{user_name}}/{{repo_name}}/refs/create/master/#target_tag">+</a>{%endif%}
@@ -11,13 +10,7 @@
     <a href="#tag-manage" class="btn btn-mini pull-right tag-manage"><i class="icon-cog"></i><span>管理</span></a>
     {% endif %}
   </div>
-  {% else %}
-    {% if is_repo_member %}
-      <p class="alert alert-error">没有标签.<a href="/{{user_name}}/{{repo_name}}/refs/create/master/#target_tag" class="btn btn-success">创建新标签</a></p>
-    {% else %}
-      <p class="alert alert-error"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有标签，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
-    {% endif %}
-  {% endif %}
+  <div id="tags"></div>
 </div>
 {% endblock %}
 {% block subjs %}
@@ -47,6 +40,13 @@
         $(this).html(moment(new Date($(this).html()*1000)).fromNow());
         $(this).show();
       });
+      $('.tag-delete').on('click', function(){
+        var tag = $(this).data('tag');
+        var tr = $(this).parents('tr');
+        $.post('/{{user_name}}/{{repo_name}}/refs/tag/delete/' + tag + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+          tr.hide();
+        });
+      });
     });
 
     $('.tag-manage').click(
@@ -56,15 +56,8 @@
           $(this).children('span').text( txt == '管理' ? '取消' : '管理' );
           $('.tag-action').toggle();
         }
-        );
+     );
 
-    $('.tag-delete').on('click', function(){
-      var tag = $(this).data('tag');
-      var tr = $(this).parents('tr');
-      $.post('/{{user_name}}/{{repo_name}}/refs/tag/delete/' + tag + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-        tr.hide();
-      });
-    });
   });
 </script>
 {% endblock %}
