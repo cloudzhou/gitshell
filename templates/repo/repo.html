@@ -146,7 +146,7 @@
 <ul class="nav nav-tabs">
   <li{% if current == 'index' or current == 'tree' or current == 'blob' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">代码</a></li>
   <li{% if current == 'commits' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">提交{%if repo.commit%}<span class="label label-mini{% if current == 'commits' %} label-success{% endif %}">{{repo.commit}}</span>{%endif%}</a></li>
-  <li{% if current == 'branches' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/branches/{{refs}}/">分支{%if refs.branch_count%}<span class="label label-mini{% if current == 'branches' %} label-success{% endif %}">{{refs_meta.branch_count}}</span>{%endif%}</a></li>
+  <li{% if current == 'branches' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/branches/{{refs}}/">分支{%if refs_meta.branch_count%}<span class="label label-mini{% if current == 'branches' %} label-success{% endif %}">{{refs_meta.branch_count}}</span>{%endif%}</a></li>
   <li{% if current == 'tags' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/tags/{{refs}}/">标签{%if refs_meta.tag_count%}<span class="label label-mini{% if current == 'tags' %} label-success{% endif %}">{{refs_meta.tag_count}}</span>{%endif%}</a></li>
   <li{% if current == 'refs_graph' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/refs/graph/{{refs}}/">分支图</a></li>
 </ul>
