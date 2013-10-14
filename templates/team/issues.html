@@ -70,16 +70,16 @@
     {% endif %}
 
     <ul class="pagination">
-      {#if hasPre#}
+      {%if hasPre%}
         <li><a href="/dashboard/issues/0/">首页</a></li>
         <li><a href="/dashboard/issues/{{page|add:"-1"}}/">前一页</a></li>
-      {#endif#}
-      {#if hasPre or hasNext#}
+      {%endif%}
+      {%if hasPre or hasNext%}
         <li class="active">第{{page|add:"1"}}页</li>
-      {#endif#}
-      {#if hasNext#}
+      {%endif%}
+      {%if hasNext%}
         <li><a href="/dashboard/issues/{{page|add:"+1"}}/">后一页</a></li>
-      {#endif#}
+      {%endif%}
     </ul>
   </div>
 

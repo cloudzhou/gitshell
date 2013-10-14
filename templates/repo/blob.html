@@ -18,25 +18,35 @@
 </style>
 {% endblock %}
 {% block subcontainer %}
-<div class="file-list">
-  <div class="header">
-    {% include "repo/branch_nav.html" %}
-    <span class="actions">
-      <a class="btn btn-mini" href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}">Commits</a>
-      <a class="btn btn-mini" href="/{{user_name}}/{{repo_name}}/raw/blob/{{refs}}/{{path}}">Raw</a>
-    </span>
-    <ul id="themes">
-      <li id="default">Default</li>
-      <li id="github">Github</li>
-      <li id="sunburst">Sunburst</li>
-      <li id="solarized">Solarized</li>
-      <li id="googleCode">Google Code</li>
-      <li id="xCode">xCode</li>
-      <li id="tomorrowNightBright">Tomorrow</li>
-      <li id="pojoaque">Pojoaque</li>
-      <li id="railscasts">Railscasts</li>
-    </ul>
-  </div>
+<div class="header clearfix">
+</div>
+<div class="files bubble">
+<div class="file-list table-container" id="source">
+        <div class="theme-selector">
+            <div class="group clearfix">
+                <a href="#" id="switcher">主题</a>
+                <span class="current-branch-name">
+                    <a href="/{{user_name}}/{{repo_name}}/{%if current == 'index' or current == 'tree' or current == 'blob' %}tree{%endif%}{%if current == 'commits' %}commits{%endif%}{%if current == 'refs_graph' %}refs/graph{%endif%}/{{refs}}/">{{repo_name}}</a><span class="divider">/</span>
+                    <span id="repo-path"></span>
+                </span>
+                <span class="views pull-right">
+                  <a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}"><em>提交</em></a>
+                  <a href="/{{user_name}}/{{repo_name}}/raw/blob/{{refs}}/{{path}}"><em>原始文件</em></a>
+                </span>
+            </div>
+            <ul id="themes" class="theme-list clearfix">
+              <li id="default"><a href="#">Default</a></li>
+              <li id="github"><a href="#">Github</a></li>
+              <li id="sunburst"><a href="#">Sunburst</a></li>
+              <li id="solarized"><a href="#">Solarized</a></li>
+              <li id="googleCode"><a href="#">Google Code</a></li>
+              <li id="xCode"><a href="#">xCode</a></li>
+              <li id="tomorrowNightBright"><a href="#">Tomorrow</a></li>
+              <li id="pojoaque"><a href="#">Pojoaque</a></li>
+              <li id="railscasts"><a href="#">Railscasts</a></li>
+            </ul>
+        </div>
+
   <div id="i_source_code">
     {% if not blob and blob != '' %}
     没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码
@@ -44,13 +54,15 @@
     {% if is_markdown %}
     <div id="id_markdown_content" class="markdown hide">{{ blob }}</div>
     {% else %}
-    <div class="code bubble">
+    <div class="code">
       <pre><code class="lineNumbers">{{ blob }}</code></pre>
     </div>
     {% endif %}
     {% endif %}
   </div>          
 </div>
+
+</div>{# files/bubble #}
 {% endblock %}
 {% block subjs %}
 {#<script src="/static/js/app/highlight/highlight.min.js?timestamp={{gitshell.timestamp}}"></script>#}
@@ -104,19 +116,30 @@
     //hljs.tabReplace = '    ';
     hljs.initHighlightingOnLoad();
     {% endif %}
+
   });
 </script>
 <script>
   $(function(){
 
+    // Color Scheme
+    var switcher = $("#switcher"),
+        themes = $("#themes");
+    switcher.click(
+        function(e){
+          e.preventDefault();
+          themes.slideToggle(100);
+        }
+    );
+
     var colorSchemeCookie = $.cookie("colorscheme");
 
     if(colorSchemeCookie == null){
       $("link[title='github']").removeAttr("disabled");
-      $("#themes #github").addClass("current");
+      $("#themes #github").addClass("active");
     } else {
       $("link[title='" + colorSchemeCookie + "']").removeAttr("disabled");
-      $("#themes li[id='" + colorSchemeCookie + "']").addClass("current");
+      $("#themes li[id='" + colorSchemeCookie + "']").addClass("active");
       $("link[title!='" + colorSchemeCookie + "']").attr("disabled","disabled");
     }
 
@@ -125,7 +148,7 @@
       $("link[title='" + colorScheme + "']").removeAttr("disabled");
       $("link[title!='" + colorScheme +"']").attr("disabled","disabled");
       $.cookie("colorscheme", colorScheme , {expires:30});
-      $(this).addClass("current").siblings().removeClass("current");
+      $(this).addClass("active").siblings().removeClass("active");
     });
 
   });

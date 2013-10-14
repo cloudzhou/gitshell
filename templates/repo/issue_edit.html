@@ -1,7 +1,7 @@
 {% extends "repo/repo.html" %}
 {% block subcontainer %}
 <div class="issue-form inner bubble">
-  <h2 class="heading">修改Issue</h2>
+  <h2 class="heading">修改问题</h2>
   {% if error %}
   <div class="alert">
     <a data-dismiss="alert" class="close"><i class="icon-remove"></i></a>
@@ -11,8 +11,8 @@
   <form class="form" method="post">
     {% csrf_token %}
     <div class="fields"><span class="group"><b>分配给</b>{{ issueForm.assigned }}{{ issueForm.tracker }}{{ issueForm.status }}{{ issueForm.priority }}</span><span class="group"><b>类别</b>{{ issueForm.category }}</span></div>
-    <div>{{ issueForm.subject }}</div>
-    <div>{{ issueForm.content }}</div>
+    <div class="fields">{{ issueForm.subject }}</div>
+    <div class="fields">{{ issueForm.content }}</div>
     <div class="actions">
       <button id="iSubmit" class="btn btn-primary" type="submit">确定</button>
       <button id="iDelete" class="btn btn-danger">删除</button>
@@ -35,7 +35,9 @@
       }
       return false;
     });
-    $('#category').attr('placeholder', '优化，安全...');
+    $('#id_subject').attr('placeholder', '标题');
+    $('#id_content').attr('placeholder', '问题描述');
+    $('#id_category').attr('placeholder', '优化，安全...');
   });
 </script>
 {% endblock %}

@@ -187,7 +187,7 @@
 
       $('html').click(function(e) {
         var target = $(e.target);
-        if(!target.is('#cloneMenu')){
+        if(target.id != 'cloneMenu'){
           $('#cloneMenu').hide();
         }
       });
@@ -223,7 +223,7 @@
       });
 
       $('html').click(function(e){
-        if(!e.target.is('#urlData')) {
+        if(e.target.id != 'urlData') {
           $('#urlData').removeClass('selected');
         }
       });

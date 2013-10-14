@@ -5,35 +5,34 @@
 
 {% block subcontainer %}
 <div class="commits bubble">
-  <div class="header">
-    {% include "repo/branch_nav.html" %}
-    <h2 class="heading"><span class="count">1008</span>个提交</h2>
-  </div>
-  {% for commit in commits %}
-  <section class="commit">
-    <div class="commiter">
-      <figure class="avatar"><img src="https://gravatar.com/avatar/{{commit.author_imgurl}}?s=40" alt="{{commit.committer_name}}"></figure>
-      <div class="summary">
-        <p class="msg"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/">{{commit.commit_message|truncatechars:80}}</a></p>
-        <p class="meta">
-          {% if commit.real_committer_name == '' %}
-          <span>{{commit.committer_name}}</span>
-          {% else %}
-          <a href="/{{commit.real_committer_name}}/">{{commit.committer_name}}</a>
-          {% endif %}
-          <span class="date unixtime">{{commit.committer_date}}</span></p>
+    {% if commits %}
+      <div class="header">
+        {% include "repo/branch_nav.html" %}
       </div>
-    </div>
-    <span class="hash"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/" class="btn label-mini btn-info">{{commit.commit_hash}}</a></span>
-  </section>
-  {% endfor %}
+      {% for commit in commits %}
+          <section class="commit">
+            <div class="commiter">
+              <figure class="avatar"><img src="https://gravatar.com/avatar/{{commit.author_imgurl}}?s=40" alt="{{commit.committer_name}}"></figure>
+              <div class="summary">
+                <p class="msg"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/">{{commit.commit_message|truncatechars:80}}</a></p>
+                <p class="meta">
+                  {% if commit.real_committer_name == '' %}
+                  <span>{{commit.committer_name}}</span>
+                  {% else %}
+                  <a href="/{{commit.real_committer_name}}/">{{commit.committer_name}}</a>
+                  {% endif %}
+                  <span class="date unixtime">{{commit.committer_date}}</span></p>
+              </div>
+            </div>
+            <span class="hash"><a href="/{{user_name}}/{{repo_name}}/commit/{{commit.commit_hash}}/" class="btn label-mini btn-info">{{commit.commit_hash}}</a></span>
+          </section>
+      {% endfor %}
 
-  {% if not commits %}
-  <section class="commit">
-    <p class="alert alert-error"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有提交信息，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
-  </section>
+  {% else %}
+    <p class="alert alert-error">没有提交信息，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>
   {% endif %}
 
+{% comment %}
   <ul class="pagination">
     <li><a href="#"><img src="/static/img/icons/pagination-previous.png" alt="">上一页</a></li>
     <li><a href="#">1</a></li>
@@ -46,6 +45,7 @@
     <li><a href="#">8</a></li>
     <li><a href="#">下一页<img src="/static/img/icons/pagination-next.png" alt=""></a></li>
   </ul>
+{% endcomment %}
 
 </div>
 {% endblock %}

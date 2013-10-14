@@ -1,65 +1,54 @@
 {% extends "repo/repo.html" %}
 
 {% block subcontainer %}
+<div class="bubble inner">
+{% comment %}
+  <div id="id_merge_process" class="hide colspan">
+      <p class="heading">
+      &gt; merge from {{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}
+      to {{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}} 
+      </p>
+      <div class="span10">
+        <pre id="id_merge_output" class="shell"></pre>
+      </div>
+      <div class="span10">
+        <a id="id_merge_after" class="hide" href="/{{user_name}}/{{repo_name}}/pulls/"><button class="btn btn-primary pull-right">确定</button></a>
+      </div>
+    </div>
+{% endcomment %}
 
-        {% comment %}
-          <div id="id_merge_process" class="hide colspan">
-              <p class="heading">
-              &gt; merge from {{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}
-              to {{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}} 
-              </p>
-              <div class="span10">
-                <pre id="id_merge_output" class="shell"></pre>
-              </div>
-              <div class="span10">
-                <a id="id_merge_after" class="hide" href="/{{user_name}}/{{repo_name}}/pulls/"><button class="btn btn-primary pull-right">确定</button></a>
-              </div>
-            </div>
-            {% endcomment %}
-
-            <ul class="nav nav-tabs">
-              <li class="active"><a href="#summary" data-toggle="tab">简介</a></li>
-              <li><a href="#commits" class="cPullRequestAction" data-toggle="tab" data-action="commit">提交</a></li>
-              <li><a href="#diffs" class="cPullRequestAction" data-toggle="tab" data-action="diff">代码差异</a></li>
-            </ul>
-
-            <div class="tab-content pulls">
-              <section class="tab-pane bubble active" id="summary">
-                <div class="refs">
-                  <p class="alert alert-info"><span class="pull-id">#{{pullRequest.id}}</span>请求把<span class="label label-success label-mini text-shadow-reverse">{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}</span>合并到<span class="label label-success label-mini text-shadow-reverse">{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}}</span></p>
-                </div>
-                <div class="pull">
-                  <figure class="avatar">
-                    <img src="https://gravatar.com/avatar/{{pullRequest.desc_repo.username}}?s=55" alt="{{pullRequest.desc_repo.username}}">
-                  </figure>
-                  <div class="detail">
-                    <h3 class="heading">{{pullRequest.title}}重排了格式</h3>
-                    <div class="desc">
-                      <p>改成了标题式，比较醒目，也可以避免嵌套列表的问题。（markdown的嵌套列表，各家的解析都不一样。</p>
-                      <p>{{pullRequest.desc}}</p>
-                    </div>
-
-                    {% if has_repo_pull_action_right %}
-                    <div class="actions">
-                      <a class="btn btn-primary" href="javascript: void(0)">开始合并</a>
-                      <a class="btn btn-danger" href="javascript: void(0)">拒绝</a>
-                      <a class="btn btn-inverse" href="javascript: void(0)">关闭</a>
-                      <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
-                    </div>
-                    {% endif %}
-                  </div>
-                </div>
-              </section>
-
-              <section class="tab-pane bubble" id="commits">
-              </section>
-
-              <section class="tab-pane bubble" id="diffs">
-              </section>
-
+    <div class="pulls">
+        <div class="refs">
+          <p class="alert alert-info"><span class="pull-id">#{{pullRequest.id}}</span>请求把<span class="label label-success label-mini text-shadow-reverse">{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}</span>合并到<span class="label label-success label-mini text-shadow-reverse">{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}}</span></p>
+        </div>
+        <div class="pull">
+          <figure class="avatar">
+            <img src="https://gravatar.com/avatar/{{pullRequest.desc_repo.username}}?s=55" alt="{{pullRequest.desc_repo.username}}">
+          </figure>
+          <div class="detail">
+            <h3 class="heading">{{pullRequest.title}}重排了格式</h3>
+            <div class="desc">
+              <p>改成了标题式，比较醒目，也可以避免嵌套列表的问题。（markdown的嵌套列表，各家的解析都不一样。</p>
+              <p>{{pullRequest.desc}}</p>
             </div>
 
-            {% endblock %}
+            {% if has_repo_pull_action_right %}
+            <div class="">
+              <a class="btn btn-primary" href="javascript: void(0)">开始合并</a>
+              <a class="btn btn-danger" href="javascript: void(0)">拒绝</a>
+              <a class="btn btn-inverse" href="javascript: void(0)">关闭</a>
+              <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
+            </div>
+            {% endif %}
+          </div>
+        </div>
+    </div>
+
+  <div id="commitsDiff"></div>
+
+</div>
+
+{% endblock %}
 
             {% block subjs %}
             <script>
@@ -67,7 +56,7 @@
                 var global_repo_branch_map = {};
 
                 $('a[data-toggle="tooltip"]').tooltip();
-                $('.nav-tabs').tabs();
+                //$('.nav-tabs').tabs();
 
                 var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
 
@@ -76,7 +65,7 @@
                 repoComparer.to_refs = '{{pullRequest.source_refname}}';
                 repoComparer.renderCompare($('#commitsDiff'), null);
 
-                $('a.cPullRequestAction').click(
+                $('.cPullRequestAction').click(
                   function() {
                     var action = $(this).data('action');
                     $('.ajaxLoader').show();
