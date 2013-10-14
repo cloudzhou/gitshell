@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.models import User
 from gitshell.repo.models import RepoManager, REPO_PERMISSION
 from gitshell.gsuser.models import GsuserManager
+from gitshell.team.models import TeamManager
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
 from gitshell.settings import REPO_PATH
 from gitshell.dist.views import repo as dist_repo
@@ -111,7 +112,7 @@ def keyauth(request, fingerprint, command):
         # member of the repo
         repoMember = RepoManager.get_repo_member(repo.id, userpubkey.user_id)
         # member of the team user
-        teamMember = RepoManager.get_teamMember_by_userId_teamUserId(user.id, userpubkey.user_id)
+        teamMember = TeamManager.get_teamMember_by_userId_teamUserId(userpubkey.user_id, user.id)
         if repoMember or teamMember:
             return response_full_git_command(quote, pre_command, user, repo)
     return not_git_command()
