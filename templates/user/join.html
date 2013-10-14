@@ -153,6 +153,7 @@ cat ~/.ssh/gitshell.com_rsa.pub</pre>
       if(!username.match(/^[a-zA-Z0-9_]+$/)) {
         $('#alert').show();
         $('#usernameFormat').show();
+        return;
       }
       $.post('/ajax/user/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', username: username}, function(json){
         if(json.is_user_exist) {

@@ -4,14 +4,14 @@
 
 <div class="primary">
 
-  <div class="item c_user_stats hide">
+  <!--div class="item c_user_stats hide">
     <h2 class="heading">统计</h2>
     <div>
       <div id="figure-a" class="figure lg">
         <a href="/{{gsuser.username}}/-/stats/"><canvas id="id_month_container" width="700" height="250"></canvas></a>
       </div>
     </div>
-  </div>
+  </div-->
 
   <ul class="nav nav-tabs" id="repoTab">
     <li><a href="#repos" data-toggle="tab">仓库</a></li>
@@ -24,12 +24,33 @@
     <section class="item tab-pane active" id="repos">
       <ul class="repo-list">
         {% for repo in repos %}
-        <li>
-          <div class="title">
-            <h3 class="heading"><a href="/{{gsuser.username}}/{{repo.name}}/">{{repo.name}}</a></h3>
-            <span class="meta"><time class="unixtime" pubdate>{{repo.modify_time|date:"U"}}</time>更新过</span>
+        <li class="repo">
+          <ul class="meta">
+            <li><a href="#"><span class="count">{{repo.commit}}</span><span class="meta-type">提交</span></a></li>
+            <li><a href="#"><span class="count">{{repo.fork}}</span><span class="meta-type">派生</span></a></li>
+            <li><a href="#"><span class="count">{{repo.watch}}</span><span class="meta-type">关注</span></a></li>
+          </ul>
+          <figure class="repo-avatar">
+            <img src="/static/img/repo-avatar48.png" alt="{{repo.name}}">
+            {% if repo.is_public %}
+            <span class="private"><i class="icon-unlock"></i></span>
+            {% else %}
+            <span class="private"><i class="icon-lock"></i></span>
+            {% endif %}
+          </figure>
+          <div class="summary">
+            <div class="heading">
+              <h3>
+                  <a href="/{{gsuser.username}}/{{repo.name}}/">{{repo.name}}</a>
+                  <span class="meta"><time class="unixtime" pubdate="pubdate">{{repo.modify_time|date:"U"}}</time>更新过</span>
+              </h3>
+              {#<p class="origin"><i class="icon-caret-right"></i>Fork自<a href="#">yuwen</a><span class="divider">/</span><a href="#">gitshell</a></p>#}
+            </div>
+
+            <div class="detail">
+              <p class="desc">{{repo.desc}}</p>
+            </div>
           </div>
-          <p class="desc">{{repo.desc}}</p>
         </li>
         {% endfor %}
       </ul>
@@ -38,12 +59,34 @@
     <section class="item tab-pane" id="watchedRepos">
       <ul class="repo-list">
         {% for watch_repo in watch_repos %}
-        <li>
-          <div class="title">
-            <h3 class="heading"><a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a></h3>
-            <span class="meta"><time class="unixtime" pubdate>{{watch_repo.modify_time}}</time>更新过</span>
+        <li class="repo">
+          <ul class="meta">
+            <li><a href="#"><span class="count">{{repo.commit}}</span><span class="meta-type">提交</span></a></li>
+            <li><a href="#"><span class="count">{{repo.fork}}</span><span class="meta-type">派生</span></a></li>
+            <li><a href="#"><span class="count">{{repo.watch}}</span><span class="meta-type">关注</span></a></li>
+          </ul>
+          <figure class="repo-avatar">
+            <img src="/static/img/repo-avatar48.png" alt="{{repo.name}}">
+            {% if watch_repo.is_public %}
+            <span class="private"><i class="icon-unlock"></i></span>
+            {% else %}
+            <span class="private"><i class="icon-lock"></i></span>
+            {% endif %}
+          </figure>
+          <div class="summary">
+            <div class="heading">
+              <h3>
+                  <a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a>
+                  <span class="meta"><time class="unixtime" pubdate="pubdate">{{watch_repo.modify_time}}</time>更新过</span>
+              </h3>
+              {#<p class="origin"><i class="icon-caret-right"></i>Fork自<a href="#">yuwen</a><span class="divider">/</span><a href="#">gitshell</a></p>#}
+            </div>
+
+            <div class="detail">
+              <p class="desc">{{watch_repo.desc}}</p>
+            </div>
           </div>
-          <p class="desc">{{watch_repo.desc}}</p>
+
         </li>
         {% endfor %}
       </ul>
