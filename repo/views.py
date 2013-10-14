@@ -1093,9 +1093,9 @@ def create(request, user_name):
 @require_http_methods(["POST"])
 def recently(request, user_name):
     feedAction = FeedAction()
-    _recently_view_repo = feedAction.list_recently_view_repo(request.user.id, 0, 10)
+    _recently_view_repo = feedAction.list_recently_view_repo(request.user.id, 0, 5)
     recently_view_repo_ids = [int(x[0]) for x in _recently_view_repo]
-    _recently_active_repo = feedAction.list_recently_active_repo(request.user.id, 0, 10)
+    _recently_active_repo = feedAction.list_recently_active_repo(request.user.id, 0, 5)
     recently_active_repo_ids = [int(x[0]) for x in _recently_active_repo]
     unique_repo_ids = Set(recently_view_repo_ids + recently_active_repo_ids)
     repo_dict = dict([(x.id, x) for x in RepoManager.list_repo_by_ids(unique_repo_ids)])
