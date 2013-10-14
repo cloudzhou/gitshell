@@ -18,7 +18,6 @@
                     <span class="action-type">提交更新到</span>
                     <a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="notif-title">{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}</a></p>
             <p class="subject"><a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="hash">{{notifMessage.relative_obj.commit_hash}}</a>{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
-            </div>
 
 {% comment %}
           <a href="/{{notifMessage.relative_name}}/" class="from">{{notifMessage.relative_name}}</a>
@@ -72,6 +71,7 @@
               </p>
             {% endif %}
           </div>
+      </div>
 
       {% endfor %}
 

@@ -2,19 +2,25 @@
 
 {% block subcontainer %}
 
-<div class="issues bubble">
   {% if issues %}
+    <div class="issues bubble">
       {% for issue in issues %}
         <section class="issue-item" data="{{issue.id}}">
 
           <div class="tracker">
-            <span class="issue-id">#{{issue.id}}</span>
-            <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
+            <span class="label issue-id">#{{issue.id}}</span>
+              <span class="label status {%if issue.status == "新建"%}open{%elif issue.status == "已指派"%}assigned{%elif issue.status == "进行中"%}processing{%elif issue.status == "已解决"%}resolved{%elif issue.status == "已关闭"%}closed{%elif issue.status == "已拒绝"%}rejected{%endif%}"><i class="icon-{%if issue.status == "新建"%}bookmark-empty{%elif issue.status == "已指派"%}resize-horizontal{%elif issue.status == "进行中"%}spinner{%elif issue.status == "已解决"%}ok{%elif issue.status == "已关闭"%}remove{%elif issue.status == "已拒绝"%}trash{%endif%}"></i>{{issue.status}}</span>
+            {#<span class="label status {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>#}
           </div>
 
           <div class="summary">
 
             <div class="title">
+              <h3 class="heading">
+                <a href="/{{user.username}}/{{issue.reponame}}/" class="label reponame">@{{issue.reponame}}</a>
+                <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
+                <a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">{{issue.subject}}</a>
+              </h3>
               {% comment %}
                 {% if issue.status %}
                   <span class="label">{{issue.status}}</span>
@@ -26,22 +32,15 @@
                   <span class="label">{{issue.category}}</span>
                 {% endif %}
               {% endcomment %}
-              <h3 class="heading">
-                <a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">{{issue.subject}}</a>
-              </h3>
-              <a href="/{{user.username}}/{{issue.reponame}}/" class="hide">{{issue.reponame}}</a>
             </div>
 
 
             <div class="meta">
               <a href="/{{issue.name}}/">{{issue.username}}</a>
               <span class="unixtime">{{issue.modify_time}}</span>
-              <span>
-                <i class="icon-comments-alt"></i>
-                <a href="#">{{issue.comments.count}}</a>
-              </span>
             </div>
 
+            {% comment %}
             <div id="id_tr_{{issue.id}}" data="{{issue.id}}" class="comment">
               <input id="id_comment_{{issue.id}}" class="c_comment">
               <input id="id_repo_id_{{issue.id}}" class="hide" value="{{issue.repo_id}}">
@@ -53,12 +52,13 @@
               <span class="c_close_label label label-mini">关闭</span>
               <span class="c_reject_label label label-mini">拒绝</span>
             </div>
+              <figure class="avatar">
+                <img src="https://gravatar.com/avatar/{{issue.username.imgurl}}?s=34" alt="{{issue.username}}">
+              </figure>
+            {% endcomment %}
 
           </div>
 
-          <figure class="avatar">
-            <img src="https://gravatar.com/avatar/{{issue.username.imgurl}}?s=34" alt="{{issue.username}}">
-          </figure>
 
         </section>
       {% endfor %}
