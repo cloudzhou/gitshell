@@ -49,6 +49,9 @@ class Repo(BaseModel):
         )
         return repo
 
+    def is_public(self):
+        return self.auth_type == 0
+
     def get_relative_repopath(self):
         relative_repopath = '%s/%s.git' % (self.username, self.name)
         return relative_repopath
