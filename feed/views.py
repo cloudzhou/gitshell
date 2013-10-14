@@ -225,7 +225,7 @@ def _fillwith_commit_message(request, feeds, usernames, userIds):
             continue
         repo = repos_dict[repo_id]
         if repo.auth_type == 2:
-            if not request.user.is_authenticated() or repo.user_id != request.user.id and not RepoManager.is_repo_member(repo, request.user):
+            if not request.user.is_authenticated() or not RepoManager.is_allowed_write_access_repo(repo, request.user):
                 continue
         commit_view = {}
         commit_view['id'] = commit.id
