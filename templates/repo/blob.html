@@ -1,16 +1,16 @@
 {% extends "repo/repo.html" %}
 
 {% block css %}
-<link rel="stylesheet" title="default" href="/static/less/app/highlight/default.css" disabled="disabled">
-<link rel="stylesheet" title="IDEA" href="/static/less/app/highlight/idea.css" disabled="disabled">
-<link rel="stylesheet" title="sunburst" href="/static/less/app/highlight/sunburst.css" disabled="disabled">
-<link rel="stylesheet" title="github" href="/static/less/app/highlight/github.css">
-<link rel="stylesheet" title="googleCode" href="/static/less/app/highlight/googlecode.css" disabled="disabled">
-<link rel="stylesheet" title="solarized" href="/static/less/app/highlight/solarized_dark.css" disabled="disabled">
-<link rel="stylesheet" title="xCode" href="/static/less/app/highlight/xcode.css" disabled="disabled">
-<link rel="stylesheet" title="tomorrowNightBright" href="/static/less/app/highlight/tomorrow-night-bright.css" disabled="disabled">
-<link rel="stylesheet" title="pojoaque" href="/static/less/app/highlight/pojoaque.css" disabled="disabled">
-<link rel="stylesheet" title="railscasts" href="/static/less/app/highlight/railscasts.css" disabled="disabled">
+<link rel="stylesheet" class="theme" title="default" href="/static/less/app/highlight/default.css" disabled="disabled">
+<link rel="stylesheet" class="theme" title="IDEA" href="/static/less/app/highlight/idea.css" disabled="disabled">
+<link rel="stylesheet" class="theme" title="sunburst" href="/static/less/app/highlight/sunburst.css" disabled="disabled">
+<link rel="stylesheet" class="theme" title="github" href="/static/less/app/highlight/github.css">
+<link rel="stylesheet" class="theme" title="googleCode" href="/static/less/app/highlight/googlecode.css" disabled="disabled">
+<link rel="stylesheet" class="theme" title="solarized" href="/static/less/app/highlight/solarized_dark.css" disabled="disabled">
+<link rel="stylesheet" class="theme" title="xCode" href="/static/less/app/highlight/xcode.css" disabled="disabled">
+<link rel="stylesheet" class="theme" title="tomorrowNightBright" href="/static/less/app/highlight/tomorrow-night-bright.css" disabled="disabled">
+<link rel="stylesheet" class="theme" title="pojoaque" href="/static/less/app/highlight/pojoaque.css" disabled="disabled">
+<link rel="stylesheet" class="theme" title="railscasts" href="/static/less/app/highlight/railscasts.css" disabled="disabled">
 <style>
   #themes li {
     cursor: pointer;
@@ -138,15 +138,15 @@
       $("link[title='github']").removeAttr("disabled");
       $("#themes #github").addClass("active");
     } else {
-      $("link[title='" + colorSchemeCookie + "']").removeAttr("disabled");
+      $("link.theme[title='" + colorSchemeCookie + "']").removeAttr("disabled");
       $("#themes li[id='" + colorSchemeCookie + "']").addClass("active");
-      $("link[title!='" + colorSchemeCookie + "']").attr("disabled","disabled");
+      $("link.theme[title!='" + colorSchemeCookie + "']").attr("disabled","disabled");
     }
 
     $("#themes li").click(function(){
       var colorScheme = $(this).attr("id");
-      $("link[title='" + colorScheme + "']").removeAttr("disabled");
-      $("link[title!='" + colorScheme +"']").attr("disabled","disabled");
+      $("link.theme[title='" + colorScheme + "']").removeAttr("disabled");
+      $("link.theme[title!='" + colorScheme +"']").attr("disabled","disabled");
       $.cookie("colorscheme", colorScheme , {expires:30});
       $(this).addClass("active").siblings().removeClass("active");
     });
