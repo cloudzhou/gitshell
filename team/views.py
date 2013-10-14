@@ -181,6 +181,8 @@ def add_member(request, username):
         member_user = GsuserManager.get_userprofile_by_name(username_or_email)
     if not member_user or member_user.is_team_account == 1:
         return json_httpResponse({'code': 404, 'message': u'没有相关用户'})
+    member_user.is_join_team = 1
+    member_user.save()
     exists_teamMember = TeamManager.get_teamMember_by_userId_teamUserId(member_user.id, teamUser.id)
     if not exists_teamMember:
         teamMember = TeamMember(team_user_id = teamUser.id, user_id = member_user.id, group_id = 0, permission = 2, is_admin = 0)
