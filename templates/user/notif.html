@@ -23,7 +23,7 @@
         <a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/">{{notifMessage.relative_obj.repo_name}}</a>:<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commits/{{notifMessage.relative_obj.get_short_refname}}/">{{notifMessage.relative_obj.get_short_refname}}</a>
         </span>
         {% endcomment %}
-        <span class="action-type">提交更新到</span>
+        <span class="action-type">在提交里@你</span>
         <a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="notif-title">{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}</a></p>
         <p class="subject"><a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="hash">{{notifMessage.relative_obj.commit_hash}}</a>{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
 
@@ -33,18 +33,22 @@
         <p class="subject">{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
 
         {% elif notifMessage.notif_type == 31 %}
-        <span class="action-type">评论问题</span>
+        <span class="action-type">在评论里@你</span>
         <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.issue_id}}/" class="notif-title">{{notifMessage.relative_obj.reponame}}<span class="id">#{{notifMessage.relative_obj.issue_id}}</span></a></p>
         <p class="subject">{{notifMessage.relative_obj.content|truncatechars:80}}</p>
 
         {% elif notifMessage.notif_type == 10 %}
-        <span class="action-type">在合并请求中@你:</span>
-        <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.reponame}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
+        <span class="action-type">在合并请求中@你</span>
+        <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.desc_repo.name}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
         <p class="subject">{{notifMessage.relative_obj.short_title|truncatechars:80}}</p>
 
         {% elif notifMessage.notif_type >= 100 and notifMessage.notif_type <= 105 %}
-        <span class="action-type">{{notifMessage.message}}合并请求</span>
-        <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.reponame}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
+          {% if notifMessage.notif_type == 102 %}
+            <span class="action-type">合并请求失败</span>
+          {% else %}
+            <span class="action-type">{{notifMessage.message}}合并请求</span>
+          {% endif %}
+        <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.desc_repo.name}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
         <p class="subject">{{notifMessage.relative_obj.short_title|truncatechars:80}}</p>
 
         {% elif notifMessage.notif_type == 300 %}
