@@ -36,7 +36,11 @@ def user(request, user_name):
         raise Http404
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     recommendsForm = RecommendsForm()
-    repos = RepoManager.list_unprivate_repo_by_userId(gsuser.id, 0, 10)
+    repos = []
+    if gsuser.id == request.user.id:
+        repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 10)
+    elif gsuserprofile.is_team_account == 1 and TeamManager.is_teamMember(gsuser.id, request.user.id):
+        repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 10)
 
     now = datetime.now()
     last30days = timeutils.getlast30days(now)
