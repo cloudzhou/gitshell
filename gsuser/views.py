@@ -38,9 +38,11 @@ def user(request, user_name):
     recommendsForm = RecommendsForm()
     repos = []
     if gsuser.id == request.user.id:
-        repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 10)
+        repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 100)
     elif gsuserprofile.is_team_account == 1 and TeamManager.is_teamMember(gsuser.id, request.user.id):
-        repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 10)
+        repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 100)
+    else:
+        repos = RepoManager.list_unprivate_repo_by_userId(gsuser.id, 0, 100)
 
     now = datetime.now()
     last30days = timeutils.getlast30days(now)
