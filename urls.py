@@ -2,7 +2,7 @@ from django.conf.urls.defaults import patterns, include, url
 
 urlpatterns = patterns('gitshell',
     # gitshell web app, nginx port 8000, proxy by haproxy, public
-    url(r'^/?$', 'feed.views.dashboard'),
+    url(r'^/?$', 'feed.views.index'),
 
     # explore
     url(r'^explore/?$', 'explore.views.explore'),

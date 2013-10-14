@@ -18,6 +18,11 @@ from gitshell.gsuser.models import GsuserManager
 from gitshell.todolist.views import todo
 from gitshell.viewtools.views import json_httpResponse, obj2dict
 
+def index(request):
+    return render_to_response('index.html',
+                          {},
+                          context_instance=RequestContext(request))
+
 @login_required
 def dashboard(request):
     feedAction = FeedAction()
