@@ -42,6 +42,14 @@ class TeamManager():
         return get(TeamMember, id)
 
     @classmethod
+    def is_teamMember(self, team_user_id, user_id):
+        teamMembers = self.list_teamMember_by_teamUserId(team_user_id)
+        for teamMember in teamMembers:
+            if teamMember.user_id == user_id:
+                return True
+        return False
+
+    @classmethod
     def get_teamMember_by_userId_teamUserId(self, user_id, team_user_id):
         teamMember = query_first(TeamMember, user_id, 'teammember_s_userId_teamUserId', [user_id, team_user_id])
         if not teamMember:
@@ -53,8 +61,8 @@ class TeamManager():
     @classmethod
     def list_teamMember_by_userId(self, user_id):
         userprofile = GsuserManager.get_userprofile_by_id(user_id)
-        if userprofile.is_join_team == 0:
-            return []
+        #if userprofile.is_join_team == 0:
+        #    return []
         teamMembers = query(TeamMember, user_id, 'teammember_l_userId', [user_id])
         for x in teamMembers:
             x.user = GsuserManager.get_userprofile_by_id(x.user_id)

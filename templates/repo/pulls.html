@@ -30,7 +30,7 @@
       </div>
       <div class="meta">
         <a href="/{{pullRequest.pull_user.username}}/">{{pullRequest.pull_user.username}}</a>
-        <time class="unixtime" pubdate="pubdate">4天前创建</time>
+        <time class="unixtime" pubdate="pubdate">{{pullRequest.modify_time|date:"U"}}</time>
       </div>
     </div>
   </section>

@@ -1226,7 +1226,6 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_tag = (refs in refs_meta['tags'])
     is_commit = (not is_branch and not is_tag)
     has_forked = False
-    has_fork_right = (repo.auth_type == 0 or is_repo_member)
     has_pull_right = is_owner
     user_child_repo = None
     parent_repo = None
@@ -1237,8 +1236,10 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
         if user_child_repo is not None:
             has_forked = True
             has_pull_right = True
+    is_teamMember = TeamManager.is_teamMember(repo.user_id, request.user.id)
+    has_fork_right = (repo.auth_type == 0 or is_repo_member or is_teamMember)
     repo_pull_new_count = RepoManager.count_pullRequest_by_descRepoId(repo.id, PULL_STATUS.NEW)
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_stared_repo': is_stared_repo, 'has_forked': has_forked, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'is_branch': is_branch, 'is_tag': is_tag, 'is_commit': is_commit, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta, 'user_child_repo': user_child_repo, 'parent_repo': parent_repo}
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_stared_repo': is_stared_repo, 'has_forked': has_forked, 'is_repo_member': is_repo_member, 'is_teamMember': is_teamMember, 'is_owner': is_owner, 'is_branch': is_branch, 'is_tag': is_tag, 'is_commit': is_commit, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta, 'user_child_repo': user_child_repo, 'parent_repo': parent_repo}
 
 @login_required
 def list_github_repos(request):

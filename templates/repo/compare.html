@@ -4,22 +4,14 @@
 
 {% block subcontainer %}
 <div class="compare inner bubble">
-  {# TODO css for diff #}
-  {% comment %}
     <header class="header">
-        <h1 class="heading">
-          <a href="/{{user_name}}/{{repo_name}}/compare/master/">{{repo_name}}</a> /
-            <span id="repoPath"></span>
-            <span>分支比较</span>
-        </h1>
         {% if is_repo_member %}
         <div id="mergePullrequest" class="pull-right hide">
             <a id="merge" data-original-title=" 直接合并分支代码" rel="tooltip" href="javascript: void(0)" class="btn btn-success">合并分支代码</a>
             <a data-original-title=" 出于礼貌，提前合并目标分支代码，减少对方合并时出现冲突的可能性" rel="tooltip" href="/{{user_name}}/{{repo_name}}/pull/new/{{user_name}}:{{from_refs}}...{{user_name}}:{{to_refs}}/" class="btn">创建合并请求</a>
         </div>
-      {% endif %}
+        {% endif %}
     </header>
-  {% endcomment %}
 
   {# compare #}
   <h2 class="heading">比较</h2>

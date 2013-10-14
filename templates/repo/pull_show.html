@@ -2,12 +2,22 @@
 
 {% block subcontainer %}
 
-        {% comment %}
-          <div id="id_merge_process" class="hide colspan">
-              <p class="heading">
+<style>
+.shell {
+background: #333;
+padding: 10px;
+color: #fff;
+text-align: left;
+max-height: 400px;
+overflow: auto;
+clear: both;
+}
+</style>
+            <div id="id_merge_process" class="hide colspan">
+              <h2 class="heading">
               &gt; merge from {{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}
               to {{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}} 
-              </p>
+              </h2>
               <div class="span10">
                 <pre id="id_merge_output" class="shell"></pre>
               </div>
@@ -15,12 +25,12 @@
                 <a id="id_merge_after" class="hide" href="/{{user_name}}/{{repo_name}}/pulls/"><button class="btn btn-primary pull-right">确定</button></a>
               </div>
             </div>
-            {% endcomment %}
 
+          <div id="id_merge_action">
             <ul class="nav nav-tabs">
               <li class="active"><a href="#summary" data-toggle="tab">简介</a></li>
               <li><a href="#commits" class="cPullRequestAction" data-toggle="tab" data-action="commit">提交</a></li>
-              <li><a href="#diffs" class="cPullRequestAction" data-toggle="tab" data-action="diff">代码差异</a></li>
+              <li><a href="#pullRequestDiff" class="cPullRequestAction" data-toggle="tab" data-action="diff">代码差异</a></li>
             </ul>
 
             <div class="tab-content pulls">
@@ -33,17 +43,16 @@
                     <img src="https://gravatar.com/avatar/{{pullRequest.desc_repo.username}}?s=55" alt="{{pullRequest.desc_repo.username}}">
                   </figure>
                   <div class="detail">
-                    <h3 class="heading">{{pullRequest.title}}重排了格式</h3>
+                    <h3 class="heading">{{pullRequest.title}}</h3>
                     <div class="desc">
-                      <p>改成了标题式，比较醒目，也可以避免嵌套列表的问题。（markdown的嵌套列表，各家的解析都不一样。</p>
                       <p>{{pullRequest.desc}}</p>
                     </div>
 
                     {% if has_repo_pull_action_right %}
                     <div class="actions">
-                      <a class="btn btn-primary" href="javascript: void(0)">开始合并</a>
-                      <a class="btn btn-danger" href="javascript: void(0)">拒绝</a>
-                      <a class="btn btn-inverse" href="javascript: void(0)">关闭</a>
+                      <a id="id_pull_merge" class="btn btn-primary" href="javascript: void(0)">开始合并</a>
+                      <a id="id_pull_reject" class="btn btn-danger" href="javascript: void(0)">拒绝</a>
+                      <a id="id_pull_close" class="btn btn-inverse" href="javascript: void(0)">关闭</a>
                       <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
                     </div>
                     {% endif %}
@@ -54,10 +63,11 @@
               <section class="tab-pane bubble" id="commits">
               </section>
 
-              <section class="tab-pane bubble" id="diffs">
+              <section class="tab-pane bubble" id="pullRequestDiff">
               </section>
 
             </div>
+          </div>
 
             {% endblock %}
 
@@ -67,7 +77,7 @@
                 var global_repo_branch_map = {};
 
                 $('a[data-toggle="tooltip"]').tooltip();
-                $('.nav-tabs').tabs();
+                //$('.nav-tabs').tabs();
 
                 var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
 
@@ -81,9 +91,9 @@
                     var action = $(this).data('action');
                     $('.ajaxLoader').show();
                     if(action == 'commit') {
-                      load_commit_meta();
+                      repoComparer.loadCommits($('#commits'), null, null, null);
                     } else if(action == 'diff') {
-                      load_diff_meta();
+                      repoComparer.loadDiff($('#pullRequestDiff'), null, null);
                     }
                   }
                   );
