@@ -89,11 +89,11 @@
                             feed_reponame = ordered_date_reponame[ordered_date[x]][y];
 
                             if(feed_reponame.indexOf('#') != 0) {
-                              html.push('<section class="feed-item"><span class="feed-type commit">提交</span><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt="{{userprofile.imgurl}}"></figure><div class="detail"><p class="title">提交并更新到仓库<a href="#">' + feed_reponame + '</a></p>');
+                              html.push('<section class="feed-item"><span class="feed-type commit">提交</span><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt="{{userprofile.imgurl}}"></figure><div class="detail"><p class="title">提交到仓库 <a href="#">' + feed_reponame + '</a></p>');
                               html.push('<ul class="subject commits">');
                                 for(z in display_feeds_map[feed_date][feed_reponame]) {
                                     commit = display_feeds_map[feed_date][feed_reponame][z].relative_obj;
-                                    html.push('<li><img src="https://gravatar.com/avatar/{{userprofile.imgurl}}?s=15" alt="{{userprofile.imgurl}}"><a href="/{{ user.username }}/' + feed_reponame + '/" class="hash">' + commit.commit_hash + '</a>- <span class="subject">' + commit.subject + '</span><time class="date" pubdate="pubdate">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</time></li>');
+                                    html.push('<li><img src="https://gravatar.com/avatar/{{userprofile.imgurl}}?s=15" alt="{{userprofile.imgurl}}"><a href="/{{ teamUser.username }}/' + feed_reponame + '/" class="hash">' + commit.commit_hash + '</a>- <span class="subject">' + commit.subject + '</span><time class="date" pubdate="pubdate">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</time></li>');
                                 }
                                 html.push('</ul></div></section>');
                             } else {
