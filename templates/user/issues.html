@@ -36,11 +36,13 @@
         <span class="unixtime">{{issue.modify_time}}</span>
       </div>
 
-      <div id="id_label1_{{issue.id}}" class="c_label actions hide">
+{% comment %}
+      <div id="id_label_{{issue.id}}" class="c_label actions hide">
         <span class="c_fixed_label btn btn-success">解决</span>
         <span class="c_close_label btn">关闭</span>
         <span class="c_reject_label btn btn-danger">拒绝</span>
       </div>
+{% endcomment %}
 
     </div>
 
@@ -56,11 +58,11 @@
   <ul class="pagination">
     <li><a href="/dashboard/issues/0/">首页</a></li>
     {%if hasPre%}
-    <li><a href="/dashboard/issues/{{page|add:"-1"}}/">前一页</a></li>
+      <li><a href="/dashboard/issues/{{page|add:"-1"}}/">前一页</a></li>
     {%endif%}
     <li class="active">第{{page|add:"1"}}页</li>
     {%if hasNext%}
-    <li><a href="/dashboard/issues/{{page|add:"+1"}}/">后一页</a></li>
+      <li><a href="/dashboard/issues/{{page|add:"+1"}}/">后一页</a></li>
     {%endif%}
   </ul>
 </div>

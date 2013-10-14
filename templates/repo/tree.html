@@ -4,12 +4,13 @@
 {% endblock %}
 
 {% block repo_description %}
-<div class="description bubble"><p>{{repo.desc|truncatechars:80}} <a href="#README.md" class="readmore"><i class="icon-double-angle-right"></i>Read More</a></p></div>
+    <div class="description bubble"><p>{{repo.desc|truncatechars:80}} <a href="#README.md" class="readmore"><i class="icon-double-angle-right"></i>Read More</a></p></div>
 {% endblock %}
 
 {% block subcontainer %}
 
 <div class="files bubble" id="resize-container">
+{% comment %}
   <div class="file-browser" id="file-browser">
     {% include "repo/branch_nav.html" %}
     {#<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="btn btn-mini">Commits</a>#}
@@ -37,10 +38,12 @@
       {% endfor %}
     </ul>
   </div>
+{% endcomment %}
 
   <div class="table-container" id="source">
     <div class="theme-selector">
-      <a href="#" id="switcher">代码高亮主题</a>
+      {% if current == 'blob' %}
+      <a href="#" id="switcher">主题</a>
       <ul class="theme-list clearfix" id="themes">
         <li class="active"><a href="#"><i class="icon-ok"></i>Default</a></li>
         <li><a href="#">Github</a></li>
@@ -51,52 +54,53 @@
         <li><a href="#">xCode</a></li>
         <li><a href="#">Tomorrow</a></li>
       </ul>
+      {% else %}
+          {% include "repo/branch_nav.html" %}
+            <span class="current-branch-name">
+                <a href="/{{user_name}}/{{repo_name}}/{%if current == 'index' or current == 'tree' or current == 'blob' %}tree{%endif%}{%if current == 'commits' %}commits{%endif%}{%if current == 'refs_graph' %}refs/graph{%endif%}/{{refs}}/">{{repo_name}}</a><span class="divider">/</span>
+                <span id="repo-path"></span>
+            </span>
+      {% endif %}
     </div>
-  {% if readme_md %}
-  <div id="README.md" class="readme">
-    <div id="id_readme_md" class="markdown hide">{{readme_md}}</div>
-  </div>
 
-  {% else %}
     <table class="table">
       <tbody>
         {% if not tree %}
-        <tr>
-          <td><p class="alert alert-error"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码。</p></td>
-        </tr>
+        <tr><td><p class="alert alert-error"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码。</p></td></tr>
+        {% else %}
+            {% for file_attrs in tree.tree %}
+                <tr>
+                  <td class="icon">
+                    {% if file_attrs.type == 'tree' %}
+                    <span><img src="/static/img/file_dir.png" alt="dir"></span>
+                    {% else %}
+                    <span><img src="/static/img/file_txt.png" alt="file"></span>
+                    {% endif %}
+                  </td>
+                  <td class="file-name">
+                    <a href="/{{user_name}}/{{repo_name}}/{%if file_attrs.type == 'tree'%}tree{%else%}blob{%endif%}/{{refs}}/{%if path != '.' %}{{path}}{%endif%}{{file_attrs.relative_path}}" title="{{file_attrs.relative_path}}">{{file_attrs.relative_path}}</a>
+                  </td>
+                  <td class="commit-info">
+                    {% if file_attrs.last_commit_message|length > 80 %}
+                    <a href="javascript:void(0)" data-toggle="popover" data-content="{{file_attrs.last_commit_message}}" data-placement="bottom" class="commit">{{file_attrs.last_commit_message|truncatechars:80}}</a>
+                    {% else %}
+                    <a href="javascript:void(0)" class="commit">{{file_attrs.last_commit_message}}</a>
+                    {% endif %}
+                    {% if file_attrs.real_author_name == '' %}
+                    <span class="commiter">@{{file_attrs.author_name}}</span>
+                    {% else %}
+                    <a href="/{{file_attrs.real_author_name}}/" class="commiter">@{{file_attrs.author_name}}</a>
+                    {% endif %}
+                  </td>
+                  <td class="date">
+                    <span class="date unixtime">{{file_attrs.author_time}}</span></td>
+                </td>
+              </tr>
+          {% endfor %}
         {% endif %}
-        {% for file_attrs in tree.tree %}
-        <tr>
-          <td class="icon">
-            {% if file_attrs.type == 'tree' %}
-            <span><img src="/static/img/file_dir.png" alt="dir"></span>
-            {% else %}
-            <span><img src="/static/img/file_txt.png" alt="file"></span>
-            {% endif %}
-          </td>
-          <td class="file-name">
-            <a href="/{{user_name}}/{{repo_name}}/{%if file_attrs.type == 'tree'%}tree{%else%}blob{%endif%}/{{refs}}/{%if path != '.' %}{{path}}{%endif%}{{file_attrs.relative_path}}" title="{{file_attrs.relative_path}}">{{file_attrs.relative_path}}</a>
-          </td>
-          <td class="commit-info">
-            {% if file_attrs.last_commit_message|length > 80 %}
-            <a href="javascript:void(0)" data-toggle="popover" data-content="{{file_attrs.last_commit_message}}" data-placement="bottom" class="commit">{{file_attrs.last_commit_message|truncatechars:80}}</a>
-            {% else %}
-            <a href="javascript:void(0)" class="commit">{{file_attrs.last_commit_message}}</a>
-            {% endif %}
-            {% if file_attrs.real_author_name == '' %}
-            <span class="commiter">@{{file_attrs.author_name}}</span>
-            {% else %}
-            <a href="/{{file_attrs.real_author_name}}/" class="commiter">@{{file_attrs.author_name}}</a>
-            {% endif %}
-          </td>
-          <td class="date">
-            <span class="date unixtime">{{file_attrs.author_time}}</span></td>
-        </td>
-      </tr>
-      {% endfor %}
     </tbody>
   </table>
-  {% endif %}
+
 </div>
 
 {% endblock %}
@@ -112,6 +116,7 @@
 <script src="/static/js/treeview.js"></script>
 <script>
   $(function(){
+    /*
     // File browser resizable & treeview
     $("#file-browser").resizable({
       handles: "e",
@@ -132,6 +137,7 @@
         $("#source").css("margin-left", fileBrowserWidth);
       }
     );
+    */
 
     // Color Scheme
     var switcher = $("#switcher"),
@@ -150,7 +156,7 @@
         }, function(){
           $(this).popover('hide');
         }
-        );
+    );
 
   });
 </script>

@@ -13,8 +13,8 @@
     <div class="fields">
       <span class="group"><b>分配给</b>{{ issueForm.assigned }}{{ issueForm.tracker }}{{ issueForm.status }}{{ issueForm.priority }}</span><span class="group"><b>类别</b>{{ issueForm.category }}</span>
     </div>
-    <div>{{ issueForm.subject }}</div>
-    <div>{{ issueForm.content }}</div>
+    <div class="fields">{{ issueForm.subject }}</div>
+    <div class="fields">{{ issueForm.content }}</div>
     <div class="actions">
       <button id="iSubmit" class="btn btn-primary" type="submit">确定</button>
     </div>
@@ -24,6 +24,8 @@
 {% block subjs %}
 <script>
   $(function(){
+    $('#id_subject').attr('placeholder', '标题');
+    $('#id_content').attr('placeholder', '问题描述');
     $('#id_category').attr('placeholder', '优化，安全...');
   });
 </script>

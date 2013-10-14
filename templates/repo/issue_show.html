@@ -126,10 +126,10 @@
     });
     $('#submit').mouseover(function(){
       $('#commentContent').show();
-      $('#idContent').focus();
+      $('#id_content').focus();
     });
     $('#submit').click(function(){
-      if($('#idContent').val() != '') {
+      if($('#id_content').val() != '') {
         $(this).submit();
         return true;
       }
@@ -137,12 +137,12 @@
     });
     $('.refComment').click(function(){
       var ref_username = $(this).attr('value');
-      $('#idContent').val($('#idContent').val() + ' @' + ref_username + ' ');
+      $('#id_content').val($('#id_content').val() + ' @' + ref_username + ' ');
       $('#commentContent').show();
-      $('#idContent').focus();
-      var val = $('#idContent').val();
-      $('#idContent').val('')
-      $('#idContent').val(val)
+      $('#id_content').focus();
+      var val = $('#id_content').val();
+      $('#id_content').val('')
+      $('#id_content').val(val)
     });
     $('.cIssue').tooltip({
       selector: "a[rel=tooltip]"

@@ -19,20 +19,20 @@
         <label for="rights-{{teamMember.id}}">Push</label-->
         </td>
         <td>
-          <div class="action hide">
+          <div class="actions">
+            <a href="#" data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="remove-team-member btn btn-mini">移除</a>
             {% if teamMember.has_admin_rights %}
-            <button data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="cancal-team-admin btn btn-mini btn-danger">解除管理员</button>
+            <a href="#" data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="cancal-team-admin btn btn-mini btn-danger">解除管理员</a>
             {% else %}
-            <button data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="grant-team-admin btn btn-mini btn-danger">设置为管理员</button>
+            <a href="#" data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="grant-team-admin btn btn-mini btn-success">设置为管理员</a>
             {% endif %}
-            <button data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="remove-team-member btn btn-mini btn-danger">移除</button>
           </div>
         </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
-  <p class="add-member"><input id="add-member" placeholder="成员的用户名或者邮箱"/><button class="add-team-member btn btn-danger">添加新成员</button></p>
+  <p class="add-member"><input id="add-member" placeholder="成员的用户名或者邮箱"/><button class="add-team-member btn">添加新成员</button></p>
 {% endblock %}
 
 {% block js %}

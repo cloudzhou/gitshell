@@ -14,30 +14,27 @@
     {% if pullRequests %}
       {% for pullRequest in pullRequests %}
         <section class="pull-item">
-          <div class="pull">
-
-            <figure class="avatar">
-              <img src="https://gravatar.com/avatar/{{pullRequest.pull_user.username}}?s=38" alt="{{pullRequest.pull_user.username}}">
-            </figure>
-
-            <div class="info">
-
+            <div class="widget">
+              <span class="status {{pullRequest.status_label}}">{{pullRequest.status_view}}</span>
+              <span class="branches">
+                <a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/" class="from branch">{{pullRequest.source_refname}}</a>
+                <span class="arrow-right"><i class="icon-long-arrow-right"></i></span>
+                <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/" class="to branch">{{pullRequest.desc_refname}}</a>
+              </span>
+            </div>
+            <div class="summary">
               <h3 class="heading">
-                <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/pull/{{pullRequest.id}}/" class="id">{#[{{pullRequest.id}}]#}{{pullRequest.short_title}}</a>
-                <span class="label label-mini {{pullRequest.status_label}}">{{pullRequest.status_view}}</span>
+                <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/pull/{{pullRequest.id}}/">{{pullRequest.short_title}}</a>
+                <a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/pull/{{pullRequest.id}}/" class="id">#{{pullRequest.id}}</a>
               </h3>
-
-              <div class="branches hide">
-                <span class="puller">
-                  <a href="/{{pullRequest.pull_user.username}}/">{{pullRequest.pull_user.username}}</a>想把
-                </span>
-                <span class="sub">{#<a href="/{{pullRequest.source_repo.username}}/">{{pullRequest.source_repo.username}}</a>/#}<a href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/">{{pullRequest.source_repo.name}}</a>:<span{# href="/{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}/tree/{{pullRequest.source_refname}}/" #} class="repo-name">{{pullRequest.source_refname}}</span>
-                </span>合并到
-                <span class="master">{#<a href="/{{pullRequest.desc_repo.username}}/">{{pullRequest.desc_repo.username}}</a>/#}<a href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/">{{pullRequest.desc_repo.name}}</a>:<span{# href="/{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}/tree/{{pullRequest.desc_refname}}/" #} class="repo-name">{{pullRequest.desc_refname}}</span>
-                </span>
+              <div class="desc">
+                <p>{{pullRequest.short_desc}}</p>
               </div>
-              <p class="desc">{{pullRequest.short_desc}}</p>
-          </div>
+              <div class="meta">
+                <a href="/{{pullRequest.pull_user.username}}/">{{pullRequest.pull_user.username}}</a>
+                <time class="unixtime" pubdate="pubdate">{{pullRequest.modify_time|date:"U"}}</time>
+              </div>
+            </div>
 
           </div>
         </section>

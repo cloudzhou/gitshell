@@ -187,7 +187,7 @@
 
       $('html').click(function(e) {
         var target = $(e.target);
-        if(!target.is('#cloneMenu')){
+        if(target.id != 'cloneMenu'){
           $('#cloneMenu').hide();
         }
       });
@@ -222,11 +222,11 @@
         $(this).addClass('selected').select();
       });
 
-      //$('html').click(function(e){
-      //  if(!e.target.is('#urlData')) {
-      //    $('#urlData').removeClass('selected');
-      //  }
-      //});
+      $('html').click(function(e){
+        if(e.target.id != 'urlData') {
+          $('#urlData').removeClass('selected');
+        }
+      });
 
       //    $("#copy-btn").zclip({
       //      path: "/static/js/ZeroClipboard.swf",

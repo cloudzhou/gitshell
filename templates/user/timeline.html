@@ -98,11 +98,11 @@
 
               // feed_reponame.indexOf('#') != 0  #Commits#
               if(feed_reponame.indexOf('#') != 0) {
-                html.push('<section class="feed-item"><span class="feed-type commit">提交</span><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt="{{userprofile.imgurl}}"></figure><div class="detail"><p class="title"></a>提交更新到 <a href="#">' + feed_reponame + '</a></p>');
+                html.push('<section class="feed-item"><span class="feed-type commit">提交</span><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt="{{userprofile.imgurl}}"></figure><div class="detail"><p class="title">提交更新到 <a href="#">' + feed_reponame + '</a></p>');
                 html.push('<ul class="subject commits">');
                 for(z in display_feeds_map[feed_date][feed_reponame]) {
                   commit = display_feeds_map[feed_date][feed_reponame][z].relative_obj;
-                  html.push('<li><img src="https://gravatar.com/avatar/{{userprofile.imgurl}}?s=15" alt="{{userprofile.imgurl}}"><a href="/{{ user.username }}/' + feed_reponame + '/" class="hash">' + commit.commit_hash + '</a>- <span class="subject">' + commit.subject + '</span><time class="date" pubdate>' + moment(new Date(commit.committer_date*1000)).fromNow() + '</time></li>');
+                  html.push('<li><img src="https://gravatar.com/avatar/{{userprofile.imgurl}}?s=15" alt="{{userprofile.imgurl}}"><a href="/{{ user.username }}/' + feed_reponame + '/" class="hash">' + commit.commit_hash + '</a>- <span class="subject">' + commit.subject + '</span><time class="date" pubdate="pubdate">' + moment(new Date(commit.committer_date*1000)).fromNow() + '</time></li>');
                 }
                 html.push('</ul></div></section>');
 
@@ -141,9 +141,9 @@
                   } else if(feed.feed_type == 102) {
                     action = '合并失败';
                   } else if(feed.feed_type == 103) {
-                    action = '拒绝合并请求';
+                    action = '拒绝合并';
                   } else if(feed.feed_type == 104) {
-                    action = '关闭合并请求';
+                    action = '关闭合并';
                   } else if(feed.feed_type == 105) {
                     action = '评论合并请求';
                   }
