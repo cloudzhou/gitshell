@@ -7,10 +7,10 @@
   <div class="subhead">
     <div class="container">
       <ul class="nav nav-tabs">
-        <li{% if current == 'timeline' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/dashboard/timeline/">事件</a></li>
+        <li{% if current == 'timeline' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/dashboard/timeline/">动态</a></li>
+        <li{% if current == 'notif' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/dashboard/notif/">通知</a></li>
         <li{% if current == 'pull' %} class="active"{%endif%}><a href="/{{teamUser.username}}/-/dashboard/pull/">合并请求</a></li>
         <li{% if current == 'issues' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/dashboard/issues/">问题</a></li>
-        <li{% if current == 'notif' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/dashboard/notif/">通知</a></li>
         <li{% if current == 'repo' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/dashboard/repo/">仓库</a></li>
         {% if has_admin_rights %}
           <li{% if current == 'settings' %} class="active"{% endif %}><a href="/{{teamUser.username}}/-/settings/">设置</a></li>

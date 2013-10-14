@@ -120,7 +120,7 @@ def ls_tree(request, user_name, repo_name, refs, path, current, render_method):
     gitHandler = GitHandler()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     tree = {}
-    if repo.status == 0 and (repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user)):
+    if repo.status == 0 and (repo.auth_type == 0 or RepoManager.is_allowed_write_access_repo(repo, request.user)):
         if path == '.' or path.endswith('/'):
             tree = gitHandler.repo_ls_tree(abs_repopath, commit_hash, path)
     readme_md = None
@@ -153,7 +153,7 @@ def _blob(request, user_name, repo_name, refs, path, render_method):
     gitHandler = GitHandler()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     blob = u''; lang = 'Plain'; brush = 'plain'
-    if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
+    if repo.auth_type == 0 or RepoManager.is_allowed_write_access_repo(repo, request.user):
         paths = path.split('.')
         if len(paths) > 0:
             suffix = paths[-1]
@@ -293,7 +293,7 @@ def compare_commit(request, user_name, repo_name, from_refs, to_refs):
 @require_http_methods(["POST"])
 def merge(request, user_name, repo_name, source_refs, desc_refs):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or not RepoManager.is_repo_member(repo, request.user):
+    if repo is None or not RepoManager.is_allowed_write_access_repo(repo, request.user):
         raise Http404
     merge_commit_message = 'Merge branch %s into %s, by %s' % (source_refs, desc_refs, '@' + str(request.user.username))
     if request.user.id != repo.user_id:
@@ -464,8 +464,8 @@ def pull_merge(request, user_name, repo_name, pullRequest_id):
     (repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path) = tuple(args)
     if not _has_pull_right(request, source_repo, desc_repo) or not _has_repo_pull_action_right(request, desc_repo, pullRequest):
         return json_httpResponse({'result': 'failed'})
-    if desc_repo is None or desc_repo.user_id != request.user.id:
-        return json_httpResponse({'result': 'failed'})
+    #if desc_repo is None or desc_repo.user_id != request.user.id:
+    #    return json_httpResponse({'result': 'failed'})
     source_refs = pullRequest.source_refname
     desc_refs = pullRequest.desc_refname
     gitHandler = GitHandler()
@@ -558,7 +558,7 @@ def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, contex
     orgi_to_commit_hash = to_commit_hash
     from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_commit_hash)
     to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_commit_hash)
-    if repo.auth_type == 0 or RepoManager.is_repo_member(repo, request.user):
+    if repo.auth_type == 0 or RepoManager.is_allowed_write_access_repo(repo, request.user):
         diff = gitHandler.repo_diff(abs_repopath, from_commit_hash, to_commit_hash, context, path)
         for x in diff['detail']:
             mode = x['mode']
@@ -864,7 +864,7 @@ def refs_graph(request, user_name, repo_name, refs):
 def refs_create(request, user_name, repo_name, refs):
     current = 'branches'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or not RepoManager.is_repo_member(repo, request.user):
+    if repo is None or not RepoManager.is_allowed_write_access_repo(repo, request.user):
         raise Http404
     response_dictionary = {'mainnav': 'repo', 'current': current}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
@@ -876,7 +876,7 @@ def refs_create(request, user_name, repo_name, refs):
 @require_http_methods(["POST"])
 def refs_branch_create(request, user_name, repo_name, branch, base_branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or not RepoManager.is_repo_member(repo, request.user):
+    if repo is None or not RepoManager.is_allowed_write_access_repo(repo, request.user):
         return json_httpResponse({'returncode': 128, 'result': 'failed'})
     gitHandler = GitHandler()
     if gitHandler.create_branch(repo, branch, base_branch):
@@ -887,7 +887,7 @@ def refs_branch_create(request, user_name, repo_name, branch, base_branch):
 @require_http_methods(["POST"])
 def refs_branch_delete(request, user_name, repo_name, branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or not RepoManager.is_repo_member(repo, request.user) or branch == 'master':
+    if repo is None or not RepoManager.is_allowed_write_access_repo(repo, request.user) or branch == 'master':
         return json_httpResponse({'returncode': 128, 'result': 'failed'})
     gitHandler = GitHandler()
     if gitHandler.delete_branch(repo, branch):
@@ -898,7 +898,7 @@ def refs_branch_delete(request, user_name, repo_name, branch):
 @require_http_methods(["POST"])
 def refs_tag_create(request, user_name, repo_name, tag, base_branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or not RepoManager.is_repo_member(repo, request.user):
+    if repo is None or not RepoManager.is_allowed_write_access_repo(repo, request.user):
         return json_httpResponse({'returncode': 128, 'result': 'failed'})
     gitHandler = GitHandler()
     if gitHandler.create_tag(repo, tag, base_branch):
@@ -909,7 +909,7 @@ def refs_tag_create(request, user_name, repo_name, tag, base_branch):
 @require_http_methods(["POST"])
 def refs_tag_delete(request, user_name, repo_name, tag):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or not RepoManager.is_repo_member(repo, request.user):
+    if repo is None or not RepoManager.is_allowed_write_access_repo(repo, request.user):
         return json_httpResponse({'returncode': 128, 'result': 'failed'})
     gitHandler = GitHandler()
     if gitHandler.delete_tag(repo, tag):
@@ -1035,16 +1035,18 @@ def create(request, user_name):
     error = u''
     if user_name != request.user.username:
         raise Http404
+    feedAction = FeedAction()
+    (owner_user_id, lang, auth_type) = feedAction.get_recently_create_repo_attr(request.user.id)
     thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
     repo = Repo()
     repo.user_id = request.user.id
     repo.auth_type = 2
-    repoForm = RepoForm(instance = repo)
-    repoForm.fill_username(request.userprofile)
+    repoForm = RepoForm(instance = repo, initial={'lang': lang, 'auth_type': auth_type})
+    repoForm.fill_username(request.userprofile, owner_user_id)
     response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error, 'thirdpartyUser': thirdpartyUser, 'apply_error': request.GET.get('apply_error')}
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
-        repoForm.fill_username(request.userprofile)
+        repoForm.fill_username(request.userprofile, owner_user_id)
         userprofile = request.userprofile
         create_repo = repoForm.save(commit=False)
         username = create_repo.username
@@ -1074,6 +1076,7 @@ def create(request, user_name):
             error = u'剩余空间不足，总空间 %s kb，剩余 %s kb' % (userprofile.quote, userprofile.used_quote)
             return __response_create_repo_error(request, response_dictionary, error)
         create_repo.save()
+        feedAction.set_recently_create_repo_attr(request.user.id, create_repo.user_id, create_repo.lang, create_repo.auth_type)
         userprofile.save()
         remote_git_url = request.POST.get('remote_git_url', '').strip()
         remote_username = request.POST.get('remote_username', '').strip()
@@ -1223,7 +1226,6 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_tag = (refs in refs_meta['tags'])
     is_commit = (not is_branch and not is_tag)
     has_forked = False
-    has_fork_right = (repo.auth_type == 0 or is_repo_member)
     has_pull_right = is_owner
     user_child_repo = None
     parent_repo = None
@@ -1234,8 +1236,10 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
         if user_child_repo is not None:
             has_forked = True
             has_pull_right = True
+    is_teamMember = TeamManager.is_teamMember(repo.user_id, request.user.id)
+    has_fork_right = (repo.auth_type == 0 or is_repo_member or is_teamMember)
     repo_pull_new_count = RepoManager.count_pullRequest_by_descRepoId(repo.id, PULL_STATUS.NEW)
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_stared_repo': is_stared_repo, 'has_forked': has_forked, 'is_repo_member': is_repo_member, 'is_owner': is_owner, 'is_branch': is_branch, 'is_tag': is_tag, 'is_commit': is_commit, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta, 'user_child_repo': user_child_repo, 'parent_repo': parent_repo}
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_stared_repo': is_stared_repo, 'has_forked': has_forked, 'is_repo_member': is_repo_member, 'is_teamMember': is_teamMember, 'is_owner': is_owner, 'is_branch': is_branch, 'is_tag': is_tag, 'is_commit': is_commit, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta, 'user_child_repo': user_child_repo, 'parent_repo': parent_repo}
 
 @login_required
 def list_github_repos(request):

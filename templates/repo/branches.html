@@ -39,9 +39,9 @@
             $(this).html(moment(new Date($(this).html()*1000)).fromNow());
             $(this).show();
           });
-    } else {
+      } else {
         $('#branches').append('<p class="alert alert-error">没有分支，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>');
-    }
+      }
     });
 
     $('#branchManage').live('click',
@@ -51,7 +51,7 @@
           $(this).children('span').text( txt == '管理' ? '取消' : '管理' );
           $('.branchAction').toggle();
     });
-    $('.branchDelete').click(
+    $('.branchDelete').live('click',
         function(){
           var branch = $(this).data('branch');
           var tr = $(this).parents('tr');
@@ -59,7 +59,6 @@
             tr.hide();
           });
     });
-
   });
 </script>
 {% endblock %}

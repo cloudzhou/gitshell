@@ -15,9 +15,10 @@
       <div class="auth-container">
         <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn btn-success github-btn"><i class="icon-github"></i>用 GitHub 账户直接登录</a>
           <div class="divider"><span>或</span></div>
-          <div class="alert alert-error hide">
-            <p id="usernameAlert">用户名已经存在</p>
-            <p id="emailAlert">邮箱已经存在</p>
+          <div id="alert" class="alert alert-error hide">
+            <p id="usernameAlert" class="hide">用户名已经存在</p>
+            <p id="usernameFormat" class="hide">用户名不符合规范</p>
+            <p id="emailAlert" class="hide">邮箱已经存在</p>
           </div>
           {% if error %}
             <div class="alert alert-warning">
@@ -146,27 +147,33 @@ cat ~/.ssh/gitshell.com_rsa.pub</pre>
     $('#joinSubmit').on('click', md5_user_passwd);
 
     $('#username').change(function(){
-      $('#usernameFormat').hide();
       $('#usernameAlert').hide();
+      $('#usernameFormat').hide();
       var username = $(this).val();
       if(!username.match(/^[a-zA-Z0-9_]+$/)) {
+        $('#alert').show();
         $('#usernameFormat').show();
       }
       $.post('/ajax/user/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', username: username}, function(json){
         if(json.is_user_exist) {
+          $('#alert').show();
           $('#usernameAlert').show();
         } else {
           $('#usernameAlert').hide();
+          $('#alert').hide();
         };
       });
     });
     $('#email').change(function(){
+      $('#emailAlert').hide();
       var email = $(this).val();
       $.post('/ajax/user/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', email: email}, function(json){
         if(json.is_user_exist) {
+          $('#alert').show();
           $('#emailAlert').show();
         } else {
           $('#emailAlert').hide();
+          $('#alert').hide();
         };
       });
     });

@@ -5,7 +5,7 @@
 <table class="table team">
   <tbody>
     {% for teamMember in teamMembers %}
-    <tr>
+    <tr class="team-member">
       <td class="name">
         <a href="/{{ teamMember.user.username }}/"><img src="/static/img/teamavatar.png" alt="{{teamMember.team_user.username}}">{{ teamMember.user.username }}</a>
         {% if teamMember.has_admin_rights %}

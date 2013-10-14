@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import redis, time
+import redis, time, re
 from datetime import datetime
 from gitshell import settings
 
@@ -50,6 +50,9 @@ class AttrKey:
     RECENTLY_TIME_PULL = 'rt_pull'
     RECENTLY_TIME_ISSUES = 'rt_issues'
     RECENTLY_TIME_NOTIF = 'rt_notif'
+    RECENTLY_REPO_OWNER = 'rt_owner'
+    RECENTLY_REPO_LANG = 'rt_lang'
+    RECENTLY_REPO_AUTHTYPE = 'rt_authType'
 
 """ all method about feed and redis """
 class FeedAction():
@@ -253,6 +256,28 @@ class FeedAction():
     def set_recently_timestamp_now(self, user_id, attrKey):
         timestamp = int(time.time())
         self.set_user_attr(user_id, attrKey, timestamp)
+
+    def set_recently_create_repo_attr(self, user_id, owner_user_id, lang, auth_type):
+        self.set_user_attr(user_id, AttrKey.RECENTLY_REPO_OWNER, owner_user_id)
+        if len(lang) < 50:
+            self.set_user_attr(user_id, AttrKey.RECENTLY_REPO_LANG, lang)
+        self.set_user_attr(user_id, AttrKey.RECENTLY_REPO_AUTHTYPE, auth_type)
+
+    def get_recently_create_repo_attr(self, user_id):
+        owner_user_id = self.get_user_attr(user_id, AttrKey.RECENTLY_REPO_OWNER)
+        if not owner_user_id:
+            owner_user_id = -1
+        lang = self.get_user_attr(user_id, AttrKey.RECENTLY_REPO_LANG)
+        if not lang:
+            lang = 'C'
+        auth_type = self.get_user_attr(user_id, AttrKey.RECENTLY_REPO_AUTHTYPE)
+        if not auth_type:
+            auth_type = 2
+        try:
+            return (int(owner_user_id), str(lang), int(auth_type))
+        except Exception, e:
+            settings.logger.exception(e)
+        return (-1, 'C', 2)
 
     """ remove repo feed """
     def delete_repo_feed(self, repo_id):
