@@ -15,8 +15,8 @@ clear: both;
 </style>
             <div id="id_merge_process" class="hide colspan">
               <h2 class="heading">
-              &gt; merge from {{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}
-              to {{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}} 
+              &gt; 将仓库分支 {{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}
+              合并到 {{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}} 
               </h2>
               <div class="span10">
                 <pre id="id_merge_output" class="shell"></pre>

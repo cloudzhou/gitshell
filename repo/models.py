@@ -354,6 +354,10 @@ class RepoManager():
         return False
 
     @classmethod
+    def is_allowed_write_access_repo(self, repo, user):
+        return self.is_allowed_access_repo(repo, user, REPO_PERMISSION.WRITE)
+
+    @classmethod
     def is_allowed_access_repo(self, repo, user, repoPermission):
         if repo is None or user is None:
             return False

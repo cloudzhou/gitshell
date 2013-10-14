@@ -307,7 +307,7 @@ def _let_request_user_first(memberUsers, user_id):
     return new_memberUsers
 
 def _has_issue_modify_right(request, issue, repo):
-    return issue is not None and (request.user.id == issue.user_id or request.user.id == repo.user_id)
+    return issue is not None and (request.user.id == issue.creator_user_id or request.user.id == repo.user_id)
 
 def _has_issue_comment_modify_right(request, issue_comment, repo):
     return issue_comment is not None and (request.user.id == issue_comment.user_id or request.user.id == repo.user_id)
