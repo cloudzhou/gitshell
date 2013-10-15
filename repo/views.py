@@ -1173,7 +1173,7 @@ def __is_url_valid(url):
     
 def __response_edit_repo_error(request, response_dictionary, error):
     response_dictionary['error'] = error
-    return render_to_response('repo/edit.html', response_dictionary, context_instance=RequestContext(request))
+    return render_to_response('repo/settings.html', response_dictionary, context_instance=RequestContext(request))
 
 @repo_permission_check
 @login_required

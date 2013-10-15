@@ -21,7 +21,7 @@ class RepoForm(forms.ModelForm):
                 username_choices.insert(0, (teamMember.team_user.username, teamMember.team_user.username))
                 continue
             username_choices.append((teamMember.team_user.username, teamMember.team_user.username))
-        self.fields['username'] = forms.ChoiceField(choices=username_choices)
+        self.fields['username'] = forms.ChoiceField(choices=username_choices, required=False)
 
     class Meta:
         model = Repo
