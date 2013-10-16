@@ -4,6 +4,7 @@
   <h2 class="heading">仓库设置</h2>
   <form class="form-horizontal" method="post">
     {% csrf_token %}
+    <div class="controls hide">{{ repoForm.username }}</div>
     <div class="control-group">
       <label for="id_name" class="control-label">仓库名称</label>
       <div class="controls">
@@ -169,4 +170,5 @@
     });
 
   });
-</script>{% endblock %}
+</script>
+{% endblock %}
