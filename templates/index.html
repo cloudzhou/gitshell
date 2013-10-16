@@ -1,34 +1,33 @@
 {% extends "base.html" %}
 
 {% load gstools %}
-
+{% block container_class_name %}welcome{% endblock %}
 {% block container %}
-  <div class="content">
-    <div class="container">
+<div class="content">
+  <div class="container">
 
-      <div class="welcome">
-        <div class="banner">
-          <h1>投入Git的怀抱</h1>
-          <p>稳定、快速的Git代码托管服务。</p>
-        </div>
-        <ul class="summary">
-            <li>
-                <h2 class="heading">专注于 Git 托管</h2>
-                <p>Gitshell 专注于Git托管,这是一切的基础;尽最大的努力提高用户体验,安全,多重备份;迭代更新频繁,持续给用户带来价值,Code Wins</p>
-            </li>
-            <li>
-                <h2 class="heading">团队协作，快速开发</h2>
-                <p>Gitshell 适合于小团队基于Git的快速迭代开发;仓库协同开发,Issues,Commit,视图统计;加入社交,快速获知,让每个成员置身开发中</p>
-            </li>
-            <li>
-                <h2 class="heading">Dropbox实时备份</h2>
-                <p>Gitshell是第一个支持Dropbox实时备份的Git代码托管服务，及时，安全。</p>
-            </li>
-        </ul>
+      <div class="banner">
+        <h1 class="heading">加入Git的怀抱</h1>
+        <p class="em">稳定、快速的Git代码托管服务。</p>
+        <p class="join"><a href="/join/0" class="btn btn-large btn-success">现在加入</a></p>
       </div>
+      <ul class="summary">
+        <li>
+          <h2 class="heading">专注于 Git 托管</h2>
+          <p>Gitshell 专注于Git托管,这是一切的基础;尽最大的努力提高用户体验,安全,多重备份;迭代更新频繁,持续给用户带来价值,Code Wins。</p>
+        </li>
+        <li>
+          <h2 class="heading">团队协作，快速开发</h2>
+          <p>Gitshell 适合于小团队基于Git的快速迭代开发;仓库协同开发,问题,提交,视图统计;加入社交,快速获知,让每个成员置身开发中。</p>
+        </li>
+        <li>
+          <h2 class="heading">Dropbox实时备份</h2>
+          <p>Gitshell是第一个支持Dropbox实时备份的Git代码托管服务，及时，安全。</p>
+        </li>
+      </ul>
 
-    </div>
   </div>
+</div>
 
 {% endblock %}
 
