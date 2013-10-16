@@ -47,14 +47,6 @@
     </div>
 
   </section>
-  {% endfor %}
-  <input id="id_action" class="hide">
-  {% else %}
-  <div class="issue-item">
-    <p>没有 Issues 信息</p>
-  </div>
-  {% endif %}
-
   <ul class="pagination">
     <li><a href="/dashboard/issues/0/">首页</a></li>
     {%if hasPre%}
@@ -65,6 +57,14 @@
       <li><a href="/dashboard/issues/{{page|add:"+1"}}/">后一页</a></li>
     {%endif%}
   </ul>
+  {% endfor %}
+  <input id="id_action" class="hide">
+  {% else %}
+  <div class="inner bubble">
+    <p class="alert alert-error blank-alert">没有 Issues 信息</p>
+  </div>
+  {% endif %}
+
 </div>
 
 

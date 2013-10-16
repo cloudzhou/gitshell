@@ -5,10 +5,6 @@
     <title>{% block title %}欢迎来到 Gitshell{% endblock %}</title>
     <meta content="Gitshell 专注git代码托管, 团队协同，项目开发" name="description">
     <meta content="Gitshell" name="author">
-    <meta name="csrf-token" content="{{csrf_token}}">
-{% if user.is_authenticated %}
-    <meta name="username" content="{{user.username}}">
-{% endif %}
     <link href="/static/less/app/font-awesome/css/font-awesome.min.css?timestamp={{gitshell.timestamp}}" rel="stylesheet" type="text/css">
     {% if gitshell.mode == 'run' %}
     <link href="/static/less/min/gitshell.min.css?timestamp={{gitshell.timestamp}}" rel="stylesheet" type="text/css">
@@ -21,12 +17,14 @@
     {% endif %}
     {% block css %}{% endblock %}
     <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <meta name="csrf-token" content="{{csrf_token}}">
+    {% if user.is_authenticated %}
+    <meta name="username" content="{{user.username}}">
+    {% endif %}
   </head>
   <body id="gitshell" class="{% block body_class_name %}{% endblock %}">
     <nav class="navbar" role="navigation">
       <div class="container">
-
-      {#<li class="create-repo"><a href="/{{user.username}}/repo/create/" class=""><span class="button"><i class="icon-pencil"></i>新建仓库</span></a></li>#}
 
       {% if user.is_authenticated %}
         <a class="brand" href="/dashboard/feed/" role="logo"><span>Gitshell</span></a>
@@ -60,23 +58,6 @@
         {% endif %}
         {% endcomment %}
 
-        {% comment %}
-        <li class="dropdown bell">
-          <a href="/dashboard/notif/" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-bell"></i>{#userprofile.unread_message#}</a>
-          {# TODO | Notifications #}
-          <div class="dropdown-menu">
-            <div class="title">
-              <h2 class="heading">最新通知</h2>
-            </div>
-            <ul class="notif-list">
-              <li>yuwen更改了状态</li>
-              <li>yuwen更改了状态</li>
-              <li>yuwen更改了状态</li>
-              <li>yuwen更改了状态</li>
-            </ul>
-          </div>
-        </li>
-        {% endcomment %}
         <li class="dropdown cong">
           <a href="/{{ user.username }}/" class="dropdown-toggle" data-toggle="dropdown">
             {% if teamUser %}
@@ -101,14 +82,12 @@
                 <img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=80" alt="{{ user.username }}">
               </figure>
             </div>
-
             <ul class="team-accounts nav nav-list">
               <li class="create"><a href="/settings/team/create/" class="create-team-link"><em>添加团队账户</em></a></li>
               {% for teamMember in gs_teamMembers %}
               <li><img src="/static/img/teamavatar.png" alt="{{teamMember.team_user.username}}"><a href="/{{teamMember.team_user.username}}/-/dashboard/">{{ teamMember.team_user.username }}</a></li>
               {% endfor %}
             </ul>
-
             <div class="other">
               <a href="/logout/" class="logout btn btn-mini">登出</a>
               <span class="feedback">
@@ -125,6 +104,7 @@
       {% endif %}
     </div>
   </nav>
+
   {% block repo_header %}{% endblock %}
 
   <main class="main {% block container_class_name %}{% endblock %}" role="main">
@@ -135,11 +115,8 @@
     <div class="container">
       <ul class="nav">
         <li><a href="/help/#about" class="about-gitshell">关于Gitshell</a></li>
-        {#<li><a href="/help/#mission">我们的愿景</a></li>#}
-        {#<li><a href="/help/#faq">FAQ</a></li>#}
         <li><a href="/help/">帮助</a></li>
         <li><a target="_blank" href="http://blog.gitshell.com">官方博客</a></li>
-        {#<li><a href="/help/#contact">联系Gitshell</a></li>#}
       </ul>
       <p class="copyright">&copy; <strong>Gitshell</strong> 2013 专注<a target="_blank" href="http://git-scm.com/">Git</a>代码托管<a class="muted" href="http://www.miitbeian.gov.cn">苏ICP备12042031号</a></p>
     </div>
