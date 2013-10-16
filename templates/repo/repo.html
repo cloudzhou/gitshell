@@ -13,7 +13,6 @@
 {% block container %}
 <div class="subhead repo-global-bar">
   <div class="container">
-
     <ul class="breadcrumb">
       <li class="user"><a href="/{{user_name}}/">{{user_name}}</a><span class="divider">/</span></li>
       <li><a href="/{{user_name}}/{{repo_name}}">{{repo_name}}</a></li>
@@ -122,7 +121,6 @@
         {% else %}
         <a class="btn btn-mini star last" data-original-title="Star" rel="tooltip" href="javascript: void(0)">收藏</a>
         {% endif %}
-        {#<span class="btn btn-mini count last" title="标星次数" href="/{{user_name}}/{{repo_name}}/clone_watch_star/">{{repo.star}}</span>#}
       </li>
       {% if has_fork_right %}
       <li class="btn-group">
@@ -134,153 +132,148 @@
   </div>
 </div>
 
+<div class="content">
+  <div class="container{% block repo_container_class_name %}{% endblock %}">
 
+    {% block repo_description %}{% endblock %}
 
-    <div class="content">
-      <div class="container{% block repo_container_class_name %}{% endblock %}">
+    {% if current == 'index' or current == 'tree' or current == 'blob' or current == 'commits' or current == 'branches' or current == 'tags' or current == 'refs_graph' %}
+    <ul class="nav nav-tabs">
+      <li{% if current == 'index' or current == 'tree' or current == 'blob' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">代码</a></li>
+      <li{% if current == 'commits' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">提交{%if repo.commit%}<span class="label label-mini{% if current == 'commits' %} label-success{% endif %}">{{repo.commit}}</span>{%endif%}</a></li>
+      <li{% if current == 'branches' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/branches/{{refs}}/">分支{%if refs_meta.branch_count%}<span class="label label-mini{% if current == 'branches' %} label-success{% endif %}">{{refs_meta.branch_count}}</span>{%endif%}</a></li>
+      <li{% if current == 'tags' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/tags/{{refs}}/">标签{%if refs_meta.tag_count%}<span class="label label-mini{% if current == 'tags' %} label-success{% endif %}">{{refs_meta.tag_count}}</span>{%endif%}</a></li>
+      <li{% if current == 'refs_graph' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/refs/graph/{{refs}}/">分支图</a></li>
+    </ul>
+    {% endif %}
 
-        {% block repo_description %}{% endblock %}
+    {% block bubbleheader %}{% endblock %}
+    {% block subcontainer %}{% endblock %}
 
-
-{% if current == 'index' or current == 'tree' or current == 'blob' or current == 'commits' or current == 'branches' or current == 'tags' or current == 'refs_graph' %}
-<ul class="nav nav-tabs">
-  <li{% if current == 'index' or current == 'tree' or current == 'blob' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/tree/{{refs}}/">代码</a></li>
-  <li{% if current == 'commits' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/">提交{%if repo.commit%}<span class="label label-mini{% if current == 'commits' %} label-success{% endif %}">{{repo.commit}}</span>{%endif%}</a></li>
-  <li{% if current == 'branches' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/branches/{{refs}}/">分支{%if refs_meta.branch_count%}<span class="label label-mini{% if current == 'branches' %} label-success{% endif %}">{{refs_meta.branch_count}}</span>{%endif%}</a></li>
-  <li{% if current == 'tags' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/tags/{{refs}}/">标签{%if refs_meta.tag_count%}<span class="label label-mini{% if current == 'tags' %} label-success{% endif %}">{{refs_meta.tag_count}}</span>{%endif%}</a></li>
-  <li{% if current == 'refs_graph' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/refs/graph/{{refs}}/">分支图</a></li>
-</ul>
-{% endif %}
-
-{% block bubbleheader %}{% endblock %}
-{% block subcontainer %}{% endblock %}
-
-    </div>
   </div>
+</div>
 
-  {% endblock %}
+{% endblock %}
 
-  {% block js %}
-  <!--script type="text/javascript" src="http://www.steamdev.com/zclip/js/jquery.zclip.min.js"></script>
-  <script type="text/javascript" src="http://www.steamdev.com/zclip/js/jquery.snippet.min.js"></script-->
-  <script>
-    $(function(){
+{% block js %}
+{#<script type="text/javascript" src="http://www.steamdev.com/zclip/js/jquery.zclip.min.js"></script>#}
+{#<script type="text/javascript" src="http://www.steamdev.com/zclip/js/jquery.snippet.min.js"></script>#}
+<script>
+  $(function(){
 
-      $('.repocrumb span[data-toggle]').hover(
-        function(){
-          $(this).find('.icon-caret-down').show();
-        },function(){
-          $(this).find('.icon-caret-down').hide();
-        }
-      );
+    $('.repocrumb span[data-toggle]').hover(
+      function(){
+        $(this).find('.icon-caret-down').show();
+      },function(){
+        $(this).find('.icon-caret-down').hide();
+      }
+    );
 
-      //$('#cloneMenu').css('height','120px').hide();
+    $('#cloneUrlToggle').click(function(e){
+      e.stopPropagation();
+      $('#cloneMenu').toggle();
+    });
 
-      $('#cloneUrlToggle').click(function(e){
-        e.stopPropagation();
-        $('#cloneMenu').toggle();
+    $('#cloneMenu').children().click(function(e){
+      e.stopPropagation();
+    });
+
+    $('html').click(function(e) {
+      var target = $(e.target);
+      if(target.id != 'cloneMenu'){
+        $('#cloneMenu').hide();
+      }
+    });
+
+    $('#urlType').click(function(e){
+      e.stopPropagation();
+      $('#urlTypeMenu').toggle();
+    });
+
+    $('#urlTypeMenu a').click(function(e) {
+      e.preventDefault();
+      var txt = $(this).text();
+      $('#urlType').find('span').text(txt);
+      $('#urlTypeMenu').hide();
+      switch(this.id) {
+        case 'sshFork':
+          $('#urlData').val('git@gitshell.com:{{user_name}}/{{repo_name}}.git');
+        //$('#urlInfo').text('读写');
+        break;
+      case 'httpFork':
+        $('#urlData').val('https://gitshell.com/{{user_name}}/{{repo_name}}.git');
+        //$('#urlInfo').text('读写');
+        break;
+      case 'gitFork':
+        $('#urlData').val('git://gitshell.com/{{user_name}}/{{repo_name}}.git');
+        //$('#urlInfo').text('只读');
+        break;
+      };
+    });
+
+    $('#urlData').click(function() {
+      $(this).addClass('selected').select();
+    });
+
+    $('html').click(function(e){
+      if(e.target.id != 'urlData') {
+        $('#urlData').removeClass('selected');
+      }
+    });
+
+    //    $("#copy-btn").zclip({
+    //      path: "/static/js/ZeroClipboard.swf",
+    //      copy: function() { return $("#urlData").val(); }
+    //    });
+
+    $('.repo-actions .watch').click(function() {
+      $.post('/{{user_name}}/{{repo_name}}/watch/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        window.location = window.location;
       });
+    });
 
-      $('#cloneMenu').children().click(function(e){
-        e.stopPropagation();
+    $('.repo-actions .unwatch').click(function() {
+      $.post('/{{user_name}}/{{repo_name}}/unwatch/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        window.location = window.location;
       });
+    });
 
-      $('html').click(function(e) {
-        var target = $(e.target);
-        if(target.id != 'cloneMenu'){
-          $('#cloneMenu').hide();
-        }
+    $('.repo-actions .star').click(function() {
+      $.post('/{{user_name}}/{{repo_name}}/star/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        window.location = window.location;
       });
+    });
 
-      $('#urlType').click(function(e){
-        e.stopPropagation();
-        $('#urlTypeMenu').toggle();
+    $('.repo-actions .unstar').click(function() {
+      $.post('/{{user_name}}/{{repo_name}}/unstar/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        window.location = window.location;
       });
+    });
 
-      $('#urlTypeMenu a').click(function(e) {
-        e.preventDefault();
-        var txt = $(this).text();
-        $('#urlType').find('span').text(txt);
-        $('#urlTypeMenu').hide();
-        switch(this.id) {
-          case 'sshFork':
-            $('#urlData').val('git@gitshell.com:{{user_name}}/{{repo_name}}.git');
-            //$('#urlInfo').text('读写');
-            break;
-          case 'httpFork':
-            $('#urlData').val('https://gitshell.com/{{user_name}}/{{repo_name}}.git');
-            //$('#urlInfo').text('读写');
-            break;
-          case 'gitFork':
-            $('#urlData').val('git://gitshell.com/{{user_name}}/{{repo_name}}.git');
-            //$('#urlInfo').text('只读');
-            break;
-        };
+    $('.repo-actions .fork').click(function() {
+      $.post('/{{user_name}}/{{repo_name}}/fork/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        window.location = '/{{user.username}}/{{repo_name}}/';
       });
+    });
+    $('.sidenav a.btn').tooltip();
+    $('.branches .dropdown-toggle').click(function(event) {
+      $('#i_git_url').select();
+    });
 
-      $('#urlData').click(function() {
-        $(this).addClass('selected').select();
-      });
+    $('.c_repo_action').tooltip({
+      selector: "a[rel=tooltip]"
+    });
 
-      $('html').click(function(e){
-        if(e.target.id != 'urlData') {
-          $('#urlData').removeClass('selected');
-        }
-      });
-
-      //    $("#copy-btn").zclip({
-      //      path: "/static/js/ZeroClipboard.swf",
-      //      copy: function() { return $("#urlData").val(); }
-      //    });
-
-      $('.repo-actions .watch').click(function() {
-        $.post('/{{user_name}}/{{repo_name}}/watch/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-          window.location = window.location;
-        });
-      });
-
-      $('.repo-actions .unwatch').click(function() {
-        $.post('/{{user_name}}/{{repo_name}}/unwatch/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-          window.location = window.location;
-        });
-      });
-
-      $('.repo-actions .star').click(function() {
-        $.post('/{{user_name}}/{{repo_name}}/star/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-          window.location = window.location;
-        });
-      });
-
-      $('.repo-actions .unstar').click(function() {
-        $.post('/{{user_name}}/{{repo_name}}/unstar/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-          window.location = window.location;
-        });
-      });
-
-      $('.repo-actions .fork').click(function() {
-        $.post('/{{user_name}}/{{repo_name}}/fork/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-          window.location = '/{{user.username}}/{{repo_name}}/';
-        });
-      });
-      $('.sidenav a.btn').tooltip();
-      $('.branches .dropdown-toggle').click(function(event) {
-        $('#i_git_url').select();
-      });
-
-      $('.c_repo_action').tooltip({
-        selector: "a[rel=tooltip]"
-      });
-
-      $('.repo-admin-edit').hide();
-      $('.repo-summary > .description').hover(
-          function(){
-            $('.repo-admin-edit').show();
-          },function(){
-            $('.repo-admin-edit').hide();
-          }
-          );
+    $('.repo-admin-edit').hide();
+    $('.repo-summary > .description').hover(
+      function(){
+        $('.repo-admin-edit').show();
+      },function(){
+        $('.repo-admin-edit').hide();
+      }
+    );
 
     });
-  </script>
-  {% block subjs %}{% endblock %}
-  {% endblock %}
+</script>
+{% block subjs %}{% endblock %}
+{% endblock %}
