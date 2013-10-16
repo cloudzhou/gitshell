@@ -6,8 +6,7 @@
     <p>请等待...</p>
     <img src='/static/img/loading.gif' alt="loader">
   </div>
-  <div id="newsfeed" class="primary">
-  </div>
+  <div id="newsfeed" class="primary"></div>
 </div>
 {% endblock %}
 
@@ -142,7 +141,7 @@
              );
            */
           if(ordered_date.length == 0) {
-            $('#newsfeed').append('<p>还没有 feed 信息，请多关注活跃开发者或者仓库</p>');
+            $('#newsfeed').append('<div class="inner"><p class="alert alert-error">还没有 feed 信息，请多关注活跃开发者或者仓库</p></div>');
           }
           $('.ajaxLoader').remove();
         }

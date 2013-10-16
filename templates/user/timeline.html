@@ -6,8 +6,7 @@
     <p>请等待...</p>
     <img src='/static/img/loading.gif' alt="loader">
   </div>
-  <div id="newsfeed" class="primary">
-  </div>
+  <div id="newsfeed" class="primary"></div>
 </div>
 {% endblock %}
 
@@ -163,7 +162,7 @@
           $('#newsfeed').append(html.join(''));
 
           if(ordered_date.length == 0) {
-            $('#newsfeed').append('还没有提交信息');
+            $('#newsfeed').append('<div class="inner"><p class="alert alert-error">还没有提交信息</p></div>');
           }
 
           $('.ajaxLoader').remove();
