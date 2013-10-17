@@ -5,48 +5,51 @@
 {% if issues %}
 <div class="issues bubble">
   {% for issue in issues %}
-  <section class="issue-item" data="{{issue.id}}">
+    <section class="issue-item" data="{{issue.id}}">
 
-    <div class="tracker">
-      <span class="label issue-id">#{{issue.id}}</span>
-      <span class="label status {%if issue.status == "新建"%}open{%elif issue.status == "已指派"%}assigned{%elif issue.status == "进行中"%}processing{%elif issue.status == "已解决"%}resolved{%elif issue.status == "已关闭"%}closed{%elif issue.status == "已拒绝"%}rejected{%endif%}"><i class="icon-{%if issue.status == "新建"%}bookmark-empty{%elif issue.status == "已指派"%}resize-horizontal{%elif issue.status == "进行中"%}spinner{%elif issue.status == "已解决"%}ok{%elif issue.status == "已关闭"%}remove{%elif issue.status == "已拒绝"%}trash{%endif%}"></i>{{issue.status}}</span>
-    </div>
-
-    <div class="summary">
-
-      <div class="title">
-        <h3 class="heading">
-          <a href="/{{user.username}}/{{issue.reponame}}/" class="label reponame">@{{issue.reponame}}</a>
-          <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
-          <a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">{{issue.subject}}</a>
-          {% comment %}
-          {% if issue.status %}
-          <span class="label label-warning">{{issue.status}}</span>
-          {% endif %}
-          {% if issue.priority %}
-          <span class="label label-success">{{issue.priority}}</span>
-          {% endif %}
-          {% endcomment %}
-        </h3>
+      <div class="tracker">
+        <span class="label issue-id">#{{issue.id}}</span>
+        <span class="label status {%if issue.status == "新建"%}open{%elif issue.status == "已指派"%}assigned{%elif issue.status == "进行中"%}processing{%elif issue.status == "已解决"%}resolved{%elif issue.status == "已关闭"%}closed{%elif issue.status == "已拒绝"%}rejected{%endif%}"><i class="icon-{%if issue.status == "新建"%}bookmark-empty{%elif issue.status == "已指派"%}resize-horizontal{%elif issue.status == "进行中"%}spinner{%elif issue.status == "已解决"%}ok{%elif issue.status == "已关闭"%}remove{%elif issue.status == "已拒绝"%}trash{%endif%}"></i>{{issue.status}}</span>
       </div>
 
+      <div class="summary">
 
-      <div class="meta">
-        <a href="/{{issue.name}}/">{{issue.username}}</a>
-        <span class="unixtime">{{issue.modify_time}}</span>
+        <div class="title">
+          <h3 class="heading">
+            <a href="/{{user.username}}/{{issue.reponame}}/" class="label reponame">@{{issue.reponame}}</a>
+            <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
+            <a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">{{issue.subject}}</a>
+            {% comment %}
+            {% if issue.status %}
+            <span class="label label-warning">{{issue.status}}</span>
+            {% endif %}
+            {% if issue.priority %}
+            <span class="label label-success">{{issue.priority}}</span>
+            {% endif %}
+            {% endcomment %}
+          </h3>
+        </div>
+
+
+        <div class="meta">
+          <a href="/{{issue.name}}/">{{issue.username}}</a>
+          <span class="unixtime">{{issue.modify_time}}</span>
+        </div>
+
+        {% comment %}
+          <div id="id_label_{{issue.id}}" class="c_label actions hide">
+            <span class="c_fixed_label btn btn-success">解决</span>
+            <span class="c_close_label btn">关闭</span>
+            <span class="c_reject_label btn btn-danger">拒绝</span>
+          </div>
+        {% endcomment %}
+
       </div>
 
-{% comment %}
-      <div id="id_label_{{issue.id}}" class="c_label actions hide">
-        <span class="c_fixed_label btn btn-success">解决</span>
-        <span class="c_close_label btn">关闭</span>
-        <span class="c_reject_label btn btn-danger">拒绝</span>
-      </div>
-{% endcomment %}
+    </section>
 
-    </div>
+  {% endfor %}
 
-  </section>
   <ul class="pagination">
     <li><a href="/dashboard/issues/0/">首页</a></li>
     {%if hasPre%}
@@ -57,15 +60,17 @@
       <li><a href="/dashboard/issues/{{page|add:"+1"}}/">后一页</a></li>
     {%endif%}
   </ul>
-  {% endfor %}
+
   <input id="id_action" class="hide">
-  {% else %}
+
+</div>
+
+{% else %}
   <div class="inner bubble">
     <p class="alert alert-error blank-alert">没有 Issues 信息</p>
   </div>
-  {% endif %}
+{% endif %}
 
-</div>
 
 
 {% endblock %}

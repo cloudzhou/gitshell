@@ -211,7 +211,7 @@ def notif_fqcy(request):
     user = request.user
     notifSetting = FeedManager.get_notifsetting_by_userId(user.id);
     fqcy_str = request.POST.get('fqcy', '0')
-    if re.match('^\d+$', fqcy_str):
+    if re.match('^-?\d+$', fqcy_str):
         fqcy = int(fqcy_str)
         if fqcy in NOTIF_FQCY.VALUES:
             notifSetting.notif_fqcy = fqcy
