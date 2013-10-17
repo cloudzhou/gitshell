@@ -5,7 +5,13 @@
 {% block container %}
   <div class="subhead">
     <div class="container">
-      <h2 class="heading">注册</h2>
+      <h2 class="heading">
+      {% ifequal step '3' %}
+        快速入门
+      {% else %}
+        注册
+      {% endifequal %}
+      </h2>
     </div>
   </div>
 
@@ -54,7 +60,26 @@
     <article class="guide">
       <p class="info">我们为您准备了一些入门的指导。当然，我们更相信您已经熟悉Git，如果您觉得是的，那么可以<a href="/dashboard/feed/">直接跳过</a>。</p>
       <section class="tutorial">
-        <h2 class="heading">快速入门：</h2>
+        <h3 id="https" class="heading">使用http协议</h3>
+        <p>对于较新版本的git，比如1.7.9以上，我们推荐使用http协议来访问git仓库，不需配置ssh key，使用注册用户名和密码就可以访问。</p>
+        <ol class="simple-steps">
+          <li>
+            <p>使用git credential-cache来记住用户名和密码：</p>
+            <pre class="command well">
+git config credential.helper cache</pre>
+          </li>
+          <li>
+            <p>如果需要设置cache的时间，设置记住用户名和密码的时间(秒为单位)：</p>
+            <pre class="command well">
+git config credential.helper 'cache --timeout=10000000'</pre>
+          </li>
+          <li>
+            <p>在使用多个账户的情况下，为了避免混淆用户，可以使用@yourname来强制指定，比如：</p>
+            <pre class="command well">
+git clone https://cloudzhou@gitshell.com/cloudzhou/gitshell.git</pre>
+          </li>
+        </ol>
+        <h3 id="ssh" class="heading">使用ssh协议</h3>
         <p>如果您使用任何类unix系统，第一次配置 ssh 公钥密钥，请按照步骤，复制黑色背景字符，在终端执行命令，和编辑文件</p>
         <ol class="simple-steps">
           <li>
