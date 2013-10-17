@@ -1077,6 +1077,10 @@ def create(request, user_name):
             return __response_create_repo_error(request, response_dictionary, error)
         create_repo.save()
         feedAction.set_recently_create_repo_attr(request.user.id, create_repo.user_id, create_repo.lang, create_repo.auth_type)
+        if auth_type == 0:
+            userprofile.pubrepo = userprofile.pubrepo + 1
+        else:
+            userprofile.prirepo = userprofile.prirepo + 1
         userprofile.save()
         remote_git_url = request.POST.get('remote_git_url', '').strip()
         remote_username = request.POST.get('remote_username', '').strip()
