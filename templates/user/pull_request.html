@@ -44,61 +44,10 @@
   </section>
   {% endfor %}
 
-  {% comment %}
-  <section class="pull-item">
-    <div class="widget">
-      <span class="status closed">Closed</span>
-      <span class="branches">
-        <a href="#" class="from branch">3.2.0-wip</a>
-        <span class="arrow-right"><i class="icon-long-arrow-right"></i></span>
-        <a href="#" class="to branch">master</a>
-      </span>
-    </div>
-    <div class="summary">
-      <h3 class="heading">
-        <a href="#">重排了格式</a>
-        <span class="id">#12</span>
-      </h3>
-      <div class="desc">
-        <p>改成了标题式，比较醒目，也可以避免嵌套列表的问题。（markdown的嵌套列表，各家的解析都不一样。</p>
-      </div>
-      <div class="meta">
-        <img src="https://gravatar.com/avatar/{{pullRequest.pull_user.username}}?s=16" alt="{{pullRequest.pull_user.username}}">
-        <a href="#">mingming1222</a>
-        <time class="unixtime" pubdate="pubdate">4天前创建</time>
-      </div>
-    </div>
-  </section>
-
-  <section class="pull-item">
-    <div class="widget">
-      <span class="status open">进行中</span>
-      <span class="branches">
-        <a href="#" class="from branch">3.2.0-wip</a>
-        <span class="arrow-right"><i class="icon-long-arrow-right"></i></span>
-        <a href="#" class="to branch">master</a>
-      </span>
-    </div>
-    <div class="summary">
-      <h3 class="heading">
-        <a href="#">更新FAQ页面（现在已经beta，邀请码和私有项目不同了）</a>
-        <span class="id">#08</span>
-      </h3>
-      <div class="desc unavailable">
-        <p>没有介绍内容</p>
-      </div>
-      <div class="meta">
-        <img src="https://gravatar.com/avatar/{{pullRequest.pull_user.username}}?s=16" alt="{{pullRequest.pull_user.username}}">
-        <a href="#">yuwen</a>
-        <time class="unixtime" pubdate="pubdate">4天前创建</time>
-      </div>
-    </div>
-  </section>
-  {% endcomment %}
 
   {% else %}
-  <div class="pull-item wall">
-    <p>没有合并请求</p>
+  <div class="inner">
+    <p class="alert blank-alert"><i class="icon-bell"></i><em>没有合并请求</em></p>
   </div>
   {% endif %}
 </div>

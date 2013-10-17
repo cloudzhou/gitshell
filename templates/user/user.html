@@ -4,14 +4,16 @@
 
 <div class="primary">
 
-  <!--div class="item c_user_stats hide">
+  {% comment %}
+  <div class="item c_user_stats hide">
     <h2 class="heading">统计</h2>
     <div>
       <div id="figure-a" class="figure lg">
         <a href="/{{gsuser.username}}/-/stats/"><canvas id="id_month_container" width="700" height="250"></canvas></a>
       </div>
     </div>
-  </div-->
+  </div>
+  {% endcomment %}
 
   <ul class="nav nav-tabs" id="repoTab">
     <li><a href="#repos" data-toggle="tab">仓库</a></li>
@@ -22,6 +24,7 @@
 
   <div class="tab-content">
     <section class="item tab-pane active" id="repos">
+      {% if repos|length > 0 %}
       <ul class="repo-list">
         {% for repo in repos %}
         <li class="repo">
@@ -44,7 +47,6 @@
                   <a href="/{{gsuser.username}}/{{repo.name}}/">{{repo.name}}</a>
                   <span class="meta"><time class="unixtime" pubdate="pubdate">{{repo.modify_time|date:"U"}}</time>更新过</span>
               </h3>
-              {#<p class="origin"><i class="icon-caret-right"></i>Fork自<a href="#">yuwen</a><span class="divider">/</span><a href="#">gitshell</a></p>#}
             </div>
 
             <div class="detail">
@@ -54,9 +56,13 @@
         </li>
         {% endfor %}
       </ul>
+      {% else %}
+        <p class="alert alert-info">没有可见仓库</p>
+      {%endif%}
     </section>
 
     <section class="item tab-pane" id="watchedRepos">
+      {% if watch_repos|length > 0 %}
       <ul class="repo-list">
         {% for watch_repo in watch_repos %}
         <li class="repo">
@@ -79,19 +85,19 @@
                   <a href="/{{watch_repo.username}}/{{watch_repo.name}}/">{{watch_repo.name}}</a>
                   <span class="meta"><time class="unixtime" pubdate="pubdate">{{watch_repo.modify_time}}</time>更新过</span>
               </h3>
-              {#<p class="origin"><i class="icon-caret-right"></i>Fork自<a href="#">yuwen</a><span class="divider">/</span><a href="#">gitshell</a></p>#}
             </div>
 
             <div class="detail">
-              <p class="desc">{{watch_repo.desc}}</p>
+              <p class="desc" title="{{watch_repo.desc}}">{{watch_repo.desc|truncatechars:"80"}}</p>
             </div>
           </div>
 
         </li>
         {% endfor %}
       </ul>
-      {# 让仓库全部在一个页面显示吧 #}
-      {#<a href="/{{gsuser.username}}/-/watch/repo/" class="more">more</a>#}
+      {% else %}
+        <p class="alert alert-info">没有可见仓库</p>
+      {% endif %}
     </section>
 
     <section class="item tab-pane" id="followed">

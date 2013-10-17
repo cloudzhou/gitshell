@@ -138,7 +138,7 @@
     }).click(
       function(e){ 
         e.preventDefault();
-        if ($('.description p').height() != descriptionHeight) {
+        if ($('.description p').height() < descriptionHeight) {
           $('.description p').animate({
             height: descriptionHeight
           }, 'fast');
