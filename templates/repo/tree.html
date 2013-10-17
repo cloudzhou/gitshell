@@ -5,7 +5,8 @@
 
 {% block repo_description %}
 <div class="description bubble">
-  <p>{{repo.desc|truncatechars:80}} <a href="#README.md" class="readmore"><i class="icon-double-angle-right"></i>Read More</a></p>
+  <p>{{repo.desc}}</p>
+  <a href="#README.md" class="readmore"><i class="icon-double-angle-right"></i><span>阅读更多</span></a>
 </div>
 {% endblock %}
 
@@ -123,6 +124,34 @@
 <script src="/static/js/treeview.js"></script>
 <script>
   $(function(){
+
+    var descriptionHeight = $('.description p').height();
+
+    $('.description p').css({
+      height: '20px',
+      overflow: 'hidden'
+    });
+
+    $('.description .readmore').css({
+      position: 'relative',
+      top: '-10px'
+    }).click(
+      function(e){ 
+        e.preventDefault();
+        if ($('.description p').height() != descriptionHeight) {
+          $('.description p').animate({
+            height: descriptionHeight
+          }, 'fast');
+          $(this).find('span').text('收起来');
+        } else {
+          $('.description p').animate({
+            height: '20px'
+          }, 'fast');
+          $(this).find('span').text('阅读更多');
+        }
+      }
+    );
+
     /*
     // File browser resizable & treeview
     $("#file-browser").resizable({

@@ -21,7 +21,7 @@
   </span>
   {% endfor %}
   </dd>
-  <dt>Issue</dt>
+  <dt>问题</dt>
   <dd>
   {% for x in notif_type_choice.issue %}
   <span class="option{%if x.value in notifSetting.get_notif_types%} selected{%endif%}">
@@ -32,7 +32,7 @@
   </dd>
   <dt>发送频率</dt>
   <dd>
-  <span class="option">
+  <span class="option frequency">
     <select id="notifFqcy">
       {% for x in notif_fqcy_choice %}
       <option value="{{x.value}}"{%if x.value == notifSetting.notif_fqcy%} selected="selected"{%endif%}>{{x.key}}</option>
@@ -44,9 +44,12 @@
   <dd>
   <span class="option email">
     <select id="notifEmail">
+      <option disabled>选择接受邮箱</option>
       {% for x in useremails %}
         {% if x.is_verify == 1 %}
           <option value="{{x.email}}"{%if x.email == notifSetting.email%} selected="selected"{%endif%}>{{x.email}}</option>
+        {% else %}
+          <option value="{{x.email}}" disabled>{{x.email}}<em>还未验证</em></option>
         {% endif %}
       {% endfor %}
     </select>

@@ -85,14 +85,17 @@
                 html.push('<li>' + '<img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=15" alt="">' + '<a href="/' + commit.user_name + '/' + commit.repo_name + '/commit/' + commit.commit_hash + '/" class="hash">' + commit.commit_hash + '</a>' + '- <span class="commit-msg">' + commit.subject + '</span></li>');
                 html.push('</ul></div>');
                 html.push('</section>');
+
               } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
                 issue = feed.relative_obj;
                 action = '新建问题';
-                detail = '';
+                detail = '状态: 新建';
                 if(feed.feed_type == 300) {
                   action = '新建问题';
+                  detail = '状态: 新建';
                 } else if(feed.feed_type == 301) {
                   action = '更新问题';
+                  detail = '状态: 更新';
                 } else if(feed.feed_type == 302) {
                   action = '编辑问题';
                   detail = feed.first_refname;
@@ -105,6 +108,7 @@
                     html.push('<p class="subject"><span>' + issue.subject + '</span></p></div>');
                 }
                 html.push('</section>');
+
               } else if(feed.feed_type >= 100 && feed.feed_type <= 105) {
                 var pullRequest = feed.relative_obj;
                 var action = '';
