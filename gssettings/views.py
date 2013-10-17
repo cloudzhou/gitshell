@@ -20,21 +20,21 @@ from gitshell.gssettings.Form import SshpubkeyForm, ChangepasswordForm, Userprof
 
 @login_required
 def profile(request):
-    current = 'profile'
+    current = 'profile'; title = u'设置 / 个人信息'
     thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
     userprofileForm = UserprofileForm(instance = request.userprofile)
     if request.method == 'POST':
         userprofileForm = UserprofileForm(request.POST, instance = request.userprofile)
         if userprofileForm.is_valid():
             userprofileForm.save()
-    response_dictionary = {'current': current, 'userprofileForm': userprofileForm, 'thirdpartyUser': thirdpartyUser}
+    response_dictionary = {'current': current, 'title': title, 'userprofileForm': userprofileForm, 'thirdpartyUser': thirdpartyUser}
     return render_to_response('settings/profile.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def changepassword(request):
-    current = 'changepassword'
+    current = 'changepassword'; title = u'设置 / 修改密码'
     changepasswordForm = ChangepasswordForm()
     error = u''
     if request.method == 'POST':
@@ -45,14 +45,14 @@ def changepassword(request):
             request.user.save()
         else:
             error = u'输入正确的密码'
-    response_dictionary = {'current': current, 'changepasswordForm': changepasswordForm, 'error': error}
+    response_dictionary = {'current': current, 'title': title, 'changepasswordForm': changepasswordForm, 'error': error}
     return render_to_response('settings/changepassword.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def sshpubkey(request):
-    current = 'sshpubkey'
+    current = 'sshpubkey'; title = u'设置 / 公钥'
     sshpubkeyForm = SshpubkeyForm()
     doSshpubkeyForm = DoSshpubkeyForm()
     error = u''
@@ -83,7 +83,7 @@ def sshpubkey(request):
         else:
             error = u'确定公钥标识非空，且公钥拷贝正确，典型公钥位置：~/.ssh/id_rsa.pub'
             
-    response_dictionary = {'current': current, 'sshpubkeyForm': sshpubkeyForm, 'doSshpubkeyForm': doSshpubkeyForm, 'error': error, 'userPubkey_all': list(userPubkey_all)}
+    response_dictionary = {'current': current, 'title': title, 'sshpubkeyForm': sshpubkeyForm, 'doSshpubkeyForm': doSshpubkeyForm, 'error': error, 'userPubkey_all': list(userPubkey_all)}
     return render_to_response('settings/sshpubkey.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -104,9 +104,9 @@ def sshpubkey_remove(request):
 
 @login_required
 def emails(request):
-    current = 'emails'
+    current = 'emails'; title = u'设置 / 邮箱'
     useremails = GsuserManager.list_useremail_by_userId(request.user.id)
-    response_dictionary = {'current': current, 'useremails': useremails}
+    response_dictionary = {'current': current, 'title': title, 'useremails': useremails}
     return render_to_response('settings/emails.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -177,10 +177,10 @@ def email_remove(request, eid):
 
 @login_required
 def notif(request):
-    current = 'notif'
+    current = 'notif'; title = u'设置 / 通知'
     notifSetting = FeedManager.get_notifsetting_by_userId(request.user.id)
     useremails = GsuserManager.list_useremail_by_userId(request.user.id)
-    response_dictionary = {'current': current, 'notif_type_choice': NOTIF_TYPE.NOTIF_TYPE_CHOICE, 'notif_fqcy_choice': NOTIF_FQCY.NOTIF_FQCY_CHOICE, 'notifSetting': notifSetting, 'useremails': useremails}
+    response_dictionary = {'current': current, 'title': title, 'notif_type_choice': NOTIF_TYPE.NOTIF_TYPE_CHOICE, 'notif_fqcy_choice': NOTIF_FQCY.NOTIF_FQCY_CHOICE, 'notifSetting': notifSetting, 'useremails': useremails}
     return render_to_response('settings/notif.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -233,25 +233,25 @@ def notif_email(request):
 
 @login_required
 def thirdparty(request):
-    current = 'thirdparty'
+    current = 'thirdparty'; title = u'设置 / 第三方'
     thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
-    response_dictionary = {'current': current, 'thirdpartyUser': thirdpartyUser}
+    response_dictionary = {'current': current, 'title': title, 'thirdpartyUser': thirdpartyUser}
     return render_to_response('settings/thirdparty.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def change_username_email(request):
-    current = 'change_username_email'
+    current = 'change_username_email'; title = u'设置 / 修改用户名和邮箱'
     thirdpartyUser = GsuserManager.get_thirdpartyUser_by_id(request.user.id)
-    response_dictionary = {'current': current, 'thirdpartyUser': thirdpartyUser}
+    response_dictionary = {'current': current, 'title': title, 'thirdpartyUser': thirdpartyUser}
     return render_to_response('settings/change_username_email.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def validate_email(request, token):
-    current = 'validate_email'
+    current = 'validate_email'; title = u'设置 / 验证邮箱'
     validate_result = 'success'
     email = cache.get(token)
     if email is not None:
@@ -265,23 +265,23 @@ def validate_email(request, token):
             validate_result = 'user_exists'
     else:
         validate_result = 'token_expired'
-    response_dictionary = {'current': current, 'validate_result': validate_result}
+    response_dictionary = {'current': current, 'title': title, 'validate_result': validate_result}
     return render_to_response('settings/validate_email.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def team(request):
-    current = 'team'
+    current = 'team'; title = u'设置 / 团队'
     teamMembers = TeamManager.list_teamMember_by_userId(request.user.id)
-    response_dictionary = {'current': current, 'teamMembers': teamMembers}
+    response_dictionary = {'current': current, 'title': title, 'teamMembers': teamMembers}
     return render_to_response('settings/team.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def team_create(request):
-    current = 'team'
+    current = 'team'; title = u'设置 / 创建团队'
     teamprofileForm = TeamprofileForm()
     if request.method == 'POST':
         teamprofileForm = TeamprofileForm(request.POST)
@@ -305,15 +305,15 @@ def team_create(request):
             request.userprofile.is_join_team = 1
             request.userprofile.save()
             return HttpResponseRedirect('/settings/team/')
-    response_dictionary = {'current': current, 'teamprofileForm': teamprofileForm}
+    response_dictionary = {'current': current, 'title': title, 'teamprofileForm': teamprofileForm}
     return render_to_response('settings/team_create.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def destroy(request):
-    current = 'destroy'
-    response_dictionary = {'current': current}
+    current = 'destroy'; title = u'设置 / 删除帐号'
+    response_dictionary = {'current': current, 'title': title}
     return render_to_response('settings/destroy.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -322,3 +322,4 @@ def key_to_fingerprint(pubkey):
     key = base64.b64decode(pubkey)
     fp_plain = hashlib.md5(key).hexdigest()
     return ':'.join(a+b for a,b in zip(fp_plain[::2], fp_plain[1::2]))    
+
