@@ -29,6 +29,7 @@
           <dt class="leader">快速入门</dt>
           <dd>
               <a href="#join_login"><span>注册·登录</span></a>
+              <a href="#https"><span>使用http协议</span></a>
               <a href="#sshkey"><span>管理ssh key</span></a>
               <a href="#repo"><span>管理仓库</span></a>
               <a href="#code"><span>clone·push·pull代码</span></a>
@@ -97,12 +98,20 @@
         安全来自于意识，保护用户密码，保持一定复杂度，定期更改，可以有效的防止“坏人”。</p>
                 </section>
                 <section>
+                    <h2 id="https" class="heading">使用http协议</h2>
+                    <p>对于较新版本的git，比如1.7.9以上，我们推荐使用http协议来访问git仓库，不需配置ssh key，使用注册用户名和密码就可以访问。</p>
+                    <p>使用git credential-cache来记住用户名和密码：</p>
+                    <pre class="well"><code>git config credential.helper cache</code></pre>
+                    <p>如果需要设置cache的时间，设置记住用户名和密码的时间(秒为单位)：</p>
+                    <pre class="well"><code>git config credential.helper 'cache --timeout=10000000'</code></pre>
+                    <p>在使用多个账户的情况下，为了避免混淆用户，可以使用@yourname来强制指定，比如：</p>
+                    <pre class="well"><code>git clone https://cloudzhou@gitshell.com/cloudzhou/gitshell.git</code></pre>
                     <h2 id="sshkey" class="heading">管理ssh key</h2>
                     <p>ssh 公钥密钥对是一切安全的基础，就像第一道防盗门。Gitshell出于安全的考虑，一概通过ssh协议交换数据，保护好ssh密钥是一个程序员应该有的安全意识，希望您通过1password之类的工具妥善保存，此外最好能定期的更新密钥。</p>
                     <p class="text-warning">多人共用密钥是严格不支持的！</p>
                     <p>如果您第一次使用，按照以下的方式配置ssh密码：</p>
-                    <h4 class="heading">快速入门:</h4>
-                    <p>如果您使用任何类unix系统，第一次配置 ssh 公钥密钥，请按照步骤，复制黑色背景字符，在终端执行命令，和编辑文件</p>
+                    <h4 class="heading">快速入门：</h4>
+                    <p>如果您使用任何类unix系统，第一次配置 ssh 公钥密钥，请按照步骤，复制灰色背景字符，在终端执行命令，和编辑文件</p>
                     <ol>
                         <li>
                             <p>执行以下命令，生成 ssh 密钥, 保存在 <span class="label text-bold">~/.ssh/gitshell.com_rsa</span></p>
@@ -113,9 +122,9 @@
                             <pre class="well">
                                 <code>
 Host gitshell.com
-User {{ user.username }}
-IdentityFile ~/.ssh/gitshell.com_rsa
-PreferredAuthentications publickey</code>
+ User {{ user.username }}
+ IdentityFile ~/.ssh/gitshell.com_rsa
+ PreferredAuthentications publickey</code>
                       </pre>
                   </li>
                   <li>
@@ -202,11 +211,11 @@ $ git pull</code>
                   <section>
                       <h2 id="error" class="heading">出错代码</h2>
                       <dl>
-                          <dt>很不幸让你看到这里，以下是常见的错误代码:</dt>
+                          <dt>很不幸让你看到这里，以下是常见的错误代码：</dt>
                           <dd class="http-error">
-                              <h3 id="404" class="heading">404 资源找不到:</h3>
+                              <h3 id="404" class="heading">404 资源找不到：</h3>
                               <p>你想要的东西我找了404次都没有找到</p>
-                              <h3 id="500" class="heading">500 内部错误代码:</h3>
+                              <h3 id="500" class="heading">500 内部错误代码：</h3>
                               <p>系统内部出现了500个错误，如果是能重现的行为，请联系 support@gitshell.com，此致敬礼！</p>
                           </dd>
                       </dl>
