@@ -283,6 +283,9 @@ def multi_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids):
     feeds_json_val = {}
     for user_id in watch_user_ids:
         pub_user_feeds = feedAction.get_pub_user_feeds(user_id, 0, 50)
+        if request.user.is_authenticated() and user_id == request.user.id:
+            pri_user_feeds = feedAction.get_pri_user_feeds(user_id, 0, 50)
+            pub_user_feeds = pub_user_feeds + pri_user_feeds
         if pub_user_feeds is not None and len(pub_user_feeds) > 0:
             feeds_json_val['uf_%s' % user_id] = feeds_as_json(pub_user_feeds)
     for repo_id in watch_repo_ids:
