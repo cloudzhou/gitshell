@@ -1,35 +1,38 @@
 {% extends "settings/base.html" %}
 
 {% block container-right %}
-<h2 class="heading">管理SSH公匙</h2>
-<table class="table ssh">
-  <colgroup>
-    <col width="">
-    <col width="md5">
-    <col width="status">
-    <col width="action">
-  </colgroup>
-  <thead>
-    <tr>
-      <th class="first">公钥标识</th>
-      <th>指纹信息</th>
-      <th>状态</th>
-      <th>操作</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for userPubkey in userPubkey_all %}
-    <tr>
-      <td class="name">{{ userPubkey.name }}</td>
-      <td class="md5">{{ userPubkey.fingerprint }}</td>
-      <td class="status">正常</td>
-      <td class="action">
-        <button id="i_remove_{{ userPubkey.id }}" value="{{ userPubkey.id }}" class="removeSshbupkey btn btn-mini">删除</button>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+{% if userPubkey_all %}
+  <h2 class="heading">管理SSH公匙</h2>
+  <table class="table ssh">
+    <colgroup>
+      <col width="">
+      <col width="md5">
+      <col width="status">
+      <col width="action">
+    </colgroup>
+    <thead>
+      <tr>
+        <th class="first">公钥标识</th>
+        <th>指纹信息</th>
+        <th>状态</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for userPubkey in userPubkey_all %}
+      <tr>
+        <td class="name">{{ userPubkey.name }}</td>
+        <td class="md5">{{ userPubkey.fingerprint }}</td>
+        <td class="status">正常</td>
+        <td class="action">
+          <button id="i_remove_{{ userPubkey.id }}" value="{{ userPubkey.id }}" class="removeSshbupkey btn btn-mini">删除</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+
 <form id="doSshpubkeyForm" class="form-horizontal ssh" action="/settings/sshpubkey/remove/" method="post">
   {% csrf_token %}
   {{ doSshpubkeyForm.pubkey_id }}
@@ -61,6 +64,7 @@
     <div class="control-group">
       <div class="controls">
         <button id="addSubmit" class="btn btn-large" type="submit">添加</button>
+        <p class="inner"><small><a href="/join/3#ssh">如何添加SSH公匙？</a></small></p>
       </div>
     </div>
   </fieldset>

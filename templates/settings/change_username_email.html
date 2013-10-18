@@ -5,6 +5,7 @@
       <p>我们尝试导入您 GitHub 账户的用户名和邮箱信息，不过看来一些信息已经存在了，所以我们随机生成用户名或者邮箱，请按照实际情况修改用户名或者邮箱，所有修改成功之后请刷新页面，看看是否改变为您希望的信息。</p>
     </div>
     {% endif %}
+
     {% if thirdpartyUser and thirdpartyUser.init == 0 and thirdpartyUser.tp_username == user.username %}
     {% else %}
     <h2 class="heading">修改用户名<em>只允许[a-zA-Z0-9_]之内的字符</em></h2>
@@ -23,12 +24,13 @@
         </div>
         <div class="control-group">
           <div class="controls">
-            <button id="id_username_change_submit" class="btn btn-danger" type="submit">我确定要修改用户名</button>
+            <button id="id_username_change_submit" class="btn btn-danger" type="submit">修改用户名</button>
           </div>
         </div>
       </fieldset>
     </form>
     {% endif %}
+
     {% if thirdpartyUser and thirdpartyUser.init == 0 and thirdpartyUser.tp_email == user.email %}
     {% else %}
     <h2>修改登录邮箱<em>使用常用邮箱</em></h2>
@@ -47,13 +49,14 @@
         </div>
         <div class="control-group">
           <div class="controls">
-            <button id="id_email_change_submit" class="btn btn-danger" type="submit">我确定要修改登录Email</button>
+            <button id="id_email_change_submit" class="btn btn-danger" type="submit">修改登录邮箱</button>
             <a id="id_email_goto" href="" target="_blank" class="hide"><button type="button" class="btn btn-success"></button></a>
           </div>
         </div>
       </fieldset>
     </form>
     {% endif %}
+
     <div class="alert alert-info">
       <p>我们不鼓励修改用户名和登录邮箱，这些修改会对现有的仓库或者统计产生影响，</p>
       <p>比如用户名由 username1 修改为 username2，</p>
