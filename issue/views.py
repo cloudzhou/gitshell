@@ -28,7 +28,7 @@ def issues(request, user_name, repo_name):
  
 @repo_permission_check
 def issues_list(request, user_name, repo_name, assigned, tracker, status, priority, orderby, page):
-    refs = 'master'; path = '.'; current = 'issues'
+    refs = 'master'; path = '.'; current = 'issues'; title = u'%s / %s / 问题列表' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -66,7 +66,7 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
         hasNext = True
         issues.pop()
     
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page, 'current_attrs': current_attrs, 'issues': issues, 'hasPre': hasPre, 'hasNext': hasNext}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'title': title, 'path': path, 'assigneds': assigneds, 'assigned': assigned, 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': orderby, 'page': page, 'current_attrs': current_attrs, 'issues': issues, 'hasPre': hasPre, 'hasNext': hasNext}
     response_dictionary.update(ISSUE_ATTRS)
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/issues.html',
@@ -117,7 +117,8 @@ def show(request, user_name, repo_name, issue_id, page):
     assigneds = [x.username for x in memberUsers]
 
     has_issue_modify_right = _has_issue_modify_right(request, raw_issue, repo)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'issueCommentForm': issueCommentForm, 'page': page, 'total_page': range(0, total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority, 'has_issue_modify_right': has_issue_modify_right}
+    title = u'%s / %s / 问题：%s' % (user_name, repo_name, issue.subject)
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'title': title, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'issueCommentForm': issueCommentForm, 'page': page, 'total_page': range(0, total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority, 'has_issue_modify_right': has_issue_modify_right}
     response_dictionary.update(ISSUE_ATTRS)
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/issue_show.html',
@@ -127,7 +128,7 @@ def show(request, user_name, repo_name, issue_id, page):
 @login_required
 @repo_permission_check
 def create(request, user_name, repo_name):
-    refs = 'master'; path = '.'; current = 'issues'
+    refs = 'master'; path = '.'; current = 'issues'; title = u'%s / %s / 创建问题' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -151,7 +152,7 @@ def create(request, user_name, repo_name):
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
         else:
             error = u'issue 内容不能为空'
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'issueForm': issueForm, 'error': error}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'title': title, 'path': path, 'issueForm': issueForm, 'error': error}
     response_dictionary.update(ISSUE_ATTRS)
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/issue_create.html',
@@ -161,7 +162,7 @@ def create(request, user_name, repo_name):
 @login_required
 @repo_permission_check
 def edit(request, user_name, repo_name, issue_id):
-    refs = 'master'; path = '.'; current = 'issues'
+    refs = 'master'; path = '.'; current = 'issues'; title = u'%s / %s / 编辑问题' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -185,7 +186,7 @@ def edit(request, user_name, repo_name, issue_id):
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, nid))
         else:
             error = u'issue 内容不能为空'
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'issueForm': issueForm, 'error': error, 'issue_id': issue_id}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'title': title, 'path': path, 'issueForm': issueForm, 'error': error, 'issue_id': issue_id}
     response_dictionary.update(ISSUE_ATTRS)
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/issue_edit.html',

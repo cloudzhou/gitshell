@@ -41,13 +41,13 @@ def dashboard(request, username):
 @login_required
 def timeline(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
-    current = 'timeline'
+    current = 'timeline'; title = u'%s / 动态' % (teamUser.username)
     feedAction = FeedAction()
     feedAction.set_user_position(teamUser.id, PositionKey.TIMELINE)
     pri_user_feeds = feedAction.get_pri_user_feeds(teamUser.id, 0, 100)
     pub_user_feeds = feedAction.get_pub_user_feeds(teamUser.id, 0, 100)
     feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
-    response_dictionary = {'current': current, 'feeds_as_json': feeds_as_json}
+    response_dictionary = {'current': current, 'title': title, 'feeds_as_json': feeds_as_json}
     response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
     return render_to_response('team/timeline.html',
                           response_dictionary,
@@ -56,11 +56,11 @@ def timeline(request, username):
 @login_required
 def pull_merge(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
-    current = 'pull'
+    current = 'pull'; title = u'%s / 需要我处理的合并请求' % (teamUser.username)
     feedAction = FeedAction()
     feedAction.set_user_position(teamUser.id, PositionKey.PULL)
     pullRequests = RepoManager.list_pullRequest_by_teamUserId_mergeUserId(teamUser.id, request.user.id)
-    response_dictionary = {'current': current, 'pullRequests': pullRequests}
+    response_dictionary = {'current': current, 'title': title, 'pullRequests': pullRequests}
     response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
     return render_to_response('team/pull_merge.html',
                           response_dictionary,
@@ -68,11 +68,11 @@ def pull_merge(request, username):
 @login_required
 def pull_request(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
-    current = 'pull'
+    current = 'pull'; title = u'%s / 我创建的合并请求' % (teamUser.username)
     feedAction = FeedAction()
     feedAction.set_user_position(teamUser.id, PositionKey.PULL)
     pullRequests = RepoManager.list_pullRequest_by_teamUserId_pullUserId(teamUser.id, request.user.id)
-    response_dictionary = {'current': current, 'pullRequests': pullRequests}
+    response_dictionary = {'current': current, 'title': title, 'pullRequests': pullRequests}
     response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
     return render_to_response('team/pull_request.html',
                           response_dictionary,
@@ -85,7 +85,7 @@ def issues_default(request, username):
 @login_required
 def issues(request, username, page):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
-    current = 'issues'
+    current = 'issues'; title = u'%s / 问题' % (teamUser.username)
     feedAction = FeedAction()
     feedAction.set_user_position(teamUser.id, PositionKey.ISSUES)
     page = int(page); page_size = 50; offset = page*page_size; row_count = page_size + 1
@@ -98,7 +98,7 @@ def issues(request, username, page):
     if len(issues) > page_size:
         hasNext = True
         issues.pop()
-    response_dictionary = {'current': current, 'issues': issues, 'page': page, 'hasPre': hasPre, 'hasNext': hasNext}
+    response_dictionary = {'current': current, 'title': title, 'issues': issues, 'page': page, 'hasPre': hasPre, 'hasNext': hasNext}
     response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
     return render_to_response('team/issues.html',
                           response_dictionary,
@@ -107,11 +107,11 @@ def issues(request, username, page):
 @login_required
 def notif(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
-    current = 'notif'
+    current = 'notif'; title = u'%s / 我的通知' % (teamUser.username)
     feedAction = FeedAction()
     feedAction.set_user_position(teamUser.id, PositionKey.NOTIF)
     notifMessages = FeedManager.list_notifmessage_by_toUserId_teamUserId(request.user.id, teamUser.id, 0, 500)
-    response_dictionary = {'current': current, 'notifMessages': notifMessages}
+    response_dictionary = {'current': current, 'title': title, 'notifMessages': notifMessages}
     response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
     return render_to_response('team/notif.html',
                           response_dictionary,
@@ -120,7 +120,7 @@ def notif(request, username):
 @login_required
 def repo(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
-    current = 'repo'
+    current = 'repo'; title = u'%s / 仓库列表' % (teamUser.username)
     teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
     repos = []
     # is team member
@@ -128,7 +128,7 @@ def repo(request, username):
         repos = RepoManager.list_repo_by_userId(teamUser.id, 0, 1000)
     else:
         repos = RepoManager.list_unprivate_repo_by_userId(teamUser.id, 0, 1000)
-    response_dictionary = {'current': current, 'repos': repos}
+    response_dictionary = {'current': current, 'title': title, 'repos': repos}
     response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
     return render_to_response('team/repo.html',
                           response_dictionary,
@@ -141,7 +141,7 @@ def settings(request, username):
 @login_required
 def profile(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
-    current = 'settings'; sub_nav = 'profile'
+    current = 'settings'; sub_nav = 'profile'; title = u'%s / 设置 / 信息' % (teamUser.username)
     teamprofileForm = TeamprofileForm(instance = teamUserprofile)
     if request.method == 'POST':
         teamprofileForm = TeamprofileForm(request.POST, instance = teamUserprofile)
@@ -149,7 +149,7 @@ def profile(request, username):
         new_teamUserprofile.username = userprofile.username
         new_teamUserprofile.save()
         return HttpResponseRedirect('/%s/-/settings/profile/' % username)
-    response_dictionary = {'current': current, 'sub_nav': sub_nav, 'teamUser': teamUser, 'teamUserprofile': teamUserprofile, 'teamprofileForm': teamprofileForm}
+    response_dictionary = {'current': current, 'title': title, 'sub_nav': sub_nav, 'teamUser': teamUser, 'teamUserprofile': teamUserprofile, 'teamprofileForm': teamprofileForm}
     response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
     return render_to_response('team/profile.html',
                           response_dictionary,
@@ -158,9 +158,9 @@ def profile(request, username):
 @login_required
 def members(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
-    current = 'settings'; sub_nav = 'members'
+    current = 'settings'; sub_nav = 'members'; title = u'%s / 设置 / 成员' % (teamUser.username)
     teamMembers = TeamManager.list_teamMember_by_teamUserId(teamUser.id)
-    response_dictionary = {'current': current, 'sub_nav': sub_nav, 'teamMembers': teamMembers}
+    response_dictionary = {'current': current, 'title': title, 'sub_nav': sub_nav, 'teamMembers': teamMembers}
     response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
     return render_to_response('team/members.html',
                           response_dictionary,
@@ -245,8 +245,8 @@ def destroy(request, username):
     teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
     if not teamMember or not teamMember.has_admin_rights():
         return _response_not_manage_rights(request)
-    current = 'settings'; sub_nav = 'destroy'
-    response_dictionary = {'current': current, 'sub_nav': sub_nav}
+    current = 'settings'; sub_nav = 'destroy'; title = u'%s / 设置 / 删除帐号' % (teamUser.username)
+    response_dictionary = {'current': current, 'title': title, 'sub_nav': sub_nav}
     response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
     return render_to_response('team/destroy.html',
                           response_dictionary,

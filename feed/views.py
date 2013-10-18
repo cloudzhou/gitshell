@@ -47,7 +47,7 @@ def dashboard(request):
 
 @login_required
 def feed(request):
-    current = 'feed'
+    current = 'feed'; title = u'%s / 动态' % (request.user.username)
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.FEED)
     recently_timestamp = feedAction.get_recently_timestamp(request.user.id, AttrKey.RECENTLY_TIME_FEED)
@@ -59,13 +59,13 @@ def feed(request):
 
     feeds_as_json = multi_feeds_as_json(request, feedAction, watch_user_ids, watch_repo_ids)
     feedAction.set_recently_timestamp_now(request.user.id, AttrKey.RECENTLY_TIME_FEED)
-    response_dictionary = {'current': current, 'feeds_as_json' : feeds_as_json, 'recently_timestamp': recently_timestamp}
+    response_dictionary = {'current': current, 'title': title, 'feeds_as_json' : feeds_as_json, 'recently_timestamp': recently_timestamp}
     return render_to_response('user/feed.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 @login_required
 def timeline(request):
-    current = 'timeline'
+    current = 'timeline'; title = u'%s / 我的动态' % (request.user.username)
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.TIMELINE)
     recently_timestamp = feedAction.get_recently_timestamp(request.user.id, AttrKey.RECENTLY_TIME_TIMELINE)
@@ -73,30 +73,30 @@ def timeline(request):
     pub_user_feeds = feedAction.get_pub_user_feeds(request.user.id, 0, 100)
     feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
     feedAction.set_recently_timestamp_now(request.user.id, AttrKey.RECENTLY_TIME_TIMELINE)
-    response_dictionary = {'current': current, 'feeds_as_json': feeds_as_json, 'recently_timestamp': recently_timestamp}
+    response_dictionary = {'current': current, 'title': title, 'feeds_as_json': feeds_as_json, 'recently_timestamp': recently_timestamp}
     return render_to_response('user/timeline.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 @login_required
 def pull_merge(request):
-    current = 'pull'
+    current = 'pull'; title = u'%s / 需要我处理的合并请求' % (request.user.username)
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.PULL)
     recently_timestamp_astime = feedAction.get_recently_timestamp_astime(request.user.id, AttrKey.RECENTLY_TIME_PULL)
     pullRequests = RepoManager.list_pullRequest_by_mergeUserId(request.user.id)
     feedAction.set_recently_timestamp_now(request.user.id, AttrKey.RECENTLY_TIME_PULL)
-    response_dictionary = {'current': current, 'pullRequests': pullRequests, 'recently_timestamp_astime': recently_timestamp_astime}
+    response_dictionary = {'current': current, 'title': title, 'pullRequests': pullRequests, 'recently_timestamp_astime': recently_timestamp_astime}
     return render_to_response('user/pull_merge.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 @login_required
 def pull_request(request):
-    current = 'pull'
+    current = 'pull'; title = u'%s / 我创建的合并请求' % (request.user.username)
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.PULL)
     pullRequests = RepoManager.list_pullRequest_by_pullUserId(request.user.id)
-    response_dictionary = {'current': current, 'pullRequests': pullRequests}
+    response_dictionary = {'current': current, 'title': title, 'pullRequests': pullRequests}
     return render_to_response('user/pull_request.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -107,7 +107,7 @@ def issues_default(request):
 
 @login_required
 def issues(request, page):
-    current = 'issues'
+    current = 'issues'; title = u'%s / 问题' % (request.user.username)
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.ISSUES)
     recently_timestamp = feedAction.get_recently_timestamp(request.user.id, AttrKey.RECENTLY_TIME_ISSUES)
@@ -125,7 +125,7 @@ def issues(request, page):
         hasNext = True
         issues.pop()
     feedAction.set_recently_timestamp_now(request.user.id, AttrKey.RECENTLY_TIME_ISSUES)
-    response_dictionary = {'current': current, 'issues': issues, 'page': page, 'hasPre': hasPre, 'hasNext': hasNext, 'recently_timestamp': recently_timestamp}
+    response_dictionary = {'current': current, 'title': title, 'issues': issues, 'page': page, 'hasPre': hasPre, 'hasNext': hasNext, 'recently_timestamp': recently_timestamp}
     return render_to_response('user/issues.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -143,7 +143,7 @@ def explore(request):
                           context_instance=RequestContext(request))
 @login_required
 def notif(request):
-    current = 'notif'
+    current = 'notif'; title = u'%s / 我的通知' % (request.user.username)
     feedAction = FeedAction()
     feedAction.set_user_position(request.user.id, PositionKey.NOTIF)
     recently_timestamp_astime = feedAction.get_recently_timestamp_astime(request.user.id, AttrKey.RECENTLY_TIME_NOTIF)
@@ -152,7 +152,7 @@ def notif(request):
         request.userprofile.unread_message = 0
         request.userprofile.save()
     feedAction.set_recently_timestamp_now(request.user.id, AttrKey.RECENTLY_TIME_NOTIF)
-    response_dictionary = {'current': current, 'notifMessages': notifMessages, 'recently_timestamp_astime': recently_timestamp_astime}
+    response_dictionary = {'current': current, 'title': title, 'notifMessages': notifMessages, 'recently_timestamp_astime': recently_timestamp_astime}
     return render_to_response('user/notif.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

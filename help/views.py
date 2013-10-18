@@ -8,26 +8,30 @@ from gitshell.gsuser.middleware import ACL_KEY, ACCESS_WITH_IN_TIME
 from gitshell.gsuser.utils import UrlRouter
 
 def default(request):
-    response_dictionary = {}
+    title = u'帮助'
+    response_dictionary = {'title': title}
     return render_to_response('help/default.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def quickstart(request):
-    response_dictionary = {}
+    title = u'快速入门'
+    response_dictionary = {'title': title}
     return render_to_response('help/default.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def error(request):
-    response_dictionary = {}
+    title = u'抱歉，错误信息'
+    response_dictionary = {'title': title}
     return render_to_response('help/error.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def access_out_of_limit(request):
+    title = u'访问超出限额'
     resetAccessLimitForm = ResetAccessLimitForm()
-    response_dictionary = {'resetAccessLimitForm': resetAccessLimitForm}
+    response_dictionary = {'title': title, 'resetAccessLimitForm': resetAccessLimitForm}
     return render_to_response('help/access_out_of_limit.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

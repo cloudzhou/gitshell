@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>{% block title %}欢迎来到 Gitshell{% endblock %}</title>
+    <title>{%if title%}{{title}} &mdash; Gitshell{%else%}欢迎来到 Gitshell{%endif%}</title>
     <meta content="Gitshell 专注git代码托管, 团队协同，项目开发" name="description">
     <meta content="Gitshell" name="author">
     <link href="/static/less/app/font-awesome/css/font-awesome.min.css?timestamp={{gitshell.timestamp}}" rel="stylesheet" type="text/css">
