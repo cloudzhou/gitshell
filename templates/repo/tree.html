@@ -107,13 +107,17 @@
       </tbody>
     </table>
 
-    {% if readme_md %}
-    <div id="README.md" class="readme">
-      <div id="id_readme_md" class="markdown hide">{{readme_md}}</div>
-    </div>
-    {% endif %}
   </div>
 </div>
+
+{% if readme_md %}
+  <div id="README.md" class="readme bubble">
+    <div class="title">
+      <h2 class="heading">README.md</h2>
+    </div>
+    <div id="id_readme_md" class="markdown hide">{{readme_md}}</div>
+  </div>
+{% endif %}
 
 {% endblock %}
 
@@ -129,6 +133,7 @@
 <script>
   $(function(){
 
+    {% comment %}
     var descriptionHeight = $('.description p').height();
 
     $('.description p').css({
@@ -156,7 +161,6 @@
       }
     );
 
-    /*
     // File browser resizable & treeview
     $("#file-browser").resizable({
       handles: "e",
@@ -177,7 +181,7 @@
         $("#source").css("margin-left", fileBrowserWidth);
       }
     );
-    */
+    {% endcomment %}
 
     // Color Scheme
     var switcher = $("#switcher"),
