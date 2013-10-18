@@ -31,6 +31,7 @@ from gitshell.viewtools.views import json_httpResponse
 from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo
 
 def user(request, user_name):
+    title = u'%s / 概括' % user_name
     gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
@@ -61,13 +62,14 @@ def user(request, user_name):
 
     star_repos = RepoManager.list_star_repo(gsuser.id, 0, 20)
 
-    response_dictionary = {'mainnav': 'user', 'recommendsForm': recommendsForm, 'repos': repos, 'watch_repos': watch_repos, 'star_repos': star_repos, 'last30days': last30days, 'last30days_commit': last30days_commit, 'feeds_as_json': feeds_as_json}
+    response_dictionary = {'mainnav': 'user', 'title': title, 'recommendsForm': recommendsForm, 'repos': repos, 'watch_repos': watch_repos, 'star_repos': star_repos, 'last30days': last30days, 'last30days_commit': last30days_commit, 'feeds_as_json': feeds_as_json}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/user.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def active(request, user_name):
+    title = u'%s / 动态' % user_name
     gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
@@ -76,13 +78,14 @@ def active(request, user_name):
     pri_user_feeds = feedAction.get_pri_user_feeds(gsuser.id, 0, 50)
     pub_user_feeds = feedAction.get_pub_user_feeds(gsuser.id, 0, 50)
     feeds_as_json = get_feeds_as_json(request, pri_user_feeds, pub_user_feeds)
-    response_dictionary = {'mainnav': 'user', 'feeds_as_json': feeds_as_json}
+    response_dictionary = {'mainnav': 'user', 'title': title, 'feeds_as_json': feeds_as_json}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/active.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def stats(request, user_name):
+    title = u'%s / 统计' % user_name
     gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
@@ -90,13 +93,14 @@ def stats(request, user_name):
     now = datetime.now()
     last30days = timeutils.getlast30days(now)
     last30days_commit = get_last30days_commit(gsuser)
-    response_dictionary = {'mainnav': 'user', 'last30days': last30days, 'last30days_commit': last30days_commit}
+    response_dictionary = {'mainnav': 'user', 'title': title, 'last30days': last30days, 'last30days_commit': last30days_commit}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/stats.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def watch_user(request, user_name):
+    title = u'%s / 关注的用户' % user_name
     gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
@@ -123,25 +127,27 @@ def watch_user(request, user_name):
     if need_fix:
         gsuserprofile.save()
 
-    response_dictionary = {'mainnav': 'user', 'watch_users': watch_users, 'bewatch_users': bewatch_users}
+    response_dictionary = {'mainnav': 'user', 'title': title, 'watch_users': watch_users, 'bewatch_users': bewatch_users}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/watch_user.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def star_repo(request, user_name):
+    title = u'%s / 标星的仓库' % user_name
     gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
     star_repos = RepoManager.list_star_repo(gsuser.id, 0, 500)
-    response_dictionary = {'mainnav': 'user', 'star_repos': star_repos}
+    response_dictionary = {'mainnav': 'user', 'title': title, 'star_repos': star_repos}
     response_dictionary.update(get_common_user_dict(request, gsuser, gsuserprofile))
     return render_to_response('user/star_repo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
 def watch_repo(request, user_name):
+    title = u'%s / 关注的仓库' % user_name
     gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
@@ -153,7 +159,7 @@ def watch_repo(request, user_name):
     watch_repos_map = RepoManager.merge_repo_map_ignore_visibly(watch_repo_ids)
     watch_repos = [watch_repos_map[x] for x in watch_repo_ids if x in watch_repos_map]
 
-    response_dictionary = {'mainnav': 'user', 'watch_repos': watch_repos}
+    response_dictionary = {'mainnav': 'user', 'title': title, 'watch_repos': watch_repos}
     # fixed on detect
     if len(watch_repos) != gsuserprofile.watchrepo:
         gsuserprofile.watchrepo = len(watch_repos)
@@ -298,7 +304,7 @@ def switch(request, user_name, current_user_id):
 
 def login(request):
     loginForm = LoginForm()
-    error = u''
+    error = u''; title = u'登录'
     if request.method == 'POST':
         loginForm = LoginForm(request.POST)
         if loginForm.is_valid():
@@ -325,7 +331,7 @@ def login(request):
                 error = u'密码不正确'
         else:
             error = u'请检查邮箱密码，验证码是否正确，注意大小写和前后空格。'
-    response_dictionary = {'error': error, 'loginForm': loginForm}
+    response_dictionary = {'error': error, 'title': title, 'loginForm': loginForm}
     return render_to_response('user/login.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -390,7 +396,7 @@ def logout(request):
 def join(request, step):
     if step is None:
         step = '0'
-    error = u''
+    error = u''; title = u'注册'
     joinForm = JoinForm()
     if step == '0' and request.method == 'POST':
         joinForm = JoinForm(request.POST)
@@ -429,7 +435,7 @@ def join(request, step):
             return HttpResponseRedirect('/join/3/')
         else:
             error = u'啊? 用户名或密码有误输入，注意大小写和前后空格。'
-    response_dictionary = {'step': step, 'error': error, 'joinForm': joinForm}
+    response_dictionary = {'step': step, 'error': error, 'title': title, 'joinForm': joinForm}
     return render_to_response('user/join.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -437,7 +443,7 @@ def join(request, step):
 def resetpassword(request, step):
     if step is None:
         step = '0'
-    error = u''
+    error = u''; title = u'重置密码'
     resetpasswordForm0 = ResetpasswordForm0()
     if step == '0' and request.method == 'POST':
         resetpasswordForm0 = ResetpasswordForm0(request.POST)
@@ -472,7 +478,7 @@ def resetpassword(request, step):
                     cache.delete(step)
                     return HttpResponseRedirect('/resetpassword/3/')
             return HttpResponseRedirect('/resetpassword/4/')
-    response_dictionary = {'step': step, 'error': error, 'resetpasswordForm0': resetpasswordForm0, 'resetpasswordForm1': resetpasswordForm1}
+    response_dictionary = {'step': step, 'error': error, 'title': title, 'resetpasswordForm0': resetpasswordForm0, 'resetpasswordForm1': resetpasswordForm1}
     return render_to_response('user/resetpassword.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -508,7 +514,7 @@ def stats(request, user_name):
         raise Http404
     stats_dict = get_stats_dict(request, user)
     gsuserprofile = GsuserManager.get_userprofile_by_id(user.id)
-    response_dictionary = {'gsuserprofile': gsuserprofile}
+    response_dictionary = {'title': u'%s / 最近统计' % (user.username), 'gsuserprofile': gsuserprofile}
     response_dictionary.update(stats_dict)
     return render_to_response('user/stats.html',
                           response_dictionary,

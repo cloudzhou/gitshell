@@ -40,6 +40,7 @@ def user_repo(request, user_name):
 
 @login_required
 def user_repo_paging(request, user_name, pagenum):
+    title = u'%s / 仓库列表' % user_name
     user = GsuserManager.get_user_by_name(user_name)
     userprofile = GsuserManager.get_userprofile_by_name(user_name)
     if user is None:
@@ -70,7 +71,7 @@ def user_repo_paging(request, user_name, pagenum):
         userprofile.prirepo = prirepo
         userprofile.save()
 
-    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'gsuser': user, 'gsuserprofile': userprofile, 'repo_list': repo_list, 'repo_feed_map': repo_feed_map}
+    response_dictionary = {'mainnav': 'repo', 'title': title, 'user_name': user_name, 'gsuser': user, 'gsuserprofile': userprofile, 'repo_list': repo_list, 'repo_feed_map': repo_feed_map}
     return render_to_response('repo/user_repo.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -110,6 +111,7 @@ def raw_blob(request, user_name, repo_name, refs, path):
 
 @repo_permission_check
 def ls_tree(request, user_name, repo_name, refs, path, current, render_method):
+    title = u'%s / %s' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -126,7 +128,7 @@ def ls_tree(request, user_name, repo_name, refs, path, current, render_method):
     readme_md = None
     if tree and 'has_readme' in tree and tree['has_readme']:
         readme_md = gitHandler.repo_cat_file(abs_repopath, commit_hash, tree['readme_file'])
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'tree': tree, 'readme_md': readme_md}
+    response_dictionary = {'mainnav': 'repo', 'title': title, 'current': current, 'path': path, 'tree': tree, 'readme_md': readme_md}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     if render_method == 'ajax':
         return json_httpResponse(response_dictionary)
@@ -144,7 +146,7 @@ def blob_ajax(request, user_name, repo_name, refs, path):
     
 @repo_permission_check
 def _blob(request, user_name, repo_name, refs, path, render_method):
-    current = 'blob'
+    current = 'blob'; title = u'%s / %s / %s' % (user_name, repo_name, path)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or path is None or path == '':
         raise Http404
@@ -162,7 +164,7 @@ def _blob(request, user_name, repo_name, refs, path, render_method):
                 brush = brush_aliases[lang]
         blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
     is_markdown = path.endswith('.markdown') or path.endswith('.md') or path.endswith('.mkd')
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'blob': blob, 'lang': lang, 'brush': brush, 'is_markdown': is_markdown}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'title': title, 'path': path, 'blob': blob, 'lang': lang, 'brush': brush, 'is_markdown': is_markdown}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     if render_method == 'ajax':
         return json_httpResponse(response_dictionary)
@@ -172,6 +174,7 @@ def _blob(request, user_name, repo_name, refs, path, render_method):
 
 @repo_permission_check
 def commit(request, user_name, repo_name, commit_hash):
+    title = u'%s / %s / hash:%s' % (user_name, repo_name, commit_hash)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -183,7 +186,7 @@ def commit(request, user_name, repo_name, commit_hash):
     commit = None
     if len(commits) > 0:
         commit = commits[0]
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'commit_hash': commit_hash, 'commit': commit}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'title': title, 'commit_hash': commit_hash, 'commit': commit}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/commit.html',
                           response_dictionary,
@@ -196,6 +199,7 @@ def commits_default(request, user_name, repo_name):
     
 @repo_permission_check
 def commits(request, user_name, repo_name, refs, path):
+    title = u'%s / %s / 提交历史' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -207,7 +211,7 @@ def commits(request, user_name, repo_name, refs, path):
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     commits = gitHandler.repo_log_file(abs_repopath, '0000000', commit_hash, 50, path)
     _fillwith_commits(commits)
-    response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'path': path, 'commits': commits}
+    response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'title': title, 'path': path, 'commits': commits}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/commits.html',
                           response_dictionary,
@@ -215,6 +219,7 @@ def commits(request, user_name, repo_name, refs, path):
 
 @repo_permission_check
 def commits_log(request, user_name, repo_name, from_commit_hash, to_commit_hash):
+    title = u'%s / %s / 提交历史' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -228,7 +233,7 @@ def commits_log(request, user_name, repo_name, from_commit_hash, to_commit_hash)
     to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_commit_hash)
     commits = gitHandler.repo_log_file(abs_repopath, from_commit_hash, to_commit_hash, 50, '.')
     _fillwith_commits(commits)
-    response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'orgi_from_commit_hash': orgi_from_commit_hash, 'orgi_to_commit_hash': orgi_to_commit_hash, 'from_commit_hash': from_commit_hash, 'to_commit_hash': to_commit_hash, 'commits': commits, 'refs_meta': refs_meta}
+    response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'title': title, 'orgi_from_commit_hash': orgi_from_commit_hash, 'orgi_to_commit_hash': orgi_to_commit_hash, 'from_commit_hash': from_commit_hash, 'to_commit_hash': to_commit_hash, 'commits': commits, 'refs_meta': refs_meta}
     return json_httpResponse(response_dictionary)
 
 @repo_permission_check
@@ -237,11 +242,12 @@ def branches_default(request, user_name, repo_name):
 
 @repo_permission_check
 def branches(request, user_name, repo_name, refs):
+    title = u'%s / %s / 分支' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
     refs = _get_current_refs(request.user, repo, refs, True)
-    response_dictionary = {'mainnav': 'repo', 'current': 'branches'}
+    response_dictionary = {'mainnav': 'repo', 'current': 'branches', 'title': title}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/branches.html',
                           response_dictionary,
@@ -253,11 +259,12 @@ def tags_default(request, user_name, repo_name):
 
 @repo_permission_check
 def tags(request, user_name, repo_name, refs):
+    title = u'%s / %s / 标签' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
     refs = _get_current_refs(request.user, repo, refs, True)
-    response_dictionary = {'mainnav': 'repo', 'current': 'tags'}
+    response_dictionary = {'mainnav': 'repo', 'current': 'tags', 'title': title}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/tags.html',
                           response_dictionary,
@@ -273,6 +280,7 @@ def compare_master(request, user_name, repo_name, refs):
 
 @repo_permission_check
 def compare_commit(request, user_name, repo_name, from_refs, to_refs):
+    title = u'%s / %s / 比较 %s vs %s' % (user_name, repo_name, from_refs, to_refs)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -282,7 +290,7 @@ def compare_commit(request, user_name, repo_name, from_refs, to_refs):
     from_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, from_refs)
     to_commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, to_refs)
     refs_meta = gitHandler.repo_ls_refs(repo, abs_repopath)
-    response_dictionary = {'mainnav': 'repo', 'current': 'compare', 'from_refs': from_refs, 'to_refs': to_refs, 'from_commit_hash': from_commit_hash, 'to_commit_hash': to_commit_hash, 'refs_meta': refs_meta}
+    response_dictionary = {'mainnav': 'repo', 'current': 'compare', 'title': title, 'from_refs': from_refs, 'to_refs': to_refs, 'from_commit_hash': from_commit_hash, 'to_commit_hash': to_commit_hash, 'refs_meta': refs_meta}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/compare.html',
                           response_dictionary,
@@ -308,12 +316,13 @@ def merge(request, user_name, repo_name, source_refs, desc_refs):
 
 @repo_permission_check
 def pulls(request, user_name, repo_name):
+    title = u'%s / %s / 合并请求' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
     refs = _get_current_refs(request.user, repo, None, True); path = '.'
     pullRequests = RepoManager.list_pullRequest_by_descRepoId(repo.id)
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequests': pullRequests}
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'title': title, 'path': path, 'pullRequests': pullRequests}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pulls.html',
                           response_dictionary,
@@ -339,6 +348,7 @@ def pull_new_default(request, user_name, repo_name):
 @login_required
 @repo_permission_check
 def pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
+    title = u'%s / %s / 创建合并请求' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
     desc_repo = RepoManager.get_repo_by_forkrepo(desc_username, repo)
@@ -376,7 +386,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
 
     pull_repo_list = _list_pull_repo(request, repo)
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list, 'memberUsers': memberUsers}
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'title': title, 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list, 'memberUsers': memberUsers}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_new.html',
                           response_dictionary,
@@ -391,7 +401,8 @@ def pull_show(request, user_name, repo_name, pullRequest_id):
     pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     
     has_repo_pull_action_right = _has_repo_pull_action_right(request, repo, pullRequest)
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'pullRequest': pullRequest, 'has_repo_pull_action_right': has_repo_pull_action_right}
+    title = u'%s / %s / #%s:%s' % (user_name, repo_name, pullRequest.id, pullRequest.title)
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'title': title, 'pullRequest': pullRequest, 'has_repo_pull_action_right': has_repo_pull_action_right}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_show.html',
                           response_dictionary,
@@ -578,6 +589,7 @@ def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, contex
 
 @repo_permission_check
 def collaborator(request, user_name, repo_name):
+    title = u'%s / %s / 协同者' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -605,7 +617,7 @@ def collaborator(request, user_name, repo_name):
         member_ids.insert(0, user_id)
     merge_user_map = GsuserManager.map_users(member_ids)
     members_vo = [merge_user_map[o] for o in member_ids]
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'title': title, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/collaborator.html',
                           response_dictionary,
@@ -613,6 +625,7 @@ def collaborator(request, user_name, repo_name):
 
 @repo_permission_check
 def pulse(request, user_name, repo_name):
+    title = u'%s / %s / 总览' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -631,7 +644,7 @@ def pulse(request, user_name, repo_name):
     fork_repos_tree = change_to_vo(raw_fork_repos_tree)
     star_users = RepoManager.list_star_user(repo.id, 0, 20)
     watch_users = RepoManager.list_watch_user(repo.id)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'fork_repos_tree': fork_repos_tree, 'star_users': star_users, 'watch_users': watch_users}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'title': title, 'fork_repos_tree': fork_repos_tree, 'star_users': star_users, 'watch_users': watch_users}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pulse.html',
                           response_dictionary,
@@ -639,6 +652,7 @@ def pulse(request, user_name, repo_name):
 
 @repo_permission_check
 def stats(request, user_name, repo_name):
+    title = u'%s / %s / 统计' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -689,7 +703,7 @@ def stats(request, user_name, repo_name):
         per_user_commits.append({'commits': per_user_year_commits, 'tip': round_year_tip})
 
     quotes = {'used_quote': _get_readable_du(repo.used_quote), 'total_quote': _get_readable_du(userprofile.quote), 'ratio': int(repo.used_quote)*100/int(userprofile.quote)}
-    response_dictionary = {'mainnav': 'repo', 'current': 'stats', 'path': path, 'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last7days_commit': last7days_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'round_week': round_week, 'round_month': round_month, 'round_year': round_year, 'per_user_commits': per_user_commits}
+    response_dictionary = {'mainnav': 'repo', 'current': 'stats', 'path': path, 'title': title, 'last12hours': last12hours, 'last7days': last7days, 'last30days': last30days, 'last12months': last12months, 'last12hours_commit': last12hours_commit, 'last7days_commit': last7days_commit, 'last30days_commit': last30days_commit, 'last12months_commit': last12months_commit, 'quotes': quotes, 'round_week': round_week, 'round_month': round_month, 'round_year': round_year, 'per_user_commits': per_user_commits}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/stats.html',
                           response_dictionary,
@@ -698,6 +712,7 @@ def stats(request, user_name, repo_name):
 @repo_permission_check
 @login_required
 def settings(request, user_name, repo_name):
+    title = u'%s / %s / 设置' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
@@ -705,7 +720,7 @@ def settings(request, user_name, repo_name):
         raise Http404
     refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'settings'; error = u''
     repoForm = RepoForm(instance = repo)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'repoForm': repoForm, 'error': error}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'title': title, 'repoForm': repoForm, 'error': error}
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
         if not repoForm.is_valid():
@@ -849,12 +864,12 @@ def refs_graph_default(request, user_name, repo_name):
 
 @repo_permission_check
 def refs_graph(request, user_name, repo_name, refs):
-    current = 'refs_graph'
+    current = 'refs_graph'; title = u'%s / %s / 分支图：%s' % (user_name, repo_name, refs)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
     refs = _get_current_refs(request.user, repo, refs, True)
-    response_dictionary = {'mainnav': 'repo', 'current': current}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'title': title}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/refs_graph.html',
                           response_dictionary,
@@ -862,11 +877,11 @@ def refs_graph(request, user_name, repo_name, refs):
 
 @repo_permission_check
 def refs_create(request, user_name, repo_name, refs):
-    current = 'branches'
+    current = 'branches'; title = u'%s / %s / 基于%s创建分支' % (user_name, repo_name, refs)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or not RepoManager.is_allowed_write_access_repo(repo, request.user):
         raise Http404
-    response_dictionary = {'mainnav': 'repo', 'current': current}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'title': title}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/refs_create.html',
                           response_dictionary,
@@ -1032,7 +1047,7 @@ def find(request):
 
 @login_required
 def create(request, user_name):
-    error = u''
+    error = u''; title = u'%s / 创建仓库' % user_name
     if user_name != request.user.username:
         raise Http404
     feedAction = FeedAction()
@@ -1043,7 +1058,7 @@ def create(request, user_name):
     repo.auth_type = 2
     repoForm = RepoForm(instance = repo, initial={'lang': lang, 'auth_type': auth_type})
     repoForm.fill_username(request.userprofile, owner_user_id)
-    response_dictionary = {'mainnav': 'repo', 'repoForm': repoForm, 'error': error, 'thirdpartyUser': thirdpartyUser, 'apply_error': request.GET.get('apply_error')}
+    response_dictionary = {'mainnav': 'repo', 'title': title, 'repoForm': repoForm, 'error': error, 'thirdpartyUser': thirdpartyUser, 'apply_error': request.GET.get('apply_error')}
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
         repoForm.fill_username(request.userprofile, owner_user_id)
@@ -1182,7 +1197,7 @@ def __response_edit_repo_error(request, response_dictionary, error):
 @repo_permission_check
 @login_required
 def delete(request, user_name, repo_name):
-    error = u''
+    error = u''; title = u'%s / %s / 删除仓库！' % (user_name, repo_name)
     if user_name != request.user.username:
         raise Http404
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1193,7 +1208,7 @@ def delete(request, user_name, repo_name):
     if request.method == 'POST':
         RepoManager.delete_repo(user, userprofile, repo)
         return HttpResponseRedirect('/%s/-/repo/' % request.user.username)
-    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'error': error}
+    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'error': error, 'title': title}
     return render_to_response('repo/delete.html',
                           response_dictionary,
                           context_instance=RequestContext(request))

@@ -107,6 +107,11 @@
       </tbody>
     </table>
 
+    {% if readme_md %}
+    <div id="README.md" class="readme">
+      <div id="id_readme_md" class="markdown hide">{{readme_md}}</div>
+    </div>
+    {% endif %}
   </div>
 </div>
 
@@ -234,7 +239,7 @@
     var html = $('#id_readme_md').html();
     html = $('<div/>').html(html).text();
     var sanitized_html = html_sanitize(marked(html), function(url) { return url; }, function(id) { return id; })
-      $('#id_readme_md').html(sanitized_html);
+    $('#id_readme_md').html(sanitized_html);
     $('#id_readme_md').show();
     {% endif %}
     $('[data-toggle="popover"]').popover({ animation: false });
