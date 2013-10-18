@@ -28,12 +28,13 @@ class GitHandler():
         (commit_hash, path) = self._all_to_utf8(commit_hash, path)
         if not self._path_check_chdir(repo_path, commit_hash, path):
             return {}
+        origin_path = path
         path = self._get_quote_path(path)
         stage_file = self._get_stage_file(repo_path, commit_hash, path)
         result = self._read_load_stage_file(stage_file)
         if result is not None:
             return result
-        result = self._ls_tree_check_output(commit_hash, path)
+        result = self._ls_tree_check_output(commit_hash, path, origin_path)
         self._dumps_write_stage_file(result, stage_file)
         return result
     
@@ -273,8 +274,8 @@ class GitHandler():
             logger.exception(e)
         return []
     
-    def _ls_tree_check_output(self, commit_hash, path):
-        command = '/usr/bin/git ls-tree %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
+    def _ls_tree_check_output(self, commit_hash, path, origin_path):
+        command = 'git config --global core.quotepath false; /usr/bin/git ls-tree %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
         tree = {}; dirs = []; files = []; has_readme = False; readme_file = '';
         try:
             raw_output = check_output(command, shell=True)
@@ -284,7 +285,7 @@ class GitHandler():
                 if len(array) >= 4:
                     abs_path = array[3]; relative_path = abs_path
                     if path != '.':
-                        relative_path = abs_path[len(path):]
+                        relative_path = abs_path[len(origin_path):]
                     if array[1] == 'tree':
                         relative_path = relative_path + '/'
                     relative_path = self._oct_utf8_decode(relative_path)
