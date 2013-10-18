@@ -309,11 +309,11 @@ class GitHandler():
             quote_relative_paths = []
             for relative_path in tree.keys():
                 quote_relative_paths.append(pipes.quote(relative_path))
-            if len(path.split('/')) < 50:
+            if len(path.split('/')) < 50 and '"' not in origin_path:
                 pre_path = path
                 if path == '.':
                     pre_path = ''
-                last_commit_command = 'for i in %s; do echo -n "$i|"; git log %s -1 --pretty="%%at|%%an|%%ae|%%s" -- "%s$i" | /usr/bin/head -c 524288; done' % (' '.join(quote_relative_paths), commit_hash, pre_path)
+                last_commit_command = 'for i in %s; do echo -n "$i|"; git log %s -1 --pretty="%%at|%%an|%%ae|%%s" -- "%s$i" | /usr/bin/head -c 524288; done' % (' '.join(quote_relative_paths), commit_hash, origin_path)
                 last_commit_output = check_output(last_commit_command, shell=True)
                 for last_commit in last_commit_output.split('\n'):
                     splits = last_commit.split('|', 4)
