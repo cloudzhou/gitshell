@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-  
 from django.core.cache import cache
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
