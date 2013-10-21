@@ -96,7 +96,7 @@ urlpatterns = patterns('gitshell',
     url(r'^help/?$', 'help.views.default'),
     url(r'^help/quickstart/?$', 'help.views.quickstart'),
     url(r'^help/error/?$', 'help.views.error'),
-    url(r'^help/access_out_of_limit/?$', 'help.views.access_out_of_limit'),
+    url(r'^help/error/(\w+)/?$', 'help.views.error_with_reason'),
     url(r'^help/reset_access_limit/?$', 'help.views.reset_access_limit'),
 
     # gitshell openssh keyauth and dist, private for subnetwork access by iptables, nginx port 9000
