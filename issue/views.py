@@ -117,7 +117,7 @@ def show(request, user_name, repo_name, issue_id, page):
     assigneds = [x.username for x in memberUsers]
 
     has_issue_modify_right = _has_issue_modify_right(request, raw_issue, repo)
-    title = u'%s / %s / 问题：%s' % (user_name, repo_name, issue.subject)
+    title = u'%s / %s / 问题：%s' % (user_name, repo_name, issue['subject'])
     response_dictionary = {'mainnav': 'repo', 'current': current, 'title': title, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'issueCommentForm': issueCommentForm, 'page': page, 'total_page': range(0, total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority, 'has_issue_modify_right': has_issue_modify_right}
     response_dictionary.update(ISSUE_ATTRS)
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
