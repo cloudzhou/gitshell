@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block container_class_name %}error{% endblock %}
+{% block container %}
+<div class="content">
+  <div class="container">
+    <article class="inner bubble">
+      <hgroup class="title">
+        <h1>
+{%if reason == 'repo_permission_denied'%}
+该仓库为私有,没有权限查看
+{%elif reason == 'repo_not_found'%}
+没有该仓库，请确认输入正确
+{%endif%}
+        </h1>
+        <h2><a href="/">返回首页<i class="icon-arrow-right"></i></a></h2>
+      </hgroup>
+    </article>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+  $(function(){
+  });
+</script>
+{% endblock %}

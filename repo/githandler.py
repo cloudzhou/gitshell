@@ -505,7 +505,7 @@ class GitHandler():
         refs_detail_commit = {}
         refses = commit_hash_dict.keys()
         try:
-            last_commit_command = 'for i in %s; do echo -n "$i|"; git log "$i" -1 --pretty="%%h|%%p|%%t|%%an|%%ae|%%at|%%cn|%%ce|%%ct|%%s" | /usr/bin/head -c 524288; done' % (' '.join(refses))
+            last_commit_command = '/bin/bash -c \'for i in %s; do echo -n "$i|"; git log "$i" -1 --pretty="%%h|%%p|%%t|%%an|%%ae|%%at|%%cn|%%ce|%%ct|%%s" | /usr/bin/head -c 524288; done\'' % (' '.join(refses))
             last_commit_output = check_output(last_commit_command, shell=True)
             for line in last_commit_output.split('\n'):
                 ars = line.split('|', 10)

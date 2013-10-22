@@ -29,6 +29,13 @@ def error(request):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+def error_with_reason(request, reason):
+    title = reason
+    response_dictionary = {'title': title, 'reason': reason}
+    return render_to_response('help/error_with_reason.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
 def access_out_of_limit(request):
     title = u'访问超出限额'
     resetAccessLimitForm = ResetAccessLimitForm()
