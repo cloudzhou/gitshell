@@ -11,59 +11,17 @@
 
 {% block subcontainer %}
 <div class="files bubble" id="resize-container">
-  {% comment %}
-    <div class="file-browser" id="file-browser">
-      {% include "repo/branch_nav.html" %}
-      {#<a href="/{{user_name}}/{{repo_name}}/commits/{{refs}}/{{path}}" class="btn btn-mini">Commits</a>#}
-      <ul class="nav nav-list">
-        {% for file_attrs in tree.tree %}
-        {%if file_attrs.type == 'tree'%}
-        <li class="tree-node">
-          <span title="{{file_attrs.relative_path}}" class="fold"><img src="/static/img/file_dir.png" alt="dir">{{file_attrs.relative_path}}</span>
-          <ul class="nav nav-list">
-            <li class="tree-node">
-              <span class="fold"><img src="/static/img/file_dir.png" alt="">dir 1</span>
-              <ul class="nav nav-list">
-                <li><a href="#" class="file"><img src="/static/img/file_txt.png" alt="">Inner file 1</a></li>
-                <li><a href="#" class="file"><img src="/static/img/file_txt.png" alt="">Inner file 2</a></li>
-                <li><a href="#" class="file"><img src="/static/img/file_txt.png" alt="">Inner file 3</a></li>
-              </ul>
-            </li>
-            <li><a href="#" class="file"><img src="/static/img/file_txt.png" alt="">file 1</a></li>
-            <li><a href="#" class="file"><img src="/static/img/file_txt.png" alt="">file 2</a></li>
-          </ul>
-        </li>
-        {% else %}
-        <li><a href="#" class="file"><img src="/static/img/file_txt.png" alt="txt">{{ file_attrs.relative_path }}</a></li>
-        {% endif %}
-        {% endfor %}
-      </ul>
-    </div>
-  {% endcomment %}
-
   <div class="table-container" id="source">
+  {% if repo.status != 0 %}
+    <div id="id-repos-loading" class="ajaxLoader"><p>正在初始化仓库...</p><img src="/static/img/loading.gif"></div>
+  {% else %}
     <div class="theme-selector">
-      {% if current == 'blob' %}
-        <a href="#" id="switcher">主题</a>
-        <ul class="theme-list clearfix" id="themes">
-          <li class="active"><a href="#"><i class="icon-ok"></i>Default</a></li>
-          <li><a href="#">Github</a></li>
-          <li><a href="#">Sunburst</a></li>
-          <li><a href="#">Solarized</a></li>
-          <li><a href="#">Twilight</a></li>
-          <li><a href="#">Google Code</a></li>
-          <li><a href="#">xCode</a></li>
-          <li><a href="#">Tomorrow</a></li>
-        </ul>
-      {% else %}
         {% include "repo/branch_nav.html" %}
         <span class="current-branch-name">
           <a href="/{{user_name}}/{{repo_name}}/{%if current == 'index' or current == 'tree' or current == 'blob' %}tree{%endif%}{%if current == 'commits' %}commits{%endif%}{%if current == 'refs_graph' %}refs/graph{%endif%}/{{refs}}/">{{repo_name}}</a><span class="divider">/</span>
           <span id="repo-path"></span>
         </span>
-      {% endif %}
     </div>
-
     <table class="table">
       <tbody>
         {% if not tree %}
@@ -106,11 +64,12 @@
         {% endif %}
       </tbody>
     </table>
+  {% endif %}
 
   </div>
 </div>
 
-{% if readme_md %}
+{% if repo.status == 0 and readme_md %}
   <div id="README.md" class="readme bubble">
     <div class="title">
       <h2 class="heading">README.md</h2>
@@ -245,6 +204,19 @@
     var sanitized_html = html_sanitize(marked(html), function(url) { return url; }, function(id) { return id; })
     $('#id_readme_md').html(sanitized_html);
     $('#id_readme_md').show();
+    {% endif %}
+    {% if repo.status != 0 %}
+    function checkout_status_reload() {
+      $.post('/ajax/repo/find/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'id': {{repo.id}}}, function(json){
+        if(json.status == 0) {
+          window.location.href = window.location.href;
+        }
+      });
+    }
+    setTimeout(checkout_status_reload, 1000);
+    setTimeout(checkout_status_reload, 4000);
+    setTimeout(checkout_status_reload, 9000);
+    setInterval(checkout_status_reload, 10000);
     {% endif %}
     $('[data-toggle="popover"]').popover({ animation: false });
   });
