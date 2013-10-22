@@ -206,7 +206,7 @@ def _fill_github_user_info(userprofile, github_user_info):
         userprofile.location = github_user_info['location']
 
 def __get_uniq_username(tp_username):
-    if tp_username is not None:
+    if tp_username is not None and not tp_username.startswith('-'):
         user = GsuserManager.get_user_by_name(tp_username)
         if user is None:
             return tp_username

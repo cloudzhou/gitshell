@@ -219,7 +219,7 @@ def change(request):
     is_user_exist = True
     is_exist_repo = False
     username = request.POST.get('username')
-    if username is not None and re.match("^\w+$", username) and username != request.user.username and username not in MAIN_NAVS:
+    if username is not None and re.match("^[a-zA-Z0-9_-]+$", username) and username != request.user.username and username not in MAIN_NAVS and not username.startswith('-'):
         repo_count = RepoManager.count_repo_by_userId(request.user.id)
         if repo_count > 0:
             return json_httpResponse({'is_exist_repo': True})
@@ -429,7 +429,7 @@ def join(request, step):
         email = cache.get(step + '_email')
         username = cache.get(step + '_username')
         password = cache.get(step + '_password')
-        if email is None or username is None or password is None or not email_re.match(email) or not re.match("^\w+$", username) or username in MAIN_NAVS:
+        if email is None or username is None or password is None or not email_re.match(email) or not re.match("^[a-zA-Z0-9_-]+$", username) or username.startswith('-') or username in MAIN_NAVS:
             return HttpResponseRedirect('/join/4/')
         if _create_user_and_authenticate(request, username, email, password, True):
             return HttpResponseRedirect('/join/3/')

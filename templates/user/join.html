@@ -23,7 +23,7 @@
           <div class="divider"><span>或</span></div>
           <div id="alert" class="alert alert-error hide">
             <p id="usernameAlert" class="hide">用户名已经存在</p>
-            <p id="usernameFormat" class="hide">用户名不符合规范</p>
+            <p id="usernameFormat" class="hide">用户名不符合规范，支持[a-zA-Z0-9_-]，不能以-开头</p>
             <p id="emailAlert" class="hide">邮箱已经存在</p>
           </div>
           {% if error %}
@@ -52,7 +52,7 @@
         </header>
         <p class="alert alert-info" style="padding: 15px 10px;">我们已经发送了一封确认邮件到您的邮箱，您可以在<em>半小时</em>内激活。<a href="#" id="gotoA" target="_blank" class="btn btn-success hide">点击到<span id="gotoDomain"></span></a></p>
         <p>部分不友好的运营商可能会拦截邮件，所以您需要留意一下垃圾邮件。<a href="#" class="readmore"><i class="icon-double-angle-right"></i><span>没有收到邮件？</span></a></p>
-        <blockquote class="contact hide"><em>出乎您的意料，希望您自认倒霉吧</em>，但无论何时都可以与<a href="mailto:support@gitshell.com">support@gitshell.com</a>联络，或者在微博@我们<a target="_blank" href="http://weibo.com/gitshell">@gitshell</a>。</blockquote>
+        <blockquote class="contact hide"><em>出乎您的意料，请再仔细检查</em>，但无论何时都可以与<a href="mailto:support@gitshell.com">support@gitshell.com</a>联络，或者在微博@我们<a target="_blank" href="http://weibo.com/gitshell">@gitshell</a>。</blockquote>
       </article>
     {% endifequal %}
 
@@ -175,7 +175,7 @@ cat ~/.ssh/gitshell.com_rsa.pub</pre>
       $('#usernameAlert').hide();
       $('#usernameFormat').hide();
       var username = $(this).val();
-      if(!username.match(/^[a-zA-Z0-9_]+$/)) {
+      if(!username.match(/^[a-zA-Z0-9_-]+$/)) {
         $('#alert').show();
         $('#usernameFormat').show();
         return;
