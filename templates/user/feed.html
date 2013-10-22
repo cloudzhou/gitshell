@@ -81,7 +81,7 @@
               if(feed.feed_type == 0) {
                 commit = feed.relative_obj;
                 html.push('<section class="feed-item">');
-                html.push('<span class="feed-type commit">合并请求</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=32"></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(commit.committer_date*1000)).fromNow() +'</time><p class="title"><a href="/' + commit.author + '/" class="author">' + commit.author + '</a> 提交更新到 ' + '<a href="/' + commit.user_name +'/' + commit.repo_name + '/" class="repo-name">' + commit.user_name + '/' + commit.repo_name + '</a><ul class="subject commits">');
+                html.push('<span class="feed-type commit">合并请求</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=32"></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(commit.committer_date*1000)).fromNow() +'</time><p class="title"><a href="/' + commit.author + '/" class="author">' + commit.author + '</a> 提交更新到 ' + '<a href="/' + commit.repo_username +'/' + commit.repo_name + '/" class="repo-name">' + commit.repo_username + '/' + commit.repo_name + '</a><ul class="subject commits">');
                 html.push('<li>' + '<img src="https://gravatar.com/avatar/' + gravatar_dict[commit.author] + '?s=15" alt="">' + '<a href="/' + commit.user_name + '/' + commit.repo_name + '/commit/' + commit.commit_hash + '/" class="hash">' + commit.commit_hash + '</a>' + '- <span class="commit-msg">' + commit.subject + '</span></li>');
                 html.push('</ul></div>');
                 html.push('</section>');

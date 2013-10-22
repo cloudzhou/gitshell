@@ -19,6 +19,8 @@ from gitshell.todolist.views import todo
 from gitshell.viewtools.views import json_httpResponse, obj2dict
 
 def index(request):
+    if request.user.is_authenticated():
+        return HttpResponseRedirect('/dashboard/')
     return render_to_response('index.html',
                           {},
                           context_instance=RequestContext(request))
@@ -233,7 +235,8 @@ def _fillwith_commit_message(request, feeds, usernames, userIds):
             commit_view['user_name'] = users_dict[repo.user_id].username
         else:
             commit_view['user_name'] = ''
-        commit_view['repo_name'] = commit.repo_name
+        commit_view['repo_username'] = repo.username
+        commit_view['repo_name'] = repo.name
         commit_view['commit_hash'] = commit.commit_hash
         commit_view['author'] = commit.author
         if commit.author not in usernames:
