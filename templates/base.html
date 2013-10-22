@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>{%if title%}{{title}} &mdash; Gitshell{%else%}欢迎来到 Gitshell{%endif%}</title>
     <meta content="Gitshell 专注git代码托管, 团队协同，项目开发" name="description">
     <meta content="Gitshell" name="author">
@@ -23,6 +24,9 @@
     {% endif %}
   </head>
   <body id="gitshell" class="{% block body_class_name %}{% endblock %}">
+    <!--[if lt IE 10]>
+    <p class="upgrade">Gitshell<strong>不支持您的浏览器</strong>. 继续浏览请先<a href="http://browsehappy.com/" target="_blank">升级您的浏览器</a>.或者在您的IE浏览器上安装<a href="http://www.google.com/chromeframe?prefersystemlevel=true&hl=zh-CN" target="_blank">谷歌浏览器内嵌框架</a>。</p>
+    <![endif]-->
     <nav class="navbar" role="navigation">
       <div class="container">
 

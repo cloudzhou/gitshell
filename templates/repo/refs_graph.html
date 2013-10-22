@@ -19,6 +19,7 @@
       var log_graph_lines = log_graph.split('\n');
       var left_split_chars = [' - ', '(', ')'];
       var right_split_chars = [' - ', '(', ')'];
+      if (log_graph) {
       for(x in log_graph_lines) {
         var indexOfs = [];
         var log_graph_line = log_graph_lines[x];
@@ -96,6 +97,11 @@
         htmls.push('<p>' + log_graph_line + '</p>');
       }
       $('#logGraph').html(htmls.join(''));
+      } else {
+        $('.graph.bubble').removeClass('graph').addClass('inner').find('.header').remove();
+        $('#logGraph').html('<p class="alert blank-alert"><i class="icon-bell"></i>没有分支图</p>');
+      }
+
     });
   });
 </script>

@@ -12,17 +12,27 @@
       <img src="https://gravatar.com/avatar/{{ issue.reporter_imgurl}}?s=55" alt="{{issue.username}}">
     </figure>
     <div class="detail">
-      <h3 id="issueSubject" class="heading">{{issue.subject}}
-      <span class="actions">
-        {#<a href="#" rel="tooltip" data-original-title="可拖动到上面"><i class="icon-bell"></i></a>#}
-        <a id="issueEdit" href="/{{user_name}}/{{repo_name}}/issues/edit/{{issue.id}}/"><i class="icon-pencil"></i>修改</a>
-      </span>
-      </h3>
+      <h3 id="issueSubject" class="heading">{{issue.subject}} </h3>
       <p class="meta">
-        <span class="assign">{#<img src="https://gravatar.com/avatar/{{ issue.reporter_imgurl}}?s=15" alt="{{issue.username}}">#}指派给{#<img src="https://gravatar.com/avatar/{{ issue.assiged_imgurl}}?s=15" alt="{{issue.assiged}}">#}<a href="/{{issue.assigned}}/">{{issue.assigned}}</a></span>
+        <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
+        {% if issue.status %}
+        <span class="label label-warning">{{issue.status}}</span>
+        {% endif %}
+        {% if issue.priority %}
+        <span class="label label-success">{{issue.priority}}</span>
+        {% endif %}
+        <span class="assign">
+          <a href="/{{issue.username}}/">{{issue.username}}</a>指派给<a href="/{{issue.assigned}}/">{{issue.assigned}}</a>
+        </span>
         <time class="unixtime" pubdate="pubdate">{{issue.create_time}}</time>
       </p>
       <div class="content">{{issue.content}}</div>
+      <span class="actions">
+        <a id="issueEdit" href="/{{user_name}}/{{repo_name}}/issues/edit/{{issue.id}}/" class="btn btn-mini"><i class="icon-pencil"></i>修改</a>
+        <a href="#" data-id="{{issue.id}}" data-value="4" class="btn btn-mini btn-success">解决</a>
+        <a href="#" data-id="{{issue.id}}" data-value="5" class="btn btn-mini">关闭</a>
+        <a href="#" data-id="{{issue.id}}" data-value="6" class="btn btn-mini btn-danger">拒绝</a>
+      </span>
     </div>
   </div>
 
@@ -88,6 +98,7 @@
       }
     });
     {% endif %}
+
     $('.comment').live('mouseover mouseout', function(event) {
       if (event.type == 'mouseover') {
         var issues_user_name = $(this).attr('data-user-name');
@@ -98,10 +109,7 @@
         $(this).find('.rmComment').hide();
       }
     });
-    $('.dragSetting').mouseover(function() {
-      $('.createIssuesBtn').hide();
-      $('#issuesCondition').show();
-    });
+
     $('.rmComment').click(function(){
       var comment_id = $(this).attr('value');
       $.ajax({
@@ -117,6 +125,7 @@
         },
       });
     });
+
     $('.rmComment').blur(function(){
       setTimeout(
         function(event) {
@@ -144,35 +153,22 @@
       $('#id_content').val('')
       $('#id_content').val(val)
     });
-    $('.cIssue').tooltip({
-      selector: "a[rel=tooltip]"
-    })
-    $('.dragSetting').draggable({
-      cursor: 'move',
-      revert: true
-    });
-    $('.issuesAttr').droppable({
-      accept: '.dragSetting',
-      hoverClass: 'issuesAttrHovered',
-      drop: handleIssueDrop,
-    });
-    function handleIssueDrop(event, ui){
-      var issue_id = ui.draggable.attr('value');
-      var issue_attr = $(this).attr('value');
+
+    $('.cIssue .actions a').click(function(){
+      var issue_id = $(this).attr('data-id');
+      var issue_attr = 'status___' + $(this).attr('data-value');
       $.ajax({
         url: '/{{user_name}}/{{repo_name}}/issues/update/' + {{issue.id}} + '/' + issue_attr + '/',
         type: 'POST',
         data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         dataType: 'json',
         timeout: 10000,
-        error: function(){
-        },
         success: function(json){
           window.location = '/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{page}}/'
         },
       });
-    }
+    });
+
   });
 </script>
 {% endblock %}
-<p class="meta">不可修改，严谨发言</p>

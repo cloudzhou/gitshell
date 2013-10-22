@@ -25,7 +25,7 @@
         <td class="md5">{{ userPubkey.fingerprint }}</td>
         <td class="status">正常</td>
         <td class="action">
-          <button id="i_remove_{{ userPubkey.id }}" value="{{ userPubkey.id }}" class="removeSshbupkey btn btn-mini">删除</button>
+          <button id="i_remove_{{ userPubkey.id }}" value="{{ userPubkey.id }}" class="removeSshpubkey btn btn-mini">删除</button>
         </td>
       </tr>
       {% endfor %}
@@ -84,7 +84,7 @@
     $('.removeSshpubkey').click(
       function(){
         if($(this).text() == '删除') {
-          $(this).text('确定删除');
+          $(this).addClass('btn-danger').text('确定删除');
           return;
         }
         if($(this).text() == '确定删除') {

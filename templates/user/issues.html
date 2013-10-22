@@ -11,11 +11,9 @@
         <span class="label issue-id">#{{issue.id}}</span>
         <span class="label status {%if issue.status == "新建"%}open{%elif issue.status == "已指派"%}assigned{%elif issue.status == "进行中"%}processing{%elif issue.status == "已解决"%}resolved{%elif issue.status == "已关闭"%}closed{%elif issue.status == "已拒绝"%}rejected{%endif%}"><i class="icon-{%if issue.status == "新建"%}bookmark-empty{%elif issue.status == "已指派"%}resize-horizontal{%elif issue.status == "进行中"%}spinner{%elif issue.status == "已解决"%}ok{%elif issue.status == "已关闭"%}remove{%elif issue.status == "已拒绝"%}trash{%endif%}"></i>{{issue.status}}</span>
       </div>
-
       <div class="summary">
-
         <div class="title">
-          <h3 class="heading">
+          <h3 class="heading" title="描述:{{issue.content}}">
             <a href="/{{user.username}}/{{issue.reponame}}/" class="label reponame">@{{issue.reponame}}</a>
             <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
             <a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">{{issue.subject}}</a>
@@ -29,27 +27,26 @@
             {% endcomment %}
           </h3>
         </div>
-
-
         <div class="meta">
           <a href="/{{issue.name}}/">{{issue.username}}</a>
           <span class="unixtime">{{issue.modify_time}}</span>
         </div>
 
-        {% comment %}
-          <div id="id_label_{{issue.id}}" class="c_label actions hide">
-            <span class="c_fixed_label btn btn-success">解决</span>
-            <span class="c_close_label btn">关闭</span>
-            <span class="c_reject_label btn btn-danger">拒绝</span>
-          </div>
-        {% endcomment %}
+        <div id="id_label_{{issue.id}}" class="c_label actions hide">
+          <span class="c_fixed_label btn btn-mini btn-success" data-action="fixed">解决</span>
+          <span class="c_close_label btn btn-mini" data-action="close">关闭</span>
+          <span class="c_reject_label btn btn-mini btn-danger" data-action="reject">拒绝</span>
+        </div>
+        <div id="id_tr_{{issue.id}}" data="{{issue.id}}" class="hide">
+          {#<input id="id_comment_{{issue.id}}" class="c_comment">#}
+          <input id="id_repo_id_{{issue.id}}" class="hide" value="{{issue.repo_id}}">
+          {#<button class="c_button btn btn-mini btn-primary" type="submit"></button>#}
+        </div>
 
       </div>
-
     </section>
-
   {% endfor %}
-
+  {#<input id="id_action" class="hide">#}
   <ul class="pagination">
     <li><a href="/dashboard/issues/0/">首页</a></li>
     {%if hasPre%}
@@ -61,10 +58,7 @@
     {%endif%}
   </ul>
 
-  <input id="id_action" class="hide">
-
 </div>
-
 {% else %}
   <div class="inner bubble">
     <p class="alert blank-alert"><i class="icon-bell"></i><em>没有问题</em></p>
@@ -72,13 +66,14 @@
 {% endif %}
 
 
-
 {% endblock %}
 
 {% block js %}
 <script>
   $(function(){
+
     moment.lang('zh-cn');
+
     $('.issue-item').live('mouseover mouseout', function(event) {
       var id = $(this).attr('data');
       if(event.type == 'mouseover') {
@@ -87,8 +82,10 @@
         $('#id_label_'+id).hide();
       }
     });
+
+    {% comment %}
     $('.c_fixed_label').click(function(event) {
-      var id = $(this).parents('tr').attr('data');
+      var id = $(this).parents('.issue-item').attr('data');
       setTimeout(
         function(event) {
           $('#id_tr_'+id).show();
@@ -99,7 +96,7 @@
         , 250)
     });
     $('.c_close_label').click(function(event) {
-      var id = $(this).parents('tr').attr('data');
+      var id = $(this).parents('.issue-item').attr('data');
       setTimeout(
         function(event) {
           $('#id_tr_'+id).show();
@@ -110,7 +107,7 @@
         , 250)
     });
     $('.c_reject_label').click(function(event) {
-      var id = $(this).parents('tr').attr('data');
+      var id = $(this).parents('.issue-item').attr('data');
       setTimeout(
         function(event) {
           $('#id_tr_'+id).show();
@@ -121,23 +118,37 @@
         , 250)
     });
     $('.c_comment').blur(function(event) {
-      var id = $(this).parents('tr').attr('data');
+      var id = $(this).parents('.issue-item').attr('data');
       setTimeout(
         function(event) {
           $('#id_tr_'+id).hide();
         }
         , 350)
     });
-    $('.c_button').click(function(event) {
-      var id = $(this).parents('tr').attr('data');
-      $('#id_tr_'+id).hide();
-      var comment = $('#id_comment_'+id).val();
-      var repo_id = $('#id_repo_id_'+id).val();
-      var action = $('#id_action').val();
-      $.post('/ajax/home/do_issue/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'issue_id': id, 'repo_id': repo_id, 'comment': comment, 'action': action}, function(json){
-        window.location = window.location
-      });
+    {% endcomment %}
+
+    $('.issue-item .actions .btn').click(function() {
+        var id = $(this).closest('.issue-item').attr('data'),
+            repo_id = $('#id_repo_id_'+id).val();
+        switch($(this).attr('data-action')) {
+          case 'fixed':
+            var comment = '自动回复:已解决',
+                action = 'fixed';
+            break;
+          case 'close':
+            var comment = '自动回复:关闭',
+                action = 'close';
+            break;
+          case 'reject':
+            var comment = '自动回复:拒绝',
+                action = 'reject';
+            break;
+        }
+        $.post('/ajax/home/do_issue/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'issue_id': id, 'repo_id': repo_id, 'comment': comment, 'action': action}, function(json){
+          window.location = window.location
+        });
     });
+
   });
 </script>
 {% endblock %}

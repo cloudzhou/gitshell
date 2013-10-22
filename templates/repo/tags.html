@@ -1,60 +1,60 @@
 {% extends "repo/repo.html" %}
 
 {% block subcontainer %}
-<div class="tags branch-list bubble" id="tags"></div>
+  <div class="tags branch-list bubble" id="tags"></div>
 {% endblock %}
 
 {% block subjs %}
 <script>
 $(function(){
-        $.post('/{{user_name}}/{{repo_name}}/refs/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            var html = [];
-            var detail_commit = json.refs_meta.detail_commit;
-            var tags = json.refs_meta.tags;
-            var current_refs = '{{refs}}';
-            if (tags.length > 0) {
-                html.push('<div class="header"><h2 class="heading">标签</h2>');
-                {%if is_repo_member%}
-                    html.push('<a href="/{{user_name}}/{{repo_name}}/refs/create/master/#target_tag" class="btn btn-mini create">创建新标签</a><a href="#tag-manage" id="tagManage" class="btn btn-mini pull-right"><i class="icon-cog"></i><span>管理</span></a>');
-                {%endif%}
-                html.push('</div>');
-                for(x in tags) {
-                    html.push('<section class="branch"><div class="summary">');
-                    var tag = tags[x];
-                    var commit = detail_commit[tag];
-                    html.push('<h2 class="name"><a href="/{{user_name}}/{{repo_name}}/tree/' + tag + '">' + tag + '</a></h2>');
-                    html.push('<p class="last-commit">' + commit.committer_name + ' <span class="date unixtime">' + commit.committer_date + '</span>更新:' + commit.commit_message + '</p></div>');
-                    html.push('<ul class="actions">');
-                    html.push('<li><a href="javascript:;" data-tag="' + tag + '"class="btn btn-danger btn-mini tagAction hide tagDelete">删除</a></li>');
-                    html.push('<li><a href="/{{user_name}}/{{repo_name}}/refs/graph/' + tag + '/" class="btn btn-mini tagAction">分支图</a></li>');
-                    html.push('</ul></section>');
-                }
-                $('#tags').append(html.join(''));
-                $('.unixtime').each(function(index){ 
-                    $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-                    $(this).show();
-                });
-            } else {
-                $('#tags').append('<p class="alert alert-error">没有标签，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>');
-            }
-        });
+  $.post('/{{user_name}}/{{repo_name}}/refs/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+    console.log(json);
+    var html = [];
+    var detail_commit = json.refs_meta.detail_commit;
+    var tags = json.refs_meta.tags;
+    var current_refs = '{{refs}}';
+    if (tags.length > 0) {
+      html.push('<div class="header"><h2 class="heading">标签</h2>');
+      {%if is_repo_member%}
+        html.push('<a href="/{{user_name}}/{{repo_name}}/refs/create/master/#target_tag" class="btn btn-mini create">创建新标签</a><a href="#tag-manage" id="tagManage" class="btn btn-mini pull-right"><i class="icon-cog"></i><span>管理</span></a>');
+      {%endif%}
+      html.push('</div>');
+      for(x in tags) {
+        html.push('<section class="branch"><div class="summary">');
+        var tag = tags[x];
+        var commit = detail_commit[tag];
+        html.push('<h2 class="name"><a href="/{{user_name}}/{{repo_name}}/tree/' + tag + '">' + tag + '</a></h2>');
+        html.push('<p class="last-commit">' + commit.committer_name + ' <span class="date unixtime">' + commit.committer_date + '</span>更新:' + commit.commit_message + '</p></div>');
+        html.push('<ul class="actions">');
+        html.push('<li><a href="javascript:;" data-tag="' + tag + '"class="btn btn-danger btn-mini tagAction hide tagDelete">删除</a></li>');
+        html.push('<li><a href="/{{user_name}}/{{repo_name}}/refs/graph/' + tag + '/" class="btn btn-mini tagAction">分支图</a></li>');
+        html.push('</ul></section>');
+      }
+      $('#tags').append(html.join(''));
+      $('.unixtime').each(function(index){ 
+        $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+          $(this).show();
+      });
+    } else {
+      $('#tags').append('<p class="alert blank-alert"><i class="icon-bell"></i>没有标签</p>');
+    }
+  });
 
-        $('#tagManage').live('click',
-            function(e){
-                e.preventDefault();
-                var txt = $(this).children('span').text();
-                $(this).children('span').text( txt == '管理' ? '取消' : '管理' );
-                $('.tagAction').toggle();
-            }
-        );
+  $('#tagManage').live('click', function(e){
+    e.preventDefault();
+    var txt = $(this).children('span').text();
+    $(this).children('span').text( txt == '管理' ? '取消' : '管理' );
+    $('.tagAction').toggle();
+  });
 
-        $('.tagDelete').on('click', function(){
-            var tag = $(this).data('tag');
-            var tr = $(this).parents('tr');
-            $.post('/{{user_name}}/{{repo_name}}/refs/tag/delete/' + tag + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-                tr.hide();
-            });
-        });
+  $('.tagDelete').on('click', function(){
+    var tag = $(this).data('tag');
+    var tr = $(this).parents('.branch');
+    $.post('/{{user_name}}/{{repo_name}}/refs/tag/delete/' + tag + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+      tr.hide();
+    });
+  });
+
 });
 </script>
 {% endblock %}

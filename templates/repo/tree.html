@@ -72,7 +72,7 @@
               <p class="alert alert-error"><img src="/static/img/icons/alert-triangle-yellow.png" alt="">没有源代码、二进制文件，或者没有查看源代码权限，半公开和私有项目需要申请成为成员才能查看源代码。</p>
             </td>
           </tr>
-        {% else %}
+        {% elif tree.tree %}
           {% for file_attrs in tree.tree %}
             <tr>
               <td class="icon">
@@ -103,6 +103,12 @@
               </td>
             </tr>
           {% endfor %}
+        {% else %}
+          <tr>
+            <td>
+              <p class="alert blank-alert"><i class="icon-bell"></i>没有提交源代码</p>
+            </td>
+          </tr>
         {% endif %}
       </tbody>
     </table>

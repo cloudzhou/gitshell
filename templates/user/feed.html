@@ -89,24 +89,16 @@
               } else if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
                 issue = feed.relative_obj;
                 action = '新建问题';
-                detail = '状态: 新建';
                 if(feed.feed_type == 300) {
                   action = '新建问题';
-                  detail = '状态: 新建';
                 } else if(feed.feed_type == 301) {
                   action = '更新问题';
-                  detail = '状态: 更新';
                 } else if(feed.feed_type == 302) {
                   action = '编辑问题';
-                  detail = feed.first_refname;
                 }
                 html.push('<section class="feed-item">');
                 html.push('<span class="feed-type issue">问题</span><figure class="avatar"><img src="https://gravatar.com/avatar/' + gravatar_userId_dict[feed.user_id] + '?s=32" alt=""></figure><div class="detail"><time class="date" pubdate="pubdate">' + moment(new Date(feed_timestamp[feed.id]*1000)).fromNow() + '</time><p class="title"><a href="/' + gravatar_userId_dict[feed.user_id + '_username'] + '/" class="author">' + gravatar_userId_dict[feed.user_id + '_username'] + '</a> ' + action + ' <a href="/' + issue.username + '/' + issue.reponame + '/issues/' + issue.id + '/" class="repo-name">' + issue.username + '/' + issue.reponame + '#' + issue.id + '</a></p>');
-                if(detail != '') {
-                    html.push('<p class="subject"><span>' + issue.subject + '</span><span class="action">' + detail + '</span></p></div>');
-                } else {
-                    html.push('<p class="subject"><span>' + issue.subject + '</span></p></div>');
-                }
+                html.push('<p class="subject"><span>' + issue.subject + '</span></p></div>');
                 html.push('</section>');
 
               } else if(feed.feed_type >= 100 && feed.feed_type <= 105) {

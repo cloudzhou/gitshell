@@ -31,13 +31,16 @@
           {% endif %}
         </ul>
       </li>
+    <li class="forked">
+      <p><span>forked from</span><a href="/">cloudzhou</a> / <a href="/cloudzhou/gitshell/">gitshell</a></p>
+    </li>
         {% comment %}
         {% if is_owner %}
         <sup class="{%if repo.dropbox_sync == 1%}synced{%endif%}"><a href="/{{user_name}}/{{repo_name}}/settings/#dropbox"><i class="icon-dropbox"></i></a></sup>
         {% endif %}
+        {% endcomment %}
 
         {# 以下是fork来源仓库 #}
-        {% comment %}
         {% if parent_repo or user_child_repo %}
         <div class="forked dropdown">
           <span class="dropdown-toggle" data-toggle="dropdown">
@@ -55,7 +58,6 @@
           </div>
         </div>
         {% endif %}
-        {% endcomment %}
     </ul>{# /breadcrumb #}
 
     <ul class="repo-actions">
@@ -72,16 +74,16 @@
 
             <dt class="span">
             {% if is_repo_member or is_teamMember %}
-            <a href="#" class="btn" id="urlType"><span>SSH</span><i class="icon-caret-down"></i></a>
+              <a href="#" class="btn" id="urlType"><span>HTTP</span><i class="icon-caret-down"></i></a>
               <ul class="nav nav-list" id="urlTypeMenu">
-                <li><a href="#" id="sshFork">SSH</a></li>
                 <li><a href="#" id="httpFork">HTTP</a></li>
+                <li><a href="#" id="sshFork">SSH</a></li>
                 {% if repo.auth_type == 0 %}
                   <li><a href="#" id="gitFork">GIT</a></li>
                 {% endif %}
               </ul>
             {% else %}
-              <a href="#" class="btn dropdown-toggle" id="urlType">HTTP<i class="icon-caret-down"></i></a>
+            <a href="#" class="btn dropdown-toggle" id="urlType">HTTP{% if repo.auth_type == 0 %}<i class="icon-caret-down"></i>{% endif %}</a>
               <ul class="dropdown-menu nav nav-list">
                 <li><a href="#" id="httpFork">HTTP</a></li>
                 {% if repo.auth_type == 0 %}
@@ -169,9 +171,11 @@
       }
     );
 
+
     $('#cloneUrlToggle').click(function(e){
       e.stopPropagation();
       $('#cloneMenu').toggle();
+      $('#urlData').addClass('selected').select();
     });
 
     $('#cloneMenu').children().click(function(e){
@@ -195,31 +199,32 @@
       var txt = $(this).text();
       $('#urlType').find('span').text(txt);
       $('#urlTypeMenu').hide();
+      $('#urlData').addClass('selected').select();
       switch(this.id) {
         case 'sshFork':
           $('#urlData').val('git@gitshell.com:{{user_name}}/{{repo_name}}.git');
-        //$('#urlInfo').text('读写');
-        break;
-      case 'httpFork':
-        $('#urlData').val('https://gitshell.com/{{user_name}}/{{repo_name}}.git');
-        //$('#urlInfo').text('读写');
-        break;
-      case 'gitFork':
-        $('#urlData').val('git://gitshell.com/{{user_name}}/{{repo_name}}.git');
-        //$('#urlInfo').text('只读');
-        break;
+          //$('#urlInfo').text('读写');
+          break;
+        case 'httpFork':
+          $('#urlData').val('https://gitshell.com/{{user_name}}/{{repo_name}}.git');
+          //$('#urlInfo').text('读写');
+          break;
+        case 'gitFork':
+          $('#urlData').val('git://gitshell.com/{{user_name}}/{{repo_name}}.git');
+          //$('#urlInfo').text('只读');
+          break;
       };
     });
 
-    $('#urlData').click(function() {
+    $('#urlData').mouseover(function() {
       $(this).addClass('selected').select();
     });
 
-    $('html').click(function(e){
-      if(e.target.id != 'urlData') {
-        $('#urlData').removeClass('selected');
-      }
-    });
+    // $('html').click(function(e){
+    //  if(e.target.id != 'urlData') {
+    //    $('#urlData').removeClass('selected');
+    //  }
+    // });
 
     //    $("#copy-btn").zclip({
     //      path: "/static/js/ZeroClipboard.swf",
@@ -255,7 +260,6 @@
         window.location = '/{{user.username}}/{{repo_name}}/';
       });
     });
-    $('.sidenav a.btn').tooltip();
     $('.branches .dropdown-toggle').click(function(event) {
       $('#i_git_url').select();
     });
@@ -273,7 +277,9 @@
       }
     );
 
-    });
+    $('.sidenav a.btn').tooltip();
+
+  });
 </script>
 {% block subjs %}{% endblock %}
 {% endblock %}

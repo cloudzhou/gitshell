@@ -13,34 +13,34 @@
       var branches = json.refs_meta.branches;
       var current_refs = '{{refs}}';
       if( branches.length > 0) {
-          html.push('<div class="header"><h2 class="heading">分支</h2>');
-          {% if is_repo_member %}
-            html.push('<a href="/{{user_name}}/{{repo_name}}/refs/create/master/#target_branch" class="btn btn-mini create">创建新分支</a><a href="#branch-manage" id="branchManage" class="btn btn-mini pull-right"><i class="icon-cog"></i><span>管理</span></a>');
-          {% endif %}
-          html.push('</div>');
-          for(x in branches) {
-            html.push('<section class="branch"><div class="summary">');
-            var branch = branches[x];
-            var commit = detail_commit[branch];
-            html.push('<h2 class="name"><a href="/{{user_name}}/{{repo_name}}/tree/' + branch + '">' + branch + '</a></h2>');
-            html.push('<p class="last-commit">' + commit.committer_name + ' <span class="date unixtime">' + commit.committer_date + '</span>更新:' + commit.commit_message + '</p></div>');
-            html.push('<ul class="actions">');
-            html.push('<li><a href="/{{user_name}}/{{repo_name}}/compare/' + branch + '/" class="btn btn-success branchAction btn-mini"><i class="icon-random"></i>比较</a></li>');
-            html.push('<li><a href="/{{user_name}}/{{repo_name}}/refs/graph/' + branch + '/" class="btn btn-mini branchAction"><i class="icon-adjust"></i>分支图</a></li>');
-            html.push('<li><a href="/{{user_name}}/{{repo_name}}/refs/create/' + branch + '/" class="btn btn-success btn-mini branchAction hide"><i class="icon-pencil"></i>创建新分支</a></li>');
-            if(branch != 'master') {
-              html.push('<li><a href="javascript:;" data-branch="' + branch + '"class="btn btn-danger btn-mini branchAction hide branchDelete"><i class="icon-remove"></i>删除</a></li>');
-            }
-            html.push('</ul>');
-            html.push('</section>');
+        html.push('<div class="header"><h2 class="heading">分支</h2>');
+        {% if is_repo_member %}
+          html.push('<a href="/{{user_name}}/{{repo_name}}/refs/create/master/#target_branch" class="btn btn-mini create">创建新分支</a><a href="#branch-manage" id="branchManage" class="btn btn-mini pull-right"><i class="icon-cog"></i><span>管理</span></a>');
+        {% endif %}
+        html.push('</div>');
+        for(x in branches) {
+          html.push('<section class="branch"><div class="summary">');
+          var branch = branches[x];
+          var commit = detail_commit[branch];
+          html.push('<h2 class="name"><a href="/{{user_name}}/{{repo_name}}/tree/' + branch + '">' + branch + '</a></h2>');
+          html.push('<p class="last-commit">' + commit.committer_name + ' <span class="date unixtime">' + commit.committer_date + '</span>更新:' + commit.commit_message + '</p></div>');
+          html.push('<ul class="actions">');
+          html.push('<li><a href="/{{user_name}}/{{repo_name}}/compare/' + branch + '/" class="btn btn-success branchAction btn-mini"><i class="icon-random"></i>比较</a></li>');
+          html.push('<li><a href="/{{user_name}}/{{repo_name}}/refs/graph/' + branch + '/" class="btn btn-mini branchAction"><i class="icon-adjust"></i>分支图</a></li>');
+          html.push('<li><a href="/{{user_name}}/{{repo_name}}/refs/create/' + branch + '/" class="btn btn-success btn-mini branchAction hide"><i class="icon-pencil"></i>创建新分支</a></li>');
+          if(branch != 'master') {
+            html.push('<li><a href="javascript:;" data-branch="' + branch + '"class="btn btn-danger btn-mini branchAction hide branchDelete"><i class="icon-remove"></i>删除</a></li>');
           }
-          $('#branches').append(html.join(''));
-          $('.unixtime').each(function(index){ 
-            $(this).html(moment(new Date($(this).html()*1000)).fromNow());
-            $(this).show();
-          });
+          html.push('</ul>');
+          html.push('</section>');
+        }
+        $('#branches').append(html.join(''));
+        $('.unixtime').each(function(index){ 
+          $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+          $(this).show();
+        });
       } else {
-        $('#branches').append('<p class="alert alert-error">没有分支，或者没有查看提交信息权限，<em>半公开和私有项目需要申请成为成员才能查看提交信息</em></p>');
+        $('#branches').append('<p class="alert blank-alert"><i class="icon-bell"></i>没有分支</p>');
       }
     });
 
@@ -51,14 +51,15 @@
           $(this).children('span').text( txt == '管理' ? '取消' : '管理' );
           $('.branchAction').toggle();
     });
-    $('.branchDelete').live('click',
-        function(){
-          var branch = $(this).data('branch');
-          var tr = $(this).parents('tr');
-          $.post('/{{user_name}}/{{repo_name}}/refs/branch/delete/' + branch + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            tr.hide();
-          });
+
+    $('.branchDelete').live('click', function(){
+      var branch = $(this).data('branch');
+      var tr = $(this).parents('tr');
+      $.post('/{{user_name}}/{{repo_name}}/refs/branch/delete/' + branch + '/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+        tr.hide();
+      });
     });
+
   });
 </script>
 {% endblock %}

@@ -17,11 +17,6 @@
     </div>
 		{% for issue in issues %}
 		<section class="issue">
-      {% comment %}
-			<figure class="avatar">
-        <img src="https://gravatar.com/avatar/{{issue.reporter_imgurl}}/?s=40" alt="{{issue.reporter_imgurl}}">
-			</figure>
-      {% endcomment %}
       <div class="tracker">
         <span class="label issue-id">#{{issue.id}}</span>
         <span class="label status {%if issue.status == "新建"%}open{%elif issue.status == "已指派"%}assigned{%elif issue.status == "进行中"%}processing{%elif issue.status == "已解决"%}resolved{%elif issue.status == "已关闭"%}closed{%elif issue.status == "已拒绝"%}rejected{%endif%}"><i class="icon-{%if issue.status == "新建"%}bookmark-empty{%elif issue.status == "已指派"%}resize-horizontal{%elif issue.status == "进行中"%}spinner{%elif issue.status == "已解决"%}ok{%elif issue.status == "已关闭"%}remove{%elif issue.status == "已拒绝"%}trash{%endif%}"></i>{{issue.status}}</span>

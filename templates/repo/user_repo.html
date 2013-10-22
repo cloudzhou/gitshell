@@ -17,36 +17,40 @@
 
       {% load humanize %}
 
-      {% for repo in repo_list %}
-        <section class="repo c_repo">
+      {% if repo_list %}
+        {% for repo in repo_list %}
+          <section class="repo c_repo">
 
-          <ul class="meta">
-            <li><a href="#"><span class="count">{{repo.commit}}</span><span class="meta-type">提交</span></a></li>
-            <li><a href="#"><span class="count">{{repo.fork}}</span><span class="meta-type">派生</span></a></li>
-            <li><a href="#"><span class="count">{{repo.watch}}</span><span class="meta-type">关注</span></a></li>
-          </ul>
+            <ul class="meta">
+              <li><a href="#"><span class="count">{{repo.commit}}</span><span class="meta-type">提交</span></a></li>
+              <li><a href="#"><span class="count">{{repo.fork}}</span><span class="meta-type">派生</span></a></li>
+              <li><a href="#"><span class="count">{{repo.watch}}</span><span class="meta-type">关注</span></a></li>
+            </ul>
 
-          <figure class="repo-avatar">
-            <img src="/static/img/repo-avatar48.png" alt="{{repo.name}}">
-            {% if repo.is_public %}
-            <span class="private"><i class="icon-unlock"></i></span>
-            {% else %}
-            <span class="private"><i class="icon-lock"></i></span>
-            {% endif %}
-          </figure>
-          <div class="summary">
-            <div class="heading">
-              <h3><a href="/{{user_name}}/{{repo.name}}/">{{repo.name}}</a></h3>
-              <p class="origin"><i class="icon-caret-right"></i>Fork自<a href="#">yuwen</a><span class="divider">/</span><a href="#">gitshell</a></p>
+            <figure class="repo-avatar">
+              <img src="/static/img/repo-avatar48.png" alt="{{repo.name}}">
+              {% if repo.is_public %}
+              <span class="private"><i class="icon-unlock"></i></span>
+              {% else %}
+              <span class="private"><i class="icon-lock"></i></span>
+              {% endif %}
+            </figure>
+            <div class="summary">
+              <div class="heading">
+                <h3><a href="/{{user_name}}/{{repo.name}}/">{{repo.name}}</a></h3>
+                <p class="origin"><i class="icon-caret-right"></i>Fork自<a href="#">yuwen</a><span class="divider">/</span><a href="#">gitshell</a></p>
+              </div>
+
+              <div class="detail">
+                <p class="desc" title="{{repo.desc}}">{{repo.desc|truncatechars:"80"}}</p>
+              </div>
             </div>
 
-            <div class="detail">
-              <p class="desc" title="{{repo.desc}}">{{repo.desc|truncatechars:"80"}}</p>
-            </div>
-          </div>
-
-        </section>
-      {% endfor %}
+          </section>
+        {% endfor %}
+      {% else %}
+      <p class="alert blank-alert"><i class="icon-bell"></i>你还没没有创建任何仓库。</p>
+      {% endif %}
 
     {% comment %}
     <aside class="sidebar">

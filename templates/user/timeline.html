@@ -111,23 +111,17 @@
 
                 // feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302)  #Issues#
                 if(feed.feed_type == 300 || feed.feed_type == 301 || feed.feed_type == 302) {
-                  var issue = feed.relative_obj;
-                  var action = '新建问题';
-                  var detail = '';
+                  issue = feed.relative_obj;
+                  action = '新建问题';
                   if(feed.feed_type == 300) {
                     action = '新建问题';
                   } else if(feed.feed_type == 301) {
                     action = '更新问题';
                   } else if(feed.feed_type == 302) {
                     action = '编辑问题';
-                    detail = feed.first_refname;
                   }
 
-                  html.push('<section class="feed-item"><span class="feed-type issue">问题</span><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt="{{userprofile.imgurl}}"></figure><div class="detail"><p class="title"><time class="date" pubdate="pubdate">' + moment(new Date(feed_timestamp[feed.id]*1000)).fromNow() + '</time>' + action + ' <a href="/' + issue.username + '/' + issue.reponame + '/issues/' + issue.id + '/">' + issue.username +'/' + issue.reponame + '#' + issue.id + '</a></p><p class="subject">' + issue.subject);
-                  if(detail != '') {
-                    html.push('<span class="action">' + detail + '</span>');
-                  }
-                  html.push('</p></div></section>');
+                  html.push('<section class="feed-item"><span class="feed-type issue">问题</span><figure class="avatar"><img src="https://gravatar.com/avatar/{{ userprofile.imgurl }}?s=32" alt="{{userprofile.imgurl}}"></figure><div class="detail"><p class="title"><time class="date" pubdate="pubdate">' + moment(new Date(feed_timestamp[feed.id]*1000)).fromNow() + '</time>' + action + ' <a href="/' + issue.username + '/' + issue.reponame + '/issues/' + issue.id + '/">' + issue.username +'/' + issue.reponame + '#' + issue.id + '</a></p><p class="subject">' + issue.subject + '</p></div></section>');
 
                   // feed.feed_type >= 100 && feed.feed_type <= 105 #Pull Request#
                 } else if(feed.feed_type >= 100 && feed.feed_type <= 105) {
