@@ -30,7 +30,10 @@
     <p class="alert alert-error"><i class="icon-bell"></i><em>没有找到该 Commit</em></p>
   </div>
   {% endif %}
-  <div id="diff"></div>
+  {% for parent_commit_hash in commit.parent_commit_hash %}
+  <pre class="shell">&gt; git diff {{parent_commit_hash}}...{{commit_hash}}</pre>
+  <div id="diff_{{parent_commit_hash}}"></div>
+  {% endfor %}
 
 </div>
 {% endblock %}
@@ -39,13 +42,13 @@
 <script>
   $(function(){
     var commit_hash = '{{commit_hash}}';
-    var parent_commit_hash = $('.parent_commit_hash').first().text();
-    var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
-    repoComparer.from_refs = parent_commit_hash;
-    repoComparer.to_refs = commit_hash;
-    repoComparer.path = '.';
-    repoComparer.loadDiff($('#diff'), null, function() { });
-    repoComparer.registerLineContextEvent($('#diff'));
+    {% for parent_commit_hash in commit.parent_commit_hash %}
+      var parent_commit_hash = '{{parent_commit_hash}}';
+      var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
+      repoComparer.from_refs = parent_commit_hash; repoComparer.to_refs = commit_hash; repoComparer.path = '.';
+      repoComparer.loadDiff($('#diff_{{parent_commit_hash}}'), null, function() { });
+      repoComparer.registerLineContextEvent($('#diff_{{parent_commit_hash}}'));
+    {% endfor %}
   });
 </script>
 {% endblock %}
