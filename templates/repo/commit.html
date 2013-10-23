@@ -21,7 +21,7 @@
     </div>
     <span class="hash span">父对象:
     {% for parent_commit_hash in commit.parent_commit_hash %}
-      <a href="/{{user_name}}/{{repo_name}}/commit/{{parent_commit_hash}}/" class="btn label-mini btn-info parent_commit_hash">{{parent_commit_hash}}</a>
+      <a href="/{{user_name}}/{{repo_name}}/commit/{{parent_commit_hash}}/" class="btn label-mini btn-mini btn-info parent_commit_hash">{{parent_commit_hash}}</a>
     {% endfor %}
     </span>
   </div>
