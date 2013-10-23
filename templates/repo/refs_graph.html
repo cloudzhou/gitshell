@@ -54,7 +54,7 @@
           var date_relative = log_graph_line.substring(indexOfs[3], indexOfs[4]+1);
           var author = '';
           new_log_graph_splits.push('<span class="c_line">' + log_graph_line.substring(indexOfs[0], indexOfs[1]) + '</span>');
-          new_log_graph_splits.push('<span class="c_commit_hash">' + commit_hash + '</span>');
+          new_log_graph_splits.push('<a href="/{{user_name}}/{{repo_name}}/commit/' + commit_hash + '/"><span class="c_commit_hash">' + commit_hash + '</span></a>');
           new_log_graph_splits.push(log_graph_line.substring(indexOfs[2], indexOfs[3]));
           new_log_graph_splits.push('<span class="c_commit">' + log_graph_line.substring(indexOfs[4]+1, indexOfs[5]) + '</span>');
           if(indexOfs[6] > indexOfs[5] && indexOfs[7] > indexOfs[6]) {
