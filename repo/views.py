@@ -1038,12 +1038,16 @@ def unstar(request, user_name, repo_name):
 @login_required
 def find(request):
     repo = None
-    is_repo_exist = True
+    status = -1
+    repo_id = request.POST.get('id')
+    if repo_id and re.match('\d+', repo_id):
+        repo = RepoManager.get_repo_by_id(int(repo_id))
     name = request.POST.get('name')
     if RepoManager.is_allowed_reponame_pattern(name):
         repo = RepoManager.get_repo_by_name(request.user.username, name)
-        is_repo_exist = (repo is not None)
-    return json_httpResponse({'is_repo_exist': is_repo_exist, 'name': name})
+    if repo:
+        status = repo.status
+    return json_httpResponse({'is_repo_exist': (repo is not None), 'id': repo_id, 'name': name, 'status': status})
 
 @login_required
 def create(request, user_name):

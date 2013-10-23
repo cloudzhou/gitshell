@@ -9,12 +9,21 @@
       <figure class="avatar"><img src="https://gravatar.com/avatar/{{commit.author_imgurl}}?s=40" alt="{{commit.committer_name}}"></figure>
       <div class="summary">
         <p class="msg"><a href="#">{{commit.commit_message|truncatechars:80}}</a></p>
-        <p class="meta"><a href="/{{commit.real_committer_name}}/">{{commit.committer_name}}</a> <span class="date unixtime">{{commit.committer_date}}</span></p>
+        <p class="meta">
+          {% if commit.real_committer_name %}
+            <a href="/{{commit.real_committer_name}}/">{{commit.committer_name}}</a>
+          {% else %}
+            <span>{{commit.committer_name}}</span>
+          {% endif %}
+          <span class="date unixtime">{{commit.committer_date}}</span>
+        </p>
       </div>
     </div>
+    <span class="hash span">父对象:
     {% for parent_commit_hash in commit.parent_commit_hash %}
-    <span class="hash span"><a href="/{{user_name}}/{{repo_name}}/commit/{{parent_commit_hash}}/" class="btn label-mini btn-info parent_commit_hash"><i>父级:</i>{{parent_commit_hash}}</a></span>
+      <a href="/{{user_name}}/{{repo_name}}/commit/{{parent_commit_hash}}/" class="btn label-mini btn-info parent_commit_hash">{{parent_commit_hash}}</a>
     {% endfor %}
+    </span>
   </div>
   {% else %}
   <div class="commit">
@@ -29,7 +38,6 @@
 {% block subjs %}
 <script>
   $(function(){
-    {# TODO add compare diff #}
     var commit_hash = '{{commit_hash}}';
     var parent_commit_hash = $('.parent_commit_hash').first().text();
     var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
@@ -37,6 +45,7 @@
     repoComparer.to_refs = commit_hash;
     repoComparer.path = '.';
     repoComparer.loadDiff($('#diff'), null, function() { });
+    repoComparer.registerLineContextEvent($('#diff'));
   });
 </script>
 {% endblock %}
