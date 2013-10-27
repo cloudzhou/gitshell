@@ -173,20 +173,14 @@ def add_member(request, username):
     teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
     if not teamMember or not teamMember.has_admin_rights():
         return _response_not_manage_rights(request)
+    teamMember = None
     username_or_email = request.POST.get('username_or_email', '')
-    member_user = None
     if '@' in username_or_email:
-        member_user = GsuserManager.get_userprofile_by_email(username_or_email)
-    if not member_user:
-        member_user = GsuserManager.get_userprofile_by_name(username_or_email)
-    if not member_user or member_user.is_team_account == 1:
-        return json_httpResponse({'code': 404, 'message': u'没有相关用户'})
-    member_user.is_join_team = 1
-    member_user.save()
-    exists_teamMember = TeamManager.get_teamMember_by_userId_teamUserId(member_user.id, teamUser.id)
-    if not exists_teamMember:
-        teamMember = TeamMember(team_user_id = teamUser.id, user_id = member_user.id, group_id = 0, permission = 2, is_admin = 0)
-        teamMember.save()
+        teamMember = TeamManager.add_teamMember_by_email(teamUser, username_or_email)
+    else:
+        teamMember = TeamManager.add_teamMember_by_username(teamUser, username_or_email)
+    if not teamMember:
+        return json_httpResponse({'code': 404, 'message': u'没有相关用户，不能是团队帐号'})
     return json_httpResponse({'code': 200, 'message': u'成功添加用户'})
 
 @login_required

@@ -394,16 +394,24 @@ def logout(request):
     return HttpResponseRedirect('/')
 
 def join(request, step):
+    joinForm = JoinForm()
+    return _join(request, joinForm, step)
+
+def join_via_ref(request, ref_hash):
+    joinForm = JoinForm(ref_hash=ref_hash)
+    return _join(request, joinForm, '0')
+
+def _join(request, joinForm, step):
     if step is None:
         step = '0'
     error = u''; title = u'注册'
-    joinForm = JoinForm()
     if step == '0' and request.method == 'POST':
         joinForm = JoinForm(request.POST)
         if joinForm.is_valid():
             email = joinForm.cleaned_data['email']
             username = joinForm.cleaned_data['username']
             password = joinForm.cleaned_data['password']
+            ref_hash = joinForm.cleaned_data['ref_hash']
             user_by_email = GsuserManager.get_user_by_email(email)
             user_by_username = GsuserManager.get_user_by_name(username)
             if user_by_email is None and user_by_username is None:
@@ -414,9 +422,9 @@ def join(request, step):
                 if not client_ip.startswith('192.168.') and client_ip != '127.0.0.1':
                     cache_join_client_ip_count = cache_join_client_ip_count + 1
                     cache.set(CacheKey.JOIN_CLIENT_IP % client_ip, cache_join_client_ip_count)
-                    if cache_join_client_ip_count < 6 and _create_user_and_authenticate(request, username, email, password, False):
+                    if cache_join_client_ip_count < 6 and _create_user_and_authenticate(request, username, email, password, ref_hash, False):
                         return HttpResponseRedirect('/join/3/')
-                Mailer().send_verify_account(email, username, password)
+                Mailer().send_verify_account(email, username, password, ref_hash)
                 goto = ''
                 email_suffix = email.split('@')[-1]
                 if email_suffix in COMMON_EMAIL_DOMAIN:
@@ -429,9 +437,10 @@ def join(request, step):
         email = cache.get(step + '_email')
         username = cache.get(step + '_username')
         password = cache.get(step + '_password')
+        ref_hash = cache.get(step + '_ref_hash')
         if email is None or username is None or password is None or not email_re.match(email) or not re.match("^[a-zA-Z0-9_-]+$", username) or username.startswith('-') or username in MAIN_NAVS:
             return HttpResponseRedirect('/join/4/')
-        if _create_user_and_authenticate(request, username, email, password, True):
+        if _create_user_and_authenticate(request, username, email, password, ref_hash, True):
             return HttpResponseRedirect('/join/3/')
         else:
             error = u'啊? 用户名或密码有误输入，注意大小写和前后空格。'
@@ -588,15 +597,13 @@ def _list_repo_count_dict(raw_per_commit, repo_dict, is_yourself):
         x['ratio'] = ratio
     return per_commits
 
-
-
 def __conver_to_recommends_vo(raw_recommends):
     user_ids = [x.from_user_id for x in raw_recommends]
     users_map = GsuserManager.map_users(user_ids)
     recommends_vo = [x.to_recommend_vo(users_map) for x in raw_recommends]
     return recommends_vo
 
-def _create_user_and_authenticate(request, username, email, password, is_verify):
+def _create_user_and_authenticate(request, username, email, password, ref_hash, is_verify):
     user = None
     try:
         user = User.objects.create_user(username, email, password)
@@ -612,6 +619,9 @@ def _create_user_and_authenticate(request, username, email, password, is_verify)
             userEmail = UserEmail(user_id = user.id, email = user.email, is_verify = is_verify, is_primary = 1, is_public = 1)
             userEmail.save()
             return True
+    if ref_hash:
+        GsuserManager.handle_user_via_refhash(user, ref_hash)
+        pass
     return False
 
 def _get_client_ip(request):

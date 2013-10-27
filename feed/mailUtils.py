@@ -57,11 +57,13 @@ class Mailer():
         body = u'Hi, %s：\n请访问下面的地址更改您在Gitshell的登录邮箱：\n%s\n----------\n此邮件由Gitshell系统发出，请勿直接回复。' % (user.username, active_url)
         self.send_mail(header, body, self.default_sender, [email])
 
-    def send_verify_account(self, email, username, password):
+    def send_verify_account(self, email, username, password, ref_hash):
         random_hash = '%032x' % random.getrandbits(128)
         cache.set(random_hash + '_email', email)
         cache.set(random_hash + '_username', username)
         cache.set(random_hash + '_password', password)
+        if ref_hash:
+            cache.set(random_hash + '_ref_hash', ref_hash)
         active_url = 'https://gitshell.com/join/%s/' % random_hash
         header = u'[Gitshell]注册邮件'
         body = u'Hi, Gitshell用户：\n感谢您选择了Gitshell，请访问下面的地址激活您在Gitshell的帐号：\n%s\n----------\n此邮件由Gitshell系统发出，请勿直接回复。' % active_url

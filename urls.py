@@ -89,6 +89,7 @@ urlpatterns = patterns('gitshell',
     url(r'^login/oauth/github/apply/?$', 'gsuser.views.login_github_apply'),
     url(r'^login/oauth/github/relieve/?$', 'gsuser.views.login_github_relieve'),
     url(r'^logout/?$', 'gsuser.views.logout'),
+    url(r'^join/ref/(\w+)/?$', 'gsuser.views.join_via_ref'),
     url(r'^join/?(\w+)?/?$', 'gsuser.views.join'),
     url(r'^resetpassword/?(\w+)?/?$', 'gsuser.views.resetpassword'),
 

@@ -79,6 +79,19 @@ class ThirdpartyUser(BaseModel):
     GITHUB = 1
     GOOGLE = 2
 
+class UserViaRef(BaseModel):
+    username = models.CharField(max_length=30, null=True)
+    email = models.CharField(max_length=75, null=True)
+    ref_type = models.IntegerField(default=0, null=True)
+    ref_hash = models.CharField(max_length=40, null=True)
+    ref_message = models.CharField(max_length=256, null=True)
+    first_refid = models.IntegerField(default=0)
+    first_refname = models.CharField(max_length=64, null=True)
+    second_refid = models.IntegerField(default=0)
+    second_refname = models.CharField(max_length=64, null=True)
+    third_refid = models.IntegerField(default=0)
+    third_refname = models.CharField(max_length=64, null=True)
+
 class UserEmail(BaseModel):
     user_id = models.IntegerField(default=0, null=False)
     email = models.CharField(max_length=75, null=True)
@@ -158,6 +171,23 @@ class GsuserManager():
     def get_thirdpartyUser_by_type_tpId(self, user_type, tp_id):
         thirdpartyUser = query_first(ThirdpartyUser, user_type, 'thirdpartyuser_s_userType_tpId', [user_type, tp_id]) 
         return thirdpartyUser
+
+    @classmethod
+    def handle_user_via_refhash(self, user, ref_hash):
+        userViaRefs = UserViaRef.objects.filter(ref_hash=ref_hash).[0: 1]
+        if len(userViaRefs) == 0:
+            return
+        userViaRef = userViaRefs[0]
+        # ref user by add team member via email
+        if userViaRef.ref_type == 0:
+            teamUser = GsuserManager.get_user_by_id(userViaRef.first_refid)
+            userprofile = GsuserManager.get_userprofile_by_id(user.id)
+            TeamManager.add_teamMember_by_userprofile(teamUser, userprofile)
+        # ref user by add repo member via email
+        elif userViaRef.ref_type == 1:
+            RepoManager.add_member(userViaRef.second_refid, user.username)
+        elif userViaRef.ref_type == 2:
+            pass
 
     @classmethod
     def list_useremail_by_userId(self, user_id):
