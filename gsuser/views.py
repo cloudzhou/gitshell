@@ -395,13 +395,14 @@ def logout(request):
 
 def join(request, step):
     joinForm = JoinForm()
-    return _join(request, joinForm, step)
+    return _join(request, joinForm, 'base', step)
 
 def join_via_ref(request, ref_hash):
-    joinForm = JoinForm(ref_hash=ref_hash)
-    return _join(request, joinForm, '0')
+    joinForm = JoinForm()
+    joinForm.fields['ref_hash'].initial = ref_hash
+    return _join(request, joinForm, 'ref', '0')
 
-def _join(request, joinForm, step):
+def _join(request, joinForm, joinVia, step):
     if step is None:
         step = '0'
     error = u''; title = u'注册'
@@ -444,7 +445,7 @@ def _join(request, joinForm, step):
             return HttpResponseRedirect('/join/3/')
         else:
             error = u'啊? 用户名或密码有误输入，注意大小写和前后空格。'
-    response_dictionary = {'step': step, 'error': error, 'title': title, 'joinForm': joinForm}
+    response_dictionary = {'step': step, 'error': error, 'title': title, 'joinForm': joinForm, 'joinVia': joinVia}
     return render_to_response('user/join.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -607,22 +608,20 @@ def _create_user_and_authenticate(request, username, email, password, ref_hash, 
     user = None
     try:
         user = User.objects.create_user(username, email, password)
+        if user is None or not user.is_active:
+            return False
     except IntegrityError, e:
         logger.exception(e)
         return False
-    if user is not None and user.is_active:
-        user = auth_authenticate(username=user.username, password=password)
-        if user is not None and user.is_active:
-            auth_login(request, user)
-            userprofile = Userprofile(id = user.id, username = user.username, email = user.email, imgurl = hashlib.md5(user.email.lower()).hexdigest())
-            userprofile.save()
-            userEmail = UserEmail(user_id = user.id, email = user.email, is_verify = is_verify, is_primary = 1, is_public = 1)
-            userEmail.save()
-            return True
+    user = auth_authenticate(username=user.username, password=password)
+    auth_login(request, user)
+    userprofile = Userprofile(id = user.id, username = user.username, email = user.email, imgurl = hashlib.md5(user.email.lower()).hexdigest())
+    userprofile.save()
+    userEmail = UserEmail(user_id = user.id, email = user.email, is_verify = is_verify, is_primary = 1, is_public = 1)
+    userEmail.save()
     if ref_hash:
         GsuserManager.handle_user_via_refhash(user, ref_hash)
-        pass
-    return False
+    return True
 
 def _get_client_ip(request):
     x_forwarded_for = request.META.get('X-Forwarded-For')
@@ -632,4 +631,4 @@ def _get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
-# TODO note: add email unique support ! UNIQUE KEY `email` (`email`) #
+# Note: add email unique support ! UNIQUE KEY `email` (`email`) #

@@ -174,7 +174,7 @@ class GsuserManager():
 
     @classmethod
     def handle_user_via_refhash(self, user, ref_hash):
-        userViaRefs = UserViaRef.objects.filter(ref_hash=ref_hash).[0: 1]
+        userViaRefs = UserViaRef.objects.filter(ref_hash=ref_hash)[0:1]
         if len(userViaRefs) == 0:
             return
         userViaRef = userViaRefs[0]

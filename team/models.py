@@ -73,10 +73,6 @@ class TeamManager():
         return teamMember
 
     @classmethod
-    def remove_teamMember(self, teamUser, user_id):
-        pass
-
-    @classmethod
     def get_teamMember_by_userId_teamUserId(self, user_id, team_user_id):
         teamMember = query_first(TeamMember, user_id, 'teammember_s_userId_teamUserId', [user_id, team_user_id])
         if not teamMember:

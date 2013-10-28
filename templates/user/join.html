@@ -39,6 +39,7 @@
                 {{ joinForm.email }}
                 <input type="password" maxlength="64" name="unencryptPassword" id="unencryptPassword" placeholder="密码区分大小写">
                 <span class="hide">{{ joinForm.password }}</span>
+                <span class="hide">{{ joinForm.ref_hash }}</span>
                 <button id="joinSubmit" class="btn btn-primary" type="submit">注册</button>
               </fieldset>
             </form>
@@ -52,7 +53,7 @@
         </header>
         <p class="alert alert-info" style="padding: 15px 10px;">我们已经发送了一封确认邮件到您的邮箱，您可以在<em>半小时</em>内激活。<a href="#" id="gotoA" target="_blank" class="btn btn-success hide">点击到<span id="gotoDomain"></span></a></p>
         <p>部分不友好的运营商可能会拦截邮件，所以您需要留意一下垃圾邮件。<a href="#" class="readmore"><i class="icon-double-angle-right"></i><span>没有收到邮件？</span></a></p>
-        <blockquote class="contact hide"><em>出乎您的意料，请再仔细检查</em>，但无论何时都可以与<a href="mailto:support@gitshell.com">support@gitshell.com</a>联络，或者在微博@我们<a target="_blank" href="http://weibo.com/gitshell">@gitshell</a>。</blockquote>
+        <blockquote class="contact hide"><em>出乎您的意料，请再仔细检查</em>，但无论何时都可以与 <a href="mailto:support@gitshell.com">support@gitshell.com</a> 联络，或者在微博 <a target="_blank" href="http://weibo.com/gitshell">@gitshell</a> 。</blockquote>
       </article>
     {% endifequal %}
 

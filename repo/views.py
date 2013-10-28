@@ -17,7 +17,7 @@ from django.utils.html import escape
 from django.forms.models import model_to_dict
 from gitshell.feed.feed import AttrKey, FeedAction
 from gitshell.feed.models import FeedManager, FEED_TYPE, NOTIF_TYPE
-from gitshell.repo.Forms import RepoForm, RepoMemberForm
+from gitshell.repo.Forms import RepoForm
 from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, PullRequest, PULL_STATUS, KEEP_REPO_NAME, REPO_PERMISSION
 from gitshell.gsuser.models import GsuserManager, Userprofile
@@ -588,27 +588,12 @@ def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, contex
     return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': path, 'diff': diff})
 
 @repo_permission_check
-def collaborator(request, user_name, repo_name):
+def members(request, user_name, repo_name):
     title = u'%s / %s / 协同者' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'collaborator'
-    error = u''
-    repoMemberForm = RepoMemberForm()
-    if request.method == 'POST' and request.user.is_authenticated():
-        repoMemberForm = RepoMemberForm(request.POST)
-        if repoMemberForm.is_valid():
-            username = repoMemberForm.cleaned_data['username'].strip()
-            action = repoMemberForm.cleaned_data['action']
-            if action == 'add_member':
-                length = len(RepoManager.list_repomember(repo.id))
-                if length < 10:
-                    RepoManager.add_member(repo.id, username)
-                else:
-                    error = u'成员数目不得超过10位'
-            if action == 'remove_member':
-                RepoManager.remove_member(repo.id, username)
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'members'
     user_id = request.user.id
     member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
     member_ids.insert(0, repo.user_id)
@@ -617,11 +602,48 @@ def collaborator(request, user_name, repo_name):
         member_ids.insert(0, user_id)
     merge_user_map = GsuserManager.map_users(member_ids)
     members_vo = [merge_user_map[o] for o in member_ids]
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'title': title, 'members_vo': members_vo, 'repoMemberForm': repoMemberForm}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'title': title, 'members_vo': members_vo}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/collaborator.html',
+    return render_to_response('repo/members.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+@login_required
+@repo_permission_check
+@require_http_methods(["POST"])
+def add_member(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        return json_httpResponse({'code': 403, 'result': 'failed', 'message': u'没有相关权限'})
+    username_or_email = request.POST.get('username_or_email')
+    user = None
+    if '@' in username_or_email:
+        user = GsuserManager.get_user_by_email(username_or_email)
+    else:
+        user = GsuserManager.get_user_by_name(username_or_email)
+    if not user:
+        return json_httpResponse({'code': 500, 'result': 'failed', 'message': u'没有相关用户，不能是团队账户'})
+    userprofile = GsuserManager.get_userprofile_by_id(user.id)
+    if not userprofile or userprofile.is_team_account == 1:
+        return json_httpResponse({'code': 500, 'result': 'failed', 'message': u'没有相关用户，不能是团队账户'})
+    length = len(RepoManager.list_repomember(repo.id))
+    if length < 100:
+        RepoManager.add_member(repo, user)
+        return json_httpResponse({'code': 200, 'result': 'ok', 'message': u'添加成员 %s 成功' % username_or_email})
+    else:
+        return json_httpResponse({'code': 500, 'result': 'failed', 'message': u'成员数目不得超过100位'})
+
+@login_required
+@repo_permission_check
+@require_http_methods(["POST"])
+def remove_member(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None or repo.user_id != request.user.id:
+        return json_httpResponse({'code': 403, 'result': 'failed', 'message': u'没有相关权限'})
+    username = request.POST.get('username')
+    user = GsuserManager.get_user_by_name(username)
+    RepoManager.remove_member(repo, user)
+    return json_httpResponse({'code': 200, 'result': 'ok', 'message': u'移除成员 %s 成功' % username})
 
 @repo_permission_check
 def pulse(request, user_name, repo_name):

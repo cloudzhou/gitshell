@@ -32,6 +32,3 @@ class RepoForm(forms.ModelForm):
             'auth_type': forms.RadioSelect(choices=AUTH_TYPE_CHOICES),
         }
 
-class RepoMemberForm(forms.Form):
-    username = forms.CharField(max_length=30)
-    action = forms.CharField(max_length=30)

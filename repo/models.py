@@ -323,23 +323,21 @@ class RepoManager():
         return None
 
     @classmethod
-    def add_member(self, repo_id, user_name):
-        user = GsuserManager.get_user_by_name(user_name)
-        if user is None:
+    def add_member(self, repo, user):
+        if repo is None or user is None or repo.user_id == user.id:
             return None
-        repoMember = self.get_repo_member(repo_id, user.id)
+        repoMember = self.get_repo_member(repo.id, user.id)
         if repoMember is None:
             repoMember = RepoMember()
-            repoMember.repo_id = repo_id
+            repoMember.repo_id = repo.id
             repoMember.user_id = user.id
             repoMember.save()
 
     @classmethod
-    def remove_member(self, repo_id, user_name):
-        user = GsuserManager.get_user_by_name(user_name)
-        if user is None:
+    def remove_member(self, repo, user):
+        if repo is None or user is None:
             return None
-        repoMember = self.get_repo_member(repo_id, user.id)
+        repoMember = self.get_repo_member(repo.id, user.id)
         if repoMember is not None:
             repoMember.visibly = 1
             repoMember.save()
