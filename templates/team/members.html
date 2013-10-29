@@ -32,7 +32,8 @@
       {% endfor %}
     </tbody>
   </table>
-  <p class="add-member"><input id="add-member" placeholder="成员的用户名或者邮箱"/><button class="add-team-member btn">添加新成员</button></p>
+  <p class="add-member"><input id="add-member" placeholder="成员的邮箱或者名字"/><button class="add-team-member btn">添加新成员</button></p>
+  <span id="alert" class="info hide"></span>
 {% endblock %}
 
 {% block js %}
@@ -60,7 +61,14 @@ $(function(){
     $('.add-team-member').click(function(){
         var username_or_email = $('#add-member').val();
         $.post('/{{teamUser.username}}/-/settings/team/member/add/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'username_or_email': username_or_email}, function(json){
-            window.location.href = '/{{teamUser.username}}/-/settings/members/';
+            if(json.code == 301) {
+                $('#alert').text(json.message);
+                $('#alert').show();
+            } else if (json.code != 200) {
+                alert(json.message);
+            } else {
+                window.location.href = '/{{teamUser.username}}/-/settings/members/';
+            }
         });
     });
 

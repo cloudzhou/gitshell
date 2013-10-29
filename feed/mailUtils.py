@@ -82,6 +82,11 @@ class Mailer():
         body = u'用户 %s 邀请您注册Gitshell，成为仓库 %s/%s 的成员：\n访问下面的地址注册Gitshell：\n%s\n----------\n此邮件由Gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % (inviter.username, repo.username, repo.name, join_url)
         self.send_mail(header, body, self.default_sender, [email])
 
+    def send_join_via_team_addmember(self, inviter, teamUser, email, join_url):
+        header = u'[Gitshell]%s邀请您加入团队 %s' % (inviter.username, teamUser.username)
+        body = u'用户 %s 邀请您注册Gitshell，成为团队 %s 的成员：\n访问下面的地址注册Gitshell：\n%s\n----------\n此邮件由Gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % (inviter.username, teamUser.username, join_url)
+        self.send_mail(header, body, self.default_sender, [email])
+
 NOTIF_MAIL_TEMPLATE = """<html lang="en"><head><meta charset="utf-8"><title>{{title}}</title></head><body>
 <div id=":vt" style="overflow: hidden;">
 <table border="0" cellspacing="0" cellpadding="0" width="552" style="border:1px solid #dedede;border-bottom:2px solid #dedede;margin:0 auto;background-color:#ffffff; min-width:600px;margin:0 auto;padding:39px;font-family:'Helvetica Neue',Helvetica,Arial,Sans-serif;font-size:13px;line-height:1.7;background-color:#f5f5f5;"><tbody>

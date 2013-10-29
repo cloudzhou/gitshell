@@ -68,7 +68,7 @@ class TeamManager():
         exists_teamMember = TeamManager.get_teamMember_by_userId_teamUserId(member_userprofile.id, teamUser.id)
         if exists_teamMember:
             return None
-        teamMember = TeamMember(team_user_id = teamUser.id, user_id = member_user.id, group_id = 0, permission = 2, is_admin = 0)
+        teamMember = TeamMember(team_user_id = teamUser.id, user_id = member_userprofile.id, group_id = 0, permission = 2, is_admin = 0)
         teamMember.save()
         return teamMember
 

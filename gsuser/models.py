@@ -1,5 +1,6 @@
 import time
 from django.db import models
+from django.core.validators import email_re
 from django.contrib.auth.models import User, UserManager
 from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, query_first, get, get_many, execute, count, countraw
