@@ -15,7 +15,7 @@ from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
 from gitshell.objectscache.models import CacheKey
 from gitshell.gsuser.Forms import LoginForm, JoinForm, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
-from gitshell.gsuser.models import UserEmail, Recommend, Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
+from gitshell.gsuser.models import UserEmail, Recommend, Userprofile, GsuserManager, ThirdpartyUser, REF_TYPE, COMMON_EMAIL_DOMAIN
 from gitshell.gsuser.middleware import MAIN_NAVS
 from gitshell.gsuser.utils import UrlRouter
 from gitshell.repo.models import RepoManager
@@ -400,6 +400,12 @@ def join(request, step):
 def join_via_ref(request, ref_hash):
     joinForm = JoinForm()
     joinForm.fields['ref_hash'].initial = ref_hash
+    userViaRef = GsuserManager.get_userViaRef_by_refhash(ref_hash)
+    if userViaRef and userViaRef.email:
+        joinForm.fields['email'].initial = userViaRef.email
+        joinForm.fields['username'].initial = userViaRef.email.split('@')[0]
+    if userViaRef and userViaRef.username:
+        joinForm.fields['username'].initial = userViaRef.username
     return _join(request, joinForm, 'ref', '0')
 
 def _join(request, joinForm, joinVia, step):
@@ -416,15 +422,18 @@ def _join(request, joinForm, joinVia, step):
             user_by_email = GsuserManager.get_user_by_email(email)
             user_by_username = GsuserManager.get_user_by_name(username)
             if user_by_email is None and user_by_username is None:
+                if ref_hash:
+                    userViaRef = GsuserManager.get_userViaRef_by_refhash(ref_hash)
+                    if userViaRef and _create_user_and_authenticate(request, username, email, password, ref_hash, True):
+                        return HttpResponseRedirect('/join/3/')
                 client_ip = _get_client_ip(request)
                 cache_join_client_ip_count = cache.get(CacheKey.JOIN_CLIENT_IP % client_ip)
                 if cache_join_client_ip_count is None:
                     cache_join_client_ip_count = 0
-                if not client_ip.startswith('192.168.') and client_ip != '127.0.0.1':
-                    cache_join_client_ip_count = cache_join_client_ip_count + 1
-                    cache.set(CacheKey.JOIN_CLIENT_IP % client_ip, cache_join_client_ip_count)
-                    if cache_join_client_ip_count < 6 and _create_user_and_authenticate(request, username, email, password, ref_hash, False):
-                        return HttpResponseRedirect('/join/3/')
+                cache_join_client_ip_count = cache_join_client_ip_count + 1
+                cache.set(CacheKey.JOIN_CLIENT_IP % client_ip, cache_join_client_ip_count)
+                if cache_join_client_ip_count < 10 and _create_user_and_authenticate(request, username, email, password, ref_hash, False):
+                    return HttpResponseRedirect('/join/3/')
                 Mailer().send_verify_account(email, username, password, ref_hash)
                 goto = ''
                 email_suffix = email.split('@')[-1]

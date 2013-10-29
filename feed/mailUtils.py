@@ -77,6 +77,10 @@ class Mailer():
         body = u'尊敬的Gitshell用户：\n如果您没有重置密码的请求，请忽略此邮件。访问下面的地址重置您在Gitshell的帐号密码：\n%s\n----------\n此邮件由Gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
         self.send_mail(header, body, self.default_sender, [email])
 
+    def send_join_via_repo_addmember(self, inviter, repo, email, join_url):
+        header = u'[Gitshell]%s邀请您参与仓库 %s/%s' % (inviter.username, repo.username, repo.name)
+        body = u'用户 %s 邀请您注册Gitshell，成为仓库 %s/%s 的成员：\n访问下面的地址注册Gitshell：\n%s\n----------\n此邮件由Gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % (inviter.username, repo.username, repo.name, join_url)
+        self.send_mail(header, body, self.default_sender, [email])
 
 NOTIF_MAIL_TEMPLATE = """<html lang="en"><head><meta charset="utf-8"><title>{{title}}</title></head><body>
 <div id=":vt" style="overflow: hidden;">

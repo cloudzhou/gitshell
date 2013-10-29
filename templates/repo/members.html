@@ -8,11 +8,11 @@
     <p class="note">所有成员对仓库有完全的读写权限</p>
     <div class="extra">
       <a href="javascript:;" id="add_member_tip" class="btn btn-mini"><i class="icon-plus-sign"></i>添加新成员</a>
-        <div id="name_input" class="fiels hide">
-          <input id="username_or_email" type="text" name="username_or_email" maxlength="30" placeholder="用户名或者邮箱">
-          <button id="add_member" type="submit" class="btn btn-success">添加</button>
-        </div>
-      </form>
+      <span id="alert" class="info hide"></span>
+      <div id="name_input" class="fiels hide">
+        <input id="username_or_email" type="text" name="username_or_email" maxlength="30" placeholder="输入邮箱或者用户名">
+        <button id="add_member" type="submit" class="btn btn-success">添加</button>
+      </div>
     </div>
   </div>
 
@@ -66,6 +66,9 @@
         $.post('/{{user_name}}/{{repo_name}}/add_member/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'username_or_email': username_or_email}, function(json){
             if(json.code == 200) {
                 window.location.href = window.location.href;
+            } else if(json.code == 301) {
+                $('#alert').text(json.message);
+                $('#alert').show();
             } else {
                 alert(json.message);
             }

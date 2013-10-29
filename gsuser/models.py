@@ -173,21 +173,32 @@ class GsuserManager():
         return thirdpartyUser
 
     @classmethod
-    def handle_user_via_refhash(self, user, ref_hash):
+    def get_userViaRef_by_refhash(self, ref_hash):
         userViaRefs = UserViaRef.objects.filter(ref_hash=ref_hash)[0:1]
         if len(userViaRefs) == 0:
-            return
+            return None
         userViaRef = userViaRefs[0]
+        return userViaRef
+
+    @classmethod
+    def handle_user_via_refhash(self, user, ref_hash):
+        from gitshell.repo.models import RepoManager
+        from gitshell.team.models import TeamManager
+        userViaRef = self.get_userViaRef_by_refhash(ref_hash)
+        if not userViaRef:
+            return
+        # ref user by add repo member via email
+        if userViaRef.ref_type == 1:
+            repo = RepoManager.get_repo_by_id(userViaRef.second_refid)
+            RepoManager.add_member(repo, user)
         # ref user by add team member via email
-        if userViaRef.ref_type == 0:
+        elif userViaRef.ref_type == 2:
             teamUser = GsuserManager.get_user_by_id(userViaRef.first_refid)
             userprofile = GsuserManager.get_userprofile_by_id(user.id)
             TeamManager.add_teamMember_by_userprofile(teamUser, userprofile)
-        # ref user by add repo member via email
-        elif userViaRef.ref_type == 1:
-            RepoManager.add_member(userViaRef.second_refid, user.username)
-        elif userViaRef.ref_type == 2:
+        elif userViaRef.ref_type == 3:
             pass
+        userViaRef.delete()
 
     @classmethod
     def list_useremail_by_userId(self, user_id):
@@ -241,6 +252,10 @@ class GsuserManager():
     @classmethod
     def get_recommend_by_id(self, rid):
         return get(Recommend, rid)
+
+class REF_TYPE:
+    VIA_REPO_MEMBER = 1
+    VIA_TEAM_MEMBER = 2
 
 COMMON_EMAIL_DOMAIN = {
     'qq.com': 'mail.qq.com',

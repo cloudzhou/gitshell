@@ -16,11 +16,12 @@ from django.core.exceptions import ValidationError
 from django.utils.html import escape
 from django.forms.models import model_to_dict
 from gitshell.feed.feed import AttrKey, FeedAction
+from gitshell.feed.mailUtils import Mailer
 from gitshell.feed.models import FeedManager, FEED_TYPE, NOTIF_TYPE
 from gitshell.repo.Forms import RepoForm
 from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, PullRequest, PULL_STATUS, KEEP_REPO_NAME, REPO_PERMISSION
-from gitshell.gsuser.models import GsuserManager, Userprofile
+from gitshell.gsuser.models import GsuserManager, Userprofile, UserViaRef, REF_TYPE
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.team.models import TeamManager
 from gitshell.stats import timeutils
@@ -615,10 +616,18 @@ def add_member(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
         return json_httpResponse({'code': 403, 'result': 'failed', 'message': u'没有相关权限'})
-    username_or_email = request.POST.get('username_or_email')
+    username_or_email = request.POST.get('username_or_email').strip()
     user = None
     if '@' in username_or_email:
         user = GsuserManager.get_user_by_email(username_or_email)
+        if not user:
+            ref_hash = '%032x' % random.getrandbits(128)
+            ref_message = u'用户 %s 邀请您注册Gitshell，成为仓库 %s/%s 的成员' % (request.user.username, repo.username, repo.name)
+            userViaRef = UserViaRef(email=username_or_email, ref_type=REF_TYPE.VIA_REPO_MEMBER, ref_hash=ref_hash, ref_message=ref_message, first_refid = repo.user_id, first_refname = repo.username, second_refid = repo.id, second_refname = repo.name)
+            userViaRef.save()
+            join_url = 'https://gitshell.com/join/ref/%s/' % ref_hash
+            Mailer().send_join_via_repo_addmember(request.user, repo, username_or_email, join_url)
+            return json_httpResponse({'code': 301, 'result': 'failed', 'message': u'邮箱 %s 未注册，已经发送邮件邀请对方注册' % username_or_email})
     else:
         user = GsuserManager.get_user_by_name(username_or_email)
     if not user:
