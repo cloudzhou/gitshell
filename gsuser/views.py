@@ -512,10 +512,13 @@ def bind(request, ref_hash):
         userViaRef = GsuserManager.get_userViaRef_by_refhash(ref_hash)
         GsuserManager.handle_user_via_refhash(request.user, ref_hash)
     if userViaRef:
+        is_verify = 1
         if userViaRef.ref_type == REF_TYPE.VIA_REPO_MEMBER:
+            GsuserManager.add_useremail(request.user, userViaRef.email, is_verify)
             return HttpResponseRedirect('/%s/%s/' % (userViaRef.first_refname, userViaRef.second_refname))
         elif userViaRef.ref_type == REF_TYPE.VIA_TEAM_MEMBER:
-            return HttpResponseRedirect('/%s/%s/' % (userViaRef.first_refname, userViaRef.second_refname))
+            GsuserManager.add_useremail(request.user, userViaRef.email, is_verify)
+            return HttpResponseRedirect('/%s/' % (userViaRef.first_refname))
     return HttpResponseRedirect('/dashboard/')
 
 def get_common_user_dict(request, gsuser, gsuserprofile):

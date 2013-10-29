@@ -220,6 +220,20 @@ class GsuserManager():
         return get(UserEmail, id)
 
     @classmethod
+    def add_useremail(self, user, email, is_verify):
+        useremails = self.list_useremail_by_userId(user.id)
+        if len(useremails) >= 50:
+            return None
+        for x in useremails:
+            if email == x.email:
+                return None
+        if not email or not email_re.match(email):
+            return None
+        userEmail = UserEmail(user_id = user.id, email = email, is_verify = is_verify, is_primary = 0, is_public = 1)
+        userEmail.save()
+        return userEmail
+
+    @classmethod
     def map_users(self, user_ids):
         users = self.list_user_by_ids(user_ids)
         userprofiles = self.list_userprofile_by_ids(user_ids)
