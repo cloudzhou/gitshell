@@ -395,20 +395,23 @@ def logout(request):
 
 def join(request, step):
     joinForm = JoinForm()
-    return _join(request, joinForm, 'base', step)
+    return _join(request, joinForm, 'base', '', step)
 
 def join_via_ref(request, ref_hash):
     joinForm = JoinForm()
     joinForm.fields['ref_hash'].initial = ref_hash
     userViaRef = GsuserManager.get_userViaRef_by_refhash(ref_hash)
+    tip = ''
+    if userViaRef:
+        tip = userViaRef.ref_message
     if userViaRef and userViaRef.email:
         joinForm.fields['email'].initial = userViaRef.email
         joinForm.fields['username'].initial = userViaRef.email.split('@')[0]
     if userViaRef and userViaRef.username:
         joinForm.fields['username'].initial = userViaRef.username
-    return _join(request, joinForm, 'ref', '0')
+    return _join(request, joinForm, 'ref', tip, '0')
 
-def _join(request, joinForm, joinVia, step):
+def _join(request, joinForm, joinVia, tip, step):
     if step is None:
         step = '0'
     error = u''; title = u'注册'
@@ -454,7 +457,7 @@ def _join(request, joinForm, joinVia, step):
             return HttpResponseRedirect('/join/3/')
         else:
             error = u'啊? 用户名或密码有误输入，注意大小写和前后空格。'
-    response_dictionary = {'step': step, 'error': error, 'title': title, 'joinForm': joinForm, 'joinVia': joinVia}
+    response_dictionary = {'step': step, 'error': error, 'title': title, 'joinForm': joinForm, 'joinVia': joinVia, 'tip': tip}
     return render_to_response('user/join.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -501,6 +504,19 @@ def resetpassword(request, step):
     return render_to_response('user/resetpassword.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+@login_required
+def bind(request, ref_hash):
+    userViaRef = None
+    if ref_hash:
+        userViaRef = GsuserManager.get_userViaRef_by_refhash(ref_hash)
+        GsuserManager.handle_user_via_refhash(request.user, ref_hash)
+    if userViaRef:
+        if userViaRef.ref_type == REF_TYPE.VIA_REPO_MEMBER:
+            return HttpResponseRedirect('/%s/%s/' % (userViaRef.first_refname, userViaRef.second_refname))
+        elif userViaRef.ref_type == REF_TYPE.VIA_TEAM_MEMBER:
+            return HttpResponseRedirect('/%s/%s/' % (userViaRef.first_refname, userViaRef.second_refname))
+    return HttpResponseRedirect('/dashboard/')
 
 def get_common_user_dict(request, gsuser, gsuserprofile):
     feedAction = FeedAction()

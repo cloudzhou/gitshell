@@ -19,8 +19,15 @@
     <div class="container">
     {% ifequal step '0' %}
       <div class="auth-container">
-        <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn btn-success github-btn"><i class="icon-github"></i>用 GitHub 账户直接登录</a>
+        {% if tip %}
+          <span class="btn btn-success">{{ tip }}</span>
+          {% if user.is_authenticated %}
+            您已经登录了，是否使用当前帐号绑定？<a href="/bind/{{joinForm.ref_hash.value}}/" class="btn btn-success github-btn">绑定</a>
+          {% endif %}
+        {% else %}
+          <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn btn-success github-btn"><i class="icon-github"></i>用 GitHub 账户直接登录</a>
           <div class="divider"><span>或</span></div>
+        {% endif %}
           <div id="alert" class="alert alert-error hide">
             <p id="usernameAlert" class="hide">用户名已经存在</p>
             <p id="usernameFormat" class="hide">用户名不符合规范，支持[a-zA-Z0-9_-]，不能以-开头</p>

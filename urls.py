@@ -91,6 +91,7 @@ urlpatterns = patterns('gitshell',
     url(r'^logout/?$', 'gsuser.views.logout'),
     url(r'^join/ref/(\w+)/?$', 'gsuser.views.join_via_ref'),
     url(r'^join/?(\w+)?/?$', 'gsuser.views.join'),
+    url(r'^bind/(\w+)/?$', 'gsuser.views.bind'),
     url(r'^resetpassword/?(\w+)?/?$', 'gsuser.views.resetpassword'),
 
     # help
