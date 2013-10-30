@@ -5,6 +5,7 @@ from gitshell.settings import BEANSTALK_HOST, BEANSTALK_PORT
 
 EVENT_TUBE_NAME = 'commit_event'
 FORK_TUBE_NAME = 'fork_event'
+HOOK_TUBE_NAME = 'hook_event'
 IMPORT_REPO_TUBE_NAME = 'import_repo_event'
 
 class EventManager():

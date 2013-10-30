@@ -16,13 +16,19 @@ def main():
     json_map['type'] = 0
     json_map['abspath'] = abspath
     json_map['revrefarr'] = rev_ref_arr
-    send_commit_event(json.dumps(json_map))
+    event = json.dumps(json_map)
+    send_commit_event(event)
+
+def switch(beanstalk, tube):
+    beanstalk.use(tube)
+    beanstalk.watch(tube)
+    beanstalk.ignore('default')
 
 def send_commit_event(event):
     beanstalk = beanstalkc.Connection(host='localhost', port=11300)
-    beanstalk.use('commit_event')
-    beanstalk.watch('commit_event')
-    beanstalk.ignore('default')
+    switch(beanstalk, 'commit_event')
+    beanstalk.put(event) 
+    switch(beanstalk, 'hook_event')
     beanstalk.put(event) 
 
 if __name__ == '__main__':
