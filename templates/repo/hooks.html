@@ -1,0 +1,90 @@
+{% extends "repo/repo.html" %}
+
+{% block subcontainer %}
+<div class="collaborator network inner bubble">
+
+  <div class="header">
+    <h1 class="heading">服务钩子列表</h1>
+    <p class="note">关于Service Hooks，请点击<a target="_blank" href="https://help.github.com/articles/post-receive-hooks">这里</a>了解</p>
+    <div class="extra">
+      <a href="javascript:;" id="add_url_tip" class="btn btn-mini"><i class="icon-plus-sign"></i>添加服务钩子</a>
+      <div id="url_input" class="fiels hide">
+        <input id="url" type="text" name="url" maxlength="1024" placeholder="输入服务钩子URL">
+        <button id="add_url" type="submit" class="btn btn-success">添加</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hookurls">
+      {%for webHookURL in webHookURLs%}
+        <div class="webHookURL">
+          <div class="url">
+            {{webHookURL.url}}
+          </div>
+          <div class="action">
+            {% if webHookURL.status == 0 %}
+            <button class="disable btn btn-mini btn-warning" data-hook-id="{{webHookURL.id}}">禁用</button>
+            {% else %}
+            <button class="enable btn btn-mini btn-primary" data-hook-id="{{webHookURL.id}}">启用</button>
+            {% endif %}
+            <button class="remove btn btn-mini btn-danger" data-hook-id="{{webHookURL.id}}">删除</button>
+          </div>
+        </div>
+      {%endfor%}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block subjs %}
+
+<script>
+  $(function(){
+    $('#add_url_tip').click(function(event) {
+        $(this).hide();
+        $('#url_input').show();
+        $('#url').focus();
+    });
+    $('#url').blur(function(event) {setTimeout(function(event) {
+        $('#url_input').hide();
+        $('#add_url_tip').show();
+    }, 300);});
+
+    function reload_or_alert_error(json) {
+        if(json.code == 200) {
+            window.location.href = window.location.href;
+            return;
+        }
+        alert(json.message);
+    }
+    $('#add_url').click(function(event) {
+        var url = $('#url').val();
+        var post_url = _.sprintf('/%s/%s/settings/hook/web_hook_url/add/', '{{user_name}}', '{{repo_name}}');
+        $.post(post_url, {csrfmiddlewaretoken: '{{ csrf_token }}', 'url': url}, function(json){
+            reload_or_alert_error(json);
+        });
+    });
+    $('.enable').click(function(event) {
+        var hook_id = $(this).data('hook-id');
+        var post_url = _.sprintf('/%s/%s/settings/hook/web_hook_url/%s/enable/', '{{user_name}}', '{{repo_name}}', hook_id);
+        $.post(post_url, {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            reload_or_alert_error(json);
+        });
+    });
+    $('.disable').click(function(event) {
+        var hook_id = $(this).data('hook-id');
+        var post_url = _.sprintf('/%s/%s/settings/hook/web_hook_url/%s/disable/', '{{user_name}}', '{{repo_name}}', hook_id);
+        $.post(post_url, {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            reload_or_alert_error(json);
+        });
+    });
+    $('.remove').click(function(event) {
+        var hook_id = $(this).data('hook-id');
+        var post_url = _.sprintf('/%s/%s/settings/hook/web_hook_url/%s/remove/', '{{user_name}}', '{{repo_name}}', hook_id);
+        $.post(post_url, {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            reload_or_alert_error(json);
+        });
+    });
+  });
+</script>
+{% endblock %}

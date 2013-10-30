@@ -63,7 +63,7 @@
     }, 300);});
     $('#add_member').click(function(event) {
         var username_or_email = $('#username_or_email').attr('value');
-        $.post('/{{user_name}}/{{repo_name}}/add_member/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'username_or_email': username_or_email}, function(json){
+        $.post('/{{user_name}}/{{repo_name}}/settings/member/add/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'username_or_email': username_or_email}, function(json){
             if(json.code == 200) {
                 window.location.href = window.location.href;
             } else if(json.code == 301) {
@@ -76,7 +76,7 @@
     });
     $('.remove_member').click(function(event) {
         var username = $(this).attr('value');
-        $.post('/{{user_name}}/{{repo_name}}/remove_member/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'username': username}, function(json){
+        $.post('/{{user_name}}/{{repo_name}}/settings/member/remove/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'username': username}, function(json){
             window.location.href = window.location.href;
         });
     });

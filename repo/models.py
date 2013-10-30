@@ -190,6 +190,12 @@ class PullRequestComment(BaseModel):
     username = ''
     reponame = ''
 
+class WebHookURL(BaseModel):
+    repo_id = models.IntegerField()
+    by_user_id = models.IntegerField()
+    url = models.CharField(max_length=1024, default='') 
+    status = models.IntegerField()
+    last_return_code = models.IntegerField()
 
 class RepoManager():
 
@@ -715,6 +721,16 @@ class RepoManager():
         if re.match('^[a-zA-Z0-9_\-\.]+$', name) and not name.startswith('-'):
             return True
         return False
+
+    @classmethod
+    def get_webHookURL_by_id(self, _id):
+        return get(WebHookURL, _id)
+
+    @classmethod
+    def list_webHookURL_by_repoId(self, repo_id):
+        offset = 0; row_count = 100
+        webHookURLs = query(WebHookURL, repo_id, 'webhookurl_l_repoId', [repo_id, offset, row_count])
+        return webHookURLs
 
     # ====================
     @classmethod
