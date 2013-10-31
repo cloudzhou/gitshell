@@ -14,7 +14,7 @@ from gitshell.repo.models import CommitHistory, Repo, RepoManager
 from gitshell.feed.models import Feed, NotifMessage, FeedManager
 from gitshell.feed.feed import FeedAction
 from gitshell.stats.models import StatsManager
-from gitshell.daemon.models import EventManager, EVENT_TUBE_NAME
+from gitshell.daemon.models import EventManager, EVENT_TUBE_NAME, HOOK_TUBE_NAME
 from gitshell.settings import REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT, logger
 from gitshell.objectscache.da import da_post_save
 
@@ -23,6 +23,7 @@ def start():
     logger.info('==================== START eventworker ====================')
     beanstalk = beanstalkc.Connection(host=BEANSTALK_HOST, port=BEANSTALK_PORT)
     EventManager.switch(beanstalk, EVENT_TUBE_NAME)
+    route_beanstalk_dict = init_route_beanstalk_dict()
     while True:
         event_job = beanstalk.reserve()
         try:
@@ -32,11 +33,24 @@ def start():
                 event_job.delete()
                 sys.exit(0)
             do_event(event)
+            do_route_event(route_beanstalk_dict, event_job)
         except Exception, e:
             logger.error('do_event catch except, event: %s' % event_job.body)
             logger.exception(e)
         event_job.delete()
     logger.info('==================== STOP eventworker ====================')
+
+def init_route_beanstalk_dict():
+    route_beanstalk_dict = {}
+    for tube_name in [HOOK_TUBE_NAME]:
+        beanstalk = beanstalkc.Connection(host=BEANSTALK_HOST, port=BEANSTALK_PORT)
+        EventManager.switch(beanstalk, tube_name)
+        route_beanstalk_dict[tube_name] = beanstalk
+    return route_beanstalk_dict
+
+def do_route_event(route_beanstalk_dict, event_job):
+    for tube_name, beanstalk in route_beanstalk_dict.iteritems():
+        beanstalk.put(event_job.body)
 
 # abspath is the repo hooks directory
 def do_event(event):

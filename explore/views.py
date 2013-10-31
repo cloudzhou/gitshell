@@ -12,8 +12,7 @@ from gitshell.stats.models import StatsManager
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
 from gitshell.feed.views import latest_feeds_as_json
-
-
+    
 def explore(request):
     repo_ids = get_hot_repo_ids()
     raw_repos = RepoManager.list_repo_by_ids(repo_ids)

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import re, time, os, sys, json
+import re, time, os, sys, json, httplib, urllib
 from urlparse import urlparse
 import beanstalkc
 from subprocess import Popen
@@ -15,6 +15,8 @@ from gitshell.daemon.models import EventManager, HOOK_TUBE_NAME
 from gitshell.settings import REPO_PATH, BEANSTALK_HOST, BEANSTALK_PORT, logger
 from gitshell.objectscache.da import da_post_save
 
+ACCEPT = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36'
 MAX_COMMIT_COUNT = 100
 def start():
     logger.info('==================== START eventworker ====================')
@@ -39,6 +41,7 @@ def start():
 def do_event(event):
     etype = event['type']
     if etype == 0:
+        abspath = event['abspath'].strip()
         (username, reponame) = get_username_reponame(abspath)
         if username == '' or reponame == '':
             return
@@ -64,7 +67,7 @@ def handle_push_webHookURL(gitHandler, abs_repo_path, user, repo, oldrev, newrev
     payload = {}
     payload['before'] = oldrev
     payload['after'] = newrev
-    payload['compare'] = 'https://gitshell.com/%s/%s/compare/%s...%s' % (repo.username, repo.name, oldrev, newrev)
+    payload['compare'] = 'https://gitshell.com/%s/%s/compare/%s...%s' % (repo.username, repo.name, newrev, oldrev)
     payload['created'] = (oldrev.startswith('0000000') and not newrev.startswith('0000000'))
     payload['deleted'] = (not oldrev.startswith('0000000') and newrev.startswith('0000000'))
     commits = []
@@ -82,14 +85,14 @@ def handle_push_webHookURL(gitHandler, abs_repo_path, user, repo, oldrev, newrev
 
 def commit_as_view(repo, commit):
     commit_view = {}
-    commit_view['id'] = commit.commit_hash
-    commit_view['timestamp'] = commit.committer_date
-    commit_view['message'] = commit.commit_message
-    commit_view['url'] = 'https://gitshell.com/%s/%s/commit/%s/' % (repo.username, repo.name, commit.commit_hash)
-    author = {'name': commit.author_name, 'email': commit.author_email}
-    author['username'] = get_gitshell_username(commit.author_name, commit.author_email)
-    committer = {'name': commit.committer_name, 'email': commit.committer_email}
-    committer['username'] = get_gitshell_username(commit.committer_name, commit.committer_email)
+    commit_view['id'] = commit['commit_hash']
+    commit_view['timestamp'] = long(commit['committer_date'])
+    commit_view['message'] = commit['commit_message']
+    commit_view['url'] = 'https://gitshell.com/%s/%s/commit/%s/' % (repo.username, repo.name, commit['commit_hash'])
+    author = {'name': commit['author_name'], 'email': commit['author_email']}
+    author['username'] = get_gitshell_username(commit['author_name'], commit['author_email'])
+    committer = {'name': commit['committer_name'], 'email': commit['committer_email']}
+    committer['username'] = get_gitshell_username(commit['committer_name'], commit['committer_email'])
     commit_view['author'] = author
     commit_view['committer'] = committer
     return commit_view
@@ -143,12 +146,14 @@ def post_payload(webHookURL, payload):
     try:
         parseResult = urlparse(url)
         scheme = parseResult.scheme; hostname = parseResult.hostname; port = parseResult.port; path = parseResult.path
+        if not port:
+            port = 80
         if scheme == 'https':
             connection = httplib.HTTPSConnection(hostname, port, timeout=10)
         else:
-            connection = httplib.HTTPSConnection(hostname, port, timeout=10)
+            connection = httplib.HTTPConnection(hostname, port, timeout=10)
         params = urllib.urlencode({'payload': payload})
-        headers = {'Content-type': 'application/x-www-form-urlencoded'}
+        headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': ACCEPT, 'User-Agent': USER_AGENT}
         connection.request('POST', path, params, headers)
         response = connection.getresponse()
         if webHookURL.last_return_code != response.status:
@@ -163,7 +168,6 @@ def post_payload(webHookURL, payload):
     return False
             
 def get_username_reponame(abspath):
-    abspath = event['abspath'].strip()
     if abspath.endswith('/'):
         abspath = abspath[0 : len(abspath)-1]
     rfirst_slash_idx = abspath.rfind('/')
@@ -194,7 +198,6 @@ def get_attrs(username, reponame):
 
 def stop():
     EventManager.send_stop_event(HOOK_TUBE_NAME)
-    print 'send stop event message...'
 
 def __cache_version_update(sender, **kwargs):
     da_post_save(kwargs['instance'])

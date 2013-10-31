@@ -15,7 +15,7 @@ def github_oauth_access_token(code):
     try:
         github_connection = httplib.HTTPSConnection('github.com', 443, timeout=10)
         params = urllib.urlencode({'client_id': GITHUB_CLIENT_ID, 'client_secret': GITHUB_CLIENT_SECRET, 'code': code})
-        headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+        headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json', 'User-Agent': USER_AGENT}
         github_connection.request('POST', '/login/oauth/access_token', params, headers)
         response = github_connection.getresponse()
         if response.status == 200:

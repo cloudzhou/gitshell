@@ -44,7 +44,7 @@
   <dd>
   <span class="option email">
     <select id="notifEmail">
-      <option disabled>选择接受邮箱</option>
+      <option disabled>选择接收邮箱</option>
       {% for x in useremails %}
         {% if x.is_verify == 1 %}
           <option value="{{x.email}}"{%if x.email == notifSetting.email%} selected="selected"{%endif%}>{{x.email}}</option>
