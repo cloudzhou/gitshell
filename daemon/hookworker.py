@@ -198,6 +198,7 @@ def get_attrs(username, reponame):
 
 def stop():
     EventManager.send_stop_event(HOOK_TUBE_NAME)
+    print 'send stop event message...'
 
 def __cache_version_update(sender, **kwargs):
     da_post_save(kwargs['instance'])
