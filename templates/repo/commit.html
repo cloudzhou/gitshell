@@ -19,21 +19,29 @@
         </p>
       </div>
     </div>
-    <span class="hash span">父对象:
-    {% for parent_commit_hash in commit.parent_commit_hash %}
-      <a href="/{{user_name}}/{{repo_name}}/commit/{{parent_commit_hash}}/" class="btn label-mini btn-mini btn-info parent_commit_hash">{{parent_commit_hash}}</a>
-    {% endfor %}
-    </span>
+    <div class="hash span">
+      <span>父对象</span>
+      {% for parent_commit_hash in commit.parent_commit_hash %}
+        <a href="/{{user_name}}/{{repo_name}}/commit/{{parent_commit_hash}}/" class="btn btn-mini parent_commit_hash">{{parent_commit_hash}}</a>
+      {% endfor %}
+    </div>
   </div>
+  <ul class="nav nav-tabs">
+    {% for parent_commit_hash in commit.parent_commit_hash %}
+      <li class="hash"><a href="#diff_{{parent_commit_hash}}" data-toggle="tab">{{parent_commit_hash}}</a></li>
+    {% endfor %}
+  </ul>
   {% else %}
   <div class="commit">
     <p class="alert alert-error"><i class="icon-bell"></i><em>没有找到该 Commit</em></p>
   </div>
   {% endif %}
-  {% for parent_commit_hash in commit.parent_commit_hash %}
-  <pre class="shell">&gt; git diff {{parent_commit_hash}}...{{commit_hash}}</pre>
-  <div id="diff_{{parent_commit_hash}}"></div>
-  {% endfor %}
+  <pre class="alert alert-info">$ git diff {{parent_commit_hash}}...{{commit_hash}}</pre>
+  <div class="tab-content">
+    {% for parent_commit_hash in commit.parent_commit_hash %}
+      <div id="diff_{{parent_commit_hash}}" class="tab-pane"></div>
+    {% endfor %}
+  </div>
 
 </div>
 {% endblock %}
@@ -49,6 +57,8 @@
       repoComparer.loadDiff($('#diff_{{parent_commit_hash}}'), null, function() { });
       repoComparer.registerLineContextEvent($('#diff_{{parent_commit_hash}}'));
     {% endfor %}
+    $('.commits .nav-tabs li:eq(0)').addClass('active');
+    $('[id^=diff_]').first().addClass('active');
   });
 </script>
 {% endblock %}

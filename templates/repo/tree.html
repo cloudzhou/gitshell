@@ -33,14 +33,12 @@
         {% elif tree.tree %}
           {% for file_attrs in tree.tree %}
             <tr>
-              <td class="icon">
-                {% if file_attrs.type == 'tree' %}
-                  <span><img src="/static/img/file_dir.png" alt="dir"></span>
-                {% else %}
-                  <span><img src="/static/img/file_txt.png" alt="file"></span>
-                {% endif %}
-              </td>
               <td class="file-name">
+                {% if file_attrs.type == 'tree' %}
+                  <span class="icon"><img src="/static/img/file_dir.png" alt="dir"></span>
+                {% else %}
+                  <span class="icon"><img src="/static/img/file_txt.png" alt="file"></span>
+                {% endif %}
                 <a href="/{{user_name}}/{{repo_name}}/{%if file_attrs.type == 'tree'%}tree{%else%}blob{%endif%}/{{refs}}/{%if path != '.' %}{{path}}{%endif%}{{file_attrs.relative_path}}" title="{{file_attrs.relative_path}}">{{file_attrs.relative_path}}</a>
               </td>
               <td class="commit-info">
