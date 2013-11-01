@@ -2,13 +2,15 @@
 
 {% block subcontainer %}
 <div class="collaborator network inner bubble">
-
+  <ul class="breadcrumb">
+    <li><a href="/{{user_name}}/{{repo_name}}/settings/"><i>&larr;</i>返回设置</a></li>
+  </ul>
   <div class="header">
     <h1 class="heading">仓库成员列表</h1>
     <p class="note">所有成员对仓库有完全的读写权限</p>
     <div class="extra">
       <a href="javascript:;" id="add_member_tip" class="btn btn-mini"><i class="icon-plus-sign"></i>添加新成员</a>
-      <span id="alert" class="info hide"></span>
+      <span id="alert" class="alert alert-error hide"></span>
       <div id="name_input" class="fiels hide">
         <input id="username_or_email" type="text" name="username_or_email" maxlength="30" placeholder="输入邮箱或者用户名">
         <button id="add_member" type="submit" class="btn btn-success">添加</button>
@@ -68,7 +70,7 @@
                 window.location.href = window.location.href;
             } else if(json.code == 301) {
                 $('#alert').text(json.message);
-                $('#alert').show();
+                $('#alert').show().delay(3000).fadeOut();
             } else {
                 alert(json.message);
             }

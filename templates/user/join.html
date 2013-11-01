@@ -5,53 +5,60 @@
 {% block container %}
   <div class="subhead">
     <div class="container">
-      <h2 class="heading">
-      {% ifequal step '3' %}
-        快速入门
-      {% else %}
-        注册
-      {% endifequal %}
-      </h2>
+      <h2 class="heading">{% ifequal step '3' %}快速入门{% else %}注册{% endifequal %}</h2>
     </div>
   </div>
 
   <div class="content">
     <div class="container">
     {% ifequal step '0' %}
-      <div class="auth-container">
-        {% if tip %}
-          <span class="btn btn-success">{{ tip }}</span>
+      {% if tip %}
+        <div class="invitation-tip alert alert-info" id="tipAlert">
           {% if user.is_authenticated %}
-            您已经登录了，是否使用当前帐号绑定？<a href="/bind/{{joinForm.ref_hash.value}}/" class="btn btn-success github-btn">绑定</a>
+            {{ tip }}是否用当前账户接受邀请？<a href="/bind/{{joinForm.ref_hash.value}}/" class="btn btn-mini btn-success">是的</a>
+          {% else %}
+            您在注册之后会直接被加入
           {% endif %}
-        {% else %}
-          <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn btn-success github-btn"><i class="icon-github"></i>用 GitHub 账户直接登录</a>
-          <div class="divider"><span>或</span></div>
-        {% endif %}
-          <div id="alert" class="alert alert-error hide">
-            <p id="usernameAlert" class="hide">用户名已经存在</p>
-            <p id="usernameFormat" class="hide">用户名不符合规范，支持[a-zA-Z0-9_-]，不能以-开头</p>
-            <p id="emailAlert" class="hide">邮箱已经存在</p>
-          </div>
-          {% if error %}
-            <div class="alert alert-warning">
-              <a data-dismiss="alert" class="close"><i class="icon-remove"></i></a>
-              <p><strong>出错了！</strong> {{ error }}</p>
-            </div>
-          {% endif %}
-            <form class="form" method="post">
-              <fieldset>
-                {% csrf_token %}
-                {{ joinForm.username }}
-                {{ joinForm.email }}
-                <input type="password" maxlength="64" name="unencryptPassword" id="unencryptPassword" placeholder="密码区分大小写">
-                <span class="hide">{{ joinForm.password }}</span>
-                <span class="hide">{{ joinForm.ref_hash }}</span>
-                <button id="joinSubmit" class="btn btn-primary" type="submit">注册</button>
-              </fieldset>
-            </form>
         </div>
-      {% endifequal %}
+      {% endif %}
+      <div class="auth-container">
+
+      {% if not tip %}
+        <a href="https://github.com/login/oauth/authorize?client_id=63bbd038b8591356a841" class="btn btn-success github-btn"><i class="icon-github"></i>用 GitHub 账户直接登录</a>
+        <div class="divider"><span>或</span></div>
+      {% endif %}
+
+      <div id="alert" class="alert alert-error hide">
+        <p id="usernameAlert" class="hide">用户名已经存在</p>
+        <p id="usernameFormat" class="hide">用户名不符合规范，支持[a-zA-Z0-9_-]，不能以-开头</p>
+        <p id="emailAlert" class="hide">邮箱已经存在</p>
+      </div>
+      {% if error %}
+        <div class="alert alert-warning">
+          <a data-dismiss="alert" class="close"><i class="icon-remove"></i></a>
+          <p><strong>出错了！</strong> {{ error }}</p>
+        </div>
+      {% endif %}
+      <form class="form{%if tip and user.is_authenticated %} hide{%endif%}" method="post">
+        <fieldset>
+          {% csrf_token %}
+          {{ joinForm.username }}
+          {{ joinForm.email }}
+          <input type="password" maxlength="64" name="unencryptPassword" id="unencryptPassword" placeholder="密码区分大小写">
+          <span class="hide">{{ joinForm.password }}</span>
+          <span class="hide">{{ joinForm.ref_hash }}</span>
+          <button id="joinSubmit" class="btn btn-primary" type="submit">{% if tip %}注册,然后加入{%else%}注册{%endif%}</button>
+        </fieldset>
+      </form>
+      {% if tip and user.is_authenticated %}
+        <div class="divider"><span>或</span></div>
+        <p><a href="javascript:;" id="newReg">用{{joinForm.email.value}}加入？</a></p>
+      {% endif %}
+      {% if tip and not user.is_authenticated %}
+        <p>我已经有账户,不想再注册,<a href="/login/">登录</a></p>
+      {% endif %}
+      </div>
+    {% endifequal %}
 
     {% ifequal step '1' %}
       <article class="guide">
@@ -150,6 +157,7 @@ cat ~/.ssh/gitshell.com_rsa.pub</pre>
     </section>
   </article>
   {% endifequal %}
+
   {% ifequal step '4' %}
   <div class="guide failure">
     <div class="alert alert-warning">
@@ -239,7 +247,21 @@ cat ~/.ssh/gitshell.com_rsa.pub</pre>
           $(this).find('i').removeClass('icon-double-angle-down').addClass('icon-double-angle-right').end().find('span').text('没有收到邮件?');
           $('blockquote.contact').slideUp(100);
         }
-        );
+    );
+
+    $('#newReg').click(
+      function(e){
+        e.preventDefault();
+        var newRegTxt = $(this).text();
+        if(newRegTxt != '用当前账户加入?') {
+          $(this).text('用当前账户加入?');
+        } else {
+          $(this).text('用{{joinForm.email.value}}加入?');
+        }
+        $('#tipAlert').slideToggle(100);
+        $('.form').slideToggle(100);
+      }
+    );
   });
 </script>
 {% endblock %}

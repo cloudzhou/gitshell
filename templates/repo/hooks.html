@@ -1,36 +1,42 @@
 {% extends "repo/repo.html" %}
 
 {% block subcontainer %}
-<div class="collaborator network inner bubble">
-
+<div class="hooks inner bubble">
+  <ul class="breadcrumb">
+    <li><a href="/{{user_name}}/{{repo_name}}/settings/"><i>&larr;</i>返回设置</a></li>
+  </ul>
   <div class="header">
     <h1 class="heading">服务钩子列表</h1>
-    <p class="note">关于Service Hooks，请点击<a target="_blank" href="https://help.github.com/articles/post-receive-hooks">这里</a>了解</p>
+    <p class="note"><a target="_blank" href="https://help.github.com/articles/post-receive-hooks">什么是服务钩子?</a></p>
     <div class="extra">
       <a href="javascript:;" id="add_url_tip" class="btn btn-mini"><i class="icon-plus-sign"></i>添加服务钩子</a>
-      <div id="url_input" class="fiels hide">
-        <input id="url" type="text" name="url" maxlength="1024" placeholder="输入服务钩子URL">
+      <div id="url_input" class="fields hide">
+        <input id="url" type="text" name="url" maxlength="1024" placeholder="http(s)://example.com">
         <button id="add_url" type="submit" class="btn btn-success">添加</button>
       </div>
     </div>
   </div>
 
-  <div class="hookurls">
-      {%for webHookURL in webHookURLs%}
-        <div class="webHookURL">
-          <div class="url">
-            {{webHookURL.url}}
-          </div>
-          <div class="action">
-            {% if webHookURL.status == 0 %}
-            <button class="disable btn btn-mini btn-warning" data-hook-id="{{webHookURL.id}}">禁用</button>
-            {% else %}
-            <button class="enable btn btn-mini btn-primary" data-hook-id="{{webHookURL.id}}">启用</button>
-            {% endif %}
-            <button class="remove btn btn-mini btn-danger" data-hook-id="{{webHookURL.id}}">删除</button>
-          </div>
-        </div>
-      {%endfor%}
+  <div class="hookurls{% if not webHookURLs %} well{%endif%}">
+    {% if webHookURLs %}
+      <ul class="webhook-url">
+        {%for webHookURL in webHookURLs%}
+          <li>
+            <div class="action">
+              {% if webHookURL.status == 0 %}
+              <button class="disable btn btn-mini btn-warning" data-hook-id="{{webHookURL.id}}">禁用</button>
+              {% else %}
+              <button class="enable btn btn-mini btn-primary" data-hook-id="{{webHookURL.id}}">启用</button>
+              {% endif %}
+              <button class="remove btn btn-mini btn-danger" data-hook-id="{{webHookURL.id}}">删除</button>
+            </div>
+          <p class="url"><a href="{{webHookURL.url}}" target="_blank">{{webHookURL.url}}</a></p>
+          </li>
+        {%endfor%}
+      </ul>
+    {% else %}
+      <p class="alert blank-alert"><i class="icon-bell"></i>没有服务钩子</p>
+    {% endif %}
   </div>
 
 </div>
