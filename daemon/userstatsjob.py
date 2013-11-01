@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import os, threading, shutil, sys, json
+import os, threading, shutil, sys, json, re
 from django.contrib.auth.models import User, UserManager
 from gitshell.repo.models import RepoManager, CommitHistory
 from gitshell.issue.models import IssueManager, Issue
@@ -11,6 +11,8 @@ def start():
     for user in users:
         userprofile = GsuserManager.get_userprofile_by_id(user.id)
         if not userprofile:
+            continue
+        if not re.match('[a-zA-Z0-9-_]+', user.username):
             continue
         userstats = {}
         userstats['username'] = user.username
