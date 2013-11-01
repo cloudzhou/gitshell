@@ -73,7 +73,7 @@
 
             <dd class="url-holder">
             {% if is_repo_member or is_teamMember %}
-            <input class="middle" id="urlData" type="text" value="https://{{user_name}}@gitshell.com/{{user_name}}/{{repo_name}}.git" readonly="readonly">
+            <input class="middle" id="urlData" type="text" value="https://gitshell.com/{{user_name}}/{{repo_name}}.git" readonly="readonly">
             {% elif repo.auth_type == 0 %}
             <input class="middle" id="urlData" type="text" value="git@gitshell.com:{{user_name}}/{{repo_name}}.git" readonly="readonly">
             {% endif %}
