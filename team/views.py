@@ -1,6 +1,6 @@
 #!/bin/python
 # -*- coding: utf-8 -*-  
-import re, json, time, copy
+import re, json, time, copy, random
 from sets import Set
 from django.template import RequestContext
 from django.forms.models import model_to_dict
@@ -11,10 +11,11 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.http import require_http_methods
 from gitshell.feed.feed import FeedAction, PositionKey, AttrKey
 from gitshell.feed.models import Feed, FeedManager
+from gitshell.feed.mailUtils import Mailer
 from gitshell.repo.models import RepoManager, Repo
 from gitshell.issue.models import IssueManager, Issue, IssueComment
 from gitshell.issue.cons import conver_issues
-from gitshell.gsuser.models import GsuserManager
+from gitshell.gsuser.models import GsuserManager, UserViaRef, REF_TYPE
 from gitshell.gsuser.views import get_feeds_as_json
 from gitshell.gssettings.Form import TeamprofileForm
 from gitshell.team.models import TeamManager, TeamMember
@@ -173,20 +174,23 @@ def add_member(request, username):
     teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
     if not teamMember or not teamMember.has_admin_rights():
         return _response_not_manage_rights(request)
+    teamMember = None
     username_or_email = request.POST.get('username_or_email', '')
-    member_user = None
     if '@' in username_or_email:
-        member_user = GsuserManager.get_userprofile_by_email(username_or_email)
-    if not member_user:
-        member_user = GsuserManager.get_userprofile_by_name(username_or_email)
-    if not member_user or member_user.is_team_account == 1:
-        return json_httpResponse({'code': 404, 'message': u'没有相关用户'})
-    member_user.is_join_team = 1
-    member_user.save()
-    exists_teamMember = TeamManager.get_teamMember_by_userId_teamUserId(member_user.id, teamUser.id)
-    if not exists_teamMember:
-        teamMember = TeamMember(team_user_id = teamUser.id, user_id = member_user.id, group_id = 0, permission = 2, is_admin = 0)
-        teamMember.save()
+        user = GsuserManager.get_user_by_email(username_or_email)
+        if not user:
+            ref_hash = '%032x' % random.getrandbits(128)
+            ref_message = u'用户 %s 邀请您注册Gitshell，成为团队 %s 的成员' % (request.user.username, username)
+            userViaRef = UserViaRef(email=username_or_email, ref_type=REF_TYPE.VIA_TEAM_MEMBER, ref_hash=ref_hash, ref_message=ref_message, first_refid = teamUser.id, first_refname = teamUser.username)
+            userViaRef.save()
+            join_url = 'https://gitshell.com/join/ref/%s/' % ref_hash
+            Mailer().send_join_via_team_addmember(request.user, teamUser, username_or_email, join_url)
+            return json_httpResponse({'code': 301, 'result': 'failed', 'message': u'邮箱 %s 未注册，已经发送邮件邀请对方注册' % username_or_email})
+        teamMember = TeamManager.add_teamMember_by_email(teamUser, username_or_email)
+    else:
+        teamMember = TeamManager.add_teamMember_by_username(teamUser, username_or_email)
+    if not teamMember:
+        return json_httpResponse({'code': 404, 'message': u'没有相关用户，不能是团队帐号'})
     return json_httpResponse({'code': 200, 'message': u'成功添加用户'})
 
 @login_required

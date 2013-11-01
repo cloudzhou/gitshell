@@ -1,5 +1,6 @@
 import time
 from django.db import models
+from django.core.validators import email_re
 from django.contrib.auth.models import User, UserManager
 from gitshell.objectscache.models import BaseModel
 from gitshell.objectscache.da import query, query_first, get, get_many, execute, count, countraw
@@ -78,6 +79,19 @@ class ThirdpartyUser(BaseModel):
     github_user_info = {}
     GITHUB = 1
     GOOGLE = 2
+
+class UserViaRef(BaseModel):
+    username = models.CharField(max_length=30, null=True)
+    email = models.CharField(max_length=75, null=True)
+    ref_type = models.IntegerField(default=0, null=True)
+    ref_hash = models.CharField(max_length=40, null=True)
+    ref_message = models.CharField(max_length=256, null=True)
+    first_refid = models.IntegerField(default=0)
+    first_refname = models.CharField(max_length=64, null=True)
+    second_refid = models.IntegerField(default=0)
+    second_refname = models.CharField(max_length=64, null=True)
+    third_refid = models.IntegerField(default=0)
+    third_refname = models.CharField(max_length=64, null=True)
 
 class UserEmail(BaseModel):
     user_id = models.IntegerField(default=0, null=False)
@@ -160,6 +174,34 @@ class GsuserManager():
         return thirdpartyUser
 
     @classmethod
+    def get_userViaRef_by_refhash(self, ref_hash):
+        userViaRefs = UserViaRef.objects.filter(ref_hash=ref_hash)[0:1]
+        if len(userViaRefs) == 0:
+            return None
+        userViaRef = userViaRefs[0]
+        return userViaRef
+
+    @classmethod
+    def handle_user_via_refhash(self, user, ref_hash):
+        from gitshell.repo.models import RepoManager
+        from gitshell.team.models import TeamManager
+        userViaRef = self.get_userViaRef_by_refhash(ref_hash)
+        if not userViaRef:
+            return
+        # ref user by add repo member via email
+        if userViaRef.ref_type == 1:
+            repo = RepoManager.get_repo_by_id(userViaRef.second_refid)
+            RepoManager.add_member(repo, user)
+        # ref user by add team member via email
+        elif userViaRef.ref_type == 2:
+            teamUser = GsuserManager.get_user_by_id(userViaRef.first_refid)
+            userprofile = GsuserManager.get_userprofile_by_id(user.id)
+            TeamManager.add_teamMember_by_userprofile(teamUser, userprofile)
+        elif userViaRef.ref_type == 3:
+            pass
+        userViaRef.delete()
+
+    @classmethod
     def list_useremail_by_userId(self, user_id):
         user = GsuserManager.get_userprofile_by_id(user_id)
         userEmails = query(UserEmail, user_id, 'useremail_l_userId', [user_id]) 
@@ -177,6 +219,20 @@ class GsuserManager():
     @classmethod
     def get_useremail_by_id(self, id):
         return get(UserEmail, id)
+
+    @classmethod
+    def add_useremail(self, user, email, is_verify):
+        useremails = self.list_useremail_by_userId(user.id)
+        if len(useremails) >= 50:
+            return None
+        for x in useremails:
+            if email == x.email:
+                return None
+        if not email or not email_re.match(email):
+            return None
+        userEmail = UserEmail(user_id = user.id, email = email, is_verify = is_verify, is_primary = 0, is_public = 1)
+        userEmail.save()
+        return userEmail
 
     @classmethod
     def map_users(self, user_ids):
@@ -211,6 +267,10 @@ class GsuserManager():
     @classmethod
     def get_recommend_by_id(self, rid):
         return get(Recommend, rid)
+
+class REF_TYPE:
+    VIA_REPO_MEMBER = 1
+    VIA_TEAM_MEMBER = 2
 
 COMMON_EMAIL_DOMAIN = {
     'qq.com': 'mail.qq.com',

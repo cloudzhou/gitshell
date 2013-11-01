@@ -50,6 +50,29 @@ class TeamManager():
         return False
 
     @classmethod
+    def add_teamMember_by_email(self, teamUser, email):
+        member_userprofile = GsuserManager.get_userprofile_by_email(email)
+        return self.add_teamMember_by_userprofile(teamUser, member_userprofile)
+
+    @classmethod
+    def add_teamMember_by_username(self, teamUser, username):
+        member_userprofile = GsuserManager.get_userprofile_by_name(username)
+        return self.add_teamMember_by_userprofile(teamUser, member_userprofile)
+
+    @classmethod
+    def add_teamMember_by_userprofile(self, teamUser, member_userprofile):
+        if not teamUser or not member_userprofile or member_userprofile.is_team_account == 1:
+            return None
+        member_userprofile.is_join_team = 1
+        member_userprofile.save()
+        exists_teamMember = TeamManager.get_teamMember_by_userId_teamUserId(member_userprofile.id, teamUser.id)
+        if exists_teamMember:
+            return None
+        teamMember = TeamMember(team_user_id = teamUser.id, user_id = member_userprofile.id, group_id = 0, permission = 2, is_admin = 0)
+        teamMember.save()
+        return teamMember
+
+    @classmethod
     def get_teamMember_by_userId_teamUserId(self, user_id, team_user_id):
         teamMember = query_first(TeamMember, user_id, 'teammember_s_userId_teamUserId', [user_id, team_user_id])
         if not teamMember:

@@ -114,19 +114,12 @@ def emails(request):
 @login_required
 @require_http_methods(["POST"])
 def email_add(request):
-    print 'email_add'
-    useremails = GsuserManager.list_useremail_by_userId(request.user.id)
-    if len(useremails) >= 50:
-        return json_httpResponse({'code': 500, 'message': 'hit max email count(50)'})
+    is_verify = 0
     email = request.POST.get('email')
-    for x in useremails:
-        if email == x.email:
-            return json_httpResponse({'code': 500, 'message': u'%s已经添加过了' % email})
-    user = request.user
-    if email and email_re.match(email):
-        userEmail = UserEmail(user_id = user.id, email = email, is_verify = 0, is_primary = 0, is_public = 1)
-        userEmail.save()
-    return json_httpResponse({'code': 200, 'message': u'成功添加邮箱' + email})
+    userEmail = GsuserManager.add_useremail(request.user, email, is_verify)
+    if not userEmail:
+        return json_httpResponse({'code': 500, 'message': '绑定邮箱个数最多50个，确定邮箱格式正确和未被绑定'})
+    return json_httpResponse({'code': 200, 'message': u'成功添加邮箱 ' + email})
 
 @login_required
 @require_http_methods(["POST"])

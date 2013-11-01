@@ -21,6 +21,7 @@ table_ptkey_field = {
     'repo_forkhistory': 'repo_id',
     'repo_watchhistory': 'user_id',
     'repo_pullrequest': 'desc_repo_id',
+    'repo_webhookurl': 'repo_id',
     'issue_issue': 'repo_id',
     'issue_issuecomment': 'issue_id',
     'stats_statsrepo': 'repo_id',
@@ -113,6 +114,9 @@ rawsql = {
         'select * from repo_star where visibly = 0 and user_id = %s and star_user_id = %s limit 0, 1',
     'star_s_repo':
         'select * from repo_star where visibly = 0 and user_id = %s and star_repo_id = %s limit 0, 1',
+    # repo_webhookurl #
+    'webhookurl_l_repoId':
+        'select * from repo_webhookurl where visibly = 0 and repo_id = %s order by status asc, modify_time desc limit %s, %s',
     # issue_issue #
     'issue_l_cons_modify':
         'select * from issue_issue where visibly = 0 and repo_id = %s order by modify_time desc limit %s, %s',

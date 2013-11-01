@@ -15,7 +15,7 @@ from django.contrib.auth.models import User, UserManager, check_password
 from django.db import IntegrityError
 from gitshell.objectscache.models import CacheKey
 from gitshell.gsuser.Forms import LoginForm, JoinForm, ResetpasswordForm0, ResetpasswordForm1, SkillsForm, RecommendsForm
-from gitshell.gsuser.models import UserEmail, Recommend, Userprofile, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
+from gitshell.gsuser.models import UserEmail, Recommend, Userprofile, GsuserManager, ThirdpartyUser, REF_TYPE, COMMON_EMAIL_DOMAIN
 from gitshell.gsuser.middleware import MAIN_NAVS
 from gitshell.gsuser.utils import UrlRouter
 from gitshell.repo.models import RepoManager
@@ -394,29 +394,50 @@ def logout(request):
     return HttpResponseRedirect('/')
 
 def join(request, step):
+    joinForm = JoinForm()
+    return _join(request, joinForm, 'base', '', step)
+
+def join_via_ref(request, ref_hash):
+    joinForm = JoinForm()
+    joinForm.fields['ref_hash'].initial = ref_hash
+    userViaRef = GsuserManager.get_userViaRef_by_refhash(ref_hash)
+    tip = ''
+    if userViaRef:
+        tip = userViaRef.ref_message
+    if userViaRef and userViaRef.email:
+        joinForm.fields['email'].initial = userViaRef.email
+        joinForm.fields['username'].initial = userViaRef.email.split('@')[0]
+    if userViaRef and userViaRef.username:
+        joinForm.fields['username'].initial = userViaRef.username
+    return _join(request, joinForm, 'ref', tip, '0')
+
+def _join(request, joinForm, joinVia, tip, step):
     if step is None:
         step = '0'
     error = u''; title = u'注册'
-    joinForm = JoinForm()
     if step == '0' and request.method == 'POST':
         joinForm = JoinForm(request.POST)
         if joinForm.is_valid():
             email = joinForm.cleaned_data['email']
             username = joinForm.cleaned_data['username']
             password = joinForm.cleaned_data['password']
+            ref_hash = joinForm.cleaned_data['ref_hash']
             user_by_email = GsuserManager.get_user_by_email(email)
             user_by_username = GsuserManager.get_user_by_name(username)
             if user_by_email is None and user_by_username is None:
+                if ref_hash:
+                    userViaRef = GsuserManager.get_userViaRef_by_refhash(ref_hash)
+                    if userViaRef and _create_user_and_authenticate(request, username, email, password, ref_hash, True):
+                        return HttpResponseRedirect('/join/3/')
                 client_ip = _get_client_ip(request)
                 cache_join_client_ip_count = cache.get(CacheKey.JOIN_CLIENT_IP % client_ip)
                 if cache_join_client_ip_count is None:
                     cache_join_client_ip_count = 0
-                if not client_ip.startswith('192.168.') and client_ip != '127.0.0.1':
-                    cache_join_client_ip_count = cache_join_client_ip_count + 1
-                    cache.set(CacheKey.JOIN_CLIENT_IP % client_ip, cache_join_client_ip_count)
-                    if cache_join_client_ip_count < 6 and _create_user_and_authenticate(request, username, email, password, False):
-                        return HttpResponseRedirect('/join/3/')
-                Mailer().send_verify_account(email, username, password)
+                cache_join_client_ip_count = cache_join_client_ip_count + 1
+                cache.set(CacheKey.JOIN_CLIENT_IP % client_ip, cache_join_client_ip_count)
+                if cache_join_client_ip_count < 10 and _create_user_and_authenticate(request, username, email, password, ref_hash, False):
+                    return HttpResponseRedirect('/join/3/')
+                Mailer().send_verify_account(email, username, password, ref_hash)
                 goto = ''
                 email_suffix = email.split('@')[-1]
                 if email_suffix in COMMON_EMAIL_DOMAIN:
@@ -429,13 +450,14 @@ def join(request, step):
         email = cache.get(step + '_email')
         username = cache.get(step + '_username')
         password = cache.get(step + '_password')
+        ref_hash = cache.get(step + '_ref_hash')
         if email is None or username is None or password is None or not email_re.match(email) or not re.match("^[a-zA-Z0-9_-]+$", username) or username.startswith('-') or username in MAIN_NAVS:
             return HttpResponseRedirect('/join/4/')
-        if _create_user_and_authenticate(request, username, email, password, True):
+        if _create_user_and_authenticate(request, username, email, password, ref_hash, True):
             return HttpResponseRedirect('/join/3/')
         else:
             error = u'啊? 用户名或密码有误输入，注意大小写和前后空格。'
-    response_dictionary = {'step': step, 'error': error, 'title': title, 'joinForm': joinForm}
+    response_dictionary = {'step': step, 'error': error, 'title': title, 'joinForm': joinForm, 'joinVia': joinVia, 'tip': tip}
     return render_to_response('user/join.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
@@ -482,6 +504,22 @@ def resetpassword(request, step):
     return render_to_response('user/resetpassword.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
+
+@login_required
+def bind(request, ref_hash):
+    userViaRef = None
+    if ref_hash:
+        userViaRef = GsuserManager.get_userViaRef_by_refhash(ref_hash)
+        GsuserManager.handle_user_via_refhash(request.user, ref_hash)
+    if userViaRef:
+        is_verify = 1
+        if userViaRef.ref_type == REF_TYPE.VIA_REPO_MEMBER:
+            GsuserManager.add_useremail(request.user, userViaRef.email, is_verify)
+            return HttpResponseRedirect('/%s/%s/' % (userViaRef.first_refname, userViaRef.second_refname))
+        elif userViaRef.ref_type == REF_TYPE.VIA_TEAM_MEMBER:
+            GsuserManager.add_useremail(request.user, userViaRef.email, is_verify)
+            return HttpResponseRedirect('/%s/' % (userViaRef.first_refname))
+    return HttpResponseRedirect('/dashboard/')
 
 def get_common_user_dict(request, gsuser, gsuserprofile):
     feedAction = FeedAction()
@@ -588,31 +626,30 @@ def _list_repo_count_dict(raw_per_commit, repo_dict, is_yourself):
         x['ratio'] = ratio
     return per_commits
 
-
-
 def __conver_to_recommends_vo(raw_recommends):
     user_ids = [x.from_user_id for x in raw_recommends]
     users_map = GsuserManager.map_users(user_ids)
     recommends_vo = [x.to_recommend_vo(users_map) for x in raw_recommends]
     return recommends_vo
 
-def _create_user_and_authenticate(request, username, email, password, is_verify):
+def _create_user_and_authenticate(request, username, email, password, ref_hash, is_verify):
     user = None
     try:
         user = User.objects.create_user(username, email, password)
+        if user is None or not user.is_active:
+            return False
     except IntegrityError, e:
         logger.exception(e)
         return False
-    if user is not None and user.is_active:
-        user = auth_authenticate(username=user.username, password=password)
-        if user is not None and user.is_active:
-            auth_login(request, user)
-            userprofile = Userprofile(id = user.id, username = user.username, email = user.email, imgurl = hashlib.md5(user.email.lower()).hexdigest())
-            userprofile.save()
-            userEmail = UserEmail(user_id = user.id, email = user.email, is_verify = is_verify, is_primary = 1, is_public = 1)
-            userEmail.save()
-            return True
-    return False
+    user = auth_authenticate(username=user.username, password=password)
+    auth_login(request, user)
+    userprofile = Userprofile(id = user.id, username = user.username, email = user.email, imgurl = hashlib.md5(user.email.lower()).hexdigest())
+    userprofile.save()
+    userEmail = UserEmail(user_id = user.id, email = user.email, is_verify = is_verify, is_primary = 1, is_public = 1)
+    userEmail.save()
+    if ref_hash:
+        GsuserManager.handle_user_via_refhash(user, ref_hash)
+    return True
 
 def _get_client_ip(request):
     x_forwarded_for = request.META.get('X-Forwarded-For')
@@ -622,4 +659,4 @@ def _get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
-# TODO note: add email unique support ! UNIQUE KEY `email` (`email`) #
+# Note: add email unique support ! UNIQUE KEY `email` (`email`) #

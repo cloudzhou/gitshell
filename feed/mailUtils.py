@@ -57,11 +57,13 @@ class Mailer():
         body = u'Hi, %s：\n请访问下面的地址更改您在Gitshell的登录邮箱：\n%s\n----------\n此邮件由Gitshell系统发出，请勿直接回复。' % (user.username, active_url)
         self.send_mail(header, body, self.default_sender, [email])
 
-    def send_verify_account(self, email, username, password):
+    def send_verify_account(self, email, username, password, ref_hash):
         random_hash = '%032x' % random.getrandbits(128)
         cache.set(random_hash + '_email', email)
         cache.set(random_hash + '_username', username)
         cache.set(random_hash + '_password', password)
+        if ref_hash:
+            cache.set(random_hash + '_ref_hash', ref_hash)
         active_url = 'https://gitshell.com/join/%s/' % random_hash
         header = u'[Gitshell]注册邮件'
         body = u'Hi, Gitshell用户：\n感谢您选择了Gitshell，请访问下面的地址激活您在Gitshell的帐号：\n%s\n----------\n此邮件由Gitshell系统发出，请勿直接回复。' % active_url
@@ -75,6 +77,15 @@ class Mailer():
         body = u'尊敬的Gitshell用户：\n如果您没有重置密码的请求，请忽略此邮件。访问下面的地址重置您在Gitshell的帐号密码：\n%s\n----------\n此邮件由Gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % active_url
         self.send_mail(header, body, self.default_sender, [email])
 
+    def send_join_via_repo_addmember(self, inviter, repo, email, join_url):
+        header = u'[Gitshell]%s邀请您参与仓库 %s/%s' % (inviter.username, repo.username, repo.name)
+        body = u'用户 %s 邀请您注册Gitshell，成为仓库 %s/%s 的成员：\n访问下面的地址注册Gitshell：\n%s\n----------\n此邮件由Gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % (inviter.username, repo.username, repo.name, join_url)
+        self.send_mail(header, body, self.default_sender, [email])
+
+    def send_join_via_team_addmember(self, inviter, teamUser, email, join_url):
+        header = u'[Gitshell]%s邀请您加入团队 %s' % (inviter.username, teamUser.username)
+        body = u'用户 %s 邀请您注册Gitshell，成为团队 %s 的成员：\n访问下面的地址注册Gitshell：\n%s\n----------\n此邮件由Gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % (inviter.username, teamUser.username, join_url)
+        self.send_mail(header, body, self.default_sender, [email])
 
 NOTIF_MAIL_TEMPLATE = """<html lang="en"><head><meta charset="utf-8"><title>{{title}}</title></head><body>
 <div id=":vt" style="overflow: hidden;">

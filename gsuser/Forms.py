@@ -11,6 +11,7 @@ class JoinForm(forms.Form):
     email = forms.EmailField(widget=forms.TextInput(attrs={'id': 'email'}))
     username = forms.CharField(max_length=24, widget=forms.TextInput(attrs={'id': 'username'}))
     password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False, attrs={'id': 'password'}))
+    ref_hash = forms.CharField(required=False)
     #captcha = CaptchaField()
 
 class ResetpasswordForm0(forms.Form):

@@ -94,14 +94,19 @@
       </div>
     </li>
     <li>
+      <h3 class="heading">服务钩子</h3>
+      <div class="actions"><a href="/{{user_name}}/{{repo_name}}/settings/hooks/" class="btn btn-mini btn-primary">管理</a></div>
+      <p class="text-info">Service Hooks 提交事件触发通知</p>
+    </li>
+    <li>
       <h3 class="heading">管理协同者</h3>
-      <div class="actions"><a href="/{{user_name}}/{{repo_name}}/collaborator/" class="btn btn-mini btn-primary">管理</a></div>
+      <div class="actions"><a href="/{{user_name}}/{{repo_name}}/settings/members/" class="btn btn-mini btn-primary">管理</a></div>
       <p class="text-info">管理仓库协同者，添加仓库的成员。</p>
     </li>
   </ul>
 
   <div class="destroy">
-    <a href="/{{user_name}}/{{repo_name}}/delete/" class="btn btn-danger">删除该仓库</a>
+    <a href="/{{user_name}}/{{repo_name}}/settings/delete/" class="btn btn-danger">删除该仓库</a>
   </div>
 
 </div>
@@ -118,22 +123,22 @@
       $(this).show();
     });
     $('.generate_deploy_url').click(function(){
-      $.post('/{{user_name}}/{{repo_name}}/generate_deploy_url/', {csrfmiddlewaretoken: $('meta[name=csrf-token]').attr("content")}, function(json){
+      $.post('/{{user_name}}/{{repo_name}}/settings/generate_deploy_url/', {csrfmiddlewaretoken: $('meta[name=csrf-token]').attr("content")}, function(json){
         window.location.href = window.location.href;
       });
     });
     $('.forbid_dploy_url').click(function(){
-      $.post('/{{user_name}}/{{repo_name}}/forbid_dploy_url/', {csrfmiddlewaretoken: $('meta[name=csrf-token]').attr("content")}, function(json){
+      $.post('/{{user_name}}/{{repo_name}}/settings/forbid_dploy_url/', {csrfmiddlewaretoken: $('meta[name=csrf-token]').attr("content")}, function(json){
         window.location.href = window.location.href;
       });
     });
     $('.enable_dropbox_sync').click(function(){
-      $.post('/{{user_name}}/{{repo_name}}/enable_dropbox_sync/', {csrfmiddlewaretoken: $('meta[name=csrf-token]').attr("content")}, function(json){
+      $.post('/{{user_name}}/{{repo_name}}/settings/enable_dropbox_sync/', {csrfmiddlewaretoken: $('meta[name=csrf-token]').attr("content")}, function(json){
         window.location.href = window.location.href;
       });
     });
     $('.disable_dropbox_sync').click(function(){
-      $.post('/{{user_name}}/{{repo_name}}/disable_dropbox_sync/', {csrfmiddlewaretoken: $('meta[name=csrf-token]').attr("content")}, function(json){
+      $.post('/{{user_name}}/{{repo_name}}/settings/disable_dropbox_sync/', {csrfmiddlewaretoken: $('meta[name=csrf-token]').attr("content")}, function(json){
         window.location.href = window.location.href;
       });
     });
