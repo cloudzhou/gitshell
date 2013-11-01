@@ -622,7 +622,7 @@ def add_member(request, user_name, repo_name):
         user = GsuserManager.get_user_by_email(username_or_email)
         if not user:
             ref_hash = '%032x' % random.getrandbits(128)
-            ref_message = u'额..., 似乎您已经拥有了Gitshell账户。' #% (request.user.username, username_or_email, repo.username, repo.name)
+            ref_message = u'用户 %s 邀请您注册Gitshell，成为仓库 %s/%s 的成员' % (request.user.username, repo.username, repo.name)
             userViaRef = UserViaRef(email=username_or_email, ref_type=REF_TYPE.VIA_REPO_MEMBER, ref_hash=ref_hash, ref_message=ref_message, first_refid = repo.user_id, first_refname = repo.username, second_refid = repo.id, second_refname = repo.name)
             userViaRef.save()
             join_url = 'https://gitshell.com/join/ref/%s/' % ref_hash

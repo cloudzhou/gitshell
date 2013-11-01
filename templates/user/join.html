@@ -15,7 +15,7 @@
       {% if tip %}
         <div class="invitation-tip alert alert-info" id="tipAlert">
           {% if user.is_authenticated %}
-            {{ tip }}是否用当前账户接受邀请？<a href="/bind/{{joinForm.ref_hash.value}}/" class="btn btn-mini btn-success">是的</a>
+            额..., 似乎您已经拥有了Gitshell账户。是否用当前账户接受邀请？<a href="/bind/{{joinForm.ref_hash.value}}/" class="btn btn-mini btn-success">是的</a>
           {% else %}
             您在注册之后会直接被加入
           {% endif %}

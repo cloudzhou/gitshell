@@ -80,13 +80,11 @@ class Mailer():
     def send_join_via_repo_addmember(self, inviter, repo, email, join_url):
         header = u'[Gitshell]%s邀请您参与仓库 %s/%s' % (inviter.username, repo.username, repo.name)
         body = u'Hi, 您被我们Gitshell的用户 %s 邀请成为仓库 %s/%s 的协作成员：\n但是我们注意到 %s 还没有在Gitshell注册过，您可以访问下面的地址接受他的邀请：\n%s\n----------\n此邮件由Gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % (inviter.username, repo.username, repo.name, email, join_url)
-        logger.error(body)
         self.send_mail(header, body, self.default_sender, [email])
 
     def send_join_via_team_addmember(self, inviter, teamUser, email, join_url):
         header = u'[Gitshell]%s邀请您加入团队 %s' % (inviter.username, teamUser.username)
         body = u'Hi, 您被我们Gitshell的用户 %s 邀请加入团队 %s ：\n但是我们注意到 %s 还没有在Gitshell注册过，您可以访问下面的地址接受他的邀请：\n%s\n----------\n此邮件由Gitshell系统发出，系统不接收回信，因此请勿直接回复。 如有任何疑问，请联系 support@gitshell.com。' % (inviter.username, teamUser.username, email, join_url)
-        logger.error(body)
         self.send_mail(header, body, self.default_sender, [email])
 
 NOTIF_MAIL_TEMPLATE = """<html lang="en"><head><meta charset="utf-8"><title>{{title}}</title></head><body>
