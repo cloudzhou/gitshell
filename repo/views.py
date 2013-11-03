@@ -31,9 +31,12 @@ from gitshell.daemon.models import EventManager
 from gitshell.objectscache.models import CacheKey
 from gitshell.viewtools.views import json_httpResponse
 from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo, dropbox_share_direct
+from pygments import highlight
+from pygments.lexers import *
+from pygments.formatters import HtmlFormatter
 
 lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml', 'go': 'Go'}
-brush_aliases = {'AppleScript': 'applescript', 'AS3': 'actionscript3', 'Bash': 'shell', 'ColdFusion': 'coldfusion', 'Cpp': 'cpp', 'CSharp': 'csharp', 'Css': 'css', 'Delphi': 'delphi', 'Diff': 'diff', 'Erlang': 'erlang', 'Groovy': 'groovy', 'JavaFX': 'javafx', 'Java': 'java', 'JScript': 'javascript', 'Perl': 'perl', 'Php': 'php', 'Plain': 'plain', 'PowerShell': 'powershell', 'Python': 'python', 'Ruby': 'ruby', 'Sass': 'sass', 'Scala': 'scala', 'Sql': 'sql', 'Vb': 'vb', 'Xml': 'xml', 'Go': 'go'}
+brush_aliases = {'AppleScript': 'applescript', 'AS3': 'actionscript3', 'Bash': 'shell', 'ColdFusion': 'coldfusion', 'Cpp': 'cpp', 'CSharp': 'csharp', 'Css': 'css', 'Delphi': 'delphi', 'Diff': 'diff', 'Erlang': 'erlang', 'Groovy': 'groovy', 'JavaFX': 'javafx', 'Java': 'java', 'JScript': 'javascript', 'Perl': 'perl', 'Php': 'php', 'Text': 'text', 'PowerShell': 'powershell', 'Python': 'python', 'Ruby': 'ruby', 'Sass': 'sass', 'Scala': 'scala', 'Sql': 'sql', 'Vb': 'vb', 'Xml': 'xml', 'Go': 'go'}
 PULLREQUEST_COMMIT_MESSAGE_TMPL = 'Merge branch %s of https://gitshell.com/%s/%s/ into %s, see https://gitshell.com/%s/%s/pull/%s/, %s'
 @login_required
 def user_repo(request, user_name):
@@ -155,7 +158,7 @@ def _blob(request, user_name, repo_name, refs, path, render_method):
     abs_repopath = repo.get_abs_repopath()
     gitHandler = GitHandler()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
-    blob = u''; lang = 'Plain'; brush = 'plain'
+    blob = u''; lang = 'Text'; brush = 'text'
     if repo.auth_type == 0 or RepoManager.is_allowed_write_access_repo(repo, request.user):
         paths = path.split('.')
         if len(paths) > 0:
@@ -622,7 +625,7 @@ def add_member(request, user_name, repo_name):
         user = GsuserManager.get_user_by_email(username_or_email)
         if not user:
             ref_hash = '%032x' % random.getrandbits(128)
-            ref_message = u'额..., 似乎您已经拥有了Gitshell账户。' #% (request.user.username, username_or_email, repo.username, repo.name)
+            ref_message = u'额..., 似乎您已经拥有了Gitshell账户。'
             userViaRef = UserViaRef(email=username_or_email, ref_type=REF_TYPE.VIA_REPO_MEMBER, ref_hash=ref_hash, ref_message=ref_message, first_refid = repo.user_id, first_refname = repo.username, second_refid = repo.id, second_refname = repo.name)
             userViaRef.save()
             join_url = 'https://gitshell.com/join/ref/%s/' % ref_hash
