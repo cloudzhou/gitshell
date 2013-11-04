@@ -326,17 +326,14 @@ class GitHandler():
                 pre_path = origin_path
                 if path == '.':
                     pre_path = ''
-                last_commit_command = 'for i in %s; do echo -n "$i|"; git log %s -1 --pretty="%%at|%%an|%%ae|%%s" -- "%s$i" | /usr/bin/head -c 524288; done' % (' '.join(quote_relative_paths), commit_hash, pre_path)
-                last_commit_output = check_output(last_commit_command, shell=True)
-                for last_commit in last_commit_output.split('\n'):
-                    splits = last_commit.split('|', 4)
-                    if len(splits) < 5:
-                        continue
-                    relative_path = splits[0]
-                    tree[relative_path]['author_time'] = splits[1]
-                    tree[relative_path]['author_name'] = splits[2]
-                    tree[relative_path]['author_email'] = splits[3]
-                    tree[relative_path]['last_commit_message'] = splits[4]
+            for i in range(0, 5):
+                sub_length = 1000
+                sub_quote_relative_paths = quote_relative_paths[i*sub_length:(i+1)*sub_length]
+                if len(sub_quote_relative_paths) == 0:
+                    break
+                self._set_last_commit(tree, sub_quote_relative_paths, commit_hash, pre_path)
+                if len(sub_quote_relative_paths) < sub_length:
+                    break
             dirs.sort()
             files.sort()
             ordered_tree = []
@@ -350,6 +347,25 @@ class GitHandler():
         finally: 
             signal.signal(signal.SIGPIPE, signal.SIG_IGN)
         return {}
+
+    def _set_last_commit(self, tree, sub_quote_relative_paths, commit_hash, pre_path):
+        try:
+            signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+            last_commit_command = 'for i in %s; do echo -n "$i|"; git log %s -1 --pretty="%%at|%%an|%%ae|%%s" -- "%s$i" | /usr/bin/head -c 524288; done' % (' '.join(sub_quote_relative_paths), commit_hash, pre_path)
+            last_commit_output = check_output(last_commit_command, shell=True)
+            for last_commit in last_commit_output.split('\n'):
+                splits = last_commit.split('|', 4)
+                if len(splits) < 5:
+                    continue
+                relative_path = splits[0]
+                tree[relative_path]['author_time'] = splits[1]
+                tree[relative_path]['author_name'] = splits[2]
+                tree[relative_path]['author_email'] = splits[3]
+                tree[relative_path]['last_commit_message'] = splits[4]
+        except Exception, e:
+            logger.exception(e)
+        finally: 
+            signal.signal(signal.SIGPIPE, signal.SIG_IGN)
 
     def _set_real_author_name(self, item):
         if 'author_name' not in item or 'author_email' not in item:
