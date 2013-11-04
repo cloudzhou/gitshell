@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, re, pipes, sys, traceback, codecs
+import os, re, pipes, sys, traceback, codecs, signal
 import time, json, hashlib, shutil
 from django.core.cache import cache
 from subprocess import check_output, Popen, PIPE
@@ -54,6 +54,7 @@ class GitHandler():
             return result['blob']
         command = '/usr/bin/git show %s:%s | /usr/bin/head -c 524288' % (commit_hash, path)
         try:
+            signal.signal(signal.SIGPIPE, signal.SIG_DFL)
             result = check_output(command, shell=True)
             ud = UniversalDetector()
             ud.feed(result)
@@ -66,6 +67,8 @@ class GitHandler():
             return result
         except Exception, e:
             logger.exception(e)
+        finally: 
+            signal.signal(signal.SIGPIPE, signal.SIG_IGN)
         return ''
     
     def repo_log_file(self, repo_path, from_commit_hash, commit_hash, log_size, path):
@@ -97,12 +100,15 @@ class GitHandler():
             return result['diff']
         command = '/usr/bin/git diff --numstat  %s..%s -- %s | /usr/bin/head -c 524288 ; /usr/bin/git diff -U%s %s..%s -- %s | /usr/bin/head -c 524288' % (pre_commit_hash, commit_hash, path, context, pre_commit_hash, commit_hash, path)
         try:
+            signal.signal(signal.SIGPIPE, signal.SIG_DFL)
             result = check_output(command, shell=True)
             diff = self._parse_diff_file_as_json(result)
             self._dumps_write_stage_file({'diff': diff}, stage_file)
             return diff
         except Exception, e:
             logger.exception(e)
+        finally: 
+            signal.signal(signal.SIGPIPE, signal.SIG_IGN)
         return {}
 
     def repo_log_graph(self, repo, repo_path, commit_hash):
@@ -115,12 +121,15 @@ class GitHandler():
             return log_graph
         command = '/usr/bin/git log -100 --graph --abbrev-commit --date=relative --format=format:"%%h - (%%ar) %%s - %%an%%d" %s | /usr/bin/head -c 524288' % (commit_hash)
         try:
+            signal.signal(signal.SIGPIPE, signal.SIG_DFL)
             log_graph = check_output(command, shell=True)
             log_graph_json = {'log_graph': log_graph}
             self._dumps_write_stage_file(log_graph_json, stage_file)
             return log_graph_json
         except Exception, e:
             logger.exception(e)
+        finally: 
+            signal.signal(signal.SIGPIPE, signal.SIG_IGN)
         return {'log_graph': ''}
         
     def repo_ls_refs(self, repo, repo_path):
@@ -248,6 +257,7 @@ class GitHandler():
             between_commit_hash = from_commit_hash + '...' + commit_hash
         command = '/usr/bin/git log -%s --pretty="%%h|%%p|%%t|%%an|%%ae|%%at|%%cn|%%ce|%%ct|%%s" %s %s | /usr/bin/head -c 524288' % (log_size, between_commit_hash, path_in_git)
         try:
+            signal.signal(signal.SIGPIPE, signal.SIG_DFL)
             raw_result = check_output(command, shell=True)
             for line in raw_result.split('\n'):
                 ars = line.split('|', 9)
@@ -272,12 +282,15 @@ class GitHandler():
             return commits
         except Exception, e:
             logger.exception(e)
+        finally: 
+            signal.signal(signal.SIGPIPE, signal.SIG_IGN)
         return []
     
     def _ls_tree_check_output(self, commit_hash, path, origin_path):
         command = 'git config --global core.quotepath false; /usr/bin/git ls-tree %s -- %s | /usr/bin/head -c 524288' % (commit_hash, path)
         tree = {}; dirs = []; files = []; has_readme = False; readme_file = '';
         try:
+            signal.signal(signal.SIGPIPE, signal.SIG_DFL)
             raw_output = check_output(command, shell=True)
             max = 500
             for line in raw_output.split("\n"):
@@ -334,6 +347,8 @@ class GitHandler():
             return {'tree': ordered_tree, 'has_readme': has_readme, 'readme_file': readme_file}
         except Exception, e:
             logger.exception(e)
+        finally: 
+            signal.signal(signal.SIGPIPE, signal.SIG_IGN)
         return {}
 
     def _set_real_author_name(self, item):
@@ -506,6 +521,7 @@ class GitHandler():
         refses = commit_hash_dict.keys()
         try:
             last_commit_command = '/bin/bash -c \'for i in %s; do echo -n "$i|"; git log "$i" -1 --pretty="%%h|%%p|%%t|%%an|%%ae|%%at|%%cn|%%ce|%%ct|%%s" | /usr/bin/head -c 524288; done\'' % (' '.join(refses))
+            signal.signal(signal.SIGPIPE, signal.SIG_DFL)
             last_commit_output = check_output(last_commit_command, shell=True)
             for line in last_commit_output.split('\n'):
                 ars = line.split('|', 10)
@@ -529,6 +545,8 @@ class GitHandler():
                 refs_detail_commit[refs] = refs_commit
         except Exception, e:
             logger.exception(e)
+        finally: 
+            signal.signal(signal.SIGPIPE, signal.SIG_IGN)
         meta['detail_commit'] = refs_detail_commit
 
     def _get_repo_meta_by_cache(self, repo):
