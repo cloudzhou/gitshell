@@ -8,6 +8,7 @@
 <div class="files bubble">
   <div class="file-list table-container" id="source">
     <div class="theme-selector">
+      {% include "repo/branch_nav.html" %}
       <div class="group clearfix">
         <span class="current-branch-name">
           <a href="/{{user_name}}/{{repo_name}}/{%if current == 'index' or current == 'tree' or current == 'blob' %}tree{%endif%}{%if current == 'commits' %}commits{%endif%}{%if current == 'refs_graph' %}refs/graph{%endif%}/{{refs}}/">{{repo_name}}</a><span class="divider">/</span>

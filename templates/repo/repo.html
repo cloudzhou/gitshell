@@ -15,7 +15,7 @@
   <div class="container">
     <ul class="breadcrumb">
       <li class="user"><a href="/{{user_name}}/">{{user_name}}</a><span class="divider">/</span></li>
-      <li><a href="/{{user_name}}/{{repo_name}}">{{repo_name}}</a></li>
+      <li>{%if repo.is_public%}<i class="icon-unlock"></i>{%else%}<i class="icon-lock"></i>{%endif%}<a href="/{{user_name}}/{{repo_name}}">{{repo_name}}</a></li>
       <li class="repo-nav dropdown">
         <a href="/{{user_name}}/{{repo_name}}/" class="dropdown-toggle" data-toggle="dropdown">
           <span class="btn btn-mini btn-success"><i class="icon-caret-down"></i></span>
@@ -39,7 +39,6 @@
     </ul>
 
     <ul class="repo-actions">
-      {% if current == 'index' %}
       <li class="clone-url">
         <a href="#" class="btn btn-mini btn-primary menu-toggle" id="cloneUrlToggle"><i class="icon-terminal"></i>克隆</a>
         <div class="clone-menu" id="cloneMenu">
@@ -73,7 +72,7 @@
 
             <dd class="url-holder">
             {% if is_repo_member or is_teamMember %}
-            <input class="middle" id="urlData" type="text" value="https://{{user_name}}@gitshell.com/{{user_name}}/{{repo_name}}.git" readonly="readonly">
+            <input class="middle" id="urlData" type="text" value="https://gitshell.com/{{user_name}}/{{repo_name}}.git" readonly="readonly">
             {% elif repo.auth_type == 0 %}
             <input class="middle" id="urlData" type="text" value="git@gitshell.com:{{user_name}}/{{repo_name}}.git" readonly="readonly">
             {% endif %}
@@ -83,8 +82,7 @@
           {% endif %}
 
         </div>
-      </li>{# /cloneURL #}
-      {% endif %}
+      </li>
       <li class="btn-group">
         <a href="/{{user_name}}/{{repo_name}}/compare/" class="btn btn-mini first"><i class="icon-random"></i>比较</a>
         <a href="/{{user_name}}/{{repo_name}}/pull/new/" class="btn btn-mini last"><i class="icon-code-fork"></i>合并请求</a>
@@ -107,7 +105,7 @@
         <span class="btn btn-mini count last" title="衍生次数" href="/{{user_name}}/{{repo_name}}/clone_watch_star/">{{repo.fork}}</span>
       </li>
       {% endif %}
-    </ul>{# /repo-actions #}
+    </ul>
   </div>
 </div>
 
@@ -135,8 +133,6 @@
 {% endblock %}
 
 {% block js %}
-{#<script type="text/javascript" src="http://www.steamdev.com/zclip/js/jquery.zclip.min.js"></script>#}
-{#<script type="text/javascript" src="http://www.steamdev.com/zclip/js/jquery.snippet.min.js"></script>#}
 <script>
   $(function(){
 
@@ -152,7 +148,7 @@
     $('#cloneUrlToggle').click(function(e){
       e.stopPropagation();
       $('#cloneMenu').toggle();
-      $('#urlData').addClass('selected').select();
+      $('#urlData').select();
     });
 
     $('#cloneMenu').children().click(function(e){
@@ -176,19 +172,15 @@
       var txt = $(this).text();
       $('#urlType').find('span').text(txt);
       $('#urlTypeMenu').hide();
-      $('#urlData').addClass('selected').select();
       switch(this.id) {
         case 'sshFork':
-          $('#urlData').val('git@gitshell.com:{{user_name}}/{{repo_name}}.git');
-          //$('#urlInfo').text('读写');
+          $('#urlData').val('git@gitshell.com:{{user_name}}/{{repo_name}}.git').select();
           break;
         case 'httpFork':
-          $('#urlData').val('https://gitshell.com/{{user_name}}/{{repo_name}}.git');
-          //$('#urlInfo').text('读写');
+          $('#urlData').val('https://gitshell.com/{{user_name}}/{{repo_name}}.git').select();
           break;
         case 'gitFork':
-          $('#urlData').val('git://gitshell.com/{{user_name}}/{{repo_name}}.git');
-          //$('#urlInfo').text('只读');
+          $('#urlData').val('git://gitshell.com/{{user_name}}/{{repo_name}}.git').select();
           break;
       };
     });
@@ -196,17 +188,6 @@
     $('#urlData').mouseover(function() {
       $(this).addClass('selected').select();
     });
-
-    // $('html').click(function(e){
-    //  if(e.target.id != 'urlData') {
-    //    $('#urlData').removeClass('selected');
-    //  }
-    // });
-
-    //    $("#copy-btn").zclip({
-    //      path: "/static/js/ZeroClipboard.swf",
-    //      copy: function() { return $("#urlData").val(); }
-    //    });
 
     $('.repo-actions .watch').click(function() {
       $.post('/{{user_name}}/{{repo_name}}/watch/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
