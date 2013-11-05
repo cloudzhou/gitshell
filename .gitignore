@@ -1,6 +1,4 @@
-*.pyc
 .gitignore
+*.pyc
 env.ini
 settings.py
-wsgi.py
-settings.tmpl
