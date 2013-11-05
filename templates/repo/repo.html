@@ -14,8 +14,8 @@
 <div class="subhead repo-global-bar">
   <div class="container">
     <ul class="breadcrumb">
-      <li class="user"><a href="/{{user_name}}/">{{user_name}}</a><span class="divider">/</span></li>
-      <li>{%if repo.is_public%}<i class="icon-unlock"></i>{%else%}<i class="icon-lock"></i>{%endif%}<a href="/{{user_name}}/{{repo_name}}">{{repo_name}}</a></li>
+      <li class="user">{%if repo.is_public%}<i class="icon-unlock"></i>{%else%}<i class="icon-lock"></i>{%endif%}<a href="/{{user_name}}/">{{user_name}}</a><span class="divider">/</span></li>
+      <li><a href="/{{user_name}}/{{repo_name}}">{{repo_name}}</a></li>
       <li class="repo-nav dropdown">
         <a href="/{{user_name}}/{{repo_name}}/" class="dropdown-toggle" data-toggle="dropdown">
           <span class="btn btn-mini btn-success"><i class="icon-caret-down"></i></span>
@@ -139,7 +139,6 @@
       }
     );
 
-
     $('#cloneUrlToggle').click(function(e){
       e.stopPropagation();
       $('#cloneMenu').toggle();
@@ -152,7 +151,8 @@
 
     $('html').click(function(e) {
       var target = $(e.target);
-      if(target.id != 'cloneMenu'){
+      if(!target.is('#cloneMenu')) {
+        return true;
         $('#cloneMenu').hide();
       }
     });
