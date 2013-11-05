@@ -63,7 +63,7 @@ class TeamManager():
     def add_teamMember_by_userprofile(self, teamUser, member_userprofile):
         if not teamUser or not member_userprofile or member_userprofile.is_team_account == 1:
             return None
-        member_userprofile.is_join_team = 1
+        member_userprofile.has_joined_team = 1
         member_userprofile.save()
         exists_teamMember = TeamManager.get_teamMember_by_userId_teamUserId(member_userprofile.id, teamUser.id)
         if exists_teamMember:
@@ -84,8 +84,8 @@ class TeamManager():
     @classmethod
     def list_teamMember_by_userId(self, user_id):
         userprofile = GsuserManager.get_userprofile_by_id(user_id)
-        #if userprofile.is_join_team == 0:
-        #    return []
+        if userprofile.has_joined_team == 0:
+            return []
         teamMembers = query(TeamMember, user_id, 'teammember_l_userId', [user_id])
         for x in teamMembers:
             x.user = GsuserManager.get_userprofile_by_id(x.user_id)

@@ -57,7 +57,7 @@
                 </div>
                 {#</div>#}
 
-              <div class="control-group{%if userprofile.is_join_team == 0%} hide{%endif%}">
+              <div class="control-group{%if userprofile.has_joined_team == 0%} hide{%endif%}">
                 <label for="id_username" class="control-label">归属者</label>
                 <div class="controls">{{ repoForm.username }}</div>
               </div>

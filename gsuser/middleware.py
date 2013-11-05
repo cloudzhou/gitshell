@@ -62,8 +62,8 @@ def userprofile(request):
     else:
         userprofile = Userprofile()
     gs_teamMembers = []
-    #if userprofile and userprofile.is_join_team == 1:
-    gs_teamMembers = TeamManager.list_teamMember_by_userId(userprofile.id)
+    if userprofile and userprofile.has_joined_team == 1:
+        gs_teamMembers = TeamManager.list_teamMember_by_userId(userprofile.id)
     urlRouter = request.urlRouter
     return {'userprofile': userprofile, 'urlRouter': urlRouter, 'gs_teamMembers': gs_teamMembers}
     

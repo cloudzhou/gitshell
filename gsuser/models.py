@@ -27,7 +27,8 @@ class Userprofile(BaseModel):
     unread_message = models.IntegerField(default=0, null=False)
 
     # what about joined_team_count
-    is_join_team = models.IntegerField(default=0, null=False)
+    has_joined_repo = models.IntegerField(default=0, null=False)
+    has_joined_team = models.IntegerField(default=0, null=False)
     current_user_id = models.IntegerField(default=0, null=False)
     is_team_account = models.IntegerField(default=0, null=False)
     creator_user_id = models.IntegerField(default=0, null=False)

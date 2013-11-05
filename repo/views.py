@@ -47,6 +47,8 @@ def user_repo_paging(request, user_name, pagenum):
     if user is None:
         raise Http404
     raw_repo_list = RepoManager.list_repo_by_userId(user.id, 0, 100)
+    joined_repos = RepoManager.list_joined_repo_by_userId(user.id, 0, 50)
+    raw_repo_list = raw_repo_list + joined_repos
     repo_list = raw_repo_list
     if user.id != request.user.id:
         repo_list = [x for x in raw_repo_list if x.auth_type != 2]
@@ -1167,7 +1169,9 @@ def recently(request, user_name):
         else:
             feedAction.remove_recently_active_repo(request.user.id, x)
     current_user = TeamManager.get_current_user(request.user, request.userprofile)
-    recently_update_repo = RepoManager.list_repo_by_userId(current_user.id, 0, 5)
+    recently_update_repo = RepoManager.list_repo_by_userId(current_user.id, 0, 3)
+    joined_repos = RepoManager.list_joined_repo_by_userId(current_user.id, 0, 3)
+    recently_update_repo = recently_update_repo + joined_repos
     return json_httpResponse({'result': 'success', 'cdoe': 200, 'message': 'recently view, active, update repo', 'recently_view_repo': recently_view_repo, 'recently_active_repo': recently_active_repo, 'recently_update_repo': recently_update_repo})
 
 @login_required

@@ -317,6 +317,21 @@ class RepoManager():
         return GsuserManager.list_userprofile_by_ids(user_ids)
 
     @classmethod
+    def list_joined_repo_by_userId(self, user_id, offset, row_count):
+        userprofile = GsuserManager.get_userprofile_by_id(user_id)
+        if userprofile is None or userprofile.has_joined_repo == 0:
+            return []
+        repoemembers = query(RepoMember, None, 'repomember_l_userId', [user_id, offset, row_count])
+        joined_repos = []
+        for repoemember in repoemembers:
+            repo = self.get_repo_by_id(repoemember.repo_id)
+            if repo is None:
+                repoemember.delete()
+                continue
+            joined_repos.append(repo)
+        return joined_repos
+
+    @classmethod
     def list_repomember(self, repo_id):
         repoemembers = query(RepoMember, repo_id, 'repomember_l_repoId', [repo_id])
         return repoemembers
@@ -332,6 +347,9 @@ class RepoManager():
     def add_member(self, repo, user):
         if repo is None or user is None or repo.user_id == user.id:
             return None
+        userprofile = GsuserManager.get_userprofile_by_id(user.id)
+        userprofile.has_joined_repo = 1
+        userprofile.save()
         repoMember = self.get_repo_member(repo.id, user.id)
         if repoMember is None:
             repoMember = RepoMember()

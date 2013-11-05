@@ -92,6 +92,8 @@ rawsql = {
         'select * from repo_repomember where visibly = 0 and repo_id = %s order by modify_time asc',
     'repomember_s_ruid':
         'select * from repo_repomember where visibly = 0 and repo_id = %s and user_id = %s limit 0, 1',
+    'repomember_l_userId':
+        'select * from repo_repomember where visibly = 0 and user_id = %s order by modify_time desc limit %s, %s',
     # repo_repo #
     'repo_l_last_push_time':
         'select * from repo_repo where last_push_time >= %s limit 0, 5000',
