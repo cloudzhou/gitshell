@@ -94,30 +94,30 @@ NOTIF_MAIL_TEMPLATE = """<html lang="en"><head><meta charset="utf-8"><title>{{ti
   <tr>
     <td>
       <p style="font-weight: bold;">
-      <a href="/{{notifMessage.relative_name}}/">@{{notifMessage.relative_name}}</a>
+      <a href="https://gitshell.com/{{notifMessage.relative_name}}/">@{{notifMessage.relative_name}}</a>
       {% if notifMessage.notif_type == 0 %}
       <span>提交更新: </span>{{notifMessage.relative_obj.subject}}
-      <span><a href="/{{notifMessage.relative_obj.get_repo_username}}/">{{notifMessage.relative_obj.get_repo_username}}</a>/<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/">{{notifMessage.relative_obj.repo_name}}</a>:<a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commits/{{notifMessage.relative_obj.get_short_refname}}/">{{notifMessage.relative_obj.get_short_refname}}</a></span>
+      <span><a href="https://gitshell.com/{{notifMessage.relative_obj.get_repo_username}}/">{{notifMessage.relative_obj.get_repo_username}}</a>/<a href="https://gitshell.com/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/">{{notifMessage.relative_obj.repo_name}}</a>:<a href="https://gitshell.com/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commits/{{notifMessage.relative_obj.get_short_refname}}/">{{notifMessage.relative_obj.get_short_refname}}</a></span>
 
 
       {% elif notifMessage.notif_type == 30 %}
-      <span>问题: </span>{{notifMessage.relative_obj.subject}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
+      <span>问题: </span>{{notifMessage.relative_obj.subject}} <a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
 
 
       {% elif notifMessage.notif_type == 31 %}
-      <span>评论了问题: </span>{{notifMessage.relative_obj.content}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.issues_id}}/">#{{notifMessage.relative_obj.issues_id}}</a>
+      <span>评论了问题: </span>{{notifMessage.relative_obj.content}} <a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.issues_id}}/">#{{notifMessage.relative_obj.issues_id}}</a>
 
 
       {% elif notifMessage.notif_type == 10 %}
-      <span>在合并请求中提到你: </span> <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}} {{notifMessage.relative_obj.short_title}}</a>
+      <span>在合并请求中提到你: </span> <a href="https://gitshell.com/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}} {{notifMessage.relative_obj.short_title}}</a>
 
 
       {% elif notifMessage.notif_type >= 100 and notifMessage.notif_type <= 105 %}
-      <span>{{notifMessage.message}}合并请求: <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}} {{notifMessage.relative_obj.short_title}}</a>
+      <span>{{notifMessage.message}}合并请求: <a href="https://gitshell.com/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}} {{notifMessage.relative_obj.short_title}}</a>
 
 
       {% elif notifMessage.notif_type == 300 %}
-      <span>{{notifMessage.message}}问题: {{notifMessage.relative_obj.subject}} <a href="/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
+      <span>{{notifMessage.message}}问题: {{notifMessage.relative_obj.subject}} <a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
       {% endif %}
 
       <span>{{notifMessage.relative_obj.modify_time}}</span>
