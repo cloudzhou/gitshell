@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from gitshell.settings import logger
-from gitshell.viewtools.views import json_httpResponse
+from gitshell.viewtools.views import json_httpResponse, json_success, json_failed
 from gitshell.gsuser.models import Userprofile, UserEmail, GsuserManager, ThirdpartyUser, COMMON_EMAIL_DOMAIN
 from gitshell.keyauth.models import UserPubkey, KeyauthManager
 from gitshell.feed.models import NOTIF_TYPE, NOTIF_FQCY, FeedManager
@@ -118,15 +118,15 @@ def email_add(request):
     email = request.POST.get('email')
     userEmail = GsuserManager.add_useremail(request.user, email, is_verify)
     if not userEmail:
-        return json_httpResponse({'code': 500, 'message': '绑定邮箱个数最多50个，确定邮箱格式正确和未被绑定'})
-    return json_httpResponse({'code': 200, 'message': u'成功添加邮箱 ' + email})
+        return json_failed(500, u'绑定邮箱个数最多50个，确定邮箱格式正确和未被绑定')
+    return json_success(u'成功添加邮箱 %s' % email)
 
 @login_required
 @require_http_methods(["POST"])
 def email_primary(request, eid):
     usermail = GsuserManager.get_useremail_by_id(eid)
     if not usermail or usermail.user_id != request.user.id:
-        return json_httpResponse({'code': 500, 'message': u'设置失败，没有权限'})
+        return json_failed(500, u'设置失败，没有权限')
     useremails = GsuserManager.list_useremail_by_userId(request.user.id)
     for x in useremails:
         if usermail.id != x.id and x.is_primary == 1:
@@ -134,7 +134,7 @@ def email_primary(request, eid):
             x.save()
     usermail.is_primary = 1
     usermail.save()
-    return json_httpResponse({'code': 500, 'message': u'成功设置默认邮箱 %s' % usermail.email})
+    return json_success(u'成功设置默认邮箱 %s' % usermail.email)
 
 @login_required
 @require_http_methods(["POST"])
@@ -166,7 +166,7 @@ def email_remove(request, eid):
     if usermail and usermail.user_id == request.user.id:
         usermail.visibly = 1
         usermail.save()
-    return json_httpResponse({'code': 200, 'message': u'成功删除邮箱 ' + usermail.email})
+    return json_success(u'成功删除邮箱 %s' % usermail.email)
 
 @login_required
 def notif(request):
@@ -196,7 +196,7 @@ def notif_types(request):
                 types.append(type_str);
         notifSetting.notif_types = ','.join(types)
     notifSetting.save()
-    return json_httpResponse({'code': 200, 'message': u'成功修改通知 ' + types_str})
+    return json_success(u'成功修改通知 %s' % types_str)
 
 @login_required
 @require_http_methods(["POST"])
@@ -209,7 +209,7 @@ def notif_fqcy(request):
         if fqcy in NOTIF_FQCY.VALUES:
             notifSetting.notif_fqcy = fqcy
             notifSetting.save()
-    return json_httpResponse({'code': 200, 'message': u'成功修改频率 ' + fqcy_str})
+    return json_success(u'成功修改频率 %s' % fqcy_str)
 
 @login_required
 @require_http_methods(["POST"])
@@ -222,7 +222,7 @@ def notif_email(request):
         if useremail and useremail.is_verify == 1:
             notifSetting.email = email
             notifSetting.save()
-    return json_httpResponse({'code': 200, 'message': u'成功修改邮箱 ' + email})
+    return json_success(u'成功修改邮箱 %s' % email)
 
 @login_required
 def thirdparty(request):

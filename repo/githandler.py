@@ -10,7 +10,7 @@ from pygments.formatters import HtmlFormatter
 from gitshell.objectscache.models import CacheKey
 from gitshell.gsuser.models import GsuserManager
 from gitshell.repo.models import RepoManager
-from gitshell.viewtools.views import json_httpResponse
+from gitshell.viewtools.views import json_httpResponse, json_success, json_failed
 from gitshell.settings import PULLREQUEST_REPO_PATH, logger
 """
 git ls-tree `cat .git/refs/heads/master` -- githooks/

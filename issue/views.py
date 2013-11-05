@@ -20,7 +20,7 @@ from gitshell.issue.Forms import IssueForm, IssueCommentForm
 from gitshell.issue.cons import TRACKERS, STATUSES, PRIORITIES, TRACKERS_VAL, STATUSES_VAL, PRIORITIES_VAL, ISSUE_ATTRS, conver_issues, conver_issue_comments
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.feed.models import FeedManager
-from gitshell.viewtools.views import json_httpResponse
+from gitshell.viewtools.views import json_httpResponse, json_success, json_failed
 
 @repo_permission_check
 def issues(request, user_name, repo_name):
@@ -253,13 +253,13 @@ def do_issue(request):
     repo_id = request.POST.get('repo_id', '')
     issue_id = request.POST.get('issue_id', '')
     if action == '' or repo_id == '' or issue_id == '':
-        return json_httpResponse({'result': 'failed'})
+        return _json_failed()
     repo = RepoManager.get_repo_by_id(int(repo_id))
     issue = IssueManager.get_issue(int(repo_id), int(issue_id))
     if repo is None or issue is None:
-        return json_httpResponse({'result': 'failed'})
+        return _json_failed()
     if issue.assigned != request.user.id and repo.user_id != request.user.id:
-        return json_httpResponse({'result': 'failed'})
+        return _json_failed()
     orgi_issue = copy.copy(issue)
     if action == 'fixed':
         issue.status = 4
@@ -276,8 +276,7 @@ def do_issue(request):
         issue.comment_count = issue.comment_count + 1
     issue.save()
     FeedManager.feed_issue_change(request.user, repo, orgi_issue, issue.id)
-    response_dictionary = {'result': 'sucess'}
-    return json_httpResponse(response_dictionary)
+    return _json_ok()
         
 @login_required
 @repo_permission_check

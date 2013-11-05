@@ -29,7 +29,7 @@ from gitshell.stats.models import StatsManager
 from gitshell.settings import SECRET_KEY, REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, PULLREQUEST_REPO_PATH, logger
 from gitshell.daemon.models import EventManager
 from gitshell.objectscache.models import CacheKey
-from gitshell.viewtools.views import json_httpResponse
+from gitshell.viewtools.views import json_httpResponse, json_success, json_failed
 from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo, dropbox_share_direct
 
 lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml', 'go': 'Go'}
@@ -620,7 +620,7 @@ def members(request, user_name, repo_name):
 def add_member(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
-        return json_httpResponse({'code': 403, 'result': 'failed', 'message': u'没有相关权限'})
+        return json_failed(403, u'没有相关权限')
     username_or_email = request.POST.get('username_or_email').strip()
     user = None
     if '@' in username_or_email:
@@ -632,20 +632,20 @@ def add_member(request, user_name, repo_name):
             userViaRef.save()
             join_url = 'https://gitshell.com/join/ref/%s/' % ref_hash
             Mailer().send_join_via_repo_addmember(request.user, repo, username_or_email, join_url)
-            return json_httpResponse({'code': 301, 'result': 'failed', 'message': u'邀请已经发送到 %s.' % username_or_email})
+            return json_failed(301, u'邀请已经发送到 %s.' % username_or_email)
     else:
         user = GsuserManager.get_user_by_name(username_or_email)
     if not user:
-        return json_httpResponse({'code': 500, 'result': 'failed', 'message': u'没有相关用户，不能是团队账户'})
+        return json_failed(500, u'没有相关用户，不能是团队账户')
     userprofile = GsuserManager.get_userprofile_by_id(user.id)
     if not userprofile or userprofile.is_team_account == 1:
-        return json_httpResponse({'code': 500, 'result': 'failed', 'message': u'没有相关用户，不能是团队账户'})
+        return json_failed(500, u'没有相关用户，不能是团队账户')
     length = len(RepoManager.list_repomember(repo.id))
     if length < 100:
         RepoManager.add_member(repo, user)
-        return json_httpResponse({'code': 200, 'result': 'ok', 'message': u'添加成员 %s 成功' % username_or_email})
+        return json_success(u'添加成员 %s 成功' % username_or_email)
     else:
-        return json_httpResponse({'code': 500, 'result': 'failed', 'message': u'成员数目不得超过100位'})
+        return json_failed(500, u'成员数目不得超过100位')
 
 @login_required
 @repo_permission_check
@@ -653,11 +653,11 @@ def add_member(request, user_name, repo_name):
 def remove_member(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None or repo.user_id != request.user.id:
-        return json_httpResponse({'code': 403, 'result': 'failed', 'message': u'没有相关权限'})
+        return json_failed(403, u'没有相关权限')
     username = request.POST.get('username')
     user = GsuserManager.get_user_by_name(username)
     RepoManager.remove_member(repo, user)
-    return json_httpResponse({'code': 200, 'result': 'ok', 'message': u'移除成员 %s 成功' % username})
+    return json_success(u'移除成员 %s 成功' % username)
 
 @repo_permission_check
 def pulse(request, user_name, repo_name):

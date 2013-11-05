@@ -13,7 +13,7 @@ from gitshell.feed.models import Feed, FeedManager
 from gitshell.repo.models import RepoManager
 from gitshell.gsuser.models import GsuserManager
 from gitshell.todolist.models import Scene, ToDoList, ToDoListManager
-from gitshell.viewtools.views import json_httpResponse, obj2dict
+from gitshell.viewtools.views import json_httpResponse, json_success, json_failed, obj2dict
 
 @login_required
 def todo(request):

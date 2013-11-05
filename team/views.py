@@ -20,7 +20,7 @@ from gitshell.gsuser.views import get_feeds_as_json
 from gitshell.gssettings.Form import TeamprofileForm
 from gitshell.team.models import TeamManager, TeamMember
 from gitshell.todolist.views import todo
-from gitshell.viewtools.views import json_httpResponse, obj2dict
+from gitshell.viewtools.views import json_httpResponse, json_success, json_failed, obj2dict
 
 @login_required
 def dashboard(request, username):
@@ -185,13 +185,13 @@ def add_member(request, username):
             userViaRef.save()
             join_url = 'https://gitshell.com/join/ref/%s/' % ref_hash
             Mailer().send_join_via_team_addmember(request.user, teamUser, username_or_email, join_url)
-            return json_httpResponse({'code': 301, 'result': 'failed', 'message': u'邮箱 %s 未注册，已经发送邮件邀请对方注册' % username_or_email})
+            return json_failed(301, u'邮箱 %s 未注册，已经发送邮件邀请对方注册' % username_or_email)
         teamMember = TeamManager.add_teamMember_by_email(teamUser, username_or_email)
     else:
         teamMember = TeamManager.add_teamMember_by_username(teamUser, username_or_email)
     if not teamMember:
-        return json_httpResponse({'code': 404, 'message': u'没有相关用户，不能是团队帐号'})
-    return json_httpResponse({'code': 200, 'message': u'成功添加用户'})
+        return json_failed(404, u'没有相关用户，不能是团队帐号')
+    return json_success(u'成功添加用户')
 
 @login_required
 @require_http_methods(["POST"])
@@ -204,8 +204,8 @@ def member_leave(request, username):
     if _has_other_admin_teamMember(request, teamMember, teamMembers):
         teamMember.visibly = 1
         teamMember.save()
-        return json_httpResponse({'code': 200, 'message': u'用户退出成功'})
-    return json_httpResponse({'code': 500, 'message': u'用户退出失败，一个团队帐号至少需要保留一个管理员'})
+        return json_success(u'用户退出成功')
+    return json_failed(500, u'用户退出失败，一个团队帐号至少需要保留一个管理员')
 
 @login_required
 @require_http_methods(["POST"])
@@ -217,8 +217,8 @@ def remove_member(request, username):
     if _has_other_admin_teamMember(request, manage_teamMember, teamMembers):
         manage_teamMember.visibly = 1
         manage_teamMember.save()
-        return json_httpResponse({'code': 200, 'message': u'删除用户成功'})
-    return json_httpResponse({'code': 500, 'message': u'删除用户失败，一个团队帐号至少需要保留一个管理员'})
+        return json_success(u'删除用户成功')
+    return json_failed(500, u'删除用户失败，一个团队帐号至少需要保留一个管理员')
 
 @login_required
 @require_http_methods(["POST"])
@@ -228,7 +228,7 @@ def grant_admin(request, username):
         return _response_not_manage_rights(request)
     manage_teamMember.is_admin = 1
     manage_teamMember.save()
-    return json_httpResponse({'code': 200, 'message': u'赋予管理员权限'})
+    return json_success(u'赋予管理员权限')
 
 @login_required
 @require_http_methods(["POST"])
@@ -240,8 +240,8 @@ def cancal_admin(request, username):
     if _has_other_admin_teamMember(request, manage_teamMember, teamMembers):
         manage_teamMember.is_admin = 0
         manage_teamMember.save()
-        return json_httpResponse({'code': 200, 'message': u'赋予管理员权限'})
-    return json_httpResponse({'code': 500, 'message': u'解除管理员失败，一个团队帐号至少需要保留一个管理员'})
+        return json_success(u'解除管理员权限')
+    return json_failed(500, u'解除管理员失败，一个团队帐号至少需要保留一个管理员')
 
 @login_required
 def destroy(request, username):
@@ -273,7 +273,7 @@ def destroy_confirm(request, username):
     teamUser.delete()
     teamUserprofile.visibly = 1
     teamUserprofile.save()
-    return json_httpResponse({'code': 200, 'message': u'已经删除了团队帐号'})
+    return json_success(u'已经删除了团队帐号')
 
 def _get_teamMember_by_manageTeamMemberId(request):
     teamMember_id = int(request.POST.get('teamMember_id', 0))
@@ -292,7 +292,7 @@ def _has_other_admin_teamMember(request, manage_teamMember, teamMembers):
     return False
 
 def _response_not_manage_rights(request):
-    return json_httpResponse({'code': 403, 'message': u'没有管理员权限'})
+    return json_failed(403, u'没有管理员权限')
 
 def _get_common_team_dict(request, teamUser, teamUserprofile):
     has_admin_rights = False

@@ -27,7 +27,7 @@ from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
 from gitshell.settings import logger
 from gitshell.feed.views import get_feeds_as_json
-from gitshell.viewtools.views import json_httpResponse
+from gitshell.viewtools.views import json_httpResponse, json_success, json_failed
 from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo
 
 def user(request, user_name):
@@ -257,38 +257,35 @@ def recommend_delete(request, user_name, recommend_id):
     gsuser = GsuserManager.get_user_by_name(user_name)
     if gsuser is None:
         raise Http404
-    response_dictionary = {'result': 'success'}
     recommend = GsuserManager.get_recommend_by_id(recommend_id)
     if recommend.user_id == request.user.id:
         recommend.visibly = 1
         recommend.save()
-    return json_httpResponse(response_dictionary)
+    return json_success(u'成功删除评论')
 
 @login_required
 @require_http_methods(["POST"])
 def watch(request, user_name):
-    response_dictionary = {'result': 'success'}
     gsuserprofile = GsuserManager.get_userprofile_by_name(user_name)
     if gsuserprofile is None:
         message = u'用户不存在'
-        return json_httpResponse({'result': 'failed', 'message': message})
+        return json_failed(404, message)
     if not RepoManager.watch_user(request.userprofile, gsuserprofile):
         message = u'关注失败，关注数量超过限制或者用户不允许关注'
-        return json_httpResponse({'result': 'failed', 'message': message})
-    return json_httpResponse(response_dictionary)
+        return json_failed(500, message)
+    return json_success(u'成功关注用户 %s' % user_name)
 
 @login_required
 @require_http_methods(["POST"])
 def unwatch(request, user_name):
-    response_dictionary = {'result': 'success'}
     gsuserprofile = GsuserManager.get_userprofile_by_name(user_name)
     if gsuserprofile is None:
         message = u'用户不存在'
-        return json_httpResponse({'result': 'failed', 'message': message})
+        return json_failed(404, message)
     if not RepoManager.unwatch_user(request.userprofile, gsuserprofile):
         message = u'取消关注失败，可能用户未被关注'
-        return json_httpResponse({'result': 'failed', 'message': message})
-    return json_httpResponse(response_dictionary)
+        return json_failed(500, message)
+    return json_success(u'成功取消关注用户 %s' % user_name)
 
 @login_required
 def switch(request, user_name, current_user_id):

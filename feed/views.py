@@ -16,7 +16,7 @@ from gitshell.issue.models import IssueManager, Issue, IssueComment
 from gitshell.issue.cons import conver_issues
 from gitshell.gsuser.models import GsuserManager
 from gitshell.todolist.views import todo
-from gitshell.viewtools.views import json_httpResponse, obj2dict
+from gitshell.viewtools.views import json_httpResponse, json_success, json_failed, obj2dict
 
 def index(request):
     if request.user.is_authenticated():

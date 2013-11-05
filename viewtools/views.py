@@ -7,6 +7,12 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 def json_httpResponse(o):
     return json_httpResponse_obj2dict(o, True)
 
+def json_success(message):
+    return json_httpResponse({'code': 200, 'result': 'success', 'message': message})
+
+def json_failed(code, message):
+    return json_httpResponse({'code': code, 'result': 'failed', 'message': message})
+
 def json_httpResponse_obj2dict(o, is_obj2dict):
     if is_obj2dict:
         o = obj2dict(o)
