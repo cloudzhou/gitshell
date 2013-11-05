@@ -59,4 +59,7 @@ update issue_issue set user_id = (select user_id from repo_repo where repo_id=is
 alter table feed_notifmessage add COLUMN `repo_id` int(11) NOT NULL after `visibly`
 alter table feed_notifmessage add COLUMN `user_id` int(11) NOT NULL after `visibly`;
 
-
+alter table gsuser_userprofile add COLUMN `has_joined_repo` int(11) NOT NULL after `unread_message`;
+alter table gsuser_userprofile change `is_join_team` `has_joined_team` int(11) NOT NULL;
+update gsuser_userprofile set has_joined_repo = 1 where id in  (select user_id from repo_repomember where visibly = 0);
+update gsuser_userprofile set has_joined_team = 1 where id in  (select user_id from team_teammember where visibly = 0);
