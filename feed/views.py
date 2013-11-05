@@ -256,6 +256,8 @@ def _fillwith_issue_event(request, feeds, usernames, userIds):
         issue = IssueManager.get_issue_by_id(feed.relative_id)
         if issue is not None:
             repo = RepoManager.get_repo_by_id(issue.repo_id)
+            if repo is None:
+                continue
             issue.username = repo.username
             issue.reponame = repo.name
             feed.relative_obj = issue
@@ -265,7 +267,7 @@ def _fillwith_pull_event(request, feeds, usernames, userIds):
         if not feed.is_pull_event():
             continue
         pullRequest = RepoManager.get_pullRequest_by_id(feed.relative_id)
-        if pullRequest is None:
+        if pullRequest is None or pullRequest.source_repo is None or pullRequest.desc_repo is None:
             continue
         action = ''
         pullRequest_view = {'id': pullRequest.id, 'desc_repo_username': pullRequest.desc_repo.username, 'desc_repo_name': pullRequest.desc_repo.name, 'short_title': pullRequest.short_title, 'create_time': time.mktime(pullRequest.create_time.timetuple()), 'modify_time': time.mktime(pullRequest.modify_time.timetuple())}
