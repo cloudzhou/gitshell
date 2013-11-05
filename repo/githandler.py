@@ -4,6 +4,9 @@ import time, json, hashlib, shutil
 from django.core.cache import cache
 from subprocess import check_output, Popen, PIPE
 from chardet.universaldetector import UniversalDetector
+from pygments import highlight 
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters import HtmlFormatter 
 from gitshell.objectscache.models import CacheKey
 from gitshell.gsuser.models import GsuserManager
 from gitshell.repo.models import RepoManager
@@ -70,6 +73,16 @@ class GitHandler():
         finally: 
             signal.signal(signal.SIGPIPE, signal.SIG_IGN)
         return ''
+
+    def repo_cat_pygmentize_file(self, repo_path, commit_hash, path, lang):
+        stage_file = self._get_stage_file(repo_path, commit_hash, path) + '.pygmentize'
+        result = self._read_load_stage_file(stage_file)
+        if result is not None:
+            return result['pygmentize_blob']
+        blob = self.repo_cat_file(repo_path, commit_hash, path)
+        pygmentize_blob = self._pygmentize(blob, lang)
+        self._dumps_write_stage_file({'pygmentize_blob': pygmentize_blob}, stage_file)
+        return pygmentize_blob
     
     def repo_log_file(self, repo_path, from_commit_hash, commit_hash, log_size, path):
         (from_commit_hash, commit_hash, path) = self._all_to_utf8(from_commit_hash, commit_hash, path)
@@ -740,6 +753,16 @@ class GitHandler():
         diff['total_delete_line'] = total_delete_line
         diff['abs_change_line'] = abs_change_line
         return diff
+
+    def _pygmentize(self, code, lang):
+        lang = lang.lower()
+        lexer = get_lexer_by_name(lang, encoding='utf-8')
+        formatter = HtmlFormatter(linenos=True,
+                              encoding='utf-8',
+                              cssclass='%s highlight' % lang
+                              )
+        result = highlight(code, lexer, formatter)
+        return result
 
 if __name__ == '__main__':
     gitHandler = GitHandler()

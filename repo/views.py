@@ -4,9 +4,6 @@ import json, time, urllib
 import shutil, copy, random
 from sets import Set
 from datetime import datetime, timedelta
-from pygments import highlight
-from pygments.lexers import *
-from pygments.formatters import HtmlFormatter
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
@@ -161,6 +158,7 @@ def _blob(request, user_name, repo_name, refs, path, render_method):
     gitHandler = GitHandler()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
     blob = u''; lang = 'Text'; brush = 'text'
+    is_markdown = path.endswith('.markdown') or path.endswith('.md') or path.endswith('.mkd')
     if repo.auth_type == 0 or RepoManager.is_allowed_write_access_repo(repo, request.user):
         paths = path.split('.')
         if len(paths) > 0:
@@ -168,8 +166,10 @@ def _blob(request, user_name, repo_name, refs, path, render_method):
             if suffix in lang_suffix and lang_suffix[suffix] in brush_aliases:
                 lang = lang_suffix[suffix]
                 brush = brush_aliases[lang]
-        blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
-    is_markdown = path.endswith('.markdown') or path.endswith('.md') or path.endswith('.mkd')
+        if is_markdown:
+            blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path, lang)
+        else:
+            blob = gitHandler.repo_cat_pygmentize_file(abs_repopath, commit_hash, path, lang)
     response_dictionary = {'mainnav': 'repo', 'current': current, 'title': title, 'path': path, 'blob': blob, 'lang': lang, 'brush': brush, 'is_markdown': is_markdown}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     if render_method == 'ajax':

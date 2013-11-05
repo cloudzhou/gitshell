@@ -28,8 +28,7 @@
         {% if is_markdown %}
           <div id="id_markdown_content" class="markdown hide">{{ blob }}</div>
         {% else %}
-          {% load pygmentize %}
-          {{ blob|pygmentize:lang.lower|safe }}
+          {{ blob|safe }}
         {% endif %}
       {% endif %}
     </div>          
