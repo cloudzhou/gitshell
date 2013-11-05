@@ -60,8 +60,8 @@
                 {% endif %}
               </ul>
             {% else %}
-            <a href="#" class="btn dropdown-toggle" id="urlType">HTTP{% if repo.auth_type == 0 %}<i class="icon-caret-down"></i>{% endif %}</a>
-              <ul class="dropdown-menu nav nav-list">
+              <a href="#" class="btn dropdown-toggle" id="urlType"><span>HTTP</span>{% if repo.auth_type == 0 %}<i class="icon-caret-down"></i>{% endif %}</a>
+              <ul class="nav nav-list" id="urlTypeMenu">
                 <li><a href="#" id="httpFork">HTTP</a></li>
                 {% if repo.auth_type == 0 %}
                   <li><a href="#" id="gitFork">GIT</a></li>
@@ -71,11 +71,7 @@
             </dt>
 
             <dd class="url-holder">
-            {% if is_repo_member or is_teamMember %}
-            <input class="middle" id="urlData" type="text" value="https://gitshell.com/{{user_name}}/{{repo_name}}.git" readonly="readonly">
-            {% elif repo.auth_type == 0 %}
-            <input class="middle" id="urlData" type="text" value="git@gitshell.com:{{user_name}}/{{repo_name}}.git" readonly="readonly">
-            {% endif %}
+              <input class="middle" id="urlData" type="text" value="https://gitshell.com/{{user_name}}/{{repo_name}}.git" readonly="readonly">
             </dd>
 
           </dl>
