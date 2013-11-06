@@ -89,6 +89,11 @@ git config credential.helper cache</pre>
 git config credential.helper 'cache --timeout=10000000'</pre>
           </li>
           <li>
+            <p>git默认的postbuffer是比较小的，在push一个大的commit会出现错误，设置postbuffer，相关链接看<a target="_blank" href="http://stackoverflow.com/questions/2702731/git-fails-when-pushing-commit-to-github">这里</a>：</p>
+            <pre class="command well">
+git config http.postBuffer 524288000</pre>
+          </li>
+          <li>
             <p>在使用多个账户的情况下，为了避免混淆用户，可以使用@yourname来强制指定，比如：</p>
             <pre class="command well">
 git clone https://cloudzhou@gitshell.com/cloudzhou/gitshell.git</pre>
