@@ -101,11 +101,11 @@
                     <h2 id="https" class="heading">使用http协议</h2>
                     <p>对于较新版本的git，比如1.7.9以上，我们推荐使用http协议来访问git仓库，不需配置ssh key，使用注册用户名和密码就可以访问。</p>
                     <p>使用git credential-cache来记住用户名和密码：</p>
-                    <pre class="well"><code>git config credential.helper cache</code></pre>
+                    <pre class="well"><code>git config --global credential.helper cache</code></pre>
                     <p>如果需要设置cache的时间，设置记住用户名和密码的时间(秒为单位)：</p>
-                    <pre class="well"><code>git config credential.helper 'cache --timeout=10000000'</code></pre>
+                    <pre class="well"><code>git config --global credential.helper 'cache --timeout=10000000'</code></pre>
                     <p>git默认的postbuffer是比较小的，在push一个大的commit会出现错误，设置postbuffer，相关链接看<a target="_blank" href="http://stackoverflow.com/questions/2702731/git-fails-when-pushing-commit-to-github">这里</a>：</p>
-                    <pre class="well"><code>git config http.postBuffer 524288000</code></pre>
+                    <pre class="well"><code>git config --global http.postBuffer 524288000</code></pre>
                     <p>在使用多个账户的情况下，为了避免混淆用户，可以使用@yourname来强制指定，比如：</p>
                     <pre class="well"><code>git clone https://cloudzhou@gitshell.com/cloudzhou/gitshell.git</code></pre>
                     <h2 id="sshkey" class="heading">管理ssh key</h2>
@@ -115,26 +115,37 @@
                     <h4 class="heading">快速入门：</h4>
                     <p>如果您使用任何类unix系统，第一次配置 ssh 公钥密钥，请按照步骤，复制灰色背景字符，在终端执行命令，和编辑文件</p>
                     <ol>
-                        <li>
-                            <p>执行以下命令，生成 ssh 密钥, 保存在 <span class="label text-bold">~/.ssh/gitshell.com_rsa</span></p>
-                            <pre class="well"><code>ssh-keygen -t rsa  -N '' -f ~/.ssh/gitshell.com_rsa;</code></pre>
-                        </li>
-                        <li>
-                            <p>编辑 ssh 客户端配置文件 <span class="label">~/.ssh/config</span>，使用您熟悉的编辑器，在后面添加</p>
-                            <pre class="well">
-                                <code>
+                      <li>
+                        <p>如果不存在~/.ssh/id_rsa，执行以下命令，生成 ssh 密钥</p>
+                        <pre class="well"><code>ssh-keygen -t rsa  -N ''</code></pre>
+                        <pre class="well"><code>cat ~/.ssh/id_rsa.pub</code></pre>
+                        <p>点击<a target="_blank" href="/settings/sshpubkey/">ssh public key 管理</a>，输入标识保存公钥</p>
+                      </li>
+                      <li>
+                        <p>[可选]如果你要生成特定 ssh 密钥只用于gitshell（是第一步的另外可选方案）</span></p>
+                        <ol type="a">
+                            <li>
+                                <p>执行以下命令，生成 ssh 密钥, 保存在 <span class="label text-bold">~/.ssh/gitshell.com_rsa</span></p>
+                                <pre class="well"><code>ssh-keygen -t rsa  -N '' -f ~/.ssh/gitshell.com_rsa;</code></pre>
+                            </li>
+                            <li>
+                                <p>编辑 ssh 客户端配置文件 <span class="label">~/.ssh/config</span>，使用您熟悉的编辑器，在后面添加</p>
+                                <pre class="well">
+                                    <code>
 Host gitshell.com
  User {{ user.username }}
  IdentityFile ~/.ssh/gitshell.com_rsa
  PreferredAuthentications publickey</code>
-                      </pre>
-                  </li>
-                  <li>
-                      <p>查看 ssh 公钥，使用 cat 命令，或者用编辑器打开</p>
-                      <pre class="well"><code>cat ~/.ssh/gitshell.com_rsa.pub</code></pre>
-                  </li>
-                  <li><p>请复制 ssh 公钥的文本内容，点击<a target="_blank" href="/settings/sshpubkey/">ssh public key 管理</a>，输入标识保存公钥</p></li>
-                  <li><p>ssh 公钥配置之后就可以长期使用了，请保护好 <span class="label">~/.ssh/gitshell.com_rsa</span> 密钥。点击<a target="_blank" href="/{{ user.username }}/-/repo/create/">创建仓库</a>，详细仓库说明有助于推广</p></li>
+                                </pre>
+                          </li>
+                          <li>
+                              <p>查看 ssh 公钥，使用 cat 命令，或者用编辑器打开，请复制 ssh 公钥的文本内容</p>
+                              <pre class="well"><code>cat ~/.ssh/gitshell.com_rsa.pub</code></pre>
+                              <p>点击<a target="_blank" href="/settings/sshpubkey/">ssh public key 管理</a>，输入标识保存公钥</p>
+                          </li>
+                        </ol>
+                      </li>
+                  <li><p>ssh 公钥配置之后就可以长期使用了，请保护好密钥。点击<a target="_blank" href="/{{ user.username }}/-/repo/create/">创建仓库</a>，详细仓库说明有助于推广</p></li>
                   <li>
                       <p>你已经可以使用 gitshell 来托管代码了，以下是示范的操作，详细信息请<a href="/help/#learn">开始git的学习</a></p>
                       <pre class="well">
