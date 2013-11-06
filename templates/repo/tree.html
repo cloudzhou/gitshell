@@ -62,7 +62,36 @@
         {% else %}
           <tr>
             <td>
+              {% if current == 'index' %}
+                <div class="git-empty">
+                <fieldset>
+                <legend>设置 user.name 和 user.email</legend>
+                <pre class="dark">git config --global user.name "{{user.username}}"
+git config --global user.email "{{user.email}}"
+                </pre>
+                </fieldset>
+                <fieldset>
+                <legend>创建一个全新的仓库</legend>
+                <pre class="dark">git init {{repo_name}}
+cd {{repo_name}}
+touch README
+git add README
+git commit -m 'first commit'
+<span class="clone">git remote add origin https://gitshell.com/{{user_name}}/{{repo_name}}.git</span>
+git push -u origin master
+                </pre>
+                </fieldset>
+                <fieldset>
+                <legend>导入现有的仓库</legend>
+                <pre class="dark">cd existing_git_repo
+<span class="clone">git remote add origin https://gitshell.com/{{user_name}}/{{repo_name}}.git</span>
+git push -u origin master
+                </pre>
+                </fieldset>
+                </div>
+              {% else %}
               <p class="alert blank-alert"><i class="icon-bell"></i>没有提交源代码</p>
+              {% endif %}
             </td>
           </tr>
         {% endif %}
