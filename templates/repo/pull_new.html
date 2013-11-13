@@ -8,19 +8,6 @@
   {# create pull request #}
   <div class="repo-refs colspan">
     <div class="ref span">
-      <select id="sourceRepo">
-        {% for repo in pull_repo_list %}
-          {% if repo.id == source_repo.id %}
-            <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
-          {% else %}
-            <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
-          {% endif %}
-        {% endfor %}
-      </select>
-      <select id="sourceRefs"></select>
-    </div>
-    <div class="span chevron"><i class="icon-caret-right"></i></div>
-    <div class="ref span">
       <select id="descRepo">
         {% for repo in pull_repo_list %}
           {% if repo.username == desc_repo.username and repo.name == desc_repo.name %}
@@ -31,6 +18,19 @@
         {% endfor %}
       </select>
       <select id="descRefs"></select>
+    </div>
+    <div class="span chevron"><i class="icon-caret-left"></i></div>
+    <div class="ref span">
+      <select id="sourceRepo">
+        {% for repo in pull_repo_list %}
+          {% if repo.id == source_repo.id %}
+            <option selected="selected" value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+          {% else %}
+            <option value="{{repo.username}}/{{repo.name}}">{{repo.username}}/{{repo.name}}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+      <select id="sourceRefs"></select>
     </div>
   </div>
 
@@ -93,9 +93,9 @@
       if(source_refs === undefined || desc_refs === undefined) {
         return;
       }
-      repoComparer.from_refs = desc_refs;
-      repoComparer.to_refs = source_refs;
-      repoComparer.setPullUsername(desc_username, source_username);
+      repoComparer.from_refs = source_refs;
+      repoComparer.to_refs = desc_refs;
+      repoComparer.setPullUsername(source_username, desc_username);
       $('#pullForm').hide();
       repoComparer.renderCompare($('#commitsDiff'), function(json){
         if(json.allow_merge) {

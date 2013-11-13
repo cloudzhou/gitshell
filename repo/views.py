@@ -282,7 +282,7 @@ def compare_default(request, user_name, repo_name):
 
 @repo_permission_check
 def compare_master(request, user_name, repo_name, refs):
-    return compare_commit(request, user_name, repo_name, refs, 'master')
+    return compare_commit(request, user_name, repo_name, 'master', refs)
 
 @repo_permission_check
 def compare_commit(request, user_name, repo_name, from_refs, to_refs):
@@ -353,7 +353,7 @@ def pull_new_default(request, user_name, repo_name):
 
 @login_required
 @repo_permission_check
-def pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
+def pull_new(request, user_name, repo_name, desc_username, desc_refs, source_username, source_refs):
     title = u'%s / %s / 创建合并请求' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     source_repo = RepoManager.get_repo_by_forkrepo(source_username, repo)
@@ -555,8 +555,8 @@ def _get_repo_pull_args(user_name, repo_name, pullRequest_id):
     
 @repo_permission_check
 @require_http_methods(["POST"])
-def diff_default(request, user_name, repo_name, pre_commit_hash, commit_hash, context):
-    return diff(request, user_name, repo_name, pre_commit_hash, commit_hash, context, '.')
+def diff_default(request, user_name, repo_name, from_commit_hash, to_commit_hash, context):
+    return diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, context, '.')
 
 @repo_permission_check
 @require_http_methods(["POST"])

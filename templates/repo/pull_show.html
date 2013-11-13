@@ -6,8 +6,10 @@
 
 <div id="id_merge_process" class="hide colspan">
   <h2 class="heading">
-  &gt; 将仓库分支 {{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}
-  合并到 {{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}} 
+  &gt; 将仓库分支
+{{pullRequest.source_repo.username}}/{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}
+  合并到
+{{pullRequest.desc_repo.username}}/{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}} 
   </h2>
   <div class="span10">
     <pre id="id_merge_output" class="shell"></pre>
@@ -20,14 +22,19 @@
 <div id="id_merge_action">
 <ul class="nav nav-tabs">
   <li class="active"><a href="#summary" data-toggle="tab">简介</a></li>
-  <li><a href="#commits" class="cPullRequestAction" data-toggle="tab" data-action="commit">提交</a></li>
+  <li><a href="#pullRequestCommits" class="cPullRequestAction" data-toggle="tab" data-action="commit">提交</a></li>
   <li><a href="#pullRequestDiff" class="cPullRequestAction" data-toggle="tab" data-action="diff">代码差异</a></li>
 </ul>
 
 <div class="tab-content pulls">
   <section class="tab-pane active" id="summary">
     <div class="refs">
-      <p class="alert alert-info"><span class="pull-id">#{{pullRequest.id}}</span>请求把<span class="label label-success label-mini text-shadow-reverse">{{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}</span>合并到<span class="label label-success label-mini text-shadow-reverse">{{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}}</span></p>
+      <p class="alert alert-info"><span class="pull-id">#{{pullRequest.id}}</span>
+      请求把<span class="label label-success label-mini text-shadow-reverse">
+      {{pullRequest.source_repo.name}}:{{pullRequest.source_refname}}
+      </span>合并到<span class="label label-success label-mini text-shadow-reverse">
+      {{pullRequest.desc_repo.name}}:{{pullRequest.desc_refname}}
+      </span></p>
     </div>
     <div class="pull">
       <figure class="avatar">
@@ -51,7 +58,7 @@
     </div>
   </section>
 
-  <section class="tab-pane" id="commits"></section>
+  <section class="tab-pane" id="pullRequestCommits"></section>
 
   <section class="tab-pane" id="pullRequestDiff"></section>
 
@@ -70,22 +77,23 @@
 
                 var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
 
-                repoComparer.setPullUsername('{{pullRequest.desc_repo.username}}', '{{pullRequest.source_repo.username}}');
-                repoComparer.from_refs = '{{pullRequest.desc_refname}}';
-                repoComparer.to_refs = '{{pullRequest.source_refname}}';
-                repoComparer.renderCompare($('#commitsDiff'), null);
+                repoComparer.setPullUsername('{{pullRequest.source_repo.username}}', '{{pullRequest.desc_repo.username}}');
+                repoComparer.from_refs = '{{pullRequest.source_refname}}';
+                repoComparer.to_refs = '{{pullRequest.desc_refname}}';
+                //repoComparer.renderCompare($('#commitsDiff'), null);
 
+                repoComparer.registerLineContextEvent($('#pullRequestDiff'));
                 $('.cPullRequestAction').click(
                   function() {
                     var action = $(this).data('action');
                     $('.ajaxLoader').show();
                     if(action == 'commit') {
-                      repoComparer.loadCommits($('#commits'), null, null, null);
+                      repoComparer.loadCommits($('#pullRequestCommits'), null, null, null);
                     } else if(action == 'diff') {
                       repoComparer.loadDiff($('#pullRequestDiff'), null, null);
                     }
                   }
-                  );
+                );
 
                 $('#id_pull_merge').click(function(){
                   $('#id_merge_output').show();
