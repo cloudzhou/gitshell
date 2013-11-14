@@ -1335,10 +1335,6 @@ def __response_edit_repo_error(request, response_dictionary, error):
     response_dictionary['error'] = error
     return render_to_response('repo/settings.html', response_dictionary, context_instance=RequestContext(request))
 
-@login_required
-def get_commits_by_ids(ids):
-    return RepoManager.get_commits_by_ids(ids)
-
 def fulfill_gitrepo(repo, remote_git_url):
     gitHandler = GitHandler()
     username = repo.username

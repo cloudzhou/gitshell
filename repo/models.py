@@ -74,6 +74,8 @@ class PushRevRef(BaseModel):
     refname = models.CharField(max_length=64)
     status = models.IntegerField(default=0) 
 
+    commits = []
+
 # commit history from git: commit_hash parent_hashes tree_hash author committer committer_date subject
 # git log -100 --pretty='%h  %p  %t  %an  %cn  %ct  %s'
 class CommitHistory(BaseModel):
@@ -300,7 +302,7 @@ class RepoManager():
         return get(CommitHistory, id)
 
     @classmethod
-    def get_commits_by_ids(self, ids):
+    def list_commits_by_ids(self, ids):
         return get_many(CommitHistory, ids)
 
     @classmethod
@@ -311,6 +313,10 @@ class RepoManager():
     def list_commit_by_repoId_pushrevrefId(self, repo_id, pushrevref_id, offset, row_count):
         commitHistorys = query(CommitHistory, repo_id, 'commithistory_l_repoId_pushrevrefId', [repo_id, pushrevref_id, offset, row_count])
         return commitHistorys
+
+    @classmethod
+    def get_pushrevref_by_id(self, id):
+        return get(PushRevRef, id)
 
     @classmethod
     def list_repo_team_memberUser(self, repo_id):

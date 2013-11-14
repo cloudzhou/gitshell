@@ -105,18 +105,16 @@ def bulk_create_commits(user, userprofile, repo, repopath, push_id, pushUser, ol
     # list uniq commitHistorys and convert to pushRevRef
     commitHistorys = __list_not_exists_commitHistorys(repo, raw_commitHistorys)
     if len(commitHistorys) == 0:
-        return
+        return 0
     (pushRevRef, commitHistorys) = __create_pushRevRef_and_save(repo, commitHistorys, push_id, pushUser, oldrev, newrev, refname)
+
+    feedAction = FeedAction()
+    # generate feed data
+    push_revref_feed = __get_push_revref_feed(repo, pushRevRef)
+    __add_user_and_repo_feed(feedAction, userprofile, repo, pushRevRef, push_revref_feed)
 
     # user username, email dict
     (member_username_dict, member_email_dict) = __get_member_username_email_dict(repo)
-
-    # generate feed data
-    push_revref_feed = __get_push_revref_feed(repo, pushRevRef)
-        
-    # add feed
-    feedAction = FeedAction()
-    __add_user_and_repo_feed(feedAction, userprofile, repo, pushRevRef, push_revref_feed)
 
     # at somebody action
     __notif(commitHistorys, repo, member_username_dict, member_email_dict)

@@ -50,6 +50,9 @@ class Feed(BaseModel):
     def create_push_commit(self, user_id, repo_id, relative_id):
         return self.create(user_id, repo_id, FEED_CATE.PUSH, FEED_TYPE.PUSH_COMMIT_MESSAGE, relative_id)
 
+    def is_push_revref(self):
+        return self.feed_type == FEED_TYPE.PUSH_REVREF;
+
     def is_commit_message(self):
         return self.feed_type == FEED_TYPE.PUSH_COMMIT_MESSAGE
 

@@ -166,11 +166,12 @@ def feed_by_ids(request):
         feeds = _list_feeds(request, ids_str)
     usernames = []
     userIds = [x.user_id for x in feeds]
+    _fillwith_push_revref(request, feeds, usernames, userIds)
     _fillwith_commit_message(request, feeds, usernames, userIds)
     _fillwith_issue_event(request, feeds, usernames, userIds)
     _fillwith_pull_event(request, feeds, usernames, userIds)
-    (gravatar_dict, gravatar_userId_dict) = _get_gravatar_dict(usernames, userIds)
-    response_dictionary = {'feeds': feeds, 'gravatar_dict': gravatar_dict, 'gravatar_userId_dict': gravatar_userId_dict}
+    (gravatar_username_dict, gravatar_userId_dict) = _get_gravatar_dict(usernames, userIds)
+    response_dictionary = {'feeds': feeds, 'gravatar_username_dict': gravatar_username_dict, 'gravatar_userId_dict': gravatar_userId_dict}
     return json_httpResponse(response_dictionary)
 
 def _get_gravatar_dict(username_list, userIds):
@@ -205,36 +206,53 @@ def _list_feeds(request, ids_str):
     feeds = FeedManager.list_feed_by_ids(ids)
     return feeds
 
+def _fillwith_push_revref(request, feeds, usernames, userIds):
+    revref_dict = {}
+    for feed in feeds:
+        print feed.id, feed.feed_type
+        if not feed.is_push_revref():
+            continue
+        push_revref = RepoManager.get_pushrevref_by_id(feed.relative_id)
+        if not push_revref:
+            continue
+        push_revref.commits = RepoManager.list_commit_by_repoId_pushrevrefId(push_revref.repo_id, push_revref.id, 0, 10)
+        revref_dict[push_revref.id] = push_revref
+    for feed in feeds:
+        if feed.is_push_revref() and feed.relative_id in revref_dict:
+            feed.relative_obj = revref_dict[feed.relative_id]
+
 def _fillwith_commit_message(request, feeds, usernames, userIds):
     commit_ids = []
     for feed in feeds:
         if feed.is_commit_message():
-            commit_ids.append(feed.relative_id)
+           commit_ids.append(feed.relative_id)
     if len(commit_ids) == 0:
         return
-    commits = RepoManager.get_commits_by_ids(commit_ids)
-    repo_ids = [x.repo_id for x in commits]
-    repos = RepoManager.list_repo_by_ids(repo_ids)
-    repos_dict = dict([(x.id, x) for x in repos])
-    user_ids = [x.user_id for x in repos]
-    users = GsuserManager.list_user_by_ids(user_ids)
-    users_dict = dict([(x.id, x) for x in users])
-    
+    commit_view_dict = _convert_to_commit_view_dict(commit_ids, usernames)
+    # fillwith feed
+    for feed in feeds:
+        if feed.is_commit_message() and feed.relative_id in commit_view_dict:
+            feed.relative_obj = commit_view_dict[feed.relative_id]
+
+def _convert_to_commit_view_dict(commit_ids, usernames):
     commit_view_dict = {}
+    repos_dict = {}; allowed_write_access_dict = {}
+    commits = RepoManager.list_commits_by_ids(commit_ids)
     for commit in commits:
         repo_id = commit.repo_id
         if repo_id not in repos_dict:
-            continue
+            repo = RepoManager.get_repo_by_id(repo_id)
+            if not repo:
+                continue
+            repos_dict[repo_id] = repo
         repo = repos_dict[repo_id]
         if repo.auth_type == 2:
-            if not request.user.is_authenticated() or not RepoManager.is_allowed_write_access_repo(repo, request.user):
-                continue
+            if repo.id not in allowed_write_access_dict:
+                if not request.user.is_authenticated() or not RepoManager.is_allowed_write_access_repo(repo, request.user):
+                    continue
+                allowed_write_access_dict[repo.id] = 1
         commit_view = {}
         commit_view['id'] = commit.id
-        if repo.user_id in users_dict:
-            commit_view['user_name'] = users_dict[repo.user_id].username
-        else:
-            commit_view['user_name'] = ''
         commit_view['repo_username'] = repo.username
         commit_view['repo_name'] = repo.name
         commit_view['commit_hash'] = commit.commit_hash
@@ -244,10 +262,7 @@ def _fillwith_commit_message(request, feeds, usernames, userIds):
         commit_view['committer_date'] = time.mktime(commit.committer_date.timetuple())
         commit_view['subject'] = commit.subject
         commit_view_dict[commit.id] = commit_view
-    # fillwith feed
-    for feed in feeds:
-        if feed.is_commit_message() and feed.relative_id in commit_view_dict:
-            feed.relative_obj = commit_view_dict[feed.relative_id]
+    return commit_view_dict
 
 def _fillwith_issue_event(request, feeds, usernames, userIds):
     for feed in feeds:
@@ -315,4 +330,5 @@ def feeds_as_json(feeds):
     for feed in feeds:
         json_arr.append(list(feed))
     return json_arr
-    
+
+
