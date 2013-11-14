@@ -105,7 +105,7 @@ def keyauth(request, fingerprint, command):
     # author of the repo
     userPubkey = KeyauthManager.get_userpubkey_by_userId_fingerprint(user.id, fingerprint)
     if userPubkey is not None:
-        return response_full_git_command(quote, pre_command, user, repo)
+        return response_full_git_command(quote, pre_command, user, user, repo)
 
     userpubkeys = KeyauthManager.list_userpubkey_by_fingerprint(fingerprint)
     for userpubkey in userpubkeys:
@@ -114,7 +114,8 @@ def keyauth(request, fingerprint, command):
         # member of the team user
         teamMember = TeamManager.get_teamMember_by_userId_teamUserId(userpubkey.user_id, user.id)
         if repoMember or teamMember:
-            return response_full_git_command(quote, pre_command, user, repo)
+            pushUser = GsuserManager.get_user_by_id(userpubkey.user_id)
+            return response_full_git_command(quote, pre_command, pushUser, user, repo)
     return not_git_command()
 
 def _http_authenticate_name_password(request):
@@ -146,16 +147,18 @@ def _get_desc_name(orgi_request_uri):
 
 blocks_quote = {67108864: 3276800, 268435456: 3276800, 536870912: 3276800}
 kbytes_quote = {67108864: 10485760, 268435456: 10485760, 536870912: 10485760}
-def response_full_git_command(quote, pre_command, user, repo):
+def response_full_git_command(quote, pre_command, pushUser, user, repo):
     blocks = 327680
     kbytes = 1048576
+    if not pushUser:
+        pushUser = user
     if quote in blocks_quote:
         blocks = blocks_quote[quote]
         kbytes = kbytes_quote[quote]
     abs_repopath = repo.get_abs_repopath()
     if not os.path.exists(abs_repopath):
         return not_git_command()
-    return HttpResponse("ulimit -f %s && ulimit -m %s && ulimit -v %s && /usr/bin/git-shell -c \"%s '%s'\"" % (blocks, kbytes, kbytes, pre_command, repo.get_abs_repopath()), content_type="text/plain")
+    return HttpResponse("ulimit -f %s && ulimit -m %s && ulimit -v %s && export REMOTE_USER=%s && /usr/bin/git-shell -c \"%s '%s'\"" % (blocks, kbytes, kbytes, pushUser.username, pre_command, repo.get_abs_repopath()), content_type="text/plain")
 
 def not_git_command():
     return HttpResponse("'git repoitory size limit exceeded or you have not rights or does not appear to be a git command'", content_type="text/plain")

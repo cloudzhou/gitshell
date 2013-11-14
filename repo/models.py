@@ -65,9 +65,19 @@ class RepoMember(BaseModel):
     user_id = models.IntegerField()
     permission = models.IntegerField(default=0)
 
+class PushRevRef(BaseModel):
+    push_id = models.BigIntegerField(default=0)
+    push_user_id = models.IntegerField()
+    repo_id = models.IntegerField()
+    old_commit_hash = models.CharField(max_length=12)
+    new_commit_hash = models.CharField(max_length=12)
+    refname = models.CharField(max_length=32)
+    status = models.IntegerField(default=0) 
+
 # commit history from git: commit_hash parent_hashes tree_hash author committer committer_date subject
 # git log -100 --pretty='%h  %p  %t  %an  %cn  %ct  %s'
 class CommitHistory(BaseModel):
+    pushrevref_id = models.IntegerField()
     repo_id = models.IntegerField()
     repo_name = models.CharField(max_length=64)
     commit_id = models.IntegerField()
