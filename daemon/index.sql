@@ -65,6 +65,6 @@ update gsuser_userprofile set has_joined_repo = 1 where id in  (select user_id f
 update gsuser_userprofile set has_joined_team = 1 where id in  (select user_id from team_teammember where visibly = 0);
 
 alter table repo_commithistory add `pushrevref_id` int(11) NOT NULL after `visibly`;
-create index commithistory_pushrevrefid_mtime_idx on repo_commithistory (visibly, pushrevref_id, modify_time desc);
+create index commithistory_pushrevrefid_mtime_idx on repo_commithistory (visibly, repo_id, pushrevref_id, modify_time desc);
 
 

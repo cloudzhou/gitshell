@@ -70,6 +70,9 @@ rawsql = {
         'select * from repo_repo where visibly = 0 and fork_repo_id = %s order by modify_time desc limit 0, 100',
     'repo_s_userId_forkrepoId':
         'select * from repo_repo where visibly = 0 and user_id = %s and fork_repo_id = %s limit 0, 1',
+    # repo_commithistory #
+    'commithistory_l_repoId_pushrevrefId':
+        'select * from repo_commithistory where visibly = 0 and repo_id = %s and pushrevref_id = %s order by modify_time desc limit %s, %s',
     # repo_pullrequest #
     'pullrequest_l_descRepoId':
         'select * from repo_pullrequest where visibly = 0 and desc_repo_id = %s order by status, modify_time desc limit %s, %s',

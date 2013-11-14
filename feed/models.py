@@ -43,6 +43,10 @@ class Feed(BaseModel):
         return feed
 
     @classmethod
+    def create_push_revref(self, user_id, repo_id, relative_id):
+        return self.create(user_id, repo_id, FEED_CATE.PUSH, FEED_TYPE.PUSH_REVREF, relative_id)
+
+    @classmethod
     def create_push_commit(self, user_id, repo_id, relative_id):
         return self.create(user_id, repo_id, FEED_CATE.PUSH, FEED_TYPE.PUSH_COMMIT_MESSAGE, relative_id)
 
@@ -605,6 +609,7 @@ class FEED_TYPE:
 
     PUSH_COMMIT_MESSAGE = 0
     PUSH_COMMENT_ON_COMMIT = 1
+    PUSH_REVREF = 2
 
     MERGE_CREATE_PULL_REQUEST = 100
     MERGE_MERGED_PULL_REQUEST = 101
@@ -639,6 +644,7 @@ class FEED_TYPE:
 0 push events
     0) commit message
     1) comment on commit
+    2) push
 1 Merge events
     100) create pull request
     101) merged pull request

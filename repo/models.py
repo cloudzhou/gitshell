@@ -71,7 +71,7 @@ class PushRevRef(BaseModel):
     repo_id = models.IntegerField()
     old_commit_hash = models.CharField(max_length=12)
     new_commit_hash = models.CharField(max_length=12)
-    refname = models.CharField(max_length=32)
+    refname = models.CharField(max_length=64)
     status = models.IntegerField(default=0) 
 
 # commit history from git: commit_hash parent_hashes tree_hash author committer committer_date subject
@@ -306,6 +306,11 @@ class RepoManager():
     @classmethod
     def list_commits_by_commit_ids(self, repo_id, commit_ids):
         return list(CommitHistory.objects.filter(visibly=0).filter(repo_id=repo_id).filter(commit_id__in=commit_ids))
+
+    @classmethod
+    def list_commit_by_repoId_pushrevrefId(self, repo_id, pushrevref_id, offset, row_count):
+        commitHistorys = query(CommitHistory, repo_id, 'commithistory_l_repoId_pushrevrefId', [repo_id, pushrevref_id, offset, row_count])
+        return commitHistorys
 
     @classmethod
     def list_repo_team_memberUser(self, repo_id):
@@ -818,5 +823,11 @@ class PULL_STATUS:
         3 : 'rejected',
         4 : 'closed',
     }
+
+class BRANCH_STATUS:
+
+    UPDATE = 1
+    CREATE = 2
+    DELETE = 3
 
 

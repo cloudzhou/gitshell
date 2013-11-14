@@ -1,7 +1,5 @@
 #!/usr/bin/python
-import os, sys
-import json
-import beanstalkc
+import os, sys, time, json, beanstalkc
 
 def main():
     abspath = os.path.abspath(os.path.dirname(__file__))
@@ -12,12 +10,20 @@ def main():
         if max_line_count < 0:
             break
         rev_ref_arr.append(line.strip().split(' ')) 
+    remote_user = get_remote_user()
     json_map = {}
     json_map['type'] = 0
+    json_map['remote_user'] = remote_user
+    json_map['push_timestamp'] = long(time.time())
     json_map['abspath'] = abspath
     json_map['revrefarr'] = rev_ref_arr
     event = json.dumps(json_map)
     send_commit_event(event)
+
+def get_remote_user():
+    if 'REMOTE_USER' in os.environ:
+        return os.environ['REMOTE_USER']
+    return ''
 
 def switch(beanstalk, tube):
     beanstalk.use(tube)
@@ -31,3 +37,4 @@ def send_commit_event(event):
 
 if __name__ == '__main__':
     main()
+
