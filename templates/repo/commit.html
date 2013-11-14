@@ -36,8 +36,8 @@
     <p class="alert alert-error"><i class="icon-bell"></i><em>没有找到该 Commit</em></p>
   </div>
   {% endif %}
-  <pre class="alert alert-info">$ git diff {{parent_commit_hash}}...{{commit_hash}}</pre>
   <div class="tab-content">
+    <pre class="alert alert-info">$ git diff <span id="parent-commit-hash"></span>...{{commit_hash}}</pre>
     {% for parent_commit_hash in commit.parent_commit_hash %}
       <div id="diff_{{parent_commit_hash}}" class="tab-pane"></div>
     {% endfor %}
@@ -49,15 +49,27 @@
 {% block subjs %}
 <script>
   $(function(){
+    function loadDiff(user_name, repo_name, parent_commit_hash){
+      var repoComparer = new RepoComparer(user_name, repo_name, '', '');
+      var parent_commit_hash_span = $('#parent-commit-hash');
+      repoComparer.from_refs = parent_commit_hash; repoComparer.to_refs = commit_hash; repoComparer.path = '.';
+      repoComparer.loadDiff($('#diff_' + parent_commit_hash), null, null);
+      repoComparer.registerLineContextEvent($('#diff_' + parent_commit_hash));
+    }
     var commit_hash = '{{commit_hash}}';
     {% for parent_commit_hash in commit.parent_commit_hash %}
-      var parent_commit_hash = '{{parent_commit_hash}}';
-      var repoComparer = new RepoComparer('{{user_name}}', '{{repo_name}}', '', '');
-      repoComparer.from_refs = parent_commit_hash; repoComparer.to_refs = commit_hash; repoComparer.path = '.';
-      repoComparer.loadDiff($('#diff_{{parent_commit_hash}}'), null, function() { });
-      repoComparer.registerLineContextEvent($('#diff_{{parent_commit_hash}}'));
+      loadDiff('{{user_name}}', '{{repo_name}}', '{{parent_commit_hash}}');
     {% endfor %}
+
     $('.commits .nav-tabs li:eq(0)').addClass('active');
+
+    $('#parent-commit-hash').text($('.commits .nav-tabs li:eq(0)').find('a').text());
+
+    $('[data-toggle="tab"]').click(function(){
+      var parentCommitHash = $(this).text();
+      $('#parent-commit-hash').text(parentCommitHash);
+    });
+
     $('[id^=diff_]').first().addClass('active');
   });
 </script>
