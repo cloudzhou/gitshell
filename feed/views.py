@@ -164,52 +164,21 @@ def feed_by_ids(request):
     feeds = []
     if re.match('^\w+$', ids_str):
         feeds = _list_feeds(request, ids_str)
-    usernames = []
-    userIds = [x.user_id for x in feeds]
-    _fillwith_push_revref(request, feeds, usernames, userIds)
-    _fillwith_commit_message(request, feeds, usernames, userIds)
-    _fillwith_issue_event(request, feeds, usernames, userIds)
-    _fillwith_pull_event(request, feeds, usernames, userIds)
-    (gravatar_username_dict, gravatar_userId_dict) = _get_gravatar_dict(usernames, userIds)
-    response_dictionary = {'feeds': feeds, 'gravatar_username_dict': gravatar_username_dict, 'gravatar_userId_dict': gravatar_userId_dict}
+    _fillwith_push_revref(request, feeds)
+    _fillwith_commit_message(request, feeds)
+    _fillwith_issue_event(request, feeds)
+    _fillwith_pull_event(request, feeds)
+    response_dictionary = {'feeds': feeds}
     return json_httpResponse(response_dictionary)
-
-def _get_gravatar_dict(username_list, userIds):
-    gravatar_dict = {}
-    for username in username_list:
-        if username not in gravatar_dict:
-            userprofile = GsuserManager.get_userprofile_by_name(username)
-            if userprofile is not None:
-                gravatar_dict[username] = userprofile.imgurl
-                gravatar_dict[username+'_tweet'] = userprofile.tweet
-                continue
-            gravatar_dict[username] = '0'
-            gravatar_dict[username+'_tweet'] = ''
-    gravatar_userId_dict = {}
-    for userId in userIds:
-        if userId not in gravatar_userId_dict:
-            user = GsuserManager.get_user_by_id(userId)
-            userprofile = GsuserManager.get_userprofile_by_id(userId)
-            if user is not None and userprofile is not None:
-                gravatar_userId_dict[userId] = userprofile.imgurl
-                gravatar_userId_dict[str(userId)+'_username'] = user.username
-                gravatar_userId_dict[str(userId)+'_tweet'] = userprofile.tweet
-                continue
-            gravatar_userId_dict[userId] = '0'
-            gravatar_userId_dict[str(userId)+'_username'] = ''
-            gravatar_userId_dict[str(userId)+'_tweet'] = ''
-    return (gravatar_dict, gravatar_userId_dict)
-    
 
 def _list_feeds(request, ids_str):
     ids = _get_feed_ids(ids_str)
     feeds = FeedManager.list_feed_by_ids(ids)
     return feeds
 
-def _fillwith_push_revref(request, feeds, usernames, userIds):
+def _fillwith_push_revref(request, feeds):
     revref_dict = {}
     for feed in feeds:
-        print feed.id, feed.feed_type
         if not feed.is_push_revref():
             continue
         push_revref = RepoManager.get_pushrevref_by_id(feed.relative_id)
@@ -221,50 +190,34 @@ def _fillwith_push_revref(request, feeds, usernames, userIds):
         if feed.is_push_revref() and feed.relative_id in revref_dict:
             feed.relative_obj = revref_dict[feed.relative_id]
 
-def _fillwith_commit_message(request, feeds, usernames, userIds):
+def _fillwith_commit_message(request, feeds):
     commit_ids = []
     for feed in feeds:
         if feed.is_commit_message():
            commit_ids.append(feed.relative_id)
     if len(commit_ids) == 0:
         return
-    commit_view_dict = _convert_to_commit_view_dict(commit_ids, usernames)
-    # fillwith feed
+    commit_dict = _convert_to_commit_dict(commit_ids)
     for feed in feeds:
-        if feed.is_commit_message() and feed.relative_id in commit_view_dict:
-            feed.relative_obj = commit_view_dict[feed.relative_id]
+        if feed.is_commit_message() and feed.relative_id in commit_dict:
+            feed.relative_obj = commit_dict[feed.relative_id]
 
-def _convert_to_commit_view_dict(commit_ids, usernames):
-    commit_view_dict = {}
-    repos_dict = {}; allowed_write_access_dict = {}
+def _convert_to_commit_dict(commit_ids):
+    commit_dict = {}
+    allowed_write_access_repoId_set = Set()
     commits = RepoManager.list_commits_by_ids(commit_ids)
-    for commit in commits:
-        repo_id = commit.repo_id
-        if repo_id not in repos_dict:
-            repo = RepoManager.get_repo_by_id(repo_id)
-            if not repo:
-                continue
-            repos_dict[repo_id] = repo
-        repo = repos_dict[repo_id]
+    repos = RepoManager.list_repo_by_ids(list(Set([x.repo_id for x in commits])))
+    for repo in repos:
         if repo.auth_type == 2:
-            if repo.id not in allowed_write_access_dict:
-                if not request.user.is_authenticated() or not RepoManager.is_allowed_write_access_repo(repo, request.user):
-                    continue
-                allowed_write_access_dict[repo.id] = 1
-        commit_view = {}
-        commit_view['id'] = commit.id
-        commit_view['repo_username'] = repo.username
-        commit_view['repo_name'] = repo.name
-        commit_view['commit_hash'] = commit.commit_hash
-        commit_view['author'] = commit.author
-        if commit.author not in usernames:
-            usernames.append(commit.author)
-        commit_view['committer_date'] = time.mktime(commit.committer_date.timetuple())
-        commit_view['subject'] = commit.subject
-        commit_view_dict[commit.id] = commit_view
-    return commit_view_dict
+            if not request.user.is_authenticated() or not RepoManager.is_allowed_write_access_repo(repo, request.user):
+                continue
+        allowed_write_access_repoId_set.add(repo.id)
+    for commit in commits:
+        if commit.repo_id in allowed_write_access_repoId_set:
+            commit_dict[commit.id] = commit
+    return commit_dict
 
-def _fillwith_issue_event(request, feeds, usernames, userIds):
+def _fillwith_issue_event(request, feeds):
     for feed in feeds:
         if not feed.is_issue_event():
             continue
@@ -277,16 +230,14 @@ def _fillwith_issue_event(request, feeds, usernames, userIds):
             issue.reponame = repo.name
             feed.relative_obj = issue
 
-def _fillwith_pull_event(request, feeds, usernames, userIds):
+def _fillwith_pull_event(request, feeds):
     for feed in feeds:
         if not feed.is_pull_event():
             continue
         pullRequest = RepoManager.get_pullRequest_by_id(feed.relative_id)
         if pullRequest is None or pullRequest.source_repo is None or pullRequest.desc_repo is None:
             continue
-        action = ''
-        pullRequest_view = {'id': pullRequest.id, 'desc_repo_username': pullRequest.desc_repo.username, 'desc_repo_name': pullRequest.desc_repo.name, 'short_title': pullRequest.short_title, 'create_time': time.mktime(pullRequest.create_time.timetuple()), 'modify_time': time.mktime(pullRequest.modify_time.timetuple())}
-        feed.relative_obj = pullRequest_view
+        feed.relative_obj = pullRequest
 
 def _get_feed_ids(ids_str):
     ids = []
