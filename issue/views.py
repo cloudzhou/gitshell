@@ -17,7 +17,7 @@ from gitshell.repo.views import get_common_repo_dict
 from gitshell.gsuser.models import GsuserManager
 from gitshell.issue.models import IssueManager, Issue, IssueComment, ISSUE_STATUS
 from gitshell.issue.Forms import IssueForm, IssueCommentForm
-from gitshell.issue.cons import TRACKERS, STATUSES, PRIORITIES, TRACKERS_VAL, STATUSES_VAL, PRIORITIES_VAL, ISSUE_ATTRS, conver_issues, conver_issue_comments
+from gitshell.issue.cons import TRACKERS, STATUSES, PRIORITIES, TRACKERS_VAL, STATUSES_VAL, PRIORITIES_VAL, ISSUE_ATTRS
 from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
 from gitshell.feed.models import FeedManager
 from gitshell.viewtools.views import json_httpResponse, json_success, json_failed
@@ -47,17 +47,16 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
     tracker = int(tracker); status = int(status); priority = int(priority); page = int(page)
     current_attrs = { 'assigned': str(assigned), 'tracker': tracker, 'status': status, 'priority': priority, 'orderby': str(orderby), 'page': page }
 
-    raw_issues = []
+    issues = []
     page_size = 50; offset = page*page_size; row_count = page_size + 1
     if assigned_id == 0 and tracker == 0 and status == 0 and priority == 0:
-        raw_issues = IssueManager.list_issues(repo.id, orderby, offset, row_count)
+        issues = IssueManager.list_issues(repo.id, orderby, offset, row_count)
     else:
         assigned_ids = member_ids if assigned_id == 0 else [assigned_id]
         trackeres = TRACKERS_VAL if tracker == 0 else [tracker]
         statuses = STATUSES_VAL if status == 0 else [status]
         priorities = PRIORITIES_VAL if priority == 0 else [priority] 
-        raw_issues = IssueManager.list_issues_cons(repo.id, assigned_ids, trackeres, statuses, priorities, orderby, offset, row_count)
-    issues = conver_issues(raw_issues)
+        issues = IssueManager.list_issues_cons(repo.id, assigned_ids, trackeres, statuses, priorities, orderby, offset, row_count)
 
     hasPre = False ; hasNext = False
     if page > 0:
@@ -83,8 +82,8 @@ def show(request, user_name, repo_name, issue_id, page):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    raw_issue = IssueManager.get_issue(repo.id, issue_id)
-    if raw_issue is None:
+    issue = IssueManager.get_issue(repo.id, issue_id)
+    if issue is None:
         raise Http404
     issueCommentForm = IssueCommentForm()
     if request.method == 'POST' and request.user.is_authenticated():
@@ -95,12 +94,11 @@ def show(request, user_name, repo_name, issue_id, page):
         if issueCommentForm.is_valid():
             cid = issueCommentForm.save().id
             FeedManager.notif_issue_comment_at(request.user.id, cid, issueCommentForm.cleaned_data['content'])
-            raw_issue.comment_count = raw_issue.comment_count + 1
-            raw_issue.save()
+            issue.comment_count = issue.comment_count + 1
+            issue.save()
             return HttpResponseRedirect('/%s/%s/issues/%s/' % (user_name, repo_name, issue_id))
-    issue = conver_issues([raw_issue])[0]
     
-    page_size = 50; total_count = issue['comment_count']; total_page = total_count / page_size
+    page_size = 50; total_count = issue.comment_count; total_page = total_count / page_size
     if total_count != 0 and total_count % page_size == 0:
         total_page = total_page - 1
     if page is None or int(page) > total_page:
@@ -109,16 +107,15 @@ def show(request, user_name, repo_name, issue_id, page):
     issue_comments = []
     if total_count > 0:
         offset = page*page_size; row_count = page_size
-        raw_issue_comments = IssueManager.list_issue_comments(issue_id, offset, row_count)
-        issue_comments = conver_issue_comments(raw_issue_comments)
+        issue_comments = IssueManager.list_issue_comments(issue_id, offset, row_count)
 
     memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
     memberUsers = _let_request_user_first(memberUsers, request.user.id)
     assigneds = [x.username for x in memberUsers]
 
-    has_issue_modify_right = _has_issue_modify_right(request, raw_issue, repo)
-    title = u'%s / %s / 问题：%s' % (user_name, repo_name, issue['subject'])
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'title': title, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'issueCommentForm': issueCommentForm, 'page': page, 'total_page': range(0, total_page+1), 'assigneds': assigneds, 'assigned': issue['assigned'], 'tracker': raw_issue.tracker, 'status': raw_issue.status, 'priority': raw_issue.priority, 'has_issue_modify_right': has_issue_modify_right}
+    has_issue_modify_right = _has_issue_modify_right(request, issue, repo)
+    title = u'%s / %s / 问题：%s' % (user_name, repo_name, issue.subject.)
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'title': title, 'path': path, 'issue': issue, 'issue_comments': issue_comments, 'issueCommentForm': issueCommentForm, 'page': page, 'total_page': range(0, total_page+1), 'assigneds': assigneds, 'assigned': issue.assigned, 'tracker': issue.tracker, 'status': issue.status, 'priority': issue.priority, 'has_issue_modify_right': has_issue_modify_right}
     response_dictionary.update(ISSUE_ATTRS)
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/issue_show.html',

@@ -81,7 +81,7 @@ class PushRevRef(BaseModel):
 
     def fillwith(self):
         self.push_userprofile = GsuserManager.get_userprofile_by_id(self.push_user_id)
-        self.repo = RepoMember.get_repo_by_id(repo_id)
+        self.repo = RepoManager.get_repo_by_id(self.repo_id)
         self.short_refname = self.refname
         if self.refname and '/' in self.refname:
             self.short_refname = self.refname[self.refname.rfind('/')+1:]
@@ -213,9 +213,6 @@ class PullRequestComment(BaseModel):
     pull_id = models.IntegerField()
     user_id = models.IntegerField()
     content = models.CharField(max_length=2048, default='') 
-
-    username = ''
-    reponame = ''
 
 class WebHookURL(BaseModel):
     repo_id = models.IntegerField()

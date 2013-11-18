@@ -101,11 +101,11 @@ NOTIF_MAIL_TEMPLATE = """<html lang="en"><head><meta charset="utf-8"><title>{{ti
 
 
       {% elif notifMessage.notif_type == 30 %}
-      <span>问题: </span>{{notifMessage.relative_obj.subject}} <a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
+      <span>问题: </span>{{notifMessage.relative_obj.subject}} <a href="https://gitshell.com/{{notifMessage.relative_obj.repo.username}}/">{{notifMessage.relative_obj.repo.username}}</a>/<a href="https://gitshell.com/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo.name}}/">{{notifMessage.relative_obj.repo.name}}</a> <a href="https://gitshell.com/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo.name}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
 
 
       {% elif notifMessage.notif_type == 31 %}
-      <span>评论了问题: </span>{{notifMessage.relative_obj.content}} <a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.issues_id}}/">#{{notifMessage.relative_obj.issues_id}}</a>
+      <span>评论了问题: </span>{{notifMessage.relative_obj.content}} <a href="https://gitshell.com/{{notifMessage.relative_obj.repo.username}}/">{{notifMessage.relative_obj.repo.username}}</a>/<a href="https://gitshell.com/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo.name}}/">{{notifMessage.relative_obj.repo.name}}</a> <a href="https://gitshell.com/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo.name}}/issues/{{notifMessage.relative_obj.issues_id}}/">#{{notifMessage.relative_obj.issues_id}}</a>
 
 
       {% elif notifMessage.notif_type == 10 %}
@@ -117,7 +117,7 @@ NOTIF_MAIL_TEMPLATE = """<html lang="en"><head><meta charset="utf-8"><title>{{ti
 
 
       {% elif notifMessage.notif_type == 300 %}
-      <span>{{notifMessage.message}}问题: {{notifMessage.relative_obj.subject}} <a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/">{{notifMessage.relative_obj.username}}</a>/<a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/">{{notifMessage.relative_obj.reponame}}</a> <a href="https://gitshell.com/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
+      <span>{{notifMessage.message}}问题: {{notifMessage.relative_obj.subject}} <a href="https://gitshell.com/{{notifMessage.relative_obj.repo.username}}/">{{notifMessage.relative_obj.repo.username}}</a>/<a href="https://gitshell.com/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo.name}}/">{{notifMessage.relative_obj.repo.name}}</a> <a href="https://gitshell.com/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo.name}}/issues/{{notifMessage.relative_obj.id}}/">#{{notifMessage.relative_obj.id}}</a>
       {% endif %}
 
       <span>{{notifMessage.relative_obj.modify_time}}</span>

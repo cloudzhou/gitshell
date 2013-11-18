@@ -13,7 +13,6 @@ from gitshell.feed.feed import FeedAction, PositionKey, AttrKey
 from gitshell.feed.models import Feed, FeedManager
 from gitshell.repo.models import RepoManager, Repo
 from gitshell.issue.models import IssueManager, Issue, IssueComment
-from gitshell.issue.cons import conver_issues
 from gitshell.gsuser.models import GsuserManager
 from gitshell.todolist.views import todo
 from gitshell.viewtools.views import json_httpResponse, json_success, json_failed, obj2dict
@@ -117,8 +116,7 @@ def issues(request, page):
     page_size = 50
     offset = page*page_size
     row_count = page_size + 1
-    raw_issues = IssueManager.list_assigned_issues(request.user.id, 'modify_time', offset, row_count)
-    issues = conver_issues(raw_issues)
+    issues = IssueManager.list_assigned_issues(request.user.id, 'modify_time', offset, row_count)
 
     hasPre = False ; hasNext = False
     if page > 0:
