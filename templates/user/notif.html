@@ -14,8 +14,8 @@
             {% if notifMessage.relative_obj %}
               {% if notifMessage.notif_type == 0 %}
                 <span class="action-type">在提交里@你</span>
-                <a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="notif-title">{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}</a></p>
-                <p class="subject"><a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="hash">{{notifMessage.relative_obj.commit_hash}}</a>{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
+                <a href="/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo_name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="notif-title">{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo_name}}</a></p>
+                <p class="subject"><a href="/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo_name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="hash">{{notifMessage.relative_obj.commit_hash}}</a>{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
               {% elif notifMessage.notif_type == 30 %}
                 <span class="action-type">创建问题</span>
                 <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.reponame}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>

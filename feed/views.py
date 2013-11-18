@@ -222,13 +222,7 @@ def _fillwith_issue_event(request, feeds):
         if not feed.is_issue_event():
             continue
         issue = IssueManager.get_issue_by_id(feed.relative_id)
-        if issue is not None:
-            repo = RepoManager.get_repo_by_id(issue.repo_id)
-            if repo is None:
-                continue
-            issue.username = repo.username
-            issue.reponame = repo.name
-            feed.relative_obj = issue
+        feed.relative_obj = issue
 
 def _fillwith_pull_event(request, feeds):
     for feed in feeds:

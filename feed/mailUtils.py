@@ -97,7 +97,7 @@ NOTIF_MAIL_TEMPLATE = """<html lang="en"><head><meta charset="utf-8"><title>{{ti
       <a href="https://gitshell.com/{{notifMessage.relative_name}}/">@{{notifMessage.relative_name}}</a>
       {% if notifMessage.notif_type == 0 %}
       <span>提交更新: </span>{{notifMessage.relative_obj.subject}}
-      <span><a href="https://gitshell.com/{{notifMessage.relative_obj.get_repo_username}}/">{{notifMessage.relative_obj.get_repo_username}}</a>/<a href="https://gitshell.com/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/">{{notifMessage.relative_obj.repo_name}}</a>:<a href="https://gitshell.com/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commits/{{notifMessage.relative_obj.get_short_refname}}/">{{notifMessage.relative_obj.get_short_refname}}</a></span>
+      <span><a href="https://gitshell.com/{{notifMessage.relative_obj.repo.username}}/">{{notifMessage.relative_obj.repo.username}}</a>/<a href="https://gitshell.com/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo_name}}/">{{notifMessage.relative_obj.repo_name}}</a>:<a href="https://gitshell.com/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo_name}}/commits/{{notifMessage.relative_obj.short_refname}}/">{{notifMessage.relative_obj.short_refname}}</a></span>
 
 
       {% elif notifMessage.notif_type == 30 %}
