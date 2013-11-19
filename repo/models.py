@@ -196,8 +196,8 @@ class PullRequest(BaseModel):
         return pullRequest
 
     def fillwith(self):
-        self.pull_user = GsuserManager.get_user_by_id(self.pull_user_id)
-        self.merge_user = GsuserManager.get_user_by_id(self.merge_user_id)
+        self.pull_user = GsuserManager.get_userprofile_by_id(self.pull_user_id)
+        self.merge_user = GsuserManager.get_userprofile_by_id(self.merge_user_id)
         self.source_repo = RepoManager.get_repo_by_id(self.source_repo_id)
         self.desc_repo = RepoManager.get_repo_by_id(self.desc_repo_id)
         self.short_title = self.title
