@@ -4,20 +4,20 @@
 <div class="content">
   <div class="container">
     <div class="delete-repo inner bubble">
-        <h1 class="heading">删除仓库</h1>
-        <p class="alert alert-info">你正在删除仓库 <em>{{repo_name}}</em>, 这是<em>不可恢复</em>的操作</p>
-        <dl class="notice">
-          <dt class="leader">删除仓库之前最好想到以下问题:</dt>
-          <dd class="well">
-          对应数据是否备份<br>
-          是否要通知相关的合作者<br>
-          相关的仓库成员组织，问题，文档都将不见<br>
-          </dd>
-        </dl>
-        <form method="POST">
-          {% csrf_token %} 
-          <button class="btn btn-large btn-danger" type="submit">我确定要删除这个仓库</button>
-        </form>
+      <h1 class="heading">删除仓库</h1>
+      <p class="alert alert-info">你正在删除仓库 <em>{{repo_name}}</em>, 这是<em>不可恢复</em>的操作</p>
+      <dl class="notice">
+        <dt class="leader">删除仓库之前最好想到以下问题:</dt>
+        <dd class="well">
+        对应数据是否备份<br>
+        是否要通知相关的合作者<br>
+        相关的仓库成员组织，问题，文档都将不见<br>
+        </dd>
+      </dl>
+      <form method="POST">
+        {% csrf_token %} 
+        <button class="btn btn-large btn-danger" type="submit">我确定要删除这个仓库</button>
+      </form>
     </div>
   </div>
 {% endblock %}
