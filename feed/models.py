@@ -59,7 +59,7 @@ class Feed(BaseModel):
         return self.feed_type == FEED_TYPE.PUSH_COMMIT_MESSAGE
 
     def is_issue_event(self):
-    return self.feed_type >= FEED_TYPE.ISSUES_CREATE and self.feed_type <= FEED_TYPE.ISSUES_STATUS_CHANGE
+        return self.feed_type >= FEED_TYPE.ISSUES_CREATE and self.feed_type <= FEED_TYPE.ISSUES_STATUS_CHANGE
 
     def is_issue_comment(self):
         return self.feed_type == FEED_TYPE.ISSUES_COMMENT_ON_ISSUE
