@@ -42,8 +42,9 @@ class IssueComment(BaseModel):
     commenter_userprofile = None
 
     def fillwith(self, issue):
-        self.issue = issue
-        self.repo = self.issue.repo
+        if issue:
+            self.issue = issue
+            self.repo = self.issue.repo
         commenter_userprofile = GsuserManager.get_userprofile_by_id(self.user_id)
 
 class ISSUE_STATUS:
@@ -134,6 +135,8 @@ class IssueManager():
     def get_issue_comment(self, id):
         issue_comment = get(IssueComment, id)
         issue = self.get_issue_by_id(issue_comment.issue_id)
+        if not issue:
+            return None
         issue_comment.fillwith(issue)
         return issue_comment
 

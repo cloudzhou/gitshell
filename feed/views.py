@@ -196,12 +196,12 @@ def _fillwith_commit_message(request, feeds):
            commit_ids.append(feed.relative_id)
     if len(commit_ids) == 0:
         return
-    commit_dict = _convert_to_commit_dict(commit_ids)
+    commit_dict = _convert_to_commit_dict(request, commit_ids)
     for feed in feeds:
         if feed.is_commit_message() and feed.relative_id in commit_dict:
             feed.relative_obj = commit_dict[feed.relative_id]
 
-def _convert_to_commit_dict(commit_ids):
+def _convert_to_commit_dict(request, commit_ids):
     commit_dict = {}
     allowed_write_access_repoId_set = Set()
     commits = RepoManager.list_commits_by_ids(commit_ids)
