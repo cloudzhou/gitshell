@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-  
 import re, time
+from sets import Set
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from django.db import models
@@ -29,6 +30,7 @@ class Feed(BaseModel):
     third_refname = models.CharField(max_length=64, null=True)
 
     # field without database
+    userprofile = None
     relative_obj = {}
 
     @classmethod
@@ -57,10 +59,16 @@ class Feed(BaseModel):
         return self.feed_type == FEED_TYPE.PUSH_COMMIT_MESSAGE
 
     def is_issue_event(self):
-        return self.feed_type == FEED_TYPE.ISSUES_CREATE or self.feed_type == FEED_TYPE.ISSUES_UPDATE or self.feed_type == FEED_TYPE.ISSUES_STATUS_CHANGE
+        return self.feed_type >= FEED_TYPE.ISSUES_CREATE and self.feed_type <= FEED_TYPE.ISSUES_STATUS_CHANGE
+
+    def is_issue_comment(self):
+        return self.feed_type == FEED_TYPE.ISSUES_COMMENT_ON_ISSUE
 
     def is_pull_event(self):
-        return self.feed_type >= FEED_TYPE.MERGE_CREATE_PULL_REQUEST and self.feed_type <= FEED_TYPE.MERGE_COMMENT_ON_PULL_REQUEST
+        return self.feed_type >= FEED_TYPE.MERGE_CREATE_PULL_REQUEST and self.feed_type <= FEED_TYPE.MERGE_CLOSE_PULL_REQUEST
+
+    def is_pull_comment(self):
+        return self.feed_type == FEED_TYPE.MERGE_COMMENT_ON_PULL_REQUEST
 
 class NotifMessage(BaseModel):
     user_id = models.IntegerField(default=0)
@@ -251,6 +259,11 @@ class FeedManager():
     @classmethod
     def list_feed_by_ids(self, ids):
         feeds = get_many(Feed, ids)
+        user_ids = Set([x.user_id for x in feeds])
+        userprofile_dict = dict((x.id, x) for x in GsuserManager.list_userprofile_by_ids(user_ids))
+        for feed in feeds:
+            if feed.user_id in userprofile_dict:
+                feed.userprofile = userprofile_dict[feed.user_id]
         return feeds
 
     @classmethod
@@ -298,13 +311,11 @@ class FeedManager():
                 feedAction.add_pub_user_feed(user.id, timestamp, feed.id)
 
     @classmethod
-    def feed_pull_change(self, pullRequest, pullStatus):
+    def feed_pull_change(self, user, pullRequest, pullStatus):
         feed_cate = FEED_CATE.MERGE
         feed_type = FEED_TYPE.MERGE_CREATE_PULL_REQUEST
         repo = pullRequest.desc_repo
-        user = pullRequest.merge_user
         if pullStatus == PULL_STATUS.NEW:
-            user = pullRequest.pull_user
             feed_type = FEED_TYPE.MERGE_CREATE_PULL_REQUEST
         elif pullStatus == PULL_STATUS.MERGED_FAILED:
             feed_type = FEED_TYPE.MERGE_MERGED_FAILED_PULL_REQUEST
