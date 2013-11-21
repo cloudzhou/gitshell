@@ -388,7 +388,7 @@ def pull_new(request, user_name, repo_name, source_username, source_refs, desc_u
         pullRequest.fillwith()
         FeedManager.notif_pull_request_status(pullRequest, pullRequest.status)
         FeedManager.notif_at(NOTIF_TYPE.AT_MERGE, request.user.id, pullRequest.id, pullRequest.title + ' ' + pullRequest.desc)
-        FeedManager.feed_pull_change(pullRequest, pullRequest.status)
+        FeedManager.feed_pull_change(request.user, pullRequest, pullRequest.status)
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
 
     pull_repo_list = _list_pull_repo(request, repo)
@@ -494,7 +494,7 @@ def pull_merge(request, user_name, repo_name, pullRequest_id):
         pullRequest.status = PULL_STATUS.MERGED_FAILED
     pullRequest.save()
     FeedManager.notif_pull_request_status(pullRequest, pullRequest.status)
-    FeedManager.feed_pull_change(pullRequest, pullRequest.status)
+    FeedManager.feed_pull_change(request.user, pullRequest, pullRequest.status)
     merge_output_split = '----------- starting merge -----------'
     if merge_output_split in output:
         output = output.split(merge_output_split)[1].strip()
@@ -517,7 +517,7 @@ def pull_reject(request, user_name, repo_name, pullRequest_id):
     pullRequest.status = PULL_STATUS.REJECTED
     pullRequest.save()
     FeedManager.notif_pull_request_status(pullRequest, pullRequest.status)
-    FeedManager.feed_pull_change(pullRequest, pullRequest.status)
+    FeedManager.feed_pull_change(request.user, pullRequest, pullRequest.status)
     return json_httpResponse({'result': 'success'})
 
 @repo_permission_check
@@ -536,7 +536,7 @@ def pull_close(request, user_name, repo_name, pullRequest_id):
     pullRequest.status = PULL_STATUS.CLOSE
     pullRequest.save()
     FeedManager.notif_pull_request_status(pullRequest, pullRequest.status)
-    FeedManager.feed_pull_change(pullRequest, pullRequest.status)
+    FeedManager.feed_pull_change(request.user, pullRequest, pullRequest.status)
     return json_httpResponse({'result': 'success'})
 
 def _get_repo_pull_args(user_name, repo_name, pullRequest_id):

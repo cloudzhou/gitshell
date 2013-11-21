@@ -182,11 +182,12 @@ def _fillwith_push_revref(request, feeds):
         push_revref = RepoManager.get_pushrevref_by_id(feed.relative_id)
         if not push_revref:
             continue
+        repo = RepoManager.get_repo_by_id(push_revref.repo_id)
+        if repo and repo.auth_type == 2:
+            if not request.user.is_authenticated() or not RepoManager.is_allowed_read_access_repo(repo, request.user):
+                continue
         push_revref.commits = RepoManager.list_commit_by_repoId_pushrevrefId(push_revref.repo_id, push_revref.id, 0, 10)
-        revref_dict[push_revref.id] = push_revref
-    for feed in feeds:
-        if feed.is_push_revref() and feed.relative_id in revref_dict:
-            feed.relative_obj = revref_dict[feed.relative_id]
+        feed.relative_obj = push_revref
 
 def _fillwith_commit_message(request, feeds):
     commit_ids = []
@@ -207,7 +208,7 @@ def _convert_to_commit_dict(commit_ids):
     repos = RepoManager.list_repo_by_ids(list(Set([x.repo_id for x in commits])))
     for repo in repos:
         if repo.auth_type == 2:
-            if not request.user.is_authenticated() or not RepoManager.is_allowed_write_access_repo(repo, request.user):
+            if not request.user.is_authenticated() or not RepoManager.is_allowed_read_access_repo(repo, request.user):
                 continue
         allowed_write_access_repoId_set.add(repo.id)
     for commit in commits:
