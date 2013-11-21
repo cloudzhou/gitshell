@@ -85,10 +85,9 @@ class NotifMessage(BaseModel):
     relative_id = models.IntegerField(default=0)
 
     # field without database
-    username = ""
-    reponame = ""
-    relative_name = ""
-    relative_obj = {}
+    repo = None
+    from_userprofile = None
+    relative_obj = None
 
     @classmethod
     def create(self, notif_cate, notif_type, from_user_id, to_user_id, relative_id):
@@ -210,10 +209,16 @@ class FeedManager():
 
     @classmethod
     def _fillwith_notifMessages(self, notifMessages):
+        repo_ids = [x.repo_id for x in notifMessages]
+        userprofile_ids = [x.user_id for x in notifMessages]
+        repo_dict = dict((x.id, x) for x in RepoManager.list_repo_by_ids(repo_ids))
+        userprofile_dict = dict((x.id, x) for x in GsuserManager.list_userprofile_by_ids(userprofile_ids))
         for notifMessage in notifMessages:
-            relative_user = GsuserManager.get_user_by_id(notifMessage.from_user_id)
-            if relative_user is not None:
-                notifMessage.relative_name = relative_user.username
+            if notifMessage.repo_id in repo_dict:
+                notifMessage.repo = repo_dict[notifMessage.repo_id]
+            if notifMessage.from_user_id in userprofile_dict:
+                notifMessage.from_userprofile = userprofile_dict[notifMessage.from_user_id]
+
             if notifMessage.is_at_commit():
                 commitHistory = RepoManager.get_commit_by_id(notifMessage.relative_id)
                 notifMessage.relative_obj = commitHistory
@@ -225,8 +230,6 @@ class FeedManager():
                 notifMessage.relative_obj = pullRequest
             elif notifMessage.is_at_issue_comment():
                 issue_comment = IssueManager.get_issue_comment(notifMessage.relative_id)
-                if not issue_comment: 
-                    continue
                 notifMessage.relative_obj = issue_comment
         return notifMessages
 
