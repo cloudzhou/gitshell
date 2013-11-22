@@ -14,9 +14,9 @@
       <div class="summary">
         <div class="title">
           <h3 class="heading" title="描述:{{issue.content}}">
-            <a href="/{{user.username}}/{{issue.reponame}}/" class="label reponame">@{{issue.reponame}}</a>
+            <a href="/{{issue.repo.name}}/{{issue.repo.name}}/" class="label reponame">@{{issue.repo.name}}</a>
             <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
-            <a href="/{{user.username}}/{{issue.reponame}}/issues/{{issue.id}}/">{{issue.subject}}</a>
+            <a href="/{{issue.repo.name}}/{{issue.repo.name}}/issues/{{issue.id}}/">{{issue.subject}}</a>
             {% comment %}
             {% if issue.status %}
             <span class="label label-warning">{{issue.status}}</span>
@@ -28,7 +28,7 @@
           </h3>
         </div>
         <div class="meta">
-          <a href="/{{issue.name}}/">{{issue.username}}</a>
+          <a href="/{{issue.creator_userprofile.username}}/">{{issue.creator_userprofile.username}}</a>
           <span class="unixtime">{{issue.modify_time}}</span>
         </div>
 

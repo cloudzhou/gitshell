@@ -7,26 +7,29 @@
   {% for notifMessage in notifMessages %}
     <div class="notif-item{%if notifMessage.modify_time > recently_timestamp_astime %} unread{%endif%}">
       <div class="notif-type{%if notifMessage.notif_type == 0%} type-commit{%elif notifMessage.notif_type >= 30 and notifMessage.notif_type <= 39 %} type-issue-comment{%elif notifMessage.notif_type == 10 %} type-at{%elif notifMessage.notif_type >= 100 and notifMessage.notif_type <= 105%} type-pull{%elif notifMessage.notif_type == 300%} type-issue{%endif%}"></div>
+      <figure class="avatar">
+        <img src="https://gravatar.com/avatar/{{notifMessage.from_userprofile.imgurl}}?s=32">
+      </figure>
       <div class="summary">
         <time class="unixtime" pubdate="pubdate">{{notifMessage.relative_obj.modify_time|date:"U"}}</time>
         <p class="title">
-          <a href="/{{notifMessage.relative_name}}/" class="user">{{notifMessage.relative_name}}</a>
+          <a href="/{{notifMessage.from_userprofile.username}}/" class="user">{{notifMessage.from_userprofile.username}}</a>
             {% if notifMessage.relative_obj %}
               {% if notifMessage.notif_type == 0 %}
                 <span class="action-type">在提交里@你</span>
-                <a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="notif-title">{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}</a></p>
-                <p class="subject"><a href="/{{notifMessage.relative_obj.get_repo_username}}/{{notifMessage.relative_obj.repo_name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="hash">{{notifMessage.relative_obj.commit_hash}}</a>{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
+                <a href="/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo.name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="notif-title">{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo.name}}</a></p>
+                <p class="subject"><a href="/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo_name}}/commit/{{notifMessage.relative_obj.commit_hash}}/" class="hash">{{notifMessage.relative_obj.commit_hash}}</a>{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
               {% elif notifMessage.notif_type == 30 %}
-                <span class="action-type">创建问题</span>
-                <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.reponame}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
+                <span class="action-type">在问题里@你</span>
+                <a href="/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo.name}}/issues/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo.name}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
                 <p class="subject">{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
               {% elif notifMessage.notif_type == 31 %}
-                <span class="action-type">在评论里@你</span>
-                <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.issue_id}}/" class="notif-title">{{notifMessage.relative_obj.reponame}}<span class="id">#{{notifMessage.relative_obj.issue_id}}</span></a></p>
+                <span class="action-type">在问题评论里@你</span>
+                <a href="/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo.name}}/issues/{{notifMessage.relative_obj.issue.id}}/" class="notif-title">{{notifMessage.relative_obj.repo.name}}<span class="id">#{{notifMessage.relative_obj.issue_id}}</span></a></p>
                 <p class="subject">{{notifMessage.relative_obj.content|truncatechars:80}}</p>
               {% elif notifMessage.notif_type == 10 %}
-                <span class="action-type">在合并请求中@你</span>
-                <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.desc_repo.name}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
+                <span class="action-type">在合并请求里@你</span>
+                <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
                 <p class="subject">{{notifMessage.relative_obj.short_title|truncatechars:80}}</p>
               {% elif notifMessage.notif_type >= 100 and notifMessage.notif_type <= 105 %}
                 {% if notifMessage.notif_type == 102 %}
@@ -34,18 +37,18 @@
                 {% else %}
                   <span class="action-type">{{notifMessage.message}}合并请求</span>
                 {% endif %}
-                  <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.desc_repo.name}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
+                  <a href="/{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}/pull/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.desc_repo.username}}/{{notifMessage.relative_obj.desc_repo.name}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
                   <p class="subject">{{notifMessage.relative_obj.short_title|truncatechars:80}}</p>
               {% elif notifMessage.notif_type == 300 %}
-                <span class="action-type">{{notifMessage.message}}问题</span>
-                <a href="/{{notifMessage.relative_obj.username}}/{{notifMessage.relative_obj.reponame}}/issues/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.reponame}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
+                <span class="action-type">{{notifMessage.message}}问题给你</span>
+                <a href="/{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo.name}}/issues/{{notifMessage.relative_obj.id}}/" class="notif-title">{{notifMessage.relative_obj.repo.username}}/{{notifMessage.relative_obj.repo.name}}<span class="id">#{{notifMessage.relative_obj.id}}</span></a></p>
                 <p class="subject">{{notifMessage.relative_obj.subject|truncatechars:80}}</p>
               {% endif %}
             {% endif %}
-        </div>{# .summary #}
-      </div>{# .notif-item #}
+        </div>
+      </div>
     {% endfor %}
-  </div>{# .notifs.bubble #}
+  </div>
 {% else %}
   <div class="inner bubble">
     <p class="alert blank-alert"><i class="icon-bell"></i><em>没有消息</em></p>

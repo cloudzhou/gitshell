@@ -1,68 +1,100 @@
 {% extends "repo/repo.html" %}
 {% block subcontainer %}
-<div class="settings inner bubble">
-  <h2 class="heading">仓库设置</h2>
-  <form class="form-horizontal" method="post">
-    {% csrf_token %}
-    <div class="controls hide">{{ repoForm.username }}</div>
-    <div class="control-group">
-      <label for="id_name" class="control-label">仓库名称</label>
-      <div class="controls">
-        {{ repoForm.name }}
-      </div>
-    </div>
-    <div class="control-group">
-      <label for="id_desc" class="control-label">简介</label>
-      <div class="controls">
-        {{ repoForm.desc }}
-      </div>
-    </div>
-    <div class="control-group">
-      <label for="id_lang" class="control-label">语言选择</label>
-      <div class="controls">
-        {{ repoForm.lang }}
-      </div>
-    </div>
-    <div id="id_other_lang_group" class="control-group" style="display: none">
-      <label for="id_other_lang" class="control-label">其他语言</label>
-      <div class="controls">
-        <input type="text" maxlength="16" value="" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder="哇！难道你发明了新的语言:-)">
-      </div>
-    </div>
-    <div class="control-group">
-      <label for="id_auth_type" class="control-label">可见度</label>
-      <div class="controls">
-        <div>
-          {% for auth_type in repoForm.auth_type %}
-          <span class="option">
-            {{auth_type}}
-          </span>
-          {% endfor %}
-          <span class="text-warning"><b>半公开</b>指仅仅源代码不公开</span>
+<div class="settings inner bubble clearfix">
+  <h2>仓库设置</h2>
+  <div class="sidebar">
+    <ul class="nav nav-list nav-tabs nav-tabs-vertical">
+      <li class="active"><a href="#details" data-toggle="tab">详细信息</a></li>
+      <li><a href="#deployURL" data-toggle="tab">Deploy URL</a></li>
+      <li><a href="#serviceHook" data-toggle="tab">服务钩子</a></li>
+      <li><a href="#collaborator" data-toggle="tab">成员</a></li>
+      <li><a href="#dropboxBackup" data-toggle="tab">Dropbox备份</a></li>
+      <li><a href="#repoDestroy" data-toggle="tab">删除仓库</a></li>
+    </ul>
+  </div>
+  <div class="primary tab-content">
+    <div class="tab-pane active" id="details">
+      <form class="form-horizontal" method="post">
+        {% csrf_token %}
+        <div class="controls hide">{{ repoForm.username }}</div>
+        <div class="control-group">
+          <label for="id_name" class="control-label">仓库名称</label>
+          <div class="controls">
+            {{ repoForm.name }}
+          </div>
         </div>
+        <div class="control-group">
+          <label for="id_desc" class="control-label">简介</label>
+          <div class="controls">
+            {{ repoForm.desc }}
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="id_lang" class="control-label">语言选择</label>
+          <div class="controls">
+            {{ repoForm.lang }}
+          </div>
+        </div>
+        <div id="id_other_lang_group" class="control-group" style="display: none">
+          <label for="id_other_lang" class="control-label">其他语言</label>
+          <div class="controls">
+            <input type="text" maxlength="16" value="" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder="哇！难道你发明了新的语言:-)">
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="id_auth_type" class="control-label">可见度</label>
+          <div class="controls">
+            <div>
+              {% for auth_type in repoForm.auth_type %}
+              <span class="option">
+                {{auth_type}}
+              </span>
+              {% endfor %}
+              <span class="text-warning"><b>半公开</b>指仅仅源代码不公开</span>
+            </div>
+          </div>
+        </div>
+        <div id="id_error" class="alert {% if not error %}hide{% endif %}">
+          <a data-dismiss="alert" class="close">×</a>
+          <strong>出错了！</strong> <span id="id_error_message">{{ error }}</span>
+        </div>
+        <div class="control-group">
+          <div class="controls form-actions">
+            <button id="id_edit_submit" class="btn btn-primary" type="submit">确定</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="tab-pane" id="deployURL">
+      <h3 class="heading">Deploy URL</h3>
+      <div class="detail">
+        {% if repo.deploy_url and repo.deploy_url != '' %}
+        <p>
+          <button class="generate_deploy_url btn">重新生成</button>
+          <button class="forbid_dploy_url btn">禁止</button>
+        </p>
+        <div class="url">https://<span class="hash">{{repo.deploy_url}}</span>@gitshell.com/{{user_name}}/{{repo_name}}.git</div>
+        {% else %}
+        <p><button class="generate_deploy_url btn btn-primary">生成</button></p>
+        <p class="text-info">deploy url 是 git 只读、不需要权限验证的 clone 地址，用于发布、部署，不能公开该地址</p>
+        {% endif %}
       </div>
     </div>
-    <div id="id_error" class="alert {% if not error %}hide{% endif %}">
-      <a data-dismiss="alert" class="close">×</a>
-      <strong>出错了！</strong> <span id="id_error_message">{{ error }}</span>
+    <div class="tab-pane" id="serviceHook">
+      <h3 class="heading">服务钩子</h3>
+      <p><a href="/{{user_name}}/{{repo_name}}/settings/hooks/" class="btn btn-primary">管理</a></p>
+      <p class="text-info">服务钩子提交事件触发通知</p>
     </div>
-    <div class="control-group">
-      <div class="controls form-actions">
-        <button id="id_edit_submit" class="btn btn-primary" type="submit">确定</button>
-      </div>
+    <div class="tab-pane" id="collaborator">
+      <h3 class="heading">管理协同者</h3>
+      <p><a href="/{{user_name}}/{{repo_name}}/settings/members/" class="btn btn-primary">管理</a></p>
+      <p class="text-info">管理仓库协同者，添加仓库的成员。</p>
     </div>
-  </form>
-
-  <hr>
-
-  <ul class="dropbox-deploy">
-    <li>
+    <div class="tab-pane" id="dropboxBackup">
       <h3 class="heading">Dropbox 及时备份</h3>
       <div class="detail">
         {% if repo.dropbox_sync == 1 %}
-        <div class="actions">
-          <button class="disable_dropbox_sync btn btn-mini">禁止</button>
-        </div>
+        <p><button class="disable_dropbox_sync btn">禁止</button></p>
         <div class="url">
           {% if repo.dropbox_url == '' %}
           <span class="label label-important">Dropbox 正在同步中... 请三分钟之后再来围观</span>
@@ -71,44 +103,25 @@
           {% endif %}
         </div>
         {% else %}
-        <div class="actions"><button class="enable_dropbox_sync btn btn-mini btn-primary">启用</button></div>
+        <p><button class="enable_dropbox_sync btn btn-primary">启用</button></p>
         <p class="text-info">仓库将近乎及时地备份在 Dropbox，加入本地 Dropbox 后可以直接 git clone，不能公开该地址</p>
         {% endif %}
       </div>
-    </li>
-    <li>
-      <h3 class="heading">Deploy URL</h3>
-      <div class="detail">
-        {% if repo.deploy_url and repo.deploy_url != '' %}
-        <div class="actions">
-          <button class="generate_deploy_url btn btn-mini">重新生成</button>
-          <button class="forbid_dploy_url btn btn-mini">禁止</button>
-        </div>
-        <div class="url">https://<span class="hash">{{repo.deploy_url}}</span>@gitshell.com/{{user_name}}/{{repo_name}}.git</div>
-        {% else %}
-        <div class="actions">
-          <button class="generate_deploy_url btn btn-mini btn-primary">生成</button>
-        </div>
-        <p class="text-info">deploy url 是 git 只读、不需要权限验证的 clone 地址，用于发布、部署，不能公开该地址</p>
-        {% endif %}
-      </div>
-    </li>
-    <li>
-      <h3 class="heading">服务钩子</h3>
-      <div class="actions"><a href="/{{user_name}}/{{repo_name}}/settings/hooks/" class="btn btn-mini btn-primary">管理</a></div>
-      <p class="text-info">服务钩子提交事件触发通知</p>
-    </li>
-    <li>
-      <h3 class="heading">管理协同者</h3>
-      <div class="actions"><a href="/{{user_name}}/{{repo_name}}/settings/members/" class="btn btn-mini btn-primary">管理</a></div>
-      <p class="text-info">管理仓库协同者，添加仓库的成员。</p>
-    </li>
-  </ul>
+    </div>
+    <div class="tab-pane delete" id="repoDestroy">
+      <h3 class="heading">删除仓库</h3>
+      <p class="alert alert-danger"><i class="icon-exclamation-sign"></i>你正在删除仓库 <em>{{repo_name}}</em>, 这是<em>不可恢复</em>的操作</p>
+      <dl class="notice">
+        <dt class="leader">删除仓库之前最好想到以下问题:</dt>
+        <dd class="well">对应数据是否备份<br>是否要通知相关的合作者<br>相关的仓库成员组织，问题，文档都将不见<br></dd>
+      </dl>
+      <form method="POST">
+        {% csrf_token %} 
+        <input class="btn btn-large btn-danger" type="submit" value="确定删除">
+      </form>
+    </div>
 
-  <div class="destroy">
-    <a href="/{{user_name}}/{{repo_name}}/settings/delete/" class="btn btn-danger">删除该仓库</a>
   </div>
-
 </div>
 {% endblock %}
 {% block subjs %}

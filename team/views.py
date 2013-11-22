@@ -14,7 +14,6 @@ from gitshell.feed.models import Feed, FeedManager
 from gitshell.feed.mailUtils import Mailer
 from gitshell.repo.models import RepoManager, Repo
 from gitshell.issue.models import IssueManager, Issue, IssueComment
-from gitshell.issue.cons import conver_issues
 from gitshell.gsuser.models import GsuserManager, UserViaRef, REF_TYPE
 from gitshell.gsuser.views import get_feeds_as_json
 from gitshell.gssettings.Form import TeamprofileForm
@@ -90,8 +89,7 @@ def issues(request, username, page):
     feedAction = FeedAction()
     feedAction.set_user_position(teamUser.id, PositionKey.ISSUES)
     page = int(page); page_size = 50; offset = page*page_size; row_count = page_size + 1
-    raw_issues = IssueManager.list_issues_by_teamUserId_assigned(teamUser.id, request.user.id, 'modify_time', offset, row_count)
-    issues = conver_issues(raw_issues)
+    issues = IssueManager.list_issues_by_teamUserId_assigned(teamUser.id, request.user.id, 'modify_time', offset, row_count)
 
     hasPre = False ; hasNext = False
     if page > 0:

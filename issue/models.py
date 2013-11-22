@@ -2,6 +2,8 @@
 import os, time, re
 from django.db import models
 from django.core.cache import cache
+from gitshell.gsuser.models import GsuserManager
+from gitshell.repo.models import RepoManager
 from gitshell.objectscache.models import BaseModel, CacheKey
 from gitshell.objectscache.da import query, query_first, queryraw, execute, count, get, get_many, get_version, get_sqlkey, get_raw, get_raw_many
 
@@ -19,8 +21,14 @@ class Issue(BaseModel):
     comment_count = models.IntegerField(default=0)
 
     # field without database
-    username = ''
-    reponame = ''
+    repo = None
+    creator_userprofile = None
+    assigned_userprofile = None
+
+    def fillwith(self):
+        self.repo = RepoManager.get_repo_by_id(self.repo_id)
+        self.creator_userprofile = GsuserManager.get_userprofile_by_id(self.creator_user_id)
+        self.assigned_userprofile = GsuserManager.get_userprofile_by_id(self.assigned)
 
 class IssueComment(BaseModel):
     issue_id = models.IntegerField()
@@ -29,8 +37,15 @@ class IssueComment(BaseModel):
     content = models.CharField(max_length=512, default='') 
 
     # field without database
-    username = ''
-    reponame = ''
+    issue = None
+    repo = None
+    commenter_userprofile = None
+
+    def fillwith(self, issue):
+        if issue:
+            self.issue = issue
+            self.repo = self.issue.repo
+        commenter_userprofile = GsuserManager.get_userprofile_by_id(self.user_id)
 
 class ISSUE_STATUS:
 
@@ -68,6 +83,8 @@ class IssueManager():
         if value is not None:
             return get_many(Issue, value)
         issues = Issue.objects.filter(visibly=0).filter(repo_id=repo_id).filter(assigned__in=assigned_ids).filter(tracker__in=trackers).filter(status__in=statuses).filter(priority__in=priorities).order_by('-'+orderby)[offset : offset+row_count]
+        for issue in issues:
+            issue.fillwith()
         issues_ids = [x.id for x in issues]
         cache.add(sqlkey, issues_ids)
         return list(issues)
@@ -78,6 +95,8 @@ class IssueManager():
         if orderby == 'create_time':
             rawsql_id = 'issue_l_cons_create'
         issues = query(Issue, repo_id, rawsql_id, [repo_id, offset, row_count]) 
+        for issue in issues:
+            issue.fillwith()
         return issues
 
     @classmethod
@@ -86,6 +105,8 @@ class IssueManager():
         if orderby == 'create_time':
             rawsql_id = 'issue_l_userId_assigned_create'
         assigned_issues = query(Issue, None, rawsql_id, [team_user_id, assigned, offset, row_count]) 
+        for issue in assigned_issues:
+            issue.fillwith()
         return assigned_issues
 
     @classmethod
@@ -94,25 +115,37 @@ class IssueManager():
         if orderby == 'create_time':
             rawsql_id = 'issue_l_assigned_create'
         assigned_issues = query(Issue, None, rawsql_id, [assigned, offset, row_count]) 
+        for issue in assigned_issues:
+            issue.fillwith()
         return assigned_issues
 
     @classmethod
-    def get_issue_by_id(self, issue_id):
-        return get(Issue, issue_id)
-
-    @classmethod
-    def get_issue(self, repo_id, issue_id):
-        issue = query_first(Issue, repo_id, 'issue_s_id', [repo_id, issue_id])
+    def get_issue_by_id(self, id):
+        issue = get(Issue, id)
+        issue.fillwith()
         return issue
 
     @classmethod
-    def get_issue_comment(self, comment_id):
-        issue_comment = get(IssueComment, comment_id)
+    def get_issue(self, repo_id, id):
+        issue = query_first(Issue, repo_id, 'issue_s_id', [repo_id, id])
+        issue.fillwith()
+        return issue
+
+    @classmethod
+    def get_issue_comment(self, id):
+        issue_comment = get(IssueComment, id)
+        issue = self.get_issue_by_id(issue_comment.issue_id)
+        if not issue:
+            return None
+        issue_comment.fillwith(issue)
         return issue_comment
 
     @classmethod
     def list_issue_comments(self, issue_id, offset, row_count):
+        issue = self.get_issue_by_id(issue_id)
         issueComments = query(IssueComment, issue_id, 'issuecomment_l_issueId', [issue_id, offset, row_count]) 
+        for issueComment in issueComments:
+            issueComment.fillwith(issue)
         return issueComments
 
 

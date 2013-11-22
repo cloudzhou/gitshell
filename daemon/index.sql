@@ -63,3 +63,8 @@ alter table gsuser_userprofile add COLUMN `has_joined_repo` int(11) NOT NULL aft
 alter table gsuser_userprofile change `is_join_team` `has_joined_team` int(11) NOT NULL;
 update gsuser_userprofile set has_joined_repo = 1 where id in  (select user_id from repo_repomember where visibly = 0);
 update gsuser_userprofile set has_joined_team = 1 where id in  (select user_id from team_teammember where visibly = 0);
+
+alter table repo_commithistory add `pushrevref_id` int(11) NOT NULL after `visibly`;
+create index commithistory_pushrevrefid_mtime_idx on repo_commithistory (visibly, repo_id, pushrevref_id, modify_time desc);
+
+

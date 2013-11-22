@@ -65,9 +65,33 @@ class RepoMember(BaseModel):
     user_id = models.IntegerField()
     permission = models.IntegerField(default=0)
 
+class PushRevRef(BaseModel):
+    push_id = models.BigIntegerField(default=0)
+    push_user_id = models.IntegerField()
+    repo_id = models.IntegerField()
+    old_commit_hash = models.CharField(max_length=12)
+    new_commit_hash = models.CharField(max_length=12)
+    refname = models.CharField(max_length=64)
+    status = models.IntegerField(default=0) 
+
+    push_userprofile = None
+    repo = None
+    short_refname = ''
+    commits = []
+
+    def fillwith(self):
+        self.push_userprofile = GsuserManager.get_userprofile_by_id(self.push_user_id)
+        self.repo = RepoManager.get_repo_by_id(self.repo_id)
+        self.short_refname = self.refname
+        if self.refname and '/' in self.refname:
+            self.short_refname = self.refname[self.refname.rfind('/')+1:]
+        for commit in self.commits:
+            commit.fillwith()
+
 # commit history from git: commit_hash parent_hashes tree_hash author committer committer_date subject
 # git log -100 --pretty='%h  %p  %t  %an  %cn  %ct  %s'
 class CommitHistory(BaseModel):
+    pushrevref_id = models.IntegerField()
     repo_id = models.IntegerField()
     repo_name = models.CharField(max_length=64)
     commit_id = models.IntegerField()
@@ -81,8 +105,12 @@ class CommitHistory(BaseModel):
     refname = models.CharField(max_length=32)
 
     # field without database
+    repo = None
+    committer_userprofile = None
+    author_userprofile = None
     committer_email = ''
     author_email = ''
+    short_refname = ''
 
     @classmethod
     def create(self, repo_id, repo_name, commit_hash, parent_hashes, tree_hash, author, committer, committer_date, subject, refname, committer_email, author_email):
@@ -103,14 +131,13 @@ class CommitHistory(BaseModel):
         commitHistory.author_email = author_email 
         return commitHistory
 
-    def get_short_refname(self):
-        if '/' in self.refname:
-            return self.refname[self.refname.rfind('/')+1:]
-        return ''
-
-    def get_repo_username(self):
-        repo = RepoManager.get_repo_by_id(self.repo_id)
-        return repo.username
+    def fillwith(self):
+        self.short_refname = self.refname
+        if self.refname and '/' in self.refname:
+            self.short_refname = self.refname[self.refname.rfind('/')+1:]
+        self.repo = RepoManager.get_repo_by_id(self.repo_id)
+        self.committer_userprofile = GsuserManager.get_userprofile_by_name(self.committer)
+        self.author_userprofile = GsuserManager.get_userprofile_by_name(self.author)
 
 class Star(BaseModel):
     user_id = models.IntegerField(default=0)
@@ -169,8 +196,8 @@ class PullRequest(BaseModel):
         return pullRequest
 
     def fillwith(self):
-        self.pull_user = GsuserManager.get_user_by_id(self.pull_user_id)
-        self.merge_user = GsuserManager.get_user_by_id(self.merge_user_id)
+        self.pull_user = GsuserManager.get_userprofile_by_id(self.pull_user_id)
+        self.merge_user = GsuserManager.get_userprofile_by_id(self.merge_user_id)
         self.source_repo = RepoManager.get_repo_by_id(self.source_repo_id)
         self.desc_repo = RepoManager.get_repo_by_id(self.desc_repo_id)
         self.short_title = self.title
@@ -186,9 +213,6 @@ class PullRequestComment(BaseModel):
     pull_id = models.IntegerField()
     user_id = models.IntegerField()
     content = models.CharField(max_length=2048, default='') 
-
-    username = ''
-    reponame = ''
 
 class WebHookURL(BaseModel):
     repo_id = models.IntegerField()
@@ -287,15 +311,33 @@ class RepoManager():
 
     @classmethod
     def get_commit_by_id(self, id):
-        return get(CommitHistory, id)
+        commit = get(CommitHistory, id)
+        commit.fillwith()
+        return commit
 
     @classmethod
-    def get_commits_by_ids(self, ids):
-        return get_many(CommitHistory, ids)
+    def list_commits_by_ids(self, ids):
+        commits = get_many(CommitHistory, ids)
+        for commit in commits:
+            commit.fillwith()
+        return commits
 
     @classmethod
     def list_commits_by_commit_ids(self, repo_id, commit_ids):
         return list(CommitHistory.objects.filter(visibly=0).filter(repo_id=repo_id).filter(commit_id__in=commit_ids))
+
+    @classmethod
+    def list_commit_by_repoId_pushrevrefId(self, repo_id, pushrevref_id, offset, row_count):
+        commits = query(CommitHistory, repo_id, 'commithistory_l_repoId_pushrevrefId', [repo_id, pushrevref_id, offset, row_count])
+        for commit in commits:
+            commit.fillwith()
+        return commits
+
+    @classmethod
+    def get_pushrevref_by_id(self, id):
+        pushrevref = get(PushRevRef, id)
+        pushrevref.fillwith()
+        return pushrevref
 
     @classmethod
     def list_repo_team_memberUser(self, repo_id):
@@ -381,6 +423,10 @@ class RepoManager():
     @classmethod
     def is_allowed_write_access_repo(self, repo, user):
         return self.is_allowed_access_repo(repo, user, REPO_PERMISSION.WRITE)
+
+    @classmethod
+    def is_allowed_read_access_repo(self, repo, user):
+        return self.is_allowed_access_repo(repo, user, REPO_PERMISSION.READ_ONLY)
 
     @classmethod
     def is_allowed_access_repo(self, repo, user, repoPermission):
@@ -808,5 +854,11 @@ class PULL_STATUS:
         3 : 'rejected',
         4 : 'closed',
     }
+
+class BRANCH_STATUS:
+
+    UPDATE = 1
+    CREATE = 2
+    DELETE = 3
 
 
