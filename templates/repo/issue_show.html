@@ -9,22 +9,22 @@
   <p class="hide">您没有添加评论的权限，请<a href="#">登陆</a></p>
   <div class="issue cIssue">
     <figure class="avatar">
-      <img src="https://gravatar.com/avatar/{{ issue.reporter_imgurl}}?s=55" alt="{{issue.username}}">
+      <img src="https://gravatar.com/avatar/{{issue.creator_userprofile.imgurl}}?s=55" alt="{{issue.creator_userprofile.username}}">
     </figure>
     <div class="detail">
       <h3 id="issueSubject" class="heading">{{issue.subject}} </h3>
       <p class="meta">
-        <span class="label {%if issue.tracker == "缺陷"%}defect{%elif issue.tracker == "功能"%}feature{%elif issue.tracker == "支持"%}support{%endif%}">{{issue.tracker}}</span>
-        {% if issue.status %}
-        <span class="label label-warning">{{issue.status}}</span>
+        <span class="label {%if issue.tracker_v == "缺陷"%}defect{%elif issue.tracker_v == "功能"%}feature{%elif issue.tracker_v == "支持"%}support{%endif%}">{{issue.tracker_v}}</span>
+        {% if issue.status_v %}
+          <span class="label label-warning">{{issue.status_v}}</span>
         {% endif %}
-        {% if issue.priority %}
-        <span class="label label-success">{{issue.priority}}</span>
+        {% if issue.priority_v %}
+          <span class="label label-success">{{issue.priority_v}}</span>
         {% endif %}
         <span class="assign">
-          <a href="/{{issue.username}}/">{{issue.username}}</a>指派给<a href="/{{issue.assigned}}/">{{issue.assigned}}</a>
+          <a href="/{{issue.creator_userprofile.username}}/">{{issue.creator_userprofile.username}}</a>指派给<a href="/{{issue.assigned_userprofile.username}}/">{{issue.assigned_userprofile.username}}</a>
         </span>
-        <time class="unixtime" pubdate="pubdate">{{issue.create_time}}</time>
+        <time class="unixtime" pubdate="pubdate">{{issue.create_time|date:"U"}}</time>
       </p>
       <div class="content">{{issue.content}}</div>
       <span class="actions">
@@ -36,30 +36,30 @@
     </div>
   </div>
 
-  {%if issue_comments%}
+{%if issue_comments%}
   {%for issue_comment in issue_comments%}
-  <section data-user-name="{{issue_comment.username}}" class="comment">
+  <section data-user-name="{{issue_comment.commenter_userprofile.username}}" class="comment">
     <figure class="avatar">
-      <img src="https://gravatar.com/avatar/{{ issue_comment.imgurl }}?s=55" alt="{{issue.comment}}">
+      <img src="https://gravatar.com/avatar/{{ issue_comment.commenter_userprofile.imgurl }}?s=55" alt="{{issue_comment.commenter_userprofile.username}}">
     </figure>
     <div class="detail">
       <div class="meta">
-        <a href="/{{issue_comment.username}}/">{{issue_comment.username}}</a>
-        <time class="unixtime" pubdate="pubdate">{{issue_comment.create_time}}</time>
+        <a href="/{{issue_comment.commenter_userprofile.username}}/">{{issue_comment.commenter_userprofile.username}}</a>
+        <time class="unixtime" pubdate="pubdate">{{issue_comment.create_time|date:"U"}}</time>
       </div>
       <div class="content">{{issue_comment.content}}</div>
       <div class="actions">
         <a class="rmComment hide" value="{{issue_comment.id}}" href="javascript:void(0)"><i class="icon-remove"></i>删除</a>
-        <a class="refComment" href="javascript:void(0)" value="{{issue_comment.username}}"><i class="icon-reply"></i>回复</a>
+        <a class="refComment" href="javascript:void(0)" value="{{issue_comment.commenter_userprofile.username}}"><i class="icon-reply"></i>回复</a>
       </div>
     </div>
   </section>
   {%endfor%}
-  {%endif%}
+{%endif%}
 
-  <div data-user-name="{{user_name}}" class="comment">
+  <div data-user-name="{{user.username}}" class="comment">
     <figure class="avatar">
-      <img src="https://gravatar.com/avatar/{{user_name}}?s=55" alt="{{user_name}}">
+      <img src="https://gravatar.com/avatar/{{userprofile.imgurl}}?s=55" alt="{{user.username}}">
     </figure>
     <form id="comment" class="detail" method="post">
       {% csrf_token %}
@@ -73,13 +73,13 @@
 
   {%if total_page|length > 1%}
   <ul class="pagination">
-    {%for i in total_page%}
+  {%for i in total_page%}
     {%if i == page%}
     <li class="active"><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
     {%else%}
     <li><a href="/{{user_name}}/{{repo_name}}/issues/{{issue.id}}/{{i}}/">{{i}}</a></li>
     {%endif%}
-    {%endfor%}
+  {%endfor%}
   </ul>
   {%endif%}
 </div>

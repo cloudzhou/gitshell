@@ -6,6 +6,7 @@ from gitshell.gsuser.models import GsuserManager
 from gitshell.repo.models import RepoManager
 from gitshell.objectscache.models import BaseModel, CacheKey
 from gitshell.objectscache.da import query, query_first, queryraw, execute, count, get, get_many, get_version, get_sqlkey, get_raw, get_raw_many
+from gitshell.issue.cons import ISSUE_ATTRS
 
 class Issue(BaseModel):
     user_id = models.IntegerField()
@@ -24,11 +25,20 @@ class Issue(BaseModel):
     repo = None
     creator_userprofile = None
     assigned_userprofile = None
+    tracker_v = ''
+    status_v = ''
+    priority_v = ''
 
     def fillwith(self):
         self.repo = RepoManager.get_repo_by_id(self.repo_id)
         self.creator_userprofile = GsuserManager.get_userprofile_by_id(self.creator_user_id)
         self.assigned_userprofile = GsuserManager.get_userprofile_by_id(self.assigned)
+        if self.tracker in ISSUE_ATTRS['REV_TRACKERS']:
+            self.tracker_v = ISSUE_ATTRS['REV_TRACKERS'][self.tracker]
+        if self.status in ISSUE_ATTRS['REV_STATUSES']:
+            self.status_v = ISSUE_ATTRS['REV_STATUSES'][self.status]
+        if self.priority in ISSUE_ATTRS['REV_PRIORITIES']:
+            self.priority_v = ISSUE_ATTRS['REV_PRIORITIES'][self.priority]
 
 class IssueComment(BaseModel):
     issue_id = models.IntegerField()
@@ -45,7 +55,7 @@ class IssueComment(BaseModel):
         if issue:
             self.issue = issue
             self.repo = self.issue.repo
-        commenter_userprofile = GsuserManager.get_userprofile_by_id(self.user_id)
+        self.commenter_userprofile = GsuserManager.get_userprofile_by_id(self.user_id)
 
 class ISSUE_STATUS:
 
