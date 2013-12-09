@@ -112,7 +112,7 @@ def keyauth(request, fingerprint, command):
         # member of the repo
         repoMember = RepoManager.get_repo_member(repo.id, userpubkey.user_id)
         # member of the team user
-        teamMember = TeamManager.get_teamMember_by_userId_teamUserId(userpubkey.user_id, user.id)
+        teamMember = TeamManager.get_teamMember_by_teamUserId_userId(user.id, userpubkey.user_id)
         if repoMember or teamMember:
             pushUser = GsuserManager.get_user_by_id(userpubkey.user_id)
             return response_full_git_command(quote, pre_command, pushUser, user, repo)

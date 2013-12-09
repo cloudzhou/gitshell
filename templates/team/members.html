@@ -7,7 +7,7 @@
     {% for teamMember in teamMembers %}
     <tr class="team-member">
       <td class="name">
-        <a href="/{{ teamMember.user.username }}/"><img src="/static/img/teamavatar.png" alt="{{teamMember.team_user.username}}">{{ teamMember.user.username }}</a>
+        <a href="/{{ teamMember.user.username }}/"><img src="https://gravatar.com/avatar/{{teamMember.user.imgurl}}?s=34" alt="{{teamMember.user.username}}">{{ teamMember.user.username }}</a>
         {% if teamMember.has_admin_rights %}
         <span class="label label-mini">管理员</span>
         {% endif %}
@@ -19,13 +19,13 @@
         <label for="rights-{{teamMember.id}}">Push</label-->
         </td>
         <td>
-          <div class="actions">
-            <a href="#" data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="remove-team-member btn btn-mini">移除</a>
+          <div class="hide actions">
             {% if teamMember.has_admin_rights %}
             <a href="#" data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="cancal-team-admin btn btn-mini btn-danger">解除管理员</a>
             {% else %}
             <a href="#" data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="grant-team-admin btn btn-mini btn-success">设置为管理员</a>
             {% endif %}
+            <a href="#" data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="remove-team-member btn btn-mini">移除</a>
           </div>
         </td>
       </tr>
@@ -53,9 +53,9 @@ $(function(){
     });
     $('.team-member').live('mouseover mouseout', function(event) {
         if(event.type == 'mouseover') {
-            $(this).find('.action').show();
+            $(this).find('.actions').show();
         } else {
-            $(this).find('.action').hide();
+            $(this).find('.actions').hide();
         }
     });
     $('.add-team-member').click(function(){

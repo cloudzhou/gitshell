@@ -1,0 +1,66 @@
+{% extends "team/settings_base.html" %}
+
+{% block container-right %}
+<h2 class="heading">团队组</h2>
+<table class="table team">
+  <tbody>
+    {% for teamGroup in teamGroups %}
+    <tr class="team-group">
+      <td class="name">
+        <img src="/static/img/teamavatar.png" alt="{{teamGroup.name}}">
+        <a href="/{{teamUser.username}}/-/settings/group/{{teamGroup.id}}/">{{teamGroup.name}}</a>
+      </td>
+      <td class="rights">
+      </td>
+      <td>
+        <div class="hide actions">
+          <a href="javascript:;" data-id="{{teamGroup.id}}" class="remove-team-group btn btn-mini">删除</a>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+  <p class="add-group"><input id="add-group" placeholder="添加新的组名，只允许[ 0-9a-zA-Z_-]之内的字符"/><button class="add-team-group btn">添加新组</button></p>
+  <span id="alert" class="info hide"></span>
+{% endblock %}
+
+{% block js %}
+<script>
+$(function(){
+    $('.team-group').live('mouseover mouseout', function(event) {
+        if(event.type == 'mouseover') {
+            $(this).find('.actions').show();
+        } else {
+            $(this).find('.actions').hide();
+        }
+    });
+    $('.add-team-group').click(function(){
+        var group_name = $('#add-group').val();
+        $.post('/{{teamUser.username}}/-/settings/group/add/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'group_name': group_name}, function(json){
+            if(json.code == 200) {
+                window.location.reload(true);
+                return;
+            }
+            alert(json.message);
+        });
+    });
+
+    $('.remove-team-group').click(function(){
+        var team_group_id = $(this).data('id');
+        var is_confirm = window.confirm('你将移除组，这可能对很多权限设置有影响，你确定吗？');
+        if(!is_confirm) {
+            return;
+        }
+        $.post('/{{teamUser.username}}/-/settings/group/remove/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'team_group_id': team_group_id}, function(json){
+            if(json.code == 200) {
+                window.location.reload(true);
+                return;
+            }
+            alert(json.message);
+        });
+    });
+});
+</script>
+{% endblock %}
+

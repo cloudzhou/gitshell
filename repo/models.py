@@ -441,7 +441,7 @@ class RepoManager():
             if member:
                 return True
             # team member
-            teamMember = TeamManager.get_teamMember_by_userId_teamUserId(user.id, repo.user_id)
+            teamMember = TeamManager.get_teamMember_by_teamUserId_userId(repo.user_id, user.id)
             if teamMember:
                 return True
         if repoPermission == REPO_PERMISSION.WRITE:

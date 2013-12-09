@@ -17,7 +17,8 @@ from gitshell.issue.models import IssueManager, Issue, IssueComment
 from gitshell.gsuser.models import GsuserManager, UserViaRef, REF_TYPE
 from gitshell.gsuser.views import get_feeds_as_json
 from gitshell.gssettings.Form import TeamprofileForm
-from gitshell.team.models import TeamManager, TeamMember
+from gitshell.team.models import TeamManager, TeamMember, TeamGroup, GroupMember
+from gitshell.team.decorators import team_admin_permission_check
 from gitshell.todolist.views import todo
 from gitshell.viewtools.views import json_httpResponse, json_success, json_failed, obj2dict
 
@@ -120,7 +121,7 @@ def notif(request, username):
 def repo(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
     current = 'repo'; title = u'%s / 仓库列表' % (teamUser.username)
-    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
+    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(teamUser.id, request.user.id)
     repos = []
     # is team member
     if teamMember:
@@ -169,7 +170,7 @@ def members(request, username):
 @require_http_methods(["POST"])
 def add_member(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
-    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
+    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(teamUser.id, request.user.id)
     if not teamMember or not teamMember.has_admin_rights():
         return _response_not_manage_rights(request)
     teamMember = None
@@ -195,7 +196,7 @@ def add_member(request, username):
 @require_http_methods(["POST"])
 def member_leave(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
-    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
+    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(teamUser.id, request.user.id)
     if not teamMember:
         return _response_not_manage_rights(request)
     teamMembers = TeamManager.list_teamMember_by_teamUserId(teamMember.team_user_id)
@@ -242,9 +243,109 @@ def cancal_admin(request, username):
     return json_failed(500, u'解除管理员失败，一个团队帐号至少需要保留一个管理员')
 
 @login_required
+@team_admin_permission_check
+def groups(request, username):
+    teamUser = GsuserManager.get_user_by_name(username)
+    teamUserprofile = GsuserManager.get_userprofile_by_id(teamUser.id)
+    teamGroups = TeamManager.list_teamGroup_by_teamUserId(teamUser.id)
+    current = 'settings'; sub_nav = 'groups'; title = u'%s / 设置 / 组管理' % (teamUser.username)
+    response_dictionary = {'current': current, 'sub_nav': sub_nav, 'title': title, 'teamGroups': teamGroups}
+    response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
+    return render_to_response('team/groups.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
+@team_admin_permission_check
+def group(request, username, group_id):
+    teamUser = GsuserManager.get_user_by_name(username)
+    teamUserprofile = GsuserManager.get_userprofile_by_id(teamUser.id)
+    teamGroup = TeamManager.get_teamGroup_by_id(group_id)
+    if not teamGroup or teamGroup.team_user_id != teamUser.id:
+        raise Http404
+    groupMembers = TeamManager.list_groupMember_by_teamGroupId(teamGroup.id)
+    current = 'settings'; sub_nav = 'groups'; title = u'%s / 设置 / 组管理 / %s' % (teamUser.username, teamGroup.name)
+    response_dictionary = {'current': current, 'sub_nav': sub_nav, 'title': title, 'teamGroup': teamGroup, 'groupMembers': groupMembers}
+    response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
+    return render_to_response('team/group.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
+@team_admin_permission_check
+@require_http_methods(["POST"])
+def group_add(request, username):
+    teamUser = GsuserManager.get_user_by_name(username)
+    group_name = request.POST.get('group_name', '')
+    if not re.match('^[ 0-9a-zA-Z_-]+$', group_name):
+        return json_failed(403, u'组名不符合规范，只允许[ 0-9a-zA-Z_-]之内的字符')
+    teamGroup = TeamManager.get_teamGroup_by_teamUserId_name(teamUser.id, group_name)
+    if teamGroup:
+        return json_failed(500, u'组名已经存在')
+    teamGroup = TeamGroup(team_user_id = teamUser.id, name = group_name, desc = '')
+    teamGroup.save()
+    return json_success(u'成功创建组 %s' % group_name)
+
+@login_required
+@team_admin_permission_check
+@require_http_methods(["POST"])
+def group_remove(request, username):
+    teamUser = GsuserManager.get_user_by_name(username)
+    team_group_id = int(request.POST.get('team_group_id', '0'))
+    teamGroup = TeamManager.get_teamGroup_by_id(team_group_id)
+    if not teamGroup or teamGroup.team_user_id != teamUser.id:
+        return _response_not_manage_rights(request)
+    groupMembers = TeamManager.list_groupMember_by_teamGroupId(teamGroup.id)
+    for groupMember in groupMembers:
+        groupMember.visibly = 1
+        groupMember.save()
+    teamGroup.visibly = 1
+    teamGroup.save()
+    return json_success(u'成功删除组 %s' % teamGroup.name)
+
+@login_required
+@team_admin_permission_check
+@require_http_methods(["POST"])
+def group_add_member(request, username):
+    teamUser = GsuserManager.get_user_by_name(username)
+    team_group_id = int(request.POST.get('team_group_id', '0'))
+    teamGroup = TeamManager.get_teamGroup_by_id(team_group_id)
+    if not teamGroup or teamGroup.team_user_id != teamUser.id:
+        return _response_not_manage_rights(request)
+    member_username = request.POST.get('member_username', '')
+    member_user = GsuserManager.get_user_by_name(member_username)
+    if not member_user:
+        return json_failed(500, u'没有该用户名')
+    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(teamUser.id, member_user.id)
+    if not teamMember:
+        return json_failed(500, u'用户 %s 还没有加入团队帐号 %s' % (member_user.username, teamUser.username))
+    groupMember = TeamManager.get_groupMember_by_teamGroupId_memberUserId(teamGroup.id, member_user.id)
+    if groupMember:
+        return json_success(u'用户 %s 已经在该组' % member_user.username)
+    groupMember = GroupMember(team_user_id=teamUser.id, group_id=teamGroup.id, member_user_id=member_user.id)
+    groupMember.save()
+    return json_success(u'成功添加用户 %s 到组 %s' % (member_user.username, teamGroup.name))
+
+@login_required
+@team_admin_permission_check
+@require_http_methods(["POST"])
+def group_remove_member(request, username):
+    teamUser = GsuserManager.get_user_by_name(username)
+    team_group_id = int(request.POST.get('team_group_id', '0'))
+    teamGroup = TeamManager.get_teamGroup_by_id(team_group_id)
+    if not teamGroup or teamGroup.team_user_id != teamUser.id:
+        return _response_not_manage_rights(request)
+    member_user_id = int(request.POST.get('member_user_id', '0'))
+    groupMember = TeamManager.get_groupMember_by_teamGroupId_memberUserId(teamGroup.id, member_user_id)
+    if groupMember:
+        groupMember.visibly = 1
+        groupMember.save()
+    return json_success(u'从 %s 组移除用户' % (teamGroup.name))
+
+@login_required
 def destroy(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
-    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
+    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(teamUser.id, request.user.id)
     if not teamMember or not teamMember.has_admin_rights():
         return _response_not_manage_rights(request)
     current = 'settings'; sub_nav = 'destroy'; title = u'%s / 设置 / 删除帐号' % (teamUser.username)
@@ -258,7 +359,7 @@ def destroy(request, username):
 @require_http_methods(["POST"])
 def destroy_confirm(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
-    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
+    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(teamUser.id, request.user.id)
     if not teamMember or not teamMember.has_admin_rights():
         return _response_not_manage_rights(request)
     teamRepos = RepoManager.list_repo_by_userId(teamUser.id, 0, 1000)
@@ -278,7 +379,7 @@ def _get_teamMember_by_manageTeamMemberId(request):
     manage_teamMember = TeamManager.get_teamMember_by_id(teamMember_id)
     if not manage_teamMember:
         return None
-    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, manage_teamMember.team_user_id)
+    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(manage_teamMember.team_user_id, request.user.id)
     if not teamMember or not teamMember.has_admin_rights():
         return (None, None)
     return (manage_teamMember, teamMember)
@@ -294,7 +395,7 @@ def _response_not_manage_rights(request):
 
 def _get_common_team_dict(request, teamUser, teamUserprofile):
     has_admin_rights = False
-    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, teamUser.id)
+    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(teamUser.id, request.user.id)
     if teamMember and teamMember.has_admin_rights():
         has_admin_rights = True
     return {'teamUser': teamUser, 'teamUserprofile': teamUserprofile, 'has_admin_rights': has_admin_rights}
@@ -303,7 +404,7 @@ def _get_team_user_userprofile(request, username):
     current_user = GsuserManager.get_user_by_name(username)
     if not current_user:
         return (request.user, request.userprofile)
-    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, current_user.id)
+    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(current_user.id, request.user.id)
     if not teamMember:
         return (request.user, request.userprofile)
     current_userprofile = GsuserManager.get_userprofile_by_id(current_user.id)

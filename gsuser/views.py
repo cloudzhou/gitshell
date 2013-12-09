@@ -292,7 +292,7 @@ def switch(request, user_name, current_user_id):
     current_user_id = int(current_user_id)
     new_current_user_id = request.user.id
     if current_user_id != request.user.id:
-        teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, current_user_id)
+        teamMember = TeamManager.get_teamMember_by_teamUserId_userId(current_user_id, request.user.id)
         if teamMember:
             new_current_user_id = current_user_id
     request.userprofile.current_user_id = new_current_user_id

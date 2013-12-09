@@ -1,0 +1,63 @@
+{% extends "team/settings_base.html" %}
+
+{% block container-right %}
+<h2 class="heading">{{teamGroup.name}} 组</h2>
+<table class="table group-member">
+  <tbody>
+    {% for groupMember in groupMembers %}
+    <tr class="team-group">
+      <td class="name">
+        <img src="https://gravatar.com/avatar/{{groupMember.member_userprofile.imgurl}}?s=34" alt="{{groupMember.member_userprofile.username}}">
+        <a href="/{{groupMember.member_userprofile.username}}/">{{groupMember.member_userprofile.username}}</a>
+      </td>
+      <td class="rights">
+      </td>
+      <td>
+        <div class="hide actions">
+          <a href="javascript:;" data-member-user-id="{{groupMember.member_user_id}}" class="remove-group-member btn btn-mini">删除</a>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+  <p class="add-group-member"><input id="add-member" placeholder="添加团队用户"/><button class="add-group-member-btn btn">添加团队用户</button></p>
+{% endblock %}
+
+{% block js %}
+<script>
+$(function(){
+    $('.group-member').live('mouseover mouseout', function(event) {
+        if(event.type == 'mouseover') {
+            $(this).find('.actions').show();
+        } else {
+            $(this).find('.actions').hide();
+        }
+    });
+    $('.add-group-member-btn').click(function(){
+        var team_group_id = {{teamGroup.id}};
+        var member_username = $('#add-member').val();
+        $.post('/{{teamUser.username}}/-/settings/group/add_member/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'team_group_id': team_group_id, 'member_username': member_username}, function(json){
+            if(json.code == 200) {
+                window.location.reload(true);
+                return;
+            }
+            alert(json.message);
+        });
+    });
+
+    $('.remove-group-member').click(function(){
+        var team_group_id = {{teamGroup.id}};
+        var member_user_id = $(this).data('member-user-id');
+        $.post('/{{teamUser.username}}/-/settings/group/remove_member/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'team_group_id': team_group_id, 'member_user_id': member_user_id}, function(json){
+            if(json.code == 200) {
+                window.location.reload(true);
+                return;
+            }
+            alert(json.message);
+        });
+    });
+});
+</script>
+{% endblock %}
+

@@ -32,7 +32,9 @@ table_ptkey_field = {
     'gsuser_useremail': 'user_id',
     'feed_notifmessage': 'to_user_id',
     'feed_notifsetting': 'user_id',
-    'team_teammember': 'user_id',
+    'team_teammember': 'team_user_id',
+    'team_teamgroup': 'team_user_id',
+    'team_groupmember': 'group_id',
 }
 rawsql = {
     # userpubkey #
@@ -179,12 +181,20 @@ rawsql = {
     'notifsetting_s_userId':
         'select * from feed_notifsetting where visibly = 0 and user_id = %s limit 0, 1',
     # team #
-    'teammember_s_userId_teamUserId':
-        'select * from team_teammember where visibly = 0 and user_id = %s and team_user_id = %s limit 0, 1',
     'teammember_l_userId':
         'select * from team_teammember where visibly = 0 and user_id = %s order by modify_time desc limit 0, 1000',
     'teammember_l_teamUserId':
         'select * from team_teammember where visibly = 0 and team_user_id = %s order by is_admin desc, modify_time desc limit 0, 1000',
+    'teammember_s_teamUserId_userId':
+        'select * from team_teammember where visibly = 0 and team_user_id = %s and user_id = %s limit 0, 1',
+    'teamgroup_l_teamUserId':
+        'select * from team_teamgroup where visibly = 0 and team_user_id = %s order by name asc limit 0, 1000',
+    'groupmember_l_groupId':
+        'select * from team_groupmember where visibly = 0 and group_id = %s order by modify_time desc limit 0, 1000',
+    'groupmember_s_groupId_memberUserId':
+        'select * from team_groupmember where visibly = 0 and group_id = %s and member_user_id = %s limit 0, 1',
+    'teamgroup_s_teamUserId_name':
+        'select * from team_teamgroup where visibly = 0 and team_user_id = %s and name = %s limit 0, 1',
 }
 
 def get(model, pkid):

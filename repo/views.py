@@ -752,7 +752,7 @@ def settings(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    if repo.user_id != request.user.id and not TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, repo.user_id):
+    if repo.user_id != request.user.id and not TeamManager.get_teamMember_by_teamUserId_userId(repo.user_id, request.user.id):
         raise Http404
     refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'settings'; error = u''
     repoForm = RepoForm(instance = repo)
@@ -1108,7 +1108,7 @@ def create(request, user_name):
         if username != request.user.username:
             team_user = GsuserManager.get_user_by_name(username)
             if team_user:
-                teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, team_user.id)
+                teamMember = TeamManager.get_teamMember_by_teamUserId_userId(team_user.id, request.user.id)
                 if teamMember:
                     create_repo.user_id = team_user.id
                     create_repo.username = team_user.username
@@ -1392,7 +1392,7 @@ def _has_repo_pull_action_right(request, repo, pullRequest):
         return False
     if repo.user_id == request.user.id or pullRequest.merge_user_id == request.user.id:
         return True
-    teamMember = TeamManager.get_teamMember_by_userId_teamUserId(request.user.id, repo.user_id)
+    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(repo.user_id, request.user.id)
     if teamMember and teamMember.is_admin == 1:
         return True
     return False
