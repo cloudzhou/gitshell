@@ -35,6 +35,9 @@ table_ptkey_field = {
     'team_teammember': 'team_user_id',
     'team_teamgroup': 'team_user_id',
     'team_groupmember': 'group_id',
+    'team_repopermission': 'repo_id',
+    'team_branchpermission': 'repo_id',
+    'team_permissionitem': 'set_id',
 }
 rawsql = {
     # userpubkey #
@@ -195,6 +198,12 @@ rawsql = {
         'select * from team_groupmember where visibly = 0 and group_id = %s and member_user_id = %s limit 0, 1',
     'teamgroup_s_teamUserId_name':
         'select * from team_teamgroup where visibly = 0 and team_user_id = %s and name = %s limit 0, 1',
+    'repopermission_s_repoId':
+        'select * from team_repopermission where visibly = 0 and repo_id = %s limit 0, 1',
+    'branchpermission_s_repoId_refname':
+        'select * from team_branchpermission where visibly = 0 and repo_id = %s and refname = %s limit 0, 1',
+    'permissionitem_l_setId':
+        'select * from team_permissionitem where visibly = 0 and set_id = %s order by modify_time asc limit 0, 1000',
 }
 
 def get(model, pkid):

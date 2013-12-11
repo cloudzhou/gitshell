@@ -195,6 +195,11 @@ urlpatterns = patterns('gitshell',
     url(r'^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_\-]+)/settings/forbid_dploy_url/?$', 'repo.views.forbid_dploy_url'),
     url(r'^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_\-]+)/settings/enable_dropbox_sync/?$', 'repo.views.enable_dropbox_sync'),
     url(r'^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_\-]+)/settings/disable_dropbox_sync/?$', 'repo.views.disable_dropbox_sync'),
+    url(r'^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_\-]+)/settings/permission/?$', 'repo.views.permission'),
+    url(r'^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_\-]+)/settings/permission/set/?$', 'repo.views.permission_set'),
+    url(r'^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_\-]+)/settings/branch_permission/?$', 'repo.views.branch_permission'),
+    url(r'^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_\-]+)/settings/branch_permission/set/?$', 'repo.views.branch_permission_set'),
+    url(r'^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_\-]+)/settings/permission/item/remove/?$', 'repo.views.permission_remove_item'),
     url(r'^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_\-]+)/settings/delete/?$', 'repo.views.delete'),
     
     # issue

@@ -1,0 +1,96 @@
+{% extends "repo/repo.html" %}
+
+{% block subcontainer %}
+<div class="hooks inner bubble">
+  <ul class="breadcrumb">
+    <li><a href="/{{user_name}}/{{repo_name}}/settings/"><i>&larr;</i>返回设置</a></li>
+  </ul>
+  <div class="header">
+    <h1 class="heading">权限控制</h1>
+    <p class="note"><a href="#desc">常见使用方法</a></p>
+  </div>
+
+  <div class="global_permission">
+    <ul class="permission">
+      <li></li>
+    </ul>
+  </div>
+
+  <div class="user_permission">
+    <ul class="permission">
+      {%for webHookURL in webHookURLs%}
+        <li>
+          <div class="action">
+            {% if webHookURL.status == 0 %}
+            <button class="disable btn btn-mini btn-warning" data-hook-id="{{webHookURL.id}}">禁用</button>
+            {% else %}
+            <button class="enable btn btn-mini btn-primary" data-hook-id="{{webHookURL.id}}">启用</button>
+            {% endif %}
+            <button class="remove btn btn-mini btn-danger" data-hook-id="{{webHookURL.id}}">删除</button>
+          </div>
+        <p class="url"><a href="{{webHookURL.url}}" target="_blank">{{webHookURL.url}}</a></p>
+        </li>
+      {%endfor%}
+    </ul>
+  </div>
+
+  <div class="group_permission">
+  </div>
+
+  <div id="desc">
+    <pre>
+1 xx
+2 yy
+    </pre>
+  </div>
+</div>
+{% endblock %}
+
+{% block subjs %}
+
+<script>
+  $(function(){
+    $('#add_url_tip').click(function(event) {
+        $(this).hide();
+        $('#url_input').show();
+        $('#url').focus();
+    });
+
+    function reload_or_alert_error(json) {
+        if(json.code == 200) {
+            window.location.href = window.location.href;
+            return;
+        }
+        alert(json.message);
+    }
+    $('#add_url').click(function(event) {
+        var url = $('#url').val();
+        var post_url = _.sprintf('/%s/%s/settings/hook/web_hook_url/add/', '{{user_name}}', '{{repo_name}}');
+        $.post(post_url, {csrfmiddlewaretoken: '{{ csrf_token }}', 'url': url}, function(json){
+            reload_or_alert_error(json);
+        });
+    });
+    $('.enable').click(function(event) {
+        var hook_id = $(this).data('hook-id');
+        var post_url = _.sprintf('/%s/%s/settings/hook/web_hook_url/%s/enable/', '{{user_name}}', '{{repo_name}}', hook_id);
+        $.post(post_url, {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            reload_or_alert_error(json);
+        });
+    });
+    $('.disable').click(function(event) {
+        var hook_id = $(this).data('hook-id');
+        var post_url = _.sprintf('/%s/%s/settings/hook/web_hook_url/%s/disable/', '{{user_name}}', '{{repo_name}}', hook_id);
+        $.post(post_url, {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            reload_or_alert_error(json);
+        });
+    });
+    $('.remove').click(function(event) {
+        var hook_id = $(this).data('hook-id');
+        var post_url = _.sprintf('/%s/%s/settings/hook/web_hook_url/%s/remove/', '{{user_name}}', '{{repo_name}}', hook_id);
+        $.post(post_url, {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+            reload_or_alert_error(json);
+        });
+    });
+  });
+</script>
+{% endblock %}

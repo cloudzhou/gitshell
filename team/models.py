@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import time
 from django.db import models
 from django.contrib.auth.models import User, UserManager
@@ -44,16 +45,22 @@ class GroupMember(BaseModel):
 
 class RepoPermission(BaseModel):
     repo_id = models.IntegerField(default=0, null=False)
-    global_permission_set_id = models.IntegerField(default=0, null=False)
+    global_permission = models.IntegerField(default=0, null=False)
     user_permission_set_id = models.IntegerField(default=0, null=False)
     group_permission_set_id = models.IntegerField(default=0, null=False)
+
+    user_permission_set = None
+    group_permission_set = None
 
 class BranchPermission(BaseModel):
     repo_id = models.IntegerField(default=0, null=False)
     refname = models.CharField(max_length=64)
-    global_permission_set_id = models.IntegerField(default=0, null=False)
+    global_permission = models.IntegerField(default=0, null=False)
     user_permission_set_id = models.IntegerField(default=0, null=False)
     group_permission_set_id = models.IntegerField(default=0, null=False)
+
+    user_permission_set = None
+    group_permission_set = None
 
 class PermissionItem(BaseModel): 
     team_user_id = models.IntegerField(default=0, null=False)
@@ -61,6 +68,11 @@ class PermissionItem(BaseModel):
     user_id = models.IntegerField(default=0, null=False)
     group_id = models.IntegerField(default=0, null=False)
     permission = models.IntegerField(default=0, null=False)
+
+    team_user = None
+    userprofile = None
+    group = None
+    permission_view = ''
 
 class TeamManager():
     
@@ -165,6 +177,85 @@ class TeamManager():
         groupMember.member_userprofile = GsuserManager.get_userprofile_by_id(groupMember.member_user_id)
         return groupMember
 
+    # permission
+    @classmethod
+    def get_repoPermission_by_repoId(self, repo_id):
+        repoPermission = query_first(RepoPermission, repo_id, 'repopermission_s_repoId', [repo_id])
+        if not repoPermission:
+            return None
+        user_permission_set = self.list_permissionItem_by_setId(repoPermission.user_permission_set_id)
+        group_permission_set = self.list_permissionItem_by_setId(repoPermission.group_permission_set_id)
+        repoPermission.user_permission_set = user_permission_set
+        repoPermission.group_permission_set = group_permission_set
+        return repoPermission
+
+    @classmethod
+    def get_branchPermission_by_repoId_refname(self, repo_id, refname):
+        branchPermission = query_first(BranchPermission, repo_id, 'branchpermission_s_repoId_refname', [repo_id, refname])
+        if not branchPermission:
+            return None
+        user_permission_set = self.list_permissionItem_by_setId(repoPermission.user_permission_set_id)
+        group_permission_set = self.list_permissionItem_by_setId(repoPermission.group_permission_set_id)
+        repoPermission.user_permission_set = user_permission_set
+        repoPermission.group_permission_set = group_permission_set
+        return branchPermission
+
+    #TODO limit user
+    @classmethod
+    def list_permissionItem_by_setId(self, set_id):
+        branchPermissions = query(PermissionItem, set_id, 'permissionitem_l_setId', [set_id])
+        if len(branchPermissions) == 0:
+            return []
+        userprofile_ids = [x.user_id for x in branchPermissions]
+        userprofiles = GsuserManager.list_userprofile_by_ids(userprofile_ids)
+        userprofile_dict = dict((x.id, x)for x in userprofiles)
+
+        teamGroup_dict = {}
+        for x in branchPermissions:
+            if x.group_id in teamGroup_dict:
+                continue
+            teamGroup = TeamMember.list_teamGroup_by_id(x.group_id)
+            if not teamGroup:
+                continue
+            teamGroup_dict[teamGroup.id] = teamGroup
+
+        filtered_branchPermissions = []
+        for branchPermission in branchPermissions:
+            if branchPermission.user_id not in userprofile_dict and branchPermission.group_id not in teamGroup_dict:
+                branchPermission.visibly = 1
+                branchPermission.save()
+                continue
+            if branchPermission.user_id in userprofile_dict:
+                branchPermission.userprofile = userprofile_dict[branchPermission.user_id]
+            if branchPermission.group_id in teamGroup_dict:
+                branchPermission.group = teamGroup_dict[branchPermission.group_id]
+            if branchPermission.permission in PERMISSION.VIEW:
+                branchPermission.permission_view = PERMISSION.VIEW[branchPermission.permission]
+            filtered_branchPermissions.append(branchPermission)
+
+        return filtered_branchPermissions
+
+    def set_repo_global_permission(repo_id, permission):
+        pass
+
+    def set_repo_user_permission(repo_id, user_id, permission):
+        pass
+
+    def set_repo_group_permission(repo_id, group_id, permission):
+        pass
+
+    def set_branch_global_permission(repo_id, refname, permission):
+        pass
+
+    def set_branch_user_permission(repo_id, refname, user_id, permission):
+        pass
+
+    def set_branch_group_permission(repo_id, refname, group_id, permission):
+        pass
+
+    def remove_permission_item(team_user_id, id):
+        pass
+
     # other
     @classmethod
     def get_current_user(self, user, userprofile):
@@ -176,4 +267,20 @@ class TeamManager():
                 if current_user:
                     return current_user
         return user
+
+class PERMISSION:
+
+    NONE = -1
+    DEFAULT = 0
+    PULL = 1
+    PUSH = 2
+    ADMIN = 3
+
+    VIEW = {
+        -1: u'没有任何权限',
+        0: u'默认权限',
+        1: u'只读权限(pull)',
+        2: u'读写权限(pull+push)',
+        3: u'管理权限(admin)',
+    }
 

@@ -830,6 +830,46 @@ def disable_dropbox_sync(request, user_name, repo_name):
     repo.save()
     return json_httpResponse({'result': 'success'})
 
+@login_required
+@repo_permission_check
+def permission(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    current = 'settings'; sub_nav = 'permission'; title = u'%s / %s / 设置 / 权限控制' % (user_name, repo_name)
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': '.', 'title': title}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, 'master'))
+    return render_to_response('repo/permission.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
+@repo_permission_check
+@require_http_methods(["POST"])
+def permission_set(request, user_name, repo_name):
+    return json_success(u'')
+
+@login_required
+@repo_permission_check
+def branch_permission(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    current = 'branch_permission'; title = u'%s / %s / 设置 / 分支权限控制' % (user_name, repo_name)
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': '.', 'title': title}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, 'master'))
+    return render_to_response('repo/branch_permission.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
+@repo_permission_check
+@require_http_methods(["POST"])
+def branch_permission_set(request, user_name, repo_name):
+    return json_success(u'')
+
+@login_required
+@repo_permission_check
+@require_http_methods(["POST"])
+def permission_remove_item(request, user_name, repo_name):
+    return json_success(u'')
+
 def list_latest_push_repo(request, last_push_time_str):
     secret_key = request.GET.get('secret_key')
     if secret_key != SECRET_KEY:
