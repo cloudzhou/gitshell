@@ -69,7 +69,6 @@ class PermissionItem(BaseModel):
     group_id = models.IntegerField(default=0, null=False)
     permission = models.IntegerField(default=0, null=False)
 
-    team_user = None
     userprofile = None
     group = None
     permission_view = ''
@@ -83,11 +82,8 @@ class TeamManager():
 
     @classmethod
     def is_teamMember(self, team_user_id, user_id):
-        teamMembers = self.list_teamMember_by_teamUserId(team_user_id)
-        for teamMember in teamMembers:
-            if teamMember.user_id == user_id:
-                return True
-        return False
+        teamMember = self.get_teamMember_by_teamUserId_userId(team_user_id, user_id)
+        return teamMember is not None
 
     @classmethod
     def add_teamMember_by_email(self, teamUser, email):
@@ -150,7 +146,7 @@ class TeamManager():
 
     @classmethod
     def get_teamGroup_by_teamUserId_name(self, team_user_id, name):
-        teamGroup = query_first(TeamGroup, None, 'teamgroup_s_teamUserId_name', [team_user_id, name])
+        teamGroup = query_first(TeamGroup, team_user_id, 'teamgroup_s_teamUserId_name', [team_user_id, name])
         return teamGroup
 
     @classmethod
@@ -190,6 +186,11 @@ class TeamManager():
         return repoPermission
 
     @classmethod
+    def list_branchPermission_by_repoId(self, repo_id):
+        branchPermissions = query(BranchPermission, repo_id, 'branchpermission_l_repoId', [repo_id])
+        return branchPermissions
+
+    @classmethod
     def get_branchPermission_by_repoId_refname(self, repo_id, refname):
         branchPermission = query_first(BranchPermission, repo_id, 'branchpermission_s_repoId_refname', [repo_id, refname])
         if not branchPermission:
@@ -212,7 +213,7 @@ class TeamManager():
         for x in permissionItems:
             if x.group_id in teamGroup_dict:
                 continue
-            teamGroup = TeamMember.list_teamGroup_by_id(x.group_id)
+            teamGroup = self.get_teamGroup_by_id(x.group_id)
             if not teamGroup:
                 continue
             teamGroup_dict[teamGroup.id] = teamGroup
@@ -241,7 +242,8 @@ class TeamManager():
         if not permissionItem:
             return None
         permissionItem.userprofile = GsuserManager.get_userprofile_by_id(permissionItem.user_id)
-        permissionItem.permission_view = PERMISSION.VIEW[permissionItem.permission]
+        if permissionItem.permission in PERMISSION.VIEW:
+            permissionItem.permission_view = PERMISSION.VIEW[permissionItem.permission]
         return permissionItem
 
     @classmethod
@@ -252,7 +254,8 @@ class TeamManager():
         if not permissionItem:
             return None
         permissionItem.group = self.get_teamGroup_by_id(group_id)
-        permissionItem.permission_view = PERMISSION.VIEW[permissionItem.permission]
+        if permissionItem.permission in PERMISSION.VIEW:
+            permissionItem.permission_view = PERMISSION.VIEW[permissionItem.permission]
         return permissionItem
 
     @classmethod
@@ -285,6 +288,7 @@ class TeamManager():
                 repoPermission.save()
             else:
                 permissionItem = PermissionItem(repo_id=repo_id, set_id=user_permission_set_id, user_id=user_id, permission=permission)
+        permissionItem.permission = permission
         permissionItem.save()
         return permissionItem
 
@@ -307,6 +311,7 @@ class TeamManager():
                 repoPermission.save()
             else:
                 permissionItem = PermissionItem(repo_id=repo_id, set_id=group_permission_set_id, group_id=group_id, permission=permission)
+        permissionItem.permission = permission
         permissionItem.save()
         return permissionItem
 
@@ -339,7 +344,7 @@ class TeamManager():
                 branchPermission.user_permission_set_id = permissionItem.set_id
                 branchPermission.save()
             else:
-                permissionItem = PermissionItem(repo_id=repo_id, set_id=user_permission_set_id, group_id=group_id, permission=permission)
+                permissionItem = PermissionItem(repo_id=repo_id, set_id=user_permission_set_id, user_id=user_id, permission=permission)
         permissionItem.permission = permission
         permissionItem.save()
         return permissionItem
