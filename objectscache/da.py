@@ -204,6 +204,10 @@ rawsql = {
         'select * from team_branchpermission where visibly = 0 and repo_id = %s and refname = %s limit 0, 1',
     'permissionitem_l_setId':
         'select * from team_permissionitem where visibly = 0 and set_id = %s order by modify_time asc limit 0, 1000',
+    'permissionitem_s_setId_userId':
+        'select * from team_permissionitem where visibly = 0 and set_id = %s and user_id = %s limit 0, 1',
+    'permissionitem_s_setId_groupId':
+        'select * from team_permissionitem where visibly = 0 and set_id = %s and group_id = %s limit 0, 1',
 }
 
 def get(model, pkid):
