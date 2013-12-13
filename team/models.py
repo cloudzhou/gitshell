@@ -375,7 +375,7 @@ class TeamManager():
     @classmethod
     def remove_permission_item(self, repo_id, id):
         permissionItem = get(PermissionItem, id)
-        if permissionItem and permissionItem.repo_id = repo_id:
+        if permissionItem and permissionItem.repo_id == repo_id:
             permissionItem.visibly = 1
             permissionItem.save()
         return permissionItem
