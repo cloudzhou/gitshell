@@ -22,8 +22,8 @@ from gitshell.repo.Forms import RepoForm
 from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, PullRequest, WebHookURL, PULL_STATUS, KEEP_REPO_NAME, REPO_PERMISSION
 from gitshell.gsuser.models import GsuserManager, Userprofile, UserViaRef, REF_TYPE
-from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
-from gitshell.team.models import TeamManager
+from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check, repo_admin_permission_check
+from gitshell.team.models import TeamManager, PERMISSION
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
 from gitshell.settings import SECRET_KEY, REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH, PULLREQUEST_REPO_PATH, logger
@@ -831,28 +831,66 @@ def disable_dropbox_sync(request, user_name, repo_name):
     return json_httpResponse({'result': 'success'})
 
 @login_required
-@repo_permission_check
+@repo_admin_permission_check
 def permission(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     current = 'settings'; sub_nav = 'permission'; title = u'%s / %s / 设置 / 权限控制' % (user_name, repo_name)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': '.', 'title': title}
+    repoPermission = TeamManager.get_repoPermission_by_repoId(repo.id)
+    memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
+    teamGroups = TeamManager.list_teamGroup_by_teamUserId(repo.user_id)
+    memberUsers_without_grant = _list_memberUsers_without_grant(repoPermission, memberUsers)
+    teamGroups_without_grant = _list_teamGroups_without_grant(repoPermission, teamGroups)
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'sub_nav': sub_nav, 'path': '.', 'title': title, 'repoPermission': repoPermission, 'memberUsers': memberUsers, 'teamGroups': teamGroups, 'PERMISSION_VIEW': PERMISSION.VIEW, 'memberUsers_without_grant': memberUsers_without_grant, 'teamGroups_without_grant': teamGroups_without_grant}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, 'master'))
     return render_to_response('repo/permission.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+def _list_memberUsers_without_grant(repoPermission, memberUsers):
+    memberUsers_without_grant = []
+    granted_user_id_set = Set()
+    if repoPermission and repoPermission.user_permission_set:
+        granted_user_id_set = Set([x.user_id for x in repoPermission.user_permission_set])
+    for memberUser in memberUsers:
+        if memberUser.id in granted_user_id_set:
+            continue
+        memberUsers_without_grant.append(memberUser)
+    return memberUsers_without_grant
+
+def _list_teamGroups_without_grant(repoPermission, teamGroups):
+    teamGroups_without_grant = []
+    granted_group_id_set = Set()
+    if repoPermission and repoPermission.group_permission_set:
+        granted_group_id_set = Set([x.group_id for x in repoPermission.group_permission_set])
+    for teamGroup in teamGroups:
+        if teamGroup.id in granted_group_id_set:
+            continue
+        teamGroups_without_grant.append(teamGroup)
+    return teamGroups_without_grant
+
 @login_required
-@repo_permission_check
+@repo_admin_permission_check
 @require_http_methods(["POST"])
-def permission_set(request, user_name, repo_name):
+def permission_grant(request, user_name, repo_name):
     return json_success(u'')
 
 @login_required
 @repo_permission_check
-def branch_permission(request, user_name, repo_name):
+def branches_permission(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    current = 'settings'; sub_nav = 'branches_permission'; title = u'%s / %s / 设置 / 分支权限控制' % (user_name, repo_name)
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'sub_nav': sub_nav, 'path': '.', 'title': title}
+    response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, 'master'))
+    return render_to_response('repo/branch_permission.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+
+@login_required
+@repo_permission_check
+def branch_permission(request, user_name, repo_name, branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     current = 'branch_permission'; title = u'%s / %s / 设置 / 分支权限控制' % (user_name, repo_name)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': '.', 'title': title}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'sub_nav': sub_nav, 'path': '.', 'title': title}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, 'master'))
     return render_to_response('repo/branch_permission.html',
                           response_dictionary,
@@ -861,7 +899,7 @@ def branch_permission(request, user_name, repo_name):
 @login_required
 @repo_permission_check
 @require_http_methods(["POST"])
-def branch_permission_set(request, user_name, repo_name):
+def branch_permission_grant(request, user_name, repo_name, branch):
     return json_success(u'')
 
 @login_required

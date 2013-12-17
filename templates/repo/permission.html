@@ -10,32 +10,93 @@
     <p class="note"><a href="#desc">常见使用方法</a></p>
   </div>
 
+  <p>1 全局权限控制</p>
   <div class="global_permission">
+    {% if repoPermission %}
     <ul class="permission">
-      <li></li>
+      <li>
+        <div>
+          全局权限
+        </div>
+        <div>
+            {% for key, value in PERMISSION_VIEW %}
+              <option value="{{key}}"{%if key == permissionItem.global_permission%} selected="selected"{%endif%}>{{value}}</option>
+            {% endfor %}
+        </div>
+      </li>
     </ul>
+    {% else %}
+    <div>
+      <span>对于仓库的所有成员</span>
+      <select id="grant-global-permission">
+        {% for key, value in PERMISSION_VIEW.items %}
+          <option value="{{key}}">{{value}}</option>
+        {% endfor %}
+      </select>
+      <button id="grant-global-button">确定</button>
+    </div>
+    {% endif %}
   </div>
 
+  <p>2 用户权限控制</p>
   <div class="user_permission">
     <ul class="permission">
-      {%for webHookURL in webHookURLs%}
+    {% if repoPermission %}
+      {% for permissionItem in repoPermission.user_permission_set %}
         <li>
-          <div class="action">
-            {% if webHookURL.status == 0 %}
-            <button class="disable btn btn-mini btn-warning" data-hook-id="{{webHookURL.id}}">禁用</button>
-            {% else %}
-            <button class="enable btn btn-mini btn-primary" data-hook-id="{{webHookURL.id}}">启用</button>
-            {% endif %}
-            <button class="remove btn btn-mini btn-danger" data-hook-id="{{webHookURL.id}}">删除</button>
+          <div>
+            {{ permissionItem.userprofile.username }}
           </div>
-        <p class="url"><a href="{{webHookURL.url}}" target="_blank">{{webHookURL.url}}</a></p>
+          <div>
+            <select name="permission">
+            {% for key, value in PERMISSION_VIEW %}
+              <option value="{{key}}"{%if key == permissionItem.permission%} selected="selected"{%endif%}>{{value}}</option>
+            {% endfor %}
+            </select>
+          </div>
         </li>
       {%endfor%}
+    {% endif %}
     </ul>
+    {% if memberUsers_without_grant %}
+    <div>
+      <span>设置用户权限</span>
+      <select id="grant-user">
+        {% for memberUser in memberUsers_without_grant %}
+          <option value="{{memberUser.id}}">{{memberUser.username}}</option>
+        {% endfor %}
+      </select>
+      <select id="grant-user-permission">
+        {% for key, value in PERMISSION_VIEW.items %}
+          <option value="{{key}}">{{value}}</option>
+        {% endfor %}
+      </select>
+      <button id="grant-user-button">确定</button>
+    </div>
+    {% endif %}
   </div>
 
+  {% if teamGroups %}
+  <p>3 群组权限控制</p>
   <div class="group_permission">
+    {% if teamGroups_without_grant %}
+    <div>
+      <span>设置用户权限</span>
+      <select id="grant-group">
+        {% for teamGroup in teamGroups_without_grant %}
+          <option value="{{teamGroup.id}}">{{teamGroup.name}}</option>
+        {% endfor %}
+      </select>
+      <select id="grant-group-permission">
+        {% for key, value in PERMISSION_VIEW.items %}
+          <option value="{{key}}">{{value}}</option>
+        {% endfor %}
+      </select>
+      <button id="grant-group-button">确定</button>
+    </div>
+    {% endif %}
   </div>
+  {% endif %}
 
   <div id="desc">
     <pre>

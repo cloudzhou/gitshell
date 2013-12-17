@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-  
 import os, time, re, shutil
 from datetime import datetime
+from sets import Set
 from django.db import models
 from django.core.cache import cache
 from gitshell.objectscache.models import BaseModel, CacheKey
@@ -432,21 +433,17 @@ class RepoManager():
     def is_allowed_access_repo(self, repo, user, repoPermission):
         if repo is None or user is None:
             return False
-        if user.id:
-            # repo owner
-            if repo.user_id == user.id:
+        if repoPermission == REPO_PERMISSION.WEB_VIEW:
+            if repo.auth_type != 2:
                 return True
-            # repo member
-            member = self.get_repo_member(repo.id, user.id)
-            if member:
+        elif repoPermission == REPO_PERMISSION.READ_ONLY:
+            if repo.auth_type == 0:
                 return True
-            # team member
-            teamMember = TeamManager.get_teamMember_by_teamUserId_userId(repo.user_id, user.id)
-            if teamMember:
-                return True
-        if repoPermission == REPO_PERMISSION.WRITE:
-            return False
-        if repo.auth_type != 2:
+        elif repoPermission == REPO_PERMISSION.WRITE:
+            pass
+        memberUsers = self.list_repo_team_memberUser(repo.id)
+        memberUser_id_set = Set([x.id for x in memberUsers])
+        if user.id and user.id in memberUser_id_set:
             return True
         return False
 

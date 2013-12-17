@@ -203,6 +203,8 @@ class TeamManager():
 
     @classmethod
     def list_permissionItem_by_setId(self, set_id, repo_id):
+        if set_id == 0:
+            return []
         permissionItems = query(PermissionItem, set_id, 'permissionitem_l_setId', [set_id])
         if len(permissionItems) == 0:
             return []
@@ -407,6 +409,6 @@ class PERMISSION:
         0: u'默认权限',
         1: u'只读权限(pull)',
         2: u'读写权限(pull+push)',
-        3: u'管理权限(admin)',
+        #3: u'管理权限(admin)',
     }
 
