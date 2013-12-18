@@ -7,52 +7,39 @@
   </ul>
   <div class="header">
     <h1 class="heading">权限控制</h1>
-    <p class="note"><a href="#desc">常见使用方法</a></p>
+    <p class="note"><a href="#desc">常见使用说明</a></p>
   </div>
 
   <p>1 全局权限控制</p>
-  <div class="global_permission">
-    {% if repoPermission %}
+  <div class="global-permission">
     <ul class="permission">
       <li>
         <div>
-          全局权限
-        </div>
-        <div>
-            {% for key, value in PERMISSION_VIEW %}
-              <option value="{{key}}"{%if key == permissionItem.global_permission%} selected="selected"{%endif%}>{{value}}</option>
+          <span>对于仓库的所有成员</span>
+          <select class="global-permission-select" name="permission">
+            {% for key, value in PERMISSION_VIEW.items %}
+              <option value="{{key}}"{%if repoPermission and key == repoPermission.global_permission%} selected="selected"{%endif%}>{{value}}</option>
             {% endfor %}
+          </select>
         </div>
       </li>
     </ul>
-    {% else %}
-    <div>
-      <span>对于仓库的所有成员</span>
-      <select id="grant-global-permission">
-        {% for key, value in PERMISSION_VIEW.items %}
-          <option value="{{key}}">{{value}}</option>
-        {% endfor %}
-      </select>
-      <button id="grant-global-button">确定</button>
-    </div>
-    {% endif %}
   </div>
 
   <p>2 用户权限控制</p>
-  <div class="user_permission">
+  <div class="user-permission">
     <ul class="permission">
     {% if repoPermission %}
       {% for permissionItem in repoPermission.user_permission_set %}
         <li>
           <div>
             {{ permissionItem.userprofile.username }}
-          </div>
-          <div>
-            <select name="permission">
-            {% for key, value in PERMISSION_VIEW %}
+            <select class="user-permission-select" data-user-id="{{permissionItem.userprofile.id}}" name="permission">
+            {% for key, value in PERMISSION_VIEW.items %}
               <option value="{{key}}"{%if key == permissionItem.permission%} selected="selected"{%endif%}>{{value}}</option>
             {% endfor %}
             </select>
+            <button class="remove-user-permission-button" data-item-id="{{permissionItem.id}}">删除</button>
           </div>
         </li>
       {%endfor%}
@@ -78,10 +65,27 @@
 
   {% if teamGroups %}
   <p>3 群组权限控制</p>
-  <div class="group_permission">
+  <div class="group-permission">
+    <ul class="permission">
+    {% if repoPermission %}
+      {% for permissionItem in repoPermission.group_permission_set %}
+        <li>
+          <div>
+            {{ permissionItem.group.name }}
+            <select class="group-permission-select" data-group-id="{{permissionItem.group.id}}" name="permission">
+            {% for key, value in PERMISSION_VIEW.items %}
+              <option value="{{key}}"{%if key == permissionItem.permission%} selected="selected"{%endif%}>{{value}}</option>
+            {% endfor %}
+            </select>
+            <button class="remove-group-permission-button" data-item-id="{{permissionItem.item.id}}">删除</button>
+          </div>
+        </li>
+      {%endfor%}
+    {% endif %}
+    </ul>
     {% if teamGroups_without_grant %}
     <div>
-      <span>设置用户权限</span>
+      <span>设置群组权限</span>
       <select id="grant-group">
         {% for teamGroup in teamGroups_without_grant %}
           <option value="{{teamGroup.id}}">{{teamGroup.name}}</option>
@@ -111,46 +115,68 @@
 
 <script>
   $(function(){
-    $('#add_url_tip').click(function(event) {
-        $(this).hide();
-        $('#url_input').show();
-        $('#url').focus();
-    });
-
+    var repo_id = {{repo.id}};
+    var user_name = '{{user_name}}';
+    var repo_name = '{{repo_name}}';
     function reload_or_alert_error(json) {
         if(json.code == 200) {
-            window.location.href = window.location.href;
+            window.location.reload(true);
             return;
         }
         alert(json.message);
     }
-    $('#add_url').click(function(event) {
-        var url = $('#url').val();
-        var post_url = _.sprintf('/%s/%s/settings/hook/web_hook_url/add/', '{{user_name}}', '{{repo_name}}');
-        $.post(post_url, {csrfmiddlewaretoken: '{{ csrf_token }}', 'url': url}, function(json){
+    function grant_user_permission(user_id, permission) {
+        var grant_url = _.sprintf('/%s/%s/settings/permission/grant/', user_name, repo_name);
+        $.post(grant_url, {csrfmiddlewaretoken: '{{ csrf_token }}', 'grant_type': 'user', 'user_id': user_id, 'permission': permission}, function(json){
+            reload_or_alert_error(json);
+        });
+    }
+    function grant_group_permission(group_id, permission) {
+        var grant_url = _.sprintf('/%s/%s/settings/permission/grant/', user_name, repo_name);
+        $.post(grant_url, {csrfmiddlewaretoken: '{{ csrf_token }}', 'grant_type': 'group', 'group_id': group_id, 'permission': permission}, function(json){
+            reload_or_alert_error(json);
+        });
+    }
+    function permission_remove_item(item_id) {
+        var remove_url = _.sprintf('/%s/%s/settings/permission/item/remove/', user_name, repo_name);
+        $.post(remove_url, {csrfmiddlewaretoken: '{{ csrf_token }}', 'item_id': item_id}, function(json){
+            reload_or_alert_error(json);
+        });
+    }
+    $('.global-permission-select').change(function(event) {
+        var global_permission = $('option:selected', this).val();
+        var grant_url = _.sprintf('/%s/%s/settings/permission/grant/', user_name, repo_name);
+        $.post(grant_url, {csrfmiddlewaretoken: '{{ csrf_token }}', 'grant_type': 'global', 'permission': global_permission}, function(json){
             reload_or_alert_error(json);
         });
     });
-    $('.enable').click(function(event) {
-        var hook_id = $(this).data('hook-id');
-        var post_url = _.sprintf('/%s/%s/settings/hook/web_hook_url/%s/enable/', '{{user_name}}', '{{repo_name}}', hook_id);
-        $.post(post_url, {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            reload_or_alert_error(json);
-        });
+    $('.user-permission-select').change(function(event) {
+        var user_id = $(this).data('user-id');
+        var user_permission = $('option:selected', this).val();
+        grant_user_permission(user_id, user_permission);
     });
-    $('.disable').click(function(event) {
-        var hook_id = $(this).data('hook-id');
-        var post_url = _.sprintf('/%s/%s/settings/hook/web_hook_url/%s/disable/', '{{user_name}}', '{{repo_name}}', hook_id);
-        $.post(post_url, {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            reload_or_alert_error(json);
-        });
+    $('.group-permission-select').change(function(event) {
+        var group_id = $(this).data('group-id');
+        var group_permission = $('option:selected', this).val();
+        grant_group_permission(group_id, group_permission);
     });
-    $('.remove').click(function(event) {
-        var hook_id = $(this).data('hook-id');
-        var post_url = _.sprintf('/%s/%s/settings/hook/web_hook_url/%s/remove/', '{{user_name}}', '{{repo_name}}', hook_id);
-        $.post(post_url, {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
-            reload_or_alert_error(json);
-        });
+    $('#grant-user-button').click(function(event) {
+        var user_id = $('option:selected', '#grant-user').val();
+        var user_permission = $('option:selected', '#grant-user-permission').val();
+        grant_user_permission(user_id, user_permission);
+    });
+    $('#grant-group-button').click(function(event) {
+        var group_id = $('option:selected', '#grant-group').val();
+        var group_permission = $('option:selected', '#grant-group-permission').val();
+        grant_group_permission(group_id, group_permission);
+    });
+    $('.remove-user-permission-button').click(function(event) {
+        var item_id = $(this).data('item-id');
+        permission_remove_item(item_id);
+    });
+    $('.remove-group-permission-button').click(function(event) {
+        var item_id = $(this).data('item-id');
+        permission_remove_item(item_id);
     });
   });
 </script>

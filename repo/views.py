@@ -872,7 +872,18 @@ def _list_teamGroups_without_grant(repoPermission, teamGroups):
 @repo_admin_permission_check
 @require_http_methods(["POST"])
 def permission_grant(request, user_name, repo_name):
-    return json_success(u'')
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    grant_type = request.POST.get('grant_type', 'global')
+    permission = int(request.POST.get('permission', '0'))
+    if grant_type == 'global':
+        TeamManager.grant_repo_global_permission(repo.id, permission)
+    elif grant_type == 'user':
+        user_id = int(request.POST.get('user_id', '0'))
+        TeamManager.grant_repo_user_permission(repo.id, user_id, permission)
+    elif grant_type == 'group':
+        group_id = int(request.POST.get('group_id', '0'))
+        TeamManager.grant_repo_group_permission(repo.id, group_id, permission)
+    return json_success(u'赋予权限成功')
 
 @login_required
 @repo_permission_check
@@ -906,7 +917,10 @@ def branch_permission_grant(request, user_name, repo_name, branch):
 @repo_permission_check
 @require_http_methods(["POST"])
 def permission_remove_item(request, user_name, repo_name):
-    return json_success(u'')
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    item_id = request.POST.get('item_id', '0')
+    TeamManager.remove_permission_item(repo.id, item_id)
+    return json_success(u'取消权限成功')
 
 def list_latest_push_repo(request, last_push_time_str):
     secret_key = request.GET.get('secret_key')
