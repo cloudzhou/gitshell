@@ -195,10 +195,10 @@ class TeamManager():
         branchPermission = query_first(BranchPermission, repo_id, 'branchpermission_s_repoId_refname', [repo_id, refname])
         if not branchPermission:
             return None
-        user_permission_set = self.list_permissionItem_by_setId(repoPermission.user_permission_set_id, repo_id)
-        group_permission_set = self.list_permissionItem_by_setId(repoPermission.group_permission_set_id, repo_id)
-        repoPermission.user_permission_set = user_permission_set
-        repoPermission.group_permission_set = group_permission_set
+        user_permission_set = self.list_permissionItem_by_setId(branchPermission.user_permission_set_id, repo_id)
+        group_permission_set = self.list_permissionItem_by_setId(branchPermission.group_permission_set_id, repo_id)
+        branchPermission.user_permission_set = user_permission_set
+        branchPermission.group_permission_set = group_permission_set
         return branchPermission
 
     @classmethod
@@ -323,7 +323,7 @@ class TeamManager():
             return None
         branchPermission = self.get_branchPermission_by_repoId_refname(repo_id, refname)
         if not branchPermission:
-            branchPermission = RepoPermission(repo_id=repo_id, refname=refname)
+            branchPermission = BranchPermission(repo_id=repo_id, refname=refname)
         branchPermission.global_permission = permission
         branchPermission.save()
         return branchPermission

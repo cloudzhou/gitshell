@@ -892,7 +892,7 @@ def branches_permission(request, user_name, repo_name):
     current = 'settings'; sub_nav = 'branches_permission'; title = u'%s / %s / 设置 / 分支权限控制' % (user_name, repo_name)
     response_dictionary = {'mainnav': 'repo', 'current': current, 'sub_nav': sub_nav, 'path': '.', 'title': title}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, 'master'))
-    return render_to_response('repo/branch_permission.html',
+    return render_to_response('repo/branches_permission.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
@@ -900,18 +900,56 @@ def branches_permission(request, user_name, repo_name):
 @repo_permission_check
 def branch_permission(request, user_name, repo_name, branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    current = 'branch_permission'; title = u'%s / %s / 设置 / 分支权限控制' % (user_name, repo_name)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'sub_nav': sub_nav, 'path': '.', 'title': title}
+    current = 'settings'; sub_nav = 'branch_permission'; title = u'%s / %s / 设置 / 分支权限控制 / %s' % (user_name, repo_name, branch)
+    branchPermission = TeamManager.get_branchPermission_by_repoId_refname(repo.id, branch)
+    memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
+    teamGroups = TeamManager.list_teamGroup_by_teamUserId(repo.user_id)
+    memberUsers_without_grant = _list_branch_memberUsers_without_grant(branchPermission, branch, memberUsers)
+    teamGroups_without_grant = _list_branch_teamGroups_without_grant(branchPermission, branch, teamGroups)
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'sub_nav': sub_nav, 'path': '.', 'title': title, 'branch': branch, 'branchPermission': branchPermission, 'memberUsers': memberUsers, 'teamGroups': teamGroups, 'PERMISSION_VIEW': PERMISSION.VIEW, 'memberUsers_without_grant': memberUsers_without_grant, 'teamGroups_without_grant': teamGroups_without_grant}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, 'master'))
     return render_to_response('repo/branch_permission.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
+def _list_branch_memberUsers_without_grant(branchPermission, branch, memberUsers):
+    memberUsers_without_grant = []
+    granted_user_id_set = Set()
+    if branchPermission and branchPermission.user_permission_set:
+        granted_user_id_set = Set([x.user_id for x in branchPermission.user_permission_set])
+    for memberUser in memberUsers:
+        if memberUser.id in granted_user_id_set:
+            continue
+        memberUsers_without_grant.append(memberUser)
+    return memberUsers_without_grant
+
+def _list_branch_teamGroups_without_grant(branchPermission, branch, teamGroups):
+    teamGroups_without_grant = []
+    granted_group_id_set = Set()
+    if branchPermission and branchPermission.group_permission_set:
+        granted_group_id_set = Set([x.group_id for x in branchPermission.group_permission_set])
+    for teamGroup in teamGroups:
+        if teamGroup.id in granted_group_id_set:
+            continue
+        teamGroups_without_grant.append(teamGroup)
+    return teamGroups_without_grant
+
 @login_required
 @repo_permission_check
 @require_http_methods(["POST"])
 def branch_permission_grant(request, user_name, repo_name, branch):
-    return json_success(u'')
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    grant_type = request.POST.get('grant_type', 'global')
+    permission = int(request.POST.get('permission', '0'))
+    if grant_type == 'global':
+        TeamManager.grant_branch_global_permission(repo.id, branch, permission)
+    elif grant_type == 'user':
+        user_id = int(request.POST.get('user_id', '0'))
+        TeamManager.grant_branch_user_permission(repo.id, branch, user_id, permission)
+    elif grant_type == 'group':
+        group_id = int(request.POST.get('group_id', '0'))
+        TeamManager.grant_branch_group_permission(repo.id, branch, group_id, permission)
+    return json_success(u'赋予权限成功')
 
 @login_required
 @repo_permission_check

@@ -1,0 +1,39 @@
+{% extends "repo/repo.html" %}
+
+{% block subcontainer %}
+<div class="hooks inner bubble">
+  <ul class="breadcrumb">
+    <li><a href="/{{user_name}}/{{repo_name}}/settings/"><i>&larr;</i>返回设置</a></li>
+  </ul>
+  <div class="header">
+    <h1 class="heading">分支权限控制</h1>
+    <p class="note"><a href="#desc">常见使用说明</a></p>
+  </div>
+
+  <p>分支权限控制</p>
+  <div class="branch-permission">
+    <ul class="permission">
+      {% for branch in refs_meta.branches %}
+      <li>
+        <a href="/{{user_name}}/{{repo_name}}/settings/branch/permission/{{branch}}/">{{branch}}</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div id="desc">
+    <pre>
+1 xx
+2 yy
+    </pre>
+  </div>
+</div>
+{% endblock %}
+
+{% block subjs %}
+
+<script>
+  $(function(){
+  });
+</script>
+{% endblock %}

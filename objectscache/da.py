@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-  
+a -*- coding: utf-8 -*-  
 import base64
 from django.core.cache import cache
 from django.db import connection, transaction
