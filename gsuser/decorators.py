@@ -38,7 +38,7 @@ def repo_admin_permission_check(function):
                 return HttpResponseRedirect('/help/error/repo_not_found/')
             if not request.user.is_authenticated():
                 return HttpResponseRedirect('/login/?next=' + urlquote(request.path))
-            if not is_owner_or_teamAdmin(request.user, repo):
+            if not RepoManager.is_owner_or_teamAdmin(repo, request.user):
                 return HttpResponseRedirect('/help/error/repo_permission_denied/')
         if request.user.is_authenticated():
             feedAction = FeedAction()
@@ -70,13 +70,4 @@ def repo_source_permission_check(function):
     wrap.__name__=function.__name__
 
     return wrap
-
-def is_owner_or_teamAdmin(user, repo):
-    if user.id == repo.user_id:
-        return True
-    from gitshell.team.models import TeamManager
-    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(repo.user_id, user.id)
-    if teamMember.has_admin_rights():
-        return True
-    return False
 

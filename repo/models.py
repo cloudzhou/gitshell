@@ -793,6 +793,15 @@ class RepoManager():
         webHookURLs = query(WebHookURL, repo_id, 'webhookurl_l_repoId', [repo_id, offset, row_count])
         return webHookURLs
 
+    @classmethod
+    def is_owner_or_teamAdmin(self, repo, user):
+        if repo.user_id == user.id:
+            return True
+        teamMember = TeamManager.get_teamMember_by_teamUserId_userId(repo.user_id, user.id)
+        if teamMember.has_admin_rights():
+            return True
+        return False
+
     # ====================
     @classmethod
     def merge_repo_map(self, repo_ids):

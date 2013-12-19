@@ -14,6 +14,7 @@ class TeamMember(BaseModel):
     is_admin = models.IntegerField(default=0, null=False)
 
     team_user = None
+    user = None
 
     def has_admin_rights(self):
         return self.is_admin == 1
@@ -101,7 +102,7 @@ class TeamManager():
             return None
         member_userprofile.has_joined_team = 1
         member_userprofile.save()
-        exists_teamMember = TeamManager.get_teamMember_by_teamUserId_userId(teamUser.id, member_userprofile.id)
+        exists_teamMember = self.get_teamMember_by_teamUserId_userId(teamUser.id, member_userprofile.id)
         if exists_teamMember:
             return None
         teamMember = TeamMember(team_user_id = teamUser.id, user_id = member_userprofile.id, group_id = 0, permission = 2, is_admin = 0)
@@ -132,11 +133,14 @@ class TeamManager():
 
     @classmethod
     def get_teamMember_by_teamUserId_userId(self, team_user_id, user_id):
+        team_userprofile = GsuserManager.get_userprofile_by_id(team_user_id)
+        if team_userprofile.is_team_account == 0:
+            return None
         teamMember = query_first(TeamMember, team_user_id, 'teammember_s_teamUserId_userId', [team_user_id, user_id])
         if not teamMember:
             return None
-        teamMember.user = GsuserManager.get_userprofile_by_id(teamMember.user_id)
-        teamMember.team_user = GsuserManager.get_userprofile_by_id(teamMember.team_user_id)
+        teamMember.user = GsuserManager.get_userprofile_by_id(user_id)
+        teamMember.team_user = team_userprofile
         return teamMember
 
     # model group
@@ -388,7 +392,7 @@ class TeamManager():
         current_user_id = userprofile.current_user_id
         if current_user_id == 0 or current_user_id == userprofile.id:
             return user
-        teamMember = TeamManager.get_teamMember_by_teamUserId_userId(current_user_id, userprofile.id)
+        teamMember = self.get_teamMember_by_teamUserId_userId(current_user_id, userprofile.id)
         if not teamMember:
             return user
         current_user = GsuserManager.get_user_by_id(current_user_id)
