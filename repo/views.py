@@ -895,7 +895,7 @@ def branch_permission(request, user_name, repo_name, branch):
     teamGroups = TeamManager.list_teamGroup_by_teamUserId(repo.user_id)
     memberUsers_without_grant = _list_branch_memberUsers_without_grant(branchPermission, branch, memberUsers)
     teamGroups_without_grant = _list_branch_teamGroups_without_grant(branchPermission, branch, teamGroups)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'sub_nav': sub_nav, 'path': '.', 'title': title, 'branch': branch, 'branchPermission': branchPermission, 'memberUsers': memberUsers, 'teamGroups': teamGroups, 'PERMISSION_VIEW': PERMISSION.VIEW, 'memberUsers_without_grant': memberUsers_without_grant, 'teamGroups_without_grant': teamGroups_without_grant}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'sub_nav': sub_nav, 'path': '.', 'title': title, 'branch': branch, 'branchPermission': branchPermission, 'memberUsers': memberUsers, 'teamGroups': teamGroups, 'PERMISSION_VIEW_WITHOUT_ADMIN': PERMISSION.VIEW_WITHOUT_ADMIN, 'memberUsers_without_grant': memberUsers_without_grant, 'teamGroups_without_grant': teamGroups_without_grant}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, 'master'))
     return render_to_response('repo/branch_permission.html',
                           response_dictionary,

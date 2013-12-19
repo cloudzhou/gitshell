@@ -17,7 +17,7 @@
         <div>
           <span>对于仓库的所有成员</span>
           <select class="global-permission-select" name="permission">
-            {% for key, value in PERMISSION_VIEW.items %}
+            {% for key, value in PERMISSION_VIEW_WITHOUT_ADMIN.items %}
               <option value="{{key}}"{%if branchPermission and key == branchPermission.global_permission%} selected="selected"{%endif%}>{{value}}</option>
             {% endfor %}
           </select>
@@ -35,7 +35,7 @@
           <div>
             {{ permissionItem.userprofile.username }}
             <select class="user-permission-select" data-user-id="{{permissionItem.userprofile.id}}" name="permission">
-            {% for key, value in PERMISSION_VIEW.items %}
+            {% for key, value in PERMISSION_VIEW_WITHOUT_ADMIN.items %}
               <option value="{{key}}"{%if key == permissionItem.permission%} selected="selected"{%endif%}>{{value}}</option>
             {% endfor %}
             </select>
@@ -54,7 +54,7 @@
         {% endfor %}
       </select>
       <select id="grant-user-permission">
-        {% for key, value in PERMISSION_VIEW.items %}
+        {% for key, value in PERMISSION_VIEW_WITHOUT_ADMIN.items %}
           <option value="{{key}}">{{value}}</option>
         {% endfor %}
       </select>
@@ -73,7 +73,7 @@
           <div>
             {{ permissionItem.group.name }}
             <select class="group-permission-select" data-group-id="{{permissionItem.group.id}}" name="permission">
-            {% for key, value in PERMISSION_VIEW.items %}
+            {% for key, value in PERMISSION_VIEW_WITHOUT_ADMIN.items %}
               <option value="{{key}}"{%if key == permissionItem.permission%} selected="selected"{%endif%}>{{value}}</option>
             {% endfor %}
             </select>
@@ -92,7 +92,7 @@
         {% endfor %}
       </select>
       <select id="grant-group-permission">
-        {% for key, value in PERMISSION_VIEW.items %}
+        {% for key, value in PERMISSION_VIEW_WITHOUT_ADMIN.items %}
           <option value="{{key}}">{{value}}</option>
         {% endfor %}
       </select>

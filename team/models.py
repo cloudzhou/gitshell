@@ -408,11 +408,18 @@ class PERMISSION:
     PUSH = 2
     ADMIN = 3
 
+    VIEW_WITHOUT_ADMIN = {
+        -1: u'没有任何权限',
+        0: u'默认权限',
+        1: u'只读权限(pull)',
+        2: u'读写权限(pull+push)',
+    }
     VIEW = {
         -1: u'没有任何权限',
         0: u'默认权限',
         1: u'只读权限(pull)',
         2: u'读写权限(pull+push)',
-        #3: u'管理权限(admin)',
+        3: u'管理权限(admin)',
     }
+
 
