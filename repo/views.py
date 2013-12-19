@@ -593,7 +593,7 @@ def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, contex
     diff['refs_meta'] = refs_meta
     return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': path, 'diff': diff})
 
-@repo_permission_check
+@repo_admin_permission_check
 def members(request, user_name, repo_name):
     title = u'%s / %s / 协同者' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -614,8 +614,7 @@ def members(request, user_name, repo_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@login_required
-@repo_permission_check
+@repo_admin_permission_check
 @require_http_methods(["POST"])
 def add_member(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -647,8 +646,7 @@ def add_member(request, user_name, repo_name):
     else:
         return json_failed(500, u'成员数目不得超过100位')
 
-@login_required
-@repo_permission_check
+@repo_admin_permission_check
 @require_http_methods(["POST"])
 def remove_member(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -745,8 +743,7 @@ def stats(request, user_name, repo_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
-@login_required
+@repo_admin_permission_check
 def settings(request, user_name, repo_name):
     title = u'%s / %s / 设置' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -780,8 +777,7 @@ def settings(request, user_name, repo_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
-@login_required
+@repo_admin_permission_check
 @require_http_methods(["POST"])
 def generate_deploy_url(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -792,8 +788,7 @@ def generate_deploy_url(request, user_name, repo_name):
     repo.save()
     return json_httpResponse({'result': 'success'})
 
-@repo_permission_check
-@login_required
+@repo_admin_permission_check
 @require_http_methods(["POST"])
 def forbid_dploy_url(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -803,8 +798,7 @@ def forbid_dploy_url(request, user_name, repo_name):
     repo.save()
     return json_httpResponse({'result': 'success'})
 
-@repo_permission_check
-@login_required
+@repo_admin_permission_check
 @require_http_methods(["POST"])
 def enable_dropbox_sync(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -818,8 +812,7 @@ def enable_dropbox_sync(request, user_name, repo_name):
     repo.save()
     return json_httpResponse({'result': 'success'})
 
-@repo_permission_check
-@login_required
+@repo_admin_permission_check
 @require_http_methods(["POST"])
 def disable_dropbox_sync(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -830,7 +823,6 @@ def disable_dropbox_sync(request, user_name, repo_name):
     repo.save()
     return json_httpResponse({'result': 'success'})
 
-@login_required
 @repo_admin_permission_check
 def permission(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -868,7 +860,6 @@ def _list_teamGroups_without_grant(repoPermission, teamGroups):
         teamGroups_without_grant.append(teamGroup)
     return teamGroups_without_grant
 
-@login_required
 @repo_admin_permission_check
 @require_http_methods(["POST"])
 def permission_grant(request, user_name, repo_name):
@@ -885,8 +876,7 @@ def permission_grant(request, user_name, repo_name):
         TeamManager.grant_repo_group_permission(repo.id, group_id, permission)
     return json_success(u'赋予权限成功')
 
-@login_required
-@repo_permission_check
+@repo_admin_permission_check
 def branches_permission(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     current = 'settings'; sub_nav = 'branches_permission'; title = u'%s / %s / 设置 / 分支权限控制' % (user_name, repo_name)
@@ -896,8 +886,7 @@ def branches_permission(request, user_name, repo_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@login_required
-@repo_permission_check
+@repo_admin_permission_check
 def branch_permission(request, user_name, repo_name, branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     current = 'settings'; sub_nav = 'branch_permission'; title = u'%s / %s / 设置 / 分支权限控制 / %s' % (user_name, repo_name, branch)
@@ -934,8 +923,7 @@ def _list_branch_teamGroups_without_grant(branchPermission, branch, teamGroups):
         teamGroups_without_grant.append(teamGroup)
     return teamGroups_without_grant
 
-@login_required
-@repo_permission_check
+@repo_admin_permission_check
 @require_http_methods(["POST"])
 def branch_permission_grant(request, user_name, repo_name, branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -951,8 +939,7 @@ def branch_permission_grant(request, user_name, repo_name, branch):
         TeamManager.grant_branch_group_permission(repo.id, branch, group_id, permission)
     return json_success(u'赋予权限成功')
 
-@login_required
-@repo_permission_check
+@repo_admin_permission_check
 @require_http_methods(["POST"])
 def permission_remove_item(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1333,8 +1320,7 @@ def list_github_repos(request):
     repos_json_str = github_list_repo(access_token)
     return HttpResponse(repos_json_str, mimetype='application/json')
 
-@login_required
-@repo_permission_check
+@repo_admin_permission_check
 def hooks(request, user_name, repo_name):
     error = u''; title = u'%s / %s / 钩子' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1348,8 +1334,7 @@ def hooks(request, user_name, repo_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@login_required
-@repo_permission_check
+@repo_admin_permission_check
 @require_http_methods(["POST"])
 def add_web_hook_url(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1365,8 +1350,7 @@ def add_web_hook_url(request, user_name, repo_name):
     webHookURL.save()
     return json_httpResponse({'code': 200, 'result': 'success', 'message': u'添加 web hook url 成功'})
 
-@login_required
-@repo_permission_check
+@repo_admin_permission_check
 @require_http_methods(["POST"])
 def enable_web_hook_url(request, user_name, repo_name, hook_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1379,8 +1363,7 @@ def enable_web_hook_url(request, user_name, repo_name, hook_id):
     webHookURL.save()
     return json_httpResponse({'code': 200, 'result': 'success', 'message': u'启用成功'})
 
-@login_required
-@repo_permission_check
+@repo_admin_permission_check
 @require_http_methods(["POST"])
 def disable_web_hook_url(request, user_name, repo_name, hook_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1393,8 +1376,7 @@ def disable_web_hook_url(request, user_name, repo_name, hook_id):
     webHookURL.save()
     return json_httpResponse({'code': 200, 'result': 'success', 'message': u'禁用成功'})
 
-@login_required
-@repo_permission_check
+@repo_admin_permission_check
 @require_http_methods(["POST"])
 def remove_web_hook_url(request, user_name, repo_name, hook_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1407,8 +1389,7 @@ def remove_web_hook_url(request, user_name, repo_name, hook_id):
     webHookURL.save()
     return json_httpResponse({'code': 200, 'result': 'success', 'message': u'删除成功'})
 
-@login_required
-@repo_permission_check
+@repo_admin_permission_check
 def delete(request, user_name, repo_name):
     error = u''; title = u'%s / %s / 删除仓库！' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)

@@ -49,15 +49,6 @@ def repo_admin_permission_check(function):
 
     return wrap
 
-def is_owner_or_teamAdmin(user, repo):
-    if user.id == repo.user_id:
-        return True
-    from gitshell.team.models import TeamManager
-    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(repo.user_id, user.id)
-    if teamMember.has_admin_rights():
-        return True
-    return False
-
 def repo_source_permission_check(function):
 
     def wrap(request, *args, **kwargs):
@@ -79,4 +70,13 @@ def repo_source_permission_check(function):
     wrap.__name__=function.__name__
 
     return wrap
+
+def is_owner_or_teamAdmin(user, repo):
+    if user.id == repo.user_id:
+        return True
+    from gitshell.team.models import TeamManager
+    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(repo.user_id, user.id)
+    if teamMember.has_admin_rights():
+        return True
+    return False
 
