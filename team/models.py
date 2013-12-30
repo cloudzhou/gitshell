@@ -105,7 +105,8 @@ class TeamManager():
         exists_teamMember = self.get_teamMember_by_teamUserId_userId(teamUser.id, member_userprofile.id)
         if exists_teamMember:
             return None
-        teamMember = TeamMember(team_user_id = teamUser.id, user_id = member_userprofile.id, group_id = 0, permission = 2, is_admin = 0)
+        permission = self.get_team_globalPermission_by_userId(teamUser.id)
+        teamMember = TeamMember(team_user_id = teamUser.id, user_id = member_userprofile.id, group_id = 0, permission = permission, is_admin = 0)
         teamMember.save()
         return teamMember
 
@@ -133,8 +134,12 @@ class TeamManager():
 
     @classmethod
     def get_teamMember_by_teamUserId_userId(self, team_user_id, user_id):
+        # for team user global permission
+        if team_user_id == 0:
+            teamMember = query_first(TeamMember, team_user_id, 'teammember_s_teamUserId_userId', [team_user_id, user_id])
+            return teamMember
         team_userprofile = GsuserManager.get_userprofile_by_id(team_user_id)
-        if team_userprofile.is_team_account == 0:
+        if team_userprofile and team_userprofile.is_team_account == 0:
             return None
         teamMember = query_first(TeamMember, team_user_id, 'teammember_s_teamUserId_userId', [team_user_id, user_id])
         if not teamMember:
@@ -178,6 +183,13 @@ class TeamManager():
         return groupMember
 
     # permission
+    @classmethod
+    def get_team_globalPermission_by_userId(self, user_id):
+        teamMember = self.get_teamMember_by_teamUserId_userId(0, user_id)
+        if not teamMember:
+            return PERMISSION.PUSH
+        return teamMember.permission
+
     @classmethod
     def get_repoPermission_by_repoId(self, repo_id):
         repoPermission = query_first(RepoPermission, repo_id, 'repopermission_s_repoId', [repo_id])
@@ -263,6 +275,29 @@ class TeamManager():
         if permissionItem.permission in PERMISSION.VIEW:
             permissionItem.permission_view = PERMISSION.VIEW[permissionItem.permission]
         return permissionItem
+
+    @classmethod
+    def grant_team_global_permission(self, team_user_id, permission):
+        if permission not in PERMISSION.VIEW:
+            return None
+        teamMember = self.get_teamMember_by_teamUserId_userId(0, team_user_id)
+        print teamMember
+        if not teamMember:
+            teamMember = TeamMember(team_user_id = 0, user_id = team_user_id, group_id = 0, permission = permission, is_admin = 0)
+        teamMember.permission = permission
+        teamMember.save()
+        return permission
+
+    @classmethod
+    def grant_team_user_permission(self, team_user_id, user_id, permission):
+        if permission not in PERMISSION.VIEW:
+            return None
+        teamMember = self.get_teamMember_by_teamUserId_userId(team_user_id, user_id)
+        if not teamMember:
+            return PERMISSION.NONE
+        teamMember.permission = permission
+        teamMember.save()
+        return permission
 
     @classmethod
     def grant_repo_global_permission(self, repo_id, permission):
@@ -409,8 +444,6 @@ class PERMISSION:
     ADMIN = 3
 
     VIEW_WITHOUT_ADMIN = {
-        -1: u'没有任何权限',
-        0: u'默认权限',
         1: u'只读权限(pull)',
         2: u'读写权限(pull+push)',
     }

@@ -17,7 +17,7 @@ from gitshell.issue.models import IssueManager, Issue, IssueComment
 from gitshell.gsuser.models import GsuserManager, UserViaRef, REF_TYPE
 from gitshell.gsuser.views import get_feeds_as_json
 from gitshell.gssettings.Form import TeamprofileForm
-from gitshell.team.models import TeamManager, TeamMember, TeamGroup, GroupMember
+from gitshell.team.models import TeamManager, TeamMember, TeamGroup, GroupMember, PERMISSION
 from gitshell.team.decorators import team_admin_permission_check
 from gitshell.todolist.views import todo
 from gitshell.viewtools.views import json_httpResponse, json_success, json_failed, obj2dict
@@ -160,7 +160,8 @@ def members(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
     current = 'settings'; sub_nav = 'members'; title = u'%s / 设置 / 成员' % (teamUser.username)
     teamMembers = TeamManager.list_teamMember_by_teamUserId(teamUser.id)
-    response_dictionary = {'current': current, 'title': title, 'sub_nav': sub_nav, 'teamMembers': teamMembers}
+    globalPermission = TeamManager.get_team_globalPermission_by_userId(teamUser.id)
+    response_dictionary = {'current': current, 'title': title, 'sub_nav': sub_nav, 'teamMembers': teamMembers, 'PERMISSION_VIEW': PERMISSION.VIEW, 'globalPermission': globalPermission}
     response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
     return render_to_response('team/members.html',
                           response_dictionary,
@@ -342,6 +343,20 @@ def group_remove_member(request, username):
         groupMember.save()
     return json_success(u'从 %s 组移除用户' % (teamGroup.name))
 
+@login_required
+@team_admin_permission_check
+@require_http_methods(["POST"])
+def permission_grant(request, username):
+    teamUser = GsuserManager.get_user_by_name(username)
+    grant_type = request.POST.get('grant_type', 'global')
+    permission = int(request.POST.get('permission', '0'))
+    if grant_type == 'global':
+        TeamManager.grant_team_global_permission(teamUser.id, permission)
+    elif grant_type == 'user':
+        user_id = int(request.POST.get('user_id', '0'))
+        TeamManager.grant_team_user_permission(teamUser.id, user_id, permission)
+    return json_success(u'赋予权限成功')
+    
 @login_required
 def destroy(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)

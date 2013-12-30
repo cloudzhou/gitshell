@@ -433,6 +433,9 @@ class RepoManager():
     def is_allowed_access_repo(self, repo, user, repoPermission):
         if repo is None or user is None:
             return False
+        is_owner_or_teamAdmin = self.is_owner_or_teamAdmin(repo, user)
+        if is_owner_or_teamAdmin:
+            return True
         if repoPermission == REPO_PERMISSION.WEB_VIEW:
             if repo.auth_type != 2:
                 return True
@@ -441,10 +444,16 @@ class RepoManager():
                 return True
         elif repoPermission == REPO_PERMISSION.WRITE:
             pass
+        elif repoPermission == REPO_PERMISSION.ADMIN:
+            pass
         memberUsers = self.list_repo_team_memberUser(repo.id)
         memberUser_id_set = Set([x.id for x in memberUsers])
         if user.id and user.id in memberUser_id_set:
             return True
+        return False
+
+    @classmethod
+    def is_allowed_access_repo_branch(self, repo, user, branch, repoPermission):
         return False
 
     @classmethod
@@ -798,7 +807,7 @@ class RepoManager():
         if repo.user_id == user.id:
             return True
         teamMember = TeamManager.get_teamMember_by_teamUserId_userId(repo.user_id, user.id)
-        if teamMember.has_admin_rights():
+        if teamMember and teamMember.has_admin_rights():
             return True
         return False
 
@@ -836,6 +845,7 @@ class REPO_PERMISSION:
     WEB_VIEW = 0
     READ_ONLY = 1
     WRITE = 2
+    ADMIN = 3
 
 class PULL_STATUS:
 

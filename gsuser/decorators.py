@@ -38,7 +38,8 @@ def repo_admin_permission_check(function):
                 return HttpResponseRedirect('/help/error/repo_not_found/')
             if not request.user.is_authenticated():
                 return HttpResponseRedirect('/login/?next=' + urlquote(request.path))
-            if not RepoManager.is_owner_or_teamAdmin(repo, request.user):
+            is_allowed_access_repo = RepoManager.is_allowed_access_repo(repo, request.user, REPO_PERMISSION.ADMIN)
+            if not is_allowed_access_repo:
                 return HttpResponseRedirect('/help/error/repo_permission_denied/')
         if request.user.is_authenticated():
             feedAction = FeedAction()

@@ -12,26 +12,35 @@
         <span class="label label-mini">管理员</span>
         {% endif %}
       </td>
-      <td class="rights">
-        <!--input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-pull" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_read_rights %} checked="checked"{% endif %}>
-        <label for="rights-{{teamMember.id}}">Pull</label>
-        <input id="rights-{{teamMember.id}}" type="checkbox" class="team-rights rights-push" data-id="{{teamMember.id}}" value="0"{% if teamMember.has_write_rights %} checked="checked"{% endif %}>
-        <label for="rights-{{teamMember.id}}">Push</label-->
-        </td>
-        <td>
-          <div class="hide actions">
+      <td>
+        <div class="">
             {% if teamMember.has_admin_rights %}
             <a href="#" data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="cancal-team-admin btn btn-mini btn-danger">解除管理员</a>
             {% else %}
+            <select class="user-permission-select" data-user-id="{{teamMember.user.id}}" name="permission">
+              {% for key, value in PERMISSION_VIEW.items %}
+              <option value="{{key}}"{%if key == teamMember.permission%} selected="selected"{%endif%}>{{value}}</option>
+              {% endfor %}
+            </select>
             <a href="#" data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="grant-team-admin btn btn-mini btn-success">设置为管理员</a>
             {% endif %}
             <a href="#" data-id="{{ teamMember.id }}" data-user-id="{{ teamMember.user_id }}" class="remove-team-member btn btn-mini">移除</a>
-          </div>
+        </div>
         </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+  <div>
+    <span>所有成员默认权限：</span>
+    <select class="global-permission-select" data-team-user-id="{{teamUser.id}}" name="permission">
+    {% for key, value in PERMISSION_VIEW.items %}
+      {% if key != 0 %}
+      <option value="{{key}}"{%if globalPermission == key %} selected="selected"{%endif%}>{{value}}</option>
+      {% endif %}
+    {% endfor %}
+    </select>
+  </div>
   <p class="add-member"><input id="add-member" placeholder="成员的邮箱或者名字"/><button class="add-team-member btn">添加新成员</button></p>
   <span id="alert" class="info hide"></span>
 {% endblock %}
@@ -71,15 +80,14 @@ $(function(){
             }
         });
     });
-
-    $('.grant-team-admin').click(function(){
+    $('.grant-team-admin').click(function() {
         var teamMember_id = $(this).data('id');
         var user_id = $(this).data('user-id');
         $.post('/{{teamUser.username}}/-/settings/team/member/grant/admin/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'teamMember_id': teamMember_id}, function(json){
             window.location.href = '/{{teamUser.username}}/-/settings/members/';
         });
     });
-    $('.cancal-team-admin').click(function(){
+    $('.cancal-team-admin').click(function() {
         var teamMember_id = $(this).data('id');
         var user_id = $(this).data('user-id');
         var is_yourself = (user_id == {{user.id}});
@@ -121,6 +129,27 @@ $(function(){
                 return;
             }
             window.location.href = '/{{teamUser.username}}/-/settings/members/';
+        });
+    });
+    $('.user-permission-select').change(function(event) {
+        var user_id = $(this).data('user-id');
+        var user_permission = $('option:selected', this).val();
+        $.post('/{{teamUser.username}}/-/settings/permission/grant/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'grant_type': 'user', 'user_id': user_id, 'permission': user_permission}, function(json) {
+            if(json.code != 200) {
+                window.alert(json.message);
+                return;
+            }
+            window.location.reload(true);
+        });
+    });
+    $('.global-permission-select').change(function(event) {
+        var global_permission = $('option:selected', this).val();
+        $.post('/{{teamUser.username}}/-/settings/permission/grant/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'grant_type': 'global', 'permission': global_permission}, function(json) {
+            if(json.code != 200) {
+                window.alert(json.message);
+                return;
+            }
+            window.location.reload(true);
         });
     });
 });

@@ -86,6 +86,7 @@ urlpatterns = patterns('gitshell',
     url(r'^([a-zA-Z0-9_-]+)/-/settings/group/remove/?$', 'team.views.group_remove'),
     url(r'^([a-zA-Z0-9_-]+)/-/settings/group/add_member/?$', 'team.views.group_add_member'),
     url(r'^([a-zA-Z0-9_-]+)/-/settings/group/remove_member/?$', 'team.views.group_remove_member'),
+    url(r'^([a-zA-Z0-9_-]+)/-/settings/permission/grant/?$', 'team.views.permission_grant'),
     url(r'^([a-zA-Z0-9_-]+)/-/settings/destroy/?$', 'team.views.destroy'),
     url(r'^([a-zA-Z0-9_-]+)/-/settings/destroy_confirm/?$', 'team.views.destroy_confirm'),
 
