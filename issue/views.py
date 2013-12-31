@@ -18,15 +18,15 @@ from gitshell.gsuser.models import GsuserManager
 from gitshell.issue.models import IssueManager, Issue, IssueComment, ISSUE_STATUS
 from gitshell.issue.Forms import IssueForm, IssueCommentForm
 from gitshell.issue.cons import TRACKERS, STATUSES, PRIORITIES, TRACKERS_VAL, STATUSES_VAL, PRIORITIES_VAL, ISSUE_ATTRS
-from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check
+from gitshell.gsuser.decorators import repo_view_permission_check, repo_source_permission_check
 from gitshell.feed.models import FeedManager
 from gitshell.viewtools.views import json_httpResponse, json_success, json_failed
 
-@repo_permission_check
+@repo_view_permission_check
 def issues(request, user_name, repo_name):
     return issues_list(request, user_name, repo_name, '0', '0', '0', '0', 'modify_time', 0)
  
-@repo_permission_check
+@repo_view_permission_check
 def issues_list(request, user_name, repo_name, assigned, tracker, status, priority, orderby, page):
     refs = 'master'; path = '.'; current = 'issues'; title = u'%s / %s / 问题列表' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -72,11 +72,11 @@ def issues_list(request, user_name, repo_name, assigned, tracker, status, priori
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
+@repo_view_permission_check
 def show_default(request, user_name, repo_name, issue_id):
     return show(request, user_name, repo_name, issue_id, None)
 
-@repo_permission_check
+@repo_view_permission_check
 def show(request, user_name, repo_name, issue_id, page):
     refs = 'master'; path = '.'; current = 'issues'
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -123,7 +123,7 @@ def show(request, user_name, repo_name, issue_id, page):
                           context_instance=RequestContext(request))
 
 @login_required
-@repo_permission_check
+@repo_view_permission_check
 def create(request, user_name, repo_name):
     refs = 'master'; path = '.'; current = 'issues'; title = u'%s / %s / 创建问题' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -157,7 +157,7 @@ def create(request, user_name, repo_name):
                           context_instance=RequestContext(request))
 
 @login_required
-@repo_permission_check
+@repo_view_permission_check
 def edit(request, user_name, repo_name, issue_id):
     refs = 'master'; path = '.'; current = 'issues'; title = u'%s / %s / 编辑问题' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -191,7 +191,7 @@ def edit(request, user_name, repo_name, issue_id):
                           context_instance=RequestContext(request))
 
 @login_required
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def delete(request, user_name, repo_name, issue_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -205,7 +205,7 @@ def delete(request, user_name, repo_name, issue_id):
     return _json_ok()
 
 @login_required
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def update(request, user_name, repo_name, issue_id, attr):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -276,7 +276,7 @@ def do_issue(request):
     return _json_ok()
         
 @login_required
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def comment_delete(request, user_name, repo_name, comment_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)

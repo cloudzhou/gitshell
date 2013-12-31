@@ -5,7 +5,7 @@ from gitshell.feed.feed import FeedAction
 from gitshell.repo.models import RepoManager, REPO_PERMISSION
 from gitshell.viewtools.views import json_httpResponse, json_success, json_failed
 
-def repo_permission_check(function):
+def repo_view_permission_check(function):
 
     def wrap(request, *args, **kwargs):
         if len(args) >= 2:

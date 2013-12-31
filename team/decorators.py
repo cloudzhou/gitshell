@@ -14,6 +14,8 @@ def team_admin_permission_check(function):
             teamUser = GsuserManager.get_user_by_name(username)
             if not teamUser:
                 return _response_not_admin_rights(request)
+            if not request.user.is_authenticated():
+                return HttpResponseRedirect('/login/?next=' + urlquote(request.path))
             teamMember = TeamManager.get_teamMember_by_teamUserId_userId(teamUser.id, request.user.id)
             if not teamMember or not teamMember.has_admin_rights():
                 return _response_not_admin_rights(request)

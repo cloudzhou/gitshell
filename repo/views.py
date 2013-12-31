@@ -22,7 +22,7 @@ from gitshell.repo.Forms import RepoForm
 from gitshell.repo.githandler import GitHandler
 from gitshell.repo.models import Repo, RepoManager, PullRequest, WebHookURL, PULL_STATUS, KEEP_REPO_NAME, REPO_PERMISSION
 from gitshell.gsuser.models import GsuserManager, Userprofile, UserViaRef, REF_TYPE
-from gitshell.gsuser.decorators import repo_permission_check, repo_source_permission_check, repo_admin_permission_check
+from gitshell.gsuser.decorators import repo_view_permission_check, repo_source_permission_check, repo_admin_permission_check
 from gitshell.team.models import TeamManager, PERMISSION
 from gitshell.stats import timeutils
 from gitshell.stats.models import StatsManager
@@ -79,27 +79,27 @@ def user_repo_paging(request, user_name, pagenum):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
+@repo_view_permission_check
 def repo(request, user_name, repo_name):
     refs = None; path = '.'; current = 'index'
     return ls_tree(request, user_name, repo_name, refs, path, current, 'html')
 
-@repo_permission_check
+@repo_view_permission_check
 def tree_default(request, user_name, repo_name):
     refs = None; path = '.'; current = 'tree'
     return ls_tree(request, user_name, repo_name, refs, path, current, 'html')
     
-@repo_permission_check
+@repo_view_permission_check
 def tree(request, user_name, repo_name, refs, path):
     current = 'tree'
     return ls_tree(request, user_name, repo_name, refs, path, current, 'html')
 
-@repo_permission_check
+@repo_view_permission_check
 def tree_ajax(request, user_name, repo_name, refs, path):
     current = 'tree'
     return ls_tree(request, user_name, repo_name, refs, path, current, 'ajax')
 
-@repo_permission_check
+@repo_view_permission_check
 @repo_source_permission_check
 def raw_blob(request, user_name, repo_name, refs, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -112,7 +112,7 @@ def raw_blob(request, user_name, repo_name, refs, path):
     blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
     return HttpResponse(blob, content_type="text/plain; charset=utf-8")
 
-@repo_permission_check
+@repo_view_permission_check
 def ls_tree(request, user_name, repo_name, refs, path, current, render_method):
     title = u'%s / %s' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -139,15 +139,15 @@ def ls_tree(request, user_name, repo_name, refs, path, current, render_method):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
+@repo_view_permission_check
 def blob(request, user_name, repo_name, refs, path):
     return _blob(request, user_name, repo_name, refs, path, 'html')
 
-@repo_permission_check
+@repo_view_permission_check
 def blob_ajax(request, user_name, repo_name, refs, path):
     return _blob(request, user_name, repo_name, refs, path, 'ajax')
     
-@repo_permission_check
+@repo_view_permission_check
 def _blob(request, user_name, repo_name, refs, path, render_method):
     current = 'blob'; title = u'%s / %s / %s' % (user_name, repo_name, path)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -178,7 +178,7 @@ def _blob(request, user_name, repo_name, refs, path, render_method):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
+@repo_view_permission_check
 def commit(request, user_name, repo_name, commit_hash):
     title = u'%s / %s / hash:%s' % (user_name, repo_name, commit_hash)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -198,12 +198,12 @@ def commit(request, user_name, repo_name, commit_hash):
                           response_dictionary,
                           context_instance=RequestContext(request))
     
-@repo_permission_check
+@repo_view_permission_check
 def commits_default(request, user_name, repo_name):
     refs = None; path = '.'
     return commits(request, user_name, repo_name, refs, path)
     
-@repo_permission_check
+@repo_view_permission_check
 def commits(request, user_name, repo_name, refs, path):
     title = u'%s / %s / 提交历史' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -223,7 +223,7 @@ def commits(request, user_name, repo_name, refs, path):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
+@repo_view_permission_check
 def commits_log(request, user_name, repo_name, from_commit_hash, to_commit_hash):
     title = u'%s / %s / 提交历史' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -242,11 +242,11 @@ def commits_log(request, user_name, repo_name, from_commit_hash, to_commit_hash)
     response_dictionary = {'mainnav': 'repo', 'current': 'commits', 'title': title, 'orgi_from_commit_hash': orgi_from_commit_hash, 'orgi_to_commit_hash': orgi_to_commit_hash, 'from_commit_hash': from_commit_hash, 'to_commit_hash': to_commit_hash, 'commits': commits, 'refs_meta': refs_meta}
     return json_httpResponse(response_dictionary)
 
-@repo_permission_check
+@repo_view_permission_check
 def branches_default(request, user_name, repo_name):
     return branches(request, user_name, repo_name, None)
 
-@repo_permission_check
+@repo_view_permission_check
 def branches(request, user_name, repo_name, refs):
     title = u'%s / %s / 分支' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -259,11 +259,11 @@ def branches(request, user_name, repo_name, refs):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
+@repo_view_permission_check
 def tags_default(request, user_name, repo_name):
     return tags(request, user_name, repo_name, None)
 
-@repo_permission_check
+@repo_view_permission_check
 def tags(request, user_name, repo_name, refs):
     title = u'%s / %s / 标签' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -276,15 +276,15 @@ def tags(request, user_name, repo_name, refs):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
+@repo_view_permission_check
 def compare_default(request, user_name, repo_name):
     return compare_master(request, user_name, repo_name, 'master')
 
-@repo_permission_check
+@repo_view_permission_check
 def compare_master(request, user_name, repo_name, refs):
     return compare_commit(request, user_name, repo_name, 'master', refs)
 
-@repo_permission_check
+@repo_view_permission_check
 def compare_commit(request, user_name, repo_name, from_refs, to_refs):
     title = u'%s / %s / 比较 %s vs %s' % (user_name, repo_name, from_refs, to_refs)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -302,7 +302,7 @@ def compare_commit(request, user_name, repo_name, from_refs, to_refs):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
+@repo_view_permission_check
 @login_required
 @require_http_methods(["POST"])
 def merge(request, user_name, repo_name, source_refs, desc_refs):
@@ -320,7 +320,7 @@ def merge(request, user_name, repo_name, source_refs, desc_refs):
     RepoManager.delete_repo_commit_version(repo)
     return json_httpResponse({'source_refs': source_refs, 'desc_refs': desc_refs, 'returncode': returncode, 'output': output, 'result': 'success'})
 
-@repo_permission_check
+@repo_view_permission_check
 def pulls(request, user_name, repo_name):
     title = u'%s / %s / 合并请求' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -335,7 +335,7 @@ def pulls(request, user_name, repo_name):
                           context_instance=RequestContext(request))
 
 @login_required
-@repo_permission_check
+@repo_view_permission_check
 def pull_new_default(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -352,7 +352,7 @@ def pull_new_default(request, user_name, repo_name):
     return pull_new(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs)
 
 @login_required
-@repo_permission_check
+@repo_view_permission_check
 def pull_new(request, user_name, repo_name, desc_username, desc_refs, source_username, source_refs):
     title = u'%s / %s / 创建合并请求' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -398,7 +398,7 @@ def pull_new(request, user_name, repo_name, desc_username, desc_refs, source_use
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
+@repo_view_permission_check
 def pull_show(request, user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -414,7 +414,7 @@ def pull_show(request, user_name, repo_name, pullRequest_id):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def pull_commits(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs):
     repo = RepoManager.get_repo_by_name(user_name, repo_name); path = '.'
@@ -436,7 +436,7 @@ def pull_commits(request, user_name, repo_name, source_username, source_refs, de
     _fillwith_commits(commits)
     return json_httpResponse({'commits': commits, 'source_refs': source_refs, 'desc_refs': desc_refs, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success'})
     
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def pull_diff(request, user_name, repo_name, source_username, source_refs, desc_username, desc_refs, context):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -471,7 +471,7 @@ def pull_diff(request, user_name, repo_name, source_username, source_refs, desc_
         x['filepath'] = filepath
     return json_httpResponse({'user_name': user_name, 'repo_name': repo_name, 'path': path, 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'diff': diff, 'source_repo_refs_commit_hash': source_repo_refs_commit_hash, 'desc_repo_refs_commit_hash': desc_repo_refs_commit_hash, 'result': 'success', 'context': context})
 
-@repo_permission_check
+@repo_view_permission_check
 @login_required
 @require_http_methods(["POST"])
 def pull_merge(request, user_name, repo_name, pullRequest_id):
@@ -501,7 +501,7 @@ def pull_merge(request, user_name, repo_name, pullRequest_id):
     RepoManager.delete_repo_commit_version(repo)
     return json_httpResponse({'returncode': returncode, 'output': output, 'result': 'success'})
 
-@repo_permission_check
+@repo_view_permission_check
 @login_required
 @require_http_methods(["POST"])
 def pull_reject(request, user_name, repo_name, pullRequest_id):
@@ -520,7 +520,7 @@ def pull_reject(request, user_name, repo_name, pullRequest_id):
     FeedManager.feed_pull_change(request.user, pullRequest, pullRequest.status)
     return json_httpResponse({'result': 'success'})
 
-@repo_permission_check
+@repo_view_permission_check
 @login_required
 @require_http_methods(["POST"])
 def pull_close(request, user_name, repo_name, pullRequest_id):
@@ -553,12 +553,12 @@ def _get_repo_pull_args(user_name, repo_name, pullRequest_id):
     pullrequest_repo_path = '%s/%s/%s' % (PULLREQUEST_REPO_PATH, desc_repo.username, desc_repo.name)
     return [repo, pullRequest, source_repo, desc_repo, pullrequest_repo_path]
     
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def diff_default(request, user_name, repo_name, from_commit_hash, to_commit_hash, context):
     return diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, context, '.')
 
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def diff(request, user_name, repo_name, from_commit_hash, to_commit_hash, context, path):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -657,7 +657,7 @@ def remove_member(request, user_name, repo_name):
     RepoManager.remove_member(repo, user)
     return json_success(u'移除成员 %s 成功' % username)
 
-@repo_permission_check
+@repo_view_permission_check
 def pulse(request, user_name, repo_name):
     title = u'%s / %s / 总览' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -684,7 +684,7 @@ def pulse(request, user_name, repo_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
+@repo_view_permission_check
 def stats(request, user_name, repo_name):
     title = u'%s / %s / 统计' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -990,7 +990,7 @@ def change_to_vo(raw_fork_repos_tree):
         fork_repos_tree.append(_conver_repos(raw_fork_repos, user_map))
     return fork_repos_tree
 
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def log_graph(request, user_name, repo_name, refs):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1010,12 +1010,12 @@ def log_graph(request, user_name, repo_name, refs):
     response_dictionary.update(log_graph)
     return json_httpResponse(response_dictionary)
     
-@repo_permission_check
+@repo_view_permission_check
 def refs_graph_default(request, user_name, repo_name):
     refs = None
     return refs_graph(request, user_name, repo_name, refs)
 
-@repo_permission_check
+@repo_view_permission_check
 def refs_graph(request, user_name, repo_name, refs):
     current = 'refs_graph'; title = u'%s / %s / 分支图：%s' % (user_name, repo_name, refs)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1028,7 +1028,7 @@ def refs_graph(request, user_name, repo_name, refs):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
+@repo_view_permission_check
 def refs_create(request, user_name, repo_name, refs):
     current = 'branches'; title = u'%s / %s / 基于%s创建分支' % (user_name, repo_name, refs)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1040,7 +1040,7 @@ def refs_create(request, user_name, repo_name, refs):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def refs_branch_create(request, user_name, repo_name, branch, base_branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1051,7 +1051,7 @@ def refs_branch_create(request, user_name, repo_name, branch, base_branch):
         return json_httpResponse({'returncode': 0, 'result': 'success'})
     return json_httpResponse({'returncode': 128, 'result': 'failed'})
 
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def refs_branch_delete(request, user_name, repo_name, branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1062,7 +1062,7 @@ def refs_branch_delete(request, user_name, repo_name, branch):
         return json_httpResponse({'returncode': 0, 'result': 'success'})
     return json_httpResponse({'returncode': 128, 'result': 'failed'})
 
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def refs_tag_create(request, user_name, repo_name, tag, base_branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1073,7 +1073,7 @@ def refs_tag_create(request, user_name, repo_name, tag, base_branch):
         return json_httpResponse({'returncode': 0, 'result': 'success'})
     return json_httpResponse({'returncode': 128, 'result': 'failed'})
 
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def refs_tag_delete(request, user_name, repo_name, tag):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1084,7 +1084,7 @@ def refs_tag_delete(request, user_name, repo_name, tag):
         return json_httpResponse({'returncode': 0, 'result': 'success'})
     return json_httpResponse({'returncode': 128, 'result': 'failed'})
 
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def refs(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
@@ -1097,7 +1097,7 @@ def refs(request, user_name, repo_name):
     response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'refs_meta': refs_meta}
     return json_httpResponse(response_dictionary)
 
-@repo_permission_check
+@repo_view_permission_check
 @login_required
 @require_http_methods(["POST"])
 def fork(request, user_name, repo_name):
@@ -1132,7 +1132,7 @@ def fork(request, user_name, repo_name):
     response_dictionary.update({'result': 'success', 'message': 'fork done, start copy repo tree...'})
     return json_httpResponse(response_dictionary)
 
-@repo_permission_check
+@repo_view_permission_check
 @login_required
 @require_http_methods(["POST"])
 def watch(request, user_name, repo_name):
@@ -1146,7 +1146,7 @@ def watch(request, user_name, repo_name):
         return json_httpResponse({'result': 'failed', 'message': message})
     return json_httpResponse(response_dictionary)
 
-@repo_permission_check
+@repo_view_permission_check
 @login_required
 @require_http_methods(["POST"])
 def unwatch(request, user_name, repo_name):
@@ -1160,7 +1160,7 @@ def unwatch(request, user_name, repo_name):
         return json_httpResponse({'result': 'failed', 'message': message})
     return json_httpResponse(response_dictionary)
 
-@repo_permission_check
+@repo_view_permission_check
 @login_required
 @require_http_methods(["POST"])
 def star(request, user_name, repo_name):
@@ -1174,7 +1174,7 @@ def star(request, user_name, repo_name):
         return json_httpResponse({'result': 'failed', 'message': message})
     return json_httpResponse(response_dictionary)
 
-@repo_permission_check
+@repo_view_permission_check
 @login_required
 @require_http_methods(["POST"])
 def unstar(request, user_name, repo_name):
@@ -1295,7 +1295,7 @@ def recently(request, user_name):
     return json_httpResponse({'result': 'success', 'cdoe': 200, 'message': 'recently view, active, update repo', 'recently_view_repo': recently_view_repo, 'recently_active_repo': recently_active_repo, 'recently_update_repo': recently_update_repo})
 
 @login_required
-@repo_permission_check
+@repo_view_permission_check
 @require_http_methods(["POST"])
 def member_users(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)

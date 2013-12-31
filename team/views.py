@@ -134,11 +134,11 @@ def repo(request, username):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@login_required
+@team_admin_permission_check
 def settings(request, username):
     return profile(request, username)
 
-@login_required
+@team_admin_permission_check
 def profile(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
     current = 'settings'; sub_nav = 'profile'; title = u'%s / 设置 / 信息' % (teamUser.username)
@@ -155,7 +155,7 @@ def profile(request, username):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@login_required
+@team_admin_permission_check
 def members(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
     current = 'settings'; sub_nav = 'members'; title = u'%s / 设置 / 成员' % (teamUser.username)
@@ -171,9 +171,6 @@ def members(request, username):
 @require_http_methods(["POST"])
 def add_member(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
-    teamMember = TeamManager.get_teamMember_by_teamUserId_userId(teamUser.id, request.user.id)
-    if not teamMember or not teamMember.has_admin_rights():
-        return _response_not_manage_rights(request)
     teamMember = None
     username_or_email = request.POST.get('username_or_email', '')
     if '@' in username_or_email:
@@ -193,13 +190,11 @@ def add_member(request, username):
         return json_failed(404, u'没有相关用户，不能是团队帐号')
     return json_success(u'成功添加用户')
 
-@login_required
+@team_admin_permission_check
 @require_http_methods(["POST"])
 def member_leave(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
     teamMember = TeamManager.get_teamMember_by_teamUserId_userId(teamUser.id, request.user.id)
-    if not teamMember:
-        return _response_not_manage_rights(request)
     teamMembers = TeamManager.list_teamMember_by_teamUserId(teamMember.team_user_id)
     if _has_other_admin_teamMember(request, teamMember, teamMembers):
         teamMember.visibly = 1
@@ -211,8 +206,6 @@ def member_leave(request, username):
 @require_http_methods(["POST"])
 def remove_member(request, username):
     (manage_teamMember, teamMember) = _get_teamMember_by_manageTeamMemberId(request)
-    if not teamMember or not teamMember.has_admin_rights():
-        return _response_not_manage_rights(request)
     teamMembers = TeamManager.list_teamMember_by_teamUserId(teamMember.team_user_id)
     if _has_other_admin_teamMember(request, manage_teamMember, teamMembers):
         manage_teamMember.visibly = 1
@@ -224,8 +217,6 @@ def remove_member(request, username):
 @require_http_methods(["POST"])
 def grant_admin(request, username):
     (manage_teamMember, teamMember) = _get_teamMember_by_manageTeamMemberId(request)
-    if not teamMember or not teamMember.has_admin_rights():
-        return _response_not_manage_rights(request)
     manage_teamMember.is_admin = 1
     manage_teamMember.save()
     return json_success(u'赋予管理员权限')
@@ -234,8 +225,6 @@ def grant_admin(request, username):
 @require_http_methods(["POST"])
 def cancal_admin(request, username):
     (manage_teamMember, teamMember) = _get_teamMember_by_manageTeamMemberId(request)
-    if not teamMember or not teamMember.has_admin_rights():
-        return _response_not_manage_rights(request)
     teamMembers = TeamManager.list_teamMember_by_teamUserId(teamMember.team_user_id)
     if _has_other_admin_teamMember(request, manage_teamMember, teamMembers):
         manage_teamMember.is_admin = 0
@@ -243,7 +232,6 @@ def cancal_admin(request, username):
         return json_success(u'解除管理员权限')
     return json_failed(500, u'解除管理员失败，一个团队帐号至少需要保留一个管理员')
 
-@login_required
 @team_admin_permission_check
 def groups(request, username):
     teamUser = GsuserManager.get_user_by_name(username)
@@ -256,7 +244,6 @@ def groups(request, username):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@login_required
 @team_admin_permission_check
 def group(request, username, group_id):
     teamUser = GsuserManager.get_user_by_name(username)
@@ -272,7 +259,6 @@ def group(request, username, group_id):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@login_required
 @team_admin_permission_check
 @require_http_methods(["POST"])
 def group_add(request, username):
@@ -287,7 +273,6 @@ def group_add(request, username):
     teamGroup.save()
     return json_success(u'成功创建组 %s' % group_name)
 
-@login_required
 @team_admin_permission_check
 @require_http_methods(["POST"])
 def group_remove(request, username):
@@ -304,7 +289,6 @@ def group_remove(request, username):
     teamGroup.save()
     return json_success(u'成功删除组 %s' % teamGroup.name)
 
-@login_required
 @team_admin_permission_check
 @require_http_methods(["POST"])
 def group_add_member(request, username):
@@ -327,7 +311,6 @@ def group_add_member(request, username):
     groupMember.save()
     return json_success(u'成功添加用户 %s 到组 %s' % (member_user.username, teamGroup.name))
 
-@login_required
 @team_admin_permission_check
 @require_http_methods(["POST"])
 def group_remove_member(request, username):
@@ -343,7 +326,6 @@ def group_remove_member(request, username):
         groupMember.save()
     return json_success(u'从 %s 组移除用户' % (teamGroup.name))
 
-@login_required
 @team_admin_permission_check
 @require_http_methods(["POST"])
 def permission_grant(request, username):
@@ -357,12 +339,10 @@ def permission_grant(request, username):
         TeamManager.grant_team_user_permission(teamUser.id, user_id, permission)
     return json_success(u'赋予权限成功')
     
-@login_required
+@team_admin_permission_check
 def destroy(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
     teamMember = TeamManager.get_teamMember_by_teamUserId_userId(teamUser.id, request.user.id)
-    if not teamMember or not teamMember.has_admin_rights():
-        return _response_not_manage_rights(request)
     current = 'settings'; sub_nav = 'destroy'; title = u'%s / 设置 / 删除帐号' % (teamUser.username)
     response_dictionary = {'current': current, 'title': title, 'sub_nav': sub_nav}
     response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
@@ -370,13 +350,11 @@ def destroy(request, username):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@login_required
 @require_http_methods(["POST"])
+@team_admin_permission_check
 def destroy_confirm(request, username):
     (teamUser, teamUserprofile) = _get_team_user_userprofile(request, username)
     teamMember = TeamManager.get_teamMember_by_teamUserId_userId(teamUser.id, request.user.id)
-    if not teamMember or not teamMember.has_admin_rights():
-        return _response_not_manage_rights(request)
     teamRepos = RepoManager.list_repo_by_userId(teamUser.id, 0, 1000)
     for teamRepo in teamRepos:
         RepoManager.delete_repo(teamUser, teamUserprofile, teamRepo)
