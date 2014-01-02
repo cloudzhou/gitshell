@@ -832,7 +832,7 @@ def permission(request, user_name, repo_name):
     teamGroups = TeamManager.list_teamGroup_by_teamUserId(repo.user_id)
     memberUsers_without_grant = _list_memberUsers_without_grant(repoPermission, memberUsers)
     teamGroups_without_grant = _list_teamGroups_without_grant(repoPermission, teamGroups)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'sub_nav': sub_nav, 'path': '.', 'title': title, 'repoPermission': repoPermission, 'memberUsers': memberUsers, 'teamGroups': teamGroups, 'PERMISSION_VIEW': PERMISSION.VIEW, 'memberUsers_without_grant': memberUsers_without_grant, 'teamGroups_without_grant': teamGroups_without_grant}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'sub_nav': sub_nav, 'path': '.', 'title': title, 'repoPermission': repoPermission, 'memberUsers': memberUsers, 'teamGroups': teamGroups, 'PERMISSION_VIEW': PERMISSION.VIEW, 'PERMISSION_VIEW_WITH_KEEP': PERMISSION.VIEW_WITH_KEEP, 'memberUsers_without_grant': memberUsers_without_grant, 'teamGroups_without_grant': teamGroups_without_grant}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, 'master'))
     return render_to_response('repo/permission.html',
                           response_dictionary,

@@ -17,7 +17,7 @@
         <div>
           <span>对于仓库的所有成员</span>
           <select class="global-permission-select" name="permission">
-            {% for key, value in PERMISSION_VIEW.items %}
+            {% for key, value in PERMISSION_VIEW_WITH_KEEP.items %}
               <option value="{{key}}"{%if repoPermission and key == repoPermission.global_permission%} selected="selected"{%endif%}>{{value}}</option>
             {% endfor %}
           </select>
