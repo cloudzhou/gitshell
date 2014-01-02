@@ -45,8 +45,12 @@ def http_auth(request):
             return HttpResponse(status=200)
         else:
             user = _http_authenticate_user(request)
-            if RepoManager.is_allowed_access_repo(repo, user, REPO_PERMISSION.WRITE):
-                return HttpResponse(status=200)
+            if 'git-receive-pack' in orgi_request_uri:
+                if RepoManager.is_allowed_access_repo(repo, user, REPO_PERMISSION.WRITE):
+                    return HttpResponse(status=200)
+            else:
+                if RepoManager.is_allowed_access_repo(repo, user, REPO_PERMISSION.READ_ONLY):
+                    return HttpResponse(status=200)
 
     except Exception, e:
         print e
@@ -115,7 +119,10 @@ def keyauth(request, fingerprint, command):
         teamMember = TeamManager.get_teamMember_by_teamUserId_userId(user.id, userpubkey.user_id)
         if repoMember or teamMember:
             pushUser = GsuserManager.get_user_by_id(userpubkey.user_id)
-            return response_full_git_command(quote, pre_command, pushUser, user, repo)
+            if 'git-receive-pack' in pre_command and RepoManager.is_allowed_access_repo(repo, pushUser, REPO_PERMISSION.WRITE):
+                return response_full_git_command(quote, pre_command, pushUser, user, repo)
+            elif RepoManager.is_allowed_access_repo(repo, pushUser, REPO_PERMISSION.READ_ONLY):
+                return response_full_git_command(quote, pre_command, pushUser, user, repo)
     return not_git_command()
 
 def _http_authenticate_name_password(request):
