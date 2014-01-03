@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
+from sets import Set
 from django.db import models
 from django.contrib.auth.models import User, UserManager
 from gitshell.objectscache.models import BaseModel
@@ -172,6 +173,11 @@ class TeamManager():
         for x in groupMembers:
             if x.member_user_id in userprofile_dict:
                 x.member_userprofile = userprofile_dict[x.member_user_id]
+        return groupMembers
+
+    @classmethod
+    def list_groupMember_by_teamUserId_memberUserId(self, team_user_id, member_user_id):
+        groupMembers = query(GroupMember, None, 'groupmember_l_teamUserId_memberUserId', [team_user_id, member_user_id])
         return groupMembers
 
     @classmethod
@@ -419,6 +425,43 @@ class TeamManager():
             permissionItem.save()
         return permissionItem
 
+    @classmethod
+    def get_repo_user_permission(self, repo, user):
+        # is the owner
+        if repo.user_id == user.id:
+            return PERMISSION.ADMIN
+        # is team member and is admin
+        teamMember = self.get_teamMember_by_teamUserId_userId(repo.user_id, user.id)
+        if teamMember and teamMember.has_admin_rights():
+            return PERMISSION.ADMIN
+        user_permission = PERMISSION.NONE
+        # if is_repo_member
+        from gitshell.repo.models import Repo, RepoManager
+        if RepoManager.is_repo_member(repo, user):
+            user_permission = PERMISSION.PUSH
+        # if team member
+        if teamMember:
+            user_permission = teamMember.permission
+            if teamMember.permission == PERMISSION.DEFAULT:
+                user_permission = self.get_team_globalPermission_by_userId(repo.user_id)
+        repoPermission = self.get_repoPermission_by_repoId(repo.id)
+        if repoPermission.global_permission in PERMISSION.VIEW:
+            user_permission = repoPermission.global_permission
+        for permissionItem in repoPermission.user_permission_set:
+            if permissionItem.user_id == user.id:
+                user_permission = permissionItem.permission
+        # it must be repo member
+        if not teamMember:
+            return user_permission
+        # group check
+        groupMembers = self.list_groupMember_by_teamUserId_memberUserId(repo.user_id, user.id)
+        groupIdSet = Set([x.group_id for x in groupMembers])
+        # if group_permission_set limit
+        for permissionItem in repoPermission.group_permission_set:
+            if permissionItem.group_id in groupIdSet and permissionItem.permission < user_permission:
+                user_permission = permissionItem.permission
+        return user_permission
+
     # other
     @classmethod
     def get_current_user(self, user, userprofile):
@@ -435,7 +478,6 @@ class TeamManager():
 
 class PERMISSION:
 
-    KEEP = -2
     NONE = -1
     DEFAULT = 0
     PULL = 1

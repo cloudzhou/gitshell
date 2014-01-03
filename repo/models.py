@@ -9,7 +9,7 @@ from gitshell.objectscache.da import query, query_first, queryraw, execute, coun
 from gitshell.settings import REPO_PATH, GIT_BARE_REPO_PATH, DELETE_REPO_PATH
 from gitshell.gsuser.models import GsuserManager
 from gitshell.feed.feed import FeedAction
-from gitshell.team.models import TeamManager
+from gitshell.team.models import TeamManager, PERMISSION
 
 KEEP_REPO_NAME = ['active', 'watch', 'recommend', 'repo']
 
@@ -433,8 +433,8 @@ class RepoManager():
     def is_allowed_access_repo(self, repo, user, repoPermission):
         if repo is None or user is None:
             return False
-        is_owner_or_teamAdmin = self.is_owner_or_teamAdmin(repo, user)
-        if is_owner_or_teamAdmin:
+        user_permission = TeamManager.get_repo_user_permission(repo, user)
+        if user_permission == PERMISSION.ADMIN:
             return True
         if repoPermission == REPO_PERMISSION.WEB_VIEW:
             if repo.auth_type != 2:
@@ -442,13 +442,7 @@ class RepoManager():
         elif repoPermission == REPO_PERMISSION.READ_ONLY:
             if repo.auth_type == 0:
                 return True
-        elif repoPermission == REPO_PERMISSION.WRITE:
-            pass
-        elif repoPermission == REPO_PERMISSION.ADMIN:
-            pass
-        memberUsers = self.list_repo_team_memberUser(repo.id)
-        memberUser_id_set = Set([x.id for x in memberUsers])
-        if user.id and user.id in memberUser_id_set:
+        if user_permission >= repoPermission:
             return True
         return False
 

@@ -196,6 +196,8 @@ rawsql = {
         'select * from team_teamgroup where visibly = 0 and team_user_id = %s and name = %s limit 0, 1',
     'groupmember_l_groupId':
         'select * from team_groupmember where visibly = 0 and group_id = %s order by modify_time desc limit 0, 1000',
+    'groupmember_l_teamUserId_memberUserId':
+        'select * from team_groupmember where visibly = 0 and team_user_id = %s and member_user_id = %s limit 0, 1000',
     'groupmember_s_groupId_memberUserId':
         'select * from team_groupmember where visibly = 0 and group_id = %s and member_user_id = %s limit 0, 1',
     'repopermission_s_repoId':
