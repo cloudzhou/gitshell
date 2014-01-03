@@ -301,8 +301,6 @@ class TeamManager():
 
     @classmethod
     def grant_repo_global_permission(self, repo_id, permission):
-        if permission not in PERMISSION.VIEW_WITH_KEEP:
-            return None
         repoPermission = self.get_repoPermission_by_repoId(repo_id)
         if not repoPermission:
             repoPermission = RepoPermission(repo_id=repo_id)
@@ -447,14 +445,6 @@ class PERMISSION:
     VIEW_WITHOUT_ADMIN = {
         1: u'只读权限(pull)',
         2: u'读写权限(pull+push)',
-    }
-    VIEW_WITH_KEEP = {
-        -2: u'成员默认权限',
-        -1: u'没有任何权限',
-        0: u'默认权限',
-        1: u'只读权限(pull)',
-        2: u'读写权限(pull+push)',
-        3: u'管理权限(admin)',
     }
     VIEW = {
         -1: u'没有任何权限',
