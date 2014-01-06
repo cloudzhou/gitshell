@@ -10,7 +10,7 @@
     <p class="note"><a href="#desc">常见使用说明</a></p>
   </div>
 
-  <p>1 全局权限控制</p>
+  <p>全局权限控制</p>
   <div class="global-permission">
     {% if repoPermission.global_permission in PERMISSION_VIEW %}
     <ul class="permission">
@@ -37,45 +37,8 @@
     {% endif %}
   </div>
 
-  <p>2 用户权限控制</p>
-  <div class="user-permission">
-    {% if repoPermission %}
-    <ul class="permission">
-      {% for permissionItem in repoPermission.user_permission_set %}
-        <li>
-          <div>
-            {{ permissionItem.userprofile.username }}
-            <select class="user-permission-select" data-user-id="{{permissionItem.userprofile.id}}" name="permission">
-            {% for key, value in PERMISSION_VIEW.items %}
-              <option value="{{key}}"{%if key == permissionItem.permission%} selected="selected"{%endif%}>{{value}}</option>
-            {% endfor %}
-            </select>
-            <button class="remove-user-permission-button" data-item-id="{{permissionItem.id}}">删除</button>
-          </div>
-        </li>
-      {%endfor%}
-    </ul>
-    {% endif %}
-    {% if memberUsers_without_grant %}
-    <div>
-      <span>设置用户权限</span>
-      <select id="grant-user">
-        {% for memberUser in memberUsers_without_grant %}
-          <option value="{{memberUser.id}}">{{memberUser.username}}</option>
-        {% endfor %}
-      </select>
-      <select id="grant-user-permission">
-        {% for key, value in PERMISSION_VIEW.items %}
-          <option value="{{key}}">{{value}}</option>
-        {% endfor %}
-      </select>
-      <button id="grant-user-button">确定</button>
-    </div>
-    {% endif %}
-  </div>
-
   {% if teamGroups %}
-  <p>3 群组权限控制</p>
+  <p>群组权限控制</p>
   <div class="group-permission">
     {% if repoPermission %}
     <ul class="permission">
@@ -112,6 +75,43 @@
     {% endif %}
   </div>
   {% endif %}
+
+  <p>用户权限控制</p>
+  <div class="user-permission">
+    {% if repoPermission %}
+    <ul class="permission">
+      {% for permissionItem in repoPermission.user_permission_set %}
+        <li>
+          <div>
+            {{ permissionItem.userprofile.username }}
+            <select class="user-permission-select" data-user-id="{{permissionItem.userprofile.id}}" name="permission">
+            {% for key, value in PERMISSION_VIEW.items %}
+              <option value="{{key}}"{%if key == permissionItem.permission%} selected="selected"{%endif%}>{{value}}</option>
+            {% endfor %}
+            </select>
+            <button class="remove-user-permission-button" data-item-id="{{permissionItem.id}}">删除</button>
+          </div>
+        </li>
+      {%endfor%}
+    </ul>
+    {% endif %}
+    {% if memberUsers_without_grant %}
+    <div>
+      <span>设置用户权限</span>
+      <select id="grant-user">
+        {% for memberUser in memberUsers_without_grant %}
+          <option value="{{memberUser.id}}">{{memberUser.username}}</option>
+        {% endfor %}
+      </select>
+      <select id="grant-user-permission">
+        {% for key, value in PERMISSION_VIEW.items %}
+          <option value="{{key}}">{{value}}</option>
+        {% endfor %}
+      </select>
+      <button id="grant-user-button">确定</button>
+    </div>
+    {% endif %}
+  </div>
 
   <div id="desc">
     <pre>
