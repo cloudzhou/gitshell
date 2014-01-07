@@ -1,13 +1,9 @@
-{% extends "repo/repo.html" %}
-
-{% block subcontainer %}
+{% extends "repo/settings_base.html" %}
+{% block settingcontainer %}
 <div class="collaborator network inner bubble">
-  <ul class="breadcrumb">
-    <li><a href="/{{user_name}}/{{repo_name}}/settings/"><i>&larr;</i>返回设置</a></li>
-  </ul>
   <div class="header">
-    <h1 class="heading">仓库成员列表</h1>
-    <p class="note">所有成员对仓库有完全的读写权限</p>
+    <h1 class="heading">成员列表</h1>
+    <p class="note">所有成员默认对仓库有读写权限</p>
     <div class="extra">
       <a href="javascript:;" id="add_member_tip" class="btn btn-mini"><i class="icon-plus-sign"></i>添加新成员</a>
       <span id="alert" class="alert alert-error hide"></span>
@@ -67,7 +63,7 @@
         var username_or_email = $('#username_or_email').attr('value');
         $.post('/{{user_name}}/{{repo_name}}/settings/member/add/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'username_or_email': username_or_email}, function(json){
             if(json.code == 200) {
-                window.location.href = window.location.href;
+                window.location.reload(true);
             } else if(json.code == 301) {
                 $('#alert').text(json.message);
                 $('#alert').show().delay(3000).fadeOut();
@@ -79,8 +75,12 @@
     $('.remove_member').click(function(event) {
         var username = $(this).attr('value');
         $.post('/{{user_name}}/{{repo_name}}/settings/member/remove/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'username': username}, function(json){
-            window.location.href = window.location.href;
+            window.location.reload(true);
         });
+    });
+    $('.unixtime').each(function(index){ 
+      $(this).html(moment(new Date($(this).html()*1000)).fromNow());
+      $(this).show();
     });
   });
 </script>

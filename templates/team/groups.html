@@ -2,27 +2,22 @@
 
 {% block container-right %}
 <h2 class="heading">团队组</h2>
-<table class="table team">
-  <tbody>
-    {% for teamGroup in teamGroups %}
-    <tr class="team-group">
-      <td class="name">
-        <img src="/static/img/teamavatar.png" alt="{{teamGroup.name}}">
-        <a href="/{{teamUser.username}}/-/settings/group/{{teamGroup.id}}/">{{teamGroup.name}}</a>
-      </td>
-      <td class="rights">
-      </td>
-      <td>
+{% for teamGroup in teamGroups %}
+    <div class="team team-group">
         <div class="hide actions">
           <a href="javascript:;" data-id="{{teamGroup.id}}" class="remove-team-group btn btn-mini">删除</a>
         </div>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-  <p class="add-group"><input id="add-group" placeholder="添加新的组名，只允许[ 0-9a-zA-Z_-]之内的字符"/><button class="add-team-group btn">添加新组</button></p>
-  <span id="alert" class="info hide"></span>
+        <div class="group-name">
+            <img src="/static/img/teamavatar.png" alt="{{teamGroup.name}}">
+            <a href="/{{teamUser.username}}/-/settings/group/{{teamGroup.id}}/">{{teamGroup.name}}</a>
+        </div>
+    </div>
+{% endfor %}
+<div class="add-group">
+    <input id="add-group" class="input-large" type="text" placeholder="添加新的组名，只允许[ 0-9a-zA-Z_-]之内的字符"/>
+    <button class="add-team-group btn">添加新组</button>
+</div>
+<span id="alert" class="info hide"></span>
 {% endblock %}
 
 {% block js %}

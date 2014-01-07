@@ -1,44 +1,15 @@
-{% extends "repo/repo.html" %}
-
-{% block container %}
-<div class="content">
-  <div class="container">
-    <div class="delete-repo inner bubble">
-      <h1 class="heading">删除仓库</h1>
-      <p class="alert alert-info">你正在删除仓库 <em>{{repo_name}}</em>, 这是<em>不可恢复</em>的操作</p>
+{% extends "repo/settings_base.html" %}
+{% block settingcontainer %}
+    <div class="delete" id="repoDestroy">
+      <h3 class="heading">删除仓库</h3>
+      <p class="alert alert-danger"><i class="icon-exclamation-sign"></i>你正在删除仓库 <em>{{repo_name}}</em>, 这是<em>不可恢复</em>的操作</p>
       <dl class="notice">
         <dt class="leader">删除仓库之前最好想到以下问题:</dt>
-        <dd class="well">
-        对应数据是否备份<br>
-        是否要通知相关的合作者<br>
-        相关的仓库成员组织，问题，文档都将不见<br>
-        </dd>
+        <dd class="well">对应数据是否备份<br>是否要通知相关的合作者<br>相关的仓库成员组织，问题，文档都将不见<br></dd>
       </dl>
       <form method="POST">
         {% csrf_token %} 
-        <button class="btn btn-large btn-danger" type="submit">我确定要删除这个仓库</button>
+        <input class="btn btn-large btn-danger" type="submit" value="确定删除">
       </form>
     </div>
-  </div>
-{% endblock %}
-{% block js %}
-<script>
-$(function(){
-    if(window.location.hash) {
-        $(window).scrollTop($(window).scrollTop() - 50);
-    }
-    $(document.body).delegate("a","click",function(){
-        var hrefStr = $(this).attr("href");
-        var reg = /.*#[a-z_A-Z]+$/;
-        var isHash= reg.test(hrefStr);
-        if(isHash){
-            var hashStr =$(this).attr('href'); 
-            var hashIds = hashStr.match(/#[a-z_A-Z]+$/);
-            var pos = $(hashIds[0]).offset();
-            $(window).scrollTop(pos.top - 50);
-            return false;
-        }
-    });
-});
-</script>
 {% endblock %}

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-  
 from django.http import Http404
 from django.http import HttpResponseRedirect
 from django.utils.http import urlquote
@@ -18,6 +19,8 @@ def repo_view_permission_check(function):
             # half private, code is keep
             is_allowed_access_repo = RepoManager.is_allowed_access_repo(repo, request.user, REPO_PERMISSION.WEB_VIEW)
             if not is_allowed_access_repo:
+                if request.method == 'POST':
+                    return json_failed(403, u'没有管理权限')
                 return HttpResponseRedirect('/help/error/repo_permission_denied/')
         if request.user.is_authenticated():
             feedAction = FeedAction()
@@ -40,6 +43,8 @@ def repo_admin_permission_check(function):
                 return HttpResponseRedirect('/login/?next=' + urlquote(request.path))
             is_allowed_access_repo = RepoManager.is_allowed_access_repo(repo, request.user, REPO_PERMISSION.ADMIN)
             if not is_allowed_access_repo:
+                if request.method == 'POST':
+                    return json_failed(403, u'没有管理权限')
                 return HttpResponseRedirect('/help/error/repo_permission_denied/')
         if request.user.is_authenticated():
             feedAction = FeedAction()
@@ -62,6 +67,8 @@ def repo_source_permission_check(function):
                 return HttpResponseRedirect('/login/?next=' + urlquote(request.path))
             is_allowed_access_repo = RepoManager.is_allowed_access_repo(repo, request.user, REPO_PERMISSION.READ_ONLY)
             if not is_allowed_access_repo:
+                if request.method == 'POST':
+                    return json_failed(403, u'没有管理权限')
                 return HttpResponseRedirect('/help/error/repo_permission_denied/')
         if request.user.is_authenticated():
             feedAction = FeedAction()

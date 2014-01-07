@@ -1,0 +1,93 @@
+{% extends "repo/settings_base.html" %}
+{% block settingcontainer %}
+    <div class="active" id="details">
+      <form class="form-horizontal" method="post">
+        {% csrf_token %}
+        <div class="controls hide">{{ repoForm.username }}</div>
+        <div class="control-group">
+          <label for="id_name" class="control-label">仓库名称</label>
+          <div class="controls">
+            {{ repoForm.name }}
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="id_desc" class="control-label">简介</label>
+          <div class="controls">
+            {{ repoForm.desc }}
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="id_lang" class="control-label">语言选择</label>
+          <div class="controls">
+            {{ repoForm.lang }}
+          </div>
+        </div>
+        <div id="id_other_lang_group" class="control-group" style="display: none">
+          <label for="id_other_lang" class="control-label">其他语言</label>
+          <div class="controls">
+            <input type="text" maxlength="16" value="" name="other_lang" id="id_other_lang" class="input-xlarge" placeholder="哇！难道你发明了新的语言:-)">
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="id_auth_type" class="control-label">可见度</label>
+          <div class="controls">
+            <div>
+              {% for auth_type in repoForm.auth_type %}
+              <span class="option">
+                {{auth_type}}
+              </span>
+              {% endfor %}
+              <span class="text-warning"><b>半公开</b>指仅仅源代码不公开</span>
+            </div>
+          </div>
+        </div>
+        <div id="id_error" class="alert {% if not error %}hide{% endif %}">
+          <a data-dismiss="alert" class="close">×</a>
+          <strong>出错了！</strong> <span id="id_error_message">{{ error }}</span>
+        </div>
+        <div class="control-group">
+          <div class="controls form-actions">
+            <button id="id_edit_submit" class="btn btn-primary" type="submit">确定</button>
+          </div>
+        </div>
+      </form>
+    </div>
+{% endblock %}
+{% block subjs %}
+<script>
+  $(function(){
+    var edit_init = function() {
+      $('#id_name').addClass('input-xlarge');
+      $('#id_desc').addClass('input-xlarge');
+      $('#id_lang').addClass('input-xlarge');
+      $('#id_name').attr('readonly', 'readonly');
+      $('#id_desc').attr('placeholder', '必填，提供什么功能，解决什么问题');
+    },
+        change_other_lang = function() {
+          if($('#id_lang option:selected').val() == 'other') {
+            $('#id_other_lang_group').show();
+          } else {
+            $('#id_other_lang_group').hide();
+          }
+        };
+    $('#id_lang').click(change_other_lang);
+    edit_init();
+    $('#id_edit_submit').click(function() {
+      var error_messages = [];
+      if($('#id_name').val() == '' || !$('#id_name').val().match(/[A-Za-z0-9_-]+/g)) {
+        error_messages.push('仓库名不能为空，只能是[A-Za-z0-9_-]以内的字符');
+      }
+      if($('#id_desc').val() == '') {
+        error_messages.push('介绍内容不能为空');
+      }
+      if(error_messages.length != 0) {
+        $('#id_error_message').html(error_messages.join('， '));
+        $('#id_error').show();
+        return false;
+      }
+      return true;
+    });
+
+  });
+</script>
+{% endblock %}

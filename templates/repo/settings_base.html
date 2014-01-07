@@ -1,0 +1,19 @@
+{% extends "repo/repo.html" %}
+{% block subcontainer %}
+<div class="settings inner bubble clearfix">
+  <h2>仓库设置</h2>
+  <div class="sidebar">
+    <ul class="nav nav-list nav-tabs nav-tabs-vertical">
+      <li{%if subnav == 'detail'%} class="active"{%endif%}><a href="/{{user_name}}/{{repo_name}}/settings/detail/">基本信息</a></li>
+      <li{%if subnav == 'members'%} class="active"{%endif%}><a href="/{{user_name}}/{{repo_name}}/settings/members/">协同成员</a></li>
+      <li{%if subnav == 'permission'%} class="active"{%endif%}><a href="/{{user_name}}/{{repo_name}}/settings/permission/">权限控制</a></li>
+      <li{%if subnav == 'hooks'%} class="active"{%endif%}><a href="/{{user_name}}/{{repo_name}}/settings/hooks/">服务钩子</a></li>
+      <li{%if subnav == 'advance'%} class="active"{%endif%}><a href="/{{user_name}}/{{repo_name}}/settings/advance/">高级设置</a></li>
+      <li{%if subnav == 'delete'%} class="active"{%endif%}><a href="/{{user_name}}/{{repo_name}}/settings/delete/">删除仓库</a></li>
+    </ul>
+  </div>
+  <div class="primary tab-content">
+    {% block settingcontainer %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

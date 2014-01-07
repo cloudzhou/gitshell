@@ -1,21 +1,17 @@
-{% extends "repo/repo.html" %}
+{% extends "repo/settings_base.html" %}
 
-{% block subcontainer %}
+{% block settingcontainer %}
 <div class="hooks inner bubble">
-  <ul class="breadcrumb">
-    <li><a href="/{{user_name}}/{{repo_name}}/settings/"><i>&larr;</i>返回设置</a></li>
-  </ul>
   <div class="header">
     <h1 class="heading">权限控制</h1>
     <p class="note"><a href="#desc">常见使用说明</a></p>
   </div>
 
-  <p>全局权限控制</p>
+  <h2>全局权限控制</h2>
   <div class="global-permission">
     {% if repoPermission.global_permission in PERMISSION_VIEW %}
     <ul class="permission">
       <li>
-        <div>
           <span>对于仓库的所有成员</span>
           <select class="global-permission-select" name="permission">
             {% for key, value in PERMISSION_VIEW.items %}
@@ -23,7 +19,6 @@
             {% endfor %}
           </select>
           <button class="remove-global-permission-button">删除</button>
-        </div>
       </li>
     </ul>
     {% else %}
@@ -38,13 +33,12 @@
   </div>
 
   {% if teamGroups %}
-  <p>群组权限控制</p>
+  <h2>群组权限控制</h2>
   <div class="group-permission">
     {% if repoPermission %}
     <ul class="permission">
       {% for permissionItem in repoPermission.group_permission_set %}
         <li>
-          <div>
             {{ permissionItem.group.name }}
             <select class="group-permission-select" data-group-id="{{permissionItem.group.id}}" name="permission">
             {% for key, value in PERMISSION_VIEW.items %}
@@ -52,7 +46,6 @@
             {% endfor %}
             </select>
             <button class="remove-group-permission-button" data-item-id="{{permissionItem.id}}">删除</button>
-          </div>
         </li>
       {%endfor%}
     </ul>
@@ -76,13 +69,12 @@
   </div>
   {% endif %}
 
-  <p>用户权限控制</p>
+  <h2>用户权限控制</h2>
   <div class="user-permission">
     {% if repoPermission %}
     <ul class="permission">
       {% for permissionItem in repoPermission.user_permission_set %}
         <li>
-          <div>
             {{ permissionItem.userprofile.username }}
             <select class="user-permission-select" data-user-id="{{permissionItem.userprofile.id}}" name="permission">
             {% for key, value in PERMISSION_VIEW.items %}
@@ -90,7 +82,6 @@
             {% endfor %}
             </select>
             <button class="remove-user-permission-button" data-item-id="{{permissionItem.id}}">删除</button>
-          </div>
         </li>
       {%endfor%}
     </ul>

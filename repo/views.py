@@ -116,8 +116,6 @@ def raw_blob(request, user_name, repo_name, refs, path):
 def ls_tree(request, user_name, repo_name, refs, path, current, render_method):
     title = u'%s / %s' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
     refs = _get_current_refs(request.user, repo, refs, True)
     if path is None or path == '':
         path = '.'
@@ -182,8 +180,6 @@ def _blob(request, user_name, repo_name, refs, path, render_method):
 def commit(request, user_name, repo_name, commit_hash):
     title = u'%s / %s / hash:%s' % (user_name, repo_name, commit_hash)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
     refs = _get_current_refs(request.user, repo, None, True)
     path = '.'; current = 'commits'
     gitHandler = GitHandler()
@@ -207,8 +203,6 @@ def commits_default(request, user_name, repo_name):
 def commits(request, user_name, repo_name, refs, path):
     title = u'%s / %s / 提交历史' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
     refs = _get_current_refs(request.user, repo, refs, True)
     if path is None or path == '':
         path = '.'
@@ -227,8 +221,6 @@ def commits(request, user_name, repo_name, refs, path):
 def commits_log(request, user_name, repo_name, from_commit_hash, to_commit_hash):
     title = u'%s / %s / 提交历史' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
     refs_meta = gitHandler.repo_ls_refs(repo, abs_repopath)
@@ -250,8 +242,6 @@ def branches_default(request, user_name, repo_name):
 def branches(request, user_name, repo_name, refs):
     title = u'%s / %s / 分支' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
     refs = _get_current_refs(request.user, repo, refs, True)
     response_dictionary = {'mainnav': 'repo', 'current': 'branches', 'title': title}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
@@ -267,8 +257,6 @@ def tags_default(request, user_name, repo_name):
 def tags(request, user_name, repo_name, refs):
     title = u'%s / %s / 标签' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
     refs = _get_current_refs(request.user, repo, refs, True)
     response_dictionary = {'mainnav': 'repo', 'current': 'tags', 'title': title}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
@@ -288,8 +276,6 @@ def compare_master(request, user_name, repo_name, refs):
 def compare_commit(request, user_name, repo_name, from_refs, to_refs):
     title = u'%s / %s / 比较 %s vs %s' % (user_name, repo_name, from_refs, to_refs)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
     refs = _get_current_refs(request.user, repo, None, True)
     gitHandler = GitHandler()
     abs_repopath = repo.get_abs_repopath()
@@ -324,8 +310,6 @@ def merge(request, user_name, repo_name, source_refs, desc_refs):
 def pulls(request, user_name, repo_name):
     title = u'%s / %s / 合并请求' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
     refs = _get_current_refs(request.user, repo, None, True); path = '.'
     pullRequests = RepoManager.list_pullRequest_by_descRepoId(repo.id)
     response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'title': title, 'path': path, 'pullRequests': pullRequests}
@@ -338,8 +322,6 @@ def pulls(request, user_name, repo_name):
 @repo_view_permission_check
 def pull_new_default(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
     source_username = user_name
     source_refs = 'master'
     desc_username = user_name
@@ -401,8 +383,6 @@ def pull_new(request, user_name, repo_name, desc_username, desc_refs, source_use
 @repo_view_permission_check
 def pull_show(request, user_name, repo_name, pullRequest_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
     refs = _get_current_refs(request.user, repo, None, True); path = '.'
     pullRequest = RepoManager.get_pullRequest_by_repoId_id(repo.id, pullRequest_id)
     
@@ -599,7 +579,7 @@ def members(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
         raise Http404
-    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'members'
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'settings'
     user_id = request.user.id
     member_ids = [o.user_id for o in RepoManager.list_repomember(repo.id)]
     member_ids.insert(0, repo.user_id)
@@ -608,7 +588,7 @@ def members(request, user_name, repo_name):
         member_ids.insert(0, user_id)
     merge_user_map = GsuserManager.map_users(member_ids)
     members_vo = [merge_user_map[o] for o in member_ids]
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'title': title, 'members_vo': members_vo}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'subnav': 'members', 'path': path, 'title': title, 'members_vo': members_vo}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/members.html',
                           response_dictionary,
@@ -618,8 +598,6 @@ def members(request, user_name, repo_name):
 @require_http_methods(["POST"])
 def add_member(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
-        return json_failed(403, u'没有相关权限')
     username_or_email = request.POST.get('username_or_email').strip()
     user = None
     if '@' in username_or_email:
@@ -650,8 +628,6 @@ def add_member(request, user_name, repo_name):
 @require_http_methods(["POST"])
 def remove_member(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
-        return json_failed(403, u'没有相关权限')
     username = request.POST.get('username')
     user = GsuserManager.get_user_by_name(username)
     RepoManager.remove_member(repo, user)
@@ -743,17 +719,16 @@ def stats(request, user_name, repo_name):
                           response_dictionary,
                           context_instance=RequestContext(request))
 
-@repo_admin_permission_check
 def settings(request, user_name, repo_name):
+    return detail(request, user_name, repo_name)
+
+@repo_admin_permission_check
+def detail(request, user_name, repo_name):
     title = u'%s / %s / 设置' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None:
-        raise Http404
-    if repo.user_id != request.user.id and not TeamManager.get_teamMember_by_teamUserId_userId(repo.user_id, request.user.id):
-        raise Http404
     refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'settings'; error = u''
     repoForm = RepoForm(instance = repo)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'title': title, 'repoForm': repoForm, 'error': error}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'subnav': 'detail', 'path': path, 'title': title, 'repoForm': repoForm, 'error': error}
     if request.method == 'POST':
         repoForm = RepoForm(request.POST, instance = repo)
         if not repoForm.is_valid():
@@ -773,7 +748,7 @@ def settings(request, user_name, repo_name):
             repo.dropbox_url = dropbox_url
             repo.save()
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
-    return render_to_response('repo/settings.html',
+    return render_to_response('repo/detail.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
 
@@ -781,8 +756,6 @@ def settings(request, user_name, repo_name):
 @require_http_methods(["POST"])
 def generate_deploy_url(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
-        return json_httpResponse({'result': 'failed'})
     random_hash = '%032x' % random.getrandbits(128)
     repo.deploy_url = random_hash
     repo.save()
@@ -792,8 +765,6 @@ def generate_deploy_url(request, user_name, repo_name):
 @require_http_methods(["POST"])
 def forbid_dploy_url(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
-        return json_httpResponse({'result': 'failed'})
     repo.deploy_url = ''
     repo.save()
     return json_httpResponse({'result': 'success'})
@@ -802,8 +773,6 @@ def forbid_dploy_url(request, user_name, repo_name):
 @require_http_methods(["POST"])
 def enable_dropbox_sync(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
-        return json_httpResponse({'result': 'failed'})
     repo.dropbox_sync = 1
     repo.last_push_time = datetime.now()
     if repo.dropbox_url is None or repo.dropbox_url == '':
@@ -816,8 +785,6 @@ def enable_dropbox_sync(request, user_name, repo_name):
 @require_http_methods(["POST"])
 def disable_dropbox_sync(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
-        return json_httpResponse({'result': 'failed'})
     repo.dropbox_sync = 0
     repo.last_push_time = datetime.now()
     repo.save()
@@ -826,13 +793,13 @@ def disable_dropbox_sync(request, user_name, repo_name):
 @repo_admin_permission_check
 def permission(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    current = 'settings'; sub_nav = 'permission'; title = u'%s / %s / 设置 / 权限控制' % (user_name, repo_name)
+    current = 'settings'; subnav = 'permission'; title = u'%s / %s / 设置 / 权限控制' % (user_name, repo_name)
     repoPermission = TeamManager.get_repoPermission_by_repoId(repo.id)
     memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
     teamGroups = TeamManager.list_teamGroup_by_teamUserId(repo.user_id)
     memberUsers_without_grant = _list_memberUsers_without_grant(repoPermission, memberUsers)
     teamGroups_without_grant = _list_teamGroups_without_grant(repoPermission, teamGroups)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'sub_nav': sub_nav, 'path': '.', 'title': title, 'repoPermission': repoPermission, 'memberUsers': memberUsers, 'teamGroups': teamGroups, 'PERMISSION_VIEW': PERMISSION.VIEW, 'memberUsers_without_grant': memberUsers_without_grant, 'teamGroups_without_grant': teamGroups_without_grant}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'subnav': subnav, 'path': '.', 'title': title, 'repoPermission': repoPermission, 'memberUsers': memberUsers, 'teamGroups': teamGroups, 'PERMISSION_VIEW': PERMISSION.VIEW, 'memberUsers_without_grant': memberUsers_without_grant, 'teamGroups_without_grant': teamGroups_without_grant}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, 'master'))
     return render_to_response('repo/permission.html',
                           response_dictionary,
@@ -879,8 +846,8 @@ def permission_grant(request, user_name, repo_name):
 @repo_admin_permission_check
 def branches_permission(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    current = 'settings'; sub_nav = 'branches_permission'; title = u'%s / %s / 设置 / 分支权限控制' % (user_name, repo_name)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'sub_nav': sub_nav, 'path': '.', 'title': title}
+    current = 'settings'; subnav = 'branches_permission'; title = u'%s / %s / 设置 / 分支权限控制' % (user_name, repo_name)
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'subnav': subnav, 'path': '.', 'title': title}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, 'master'))
     return render_to_response('repo/branches_permission.html',
                           response_dictionary,
@@ -889,13 +856,13 @@ def branches_permission(request, user_name, repo_name):
 @repo_admin_permission_check
 def branch_permission(request, user_name, repo_name, branch):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    current = 'settings'; sub_nav = 'branch_permission'; title = u'%s / %s / 设置 / 分支权限控制 / %s' % (user_name, repo_name, branch)
+    current = 'settings'; subnav = 'branch_permission'; title = u'%s / %s / 设置 / 分支权限控制 / %s' % (user_name, repo_name, branch)
     branchPermission = TeamManager.get_branchPermission_by_repoId_refname(repo.id, branch)
     memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
     teamGroups = TeamManager.list_teamGroup_by_teamUserId(repo.user_id)
     memberUsers_without_grant = _list_branch_memberUsers_without_grant(branchPermission, branch, memberUsers)
     teamGroups_without_grant = _list_branch_teamGroups_without_grant(branchPermission, branch, teamGroups)
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'sub_nav': sub_nav, 'path': '.', 'title': title, 'branch': branch, 'branchPermission': branchPermission, 'memberUsers': memberUsers, 'teamGroups': teamGroups, 'PERMISSION_VIEW_WITHOUT_ADMIN': PERMISSION.VIEW_WITHOUT_ADMIN, 'memberUsers_without_grant': memberUsers_without_grant, 'teamGroups_without_grant': teamGroups_without_grant}
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'subnav': subnav, 'path': '.', 'title': title, 'branch': branch, 'branchPermission': branchPermission, 'memberUsers': memberUsers, 'teamGroups': teamGroups, 'PERMISSION_VIEW_WITHOUT_ADMIN': PERMISSION.VIEW_WITHOUT_ADMIN, 'memberUsers_without_grant': memberUsers_without_grant, 'teamGroups_without_grant': teamGroups_without_grant}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, 'master'))
     return render_to_response('repo/branch_permission.html',
                           response_dictionary,
@@ -1324,11 +1291,9 @@ def list_github_repos(request):
 def hooks(request, user_name, repo_name):
     error = u''; title = u'%s / %s / 钩子' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
-        raise Http404
     webHookURLs = RepoManager.list_webHookURL_by_repoId(repo.id)
-    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'hooks'
-    response_dictionary = {'mainnav': 'repo', 'current': current, 'path': path, 'title': title, 'webHookURLs': webHookURLs}
+    refs = _get_current_refs(request.user, repo, None, True); path = '.'; current = 'settings'
+    response_dictionary = {'mainnav': 'repo', 'current': current, 'subnav': 'hooks', 'path': path, 'title': title, 'webHookURLs': webHookURLs}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/hooks.html',
                           response_dictionary,
@@ -1338,8 +1303,6 @@ def hooks(request, user_name, repo_name):
 @require_http_methods(["POST"])
 def add_web_hook_url(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
-        return json_httpResponse({'code': 403, 'result': 'failed', 'message': u'没有相关权限'})
     url = request.POST.get('url', '')
     if not __is_url_valid(url):
         return json_httpResponse({'code': 500, 'result': 'failed', 'message': u'url 不符合规范'})
@@ -1354,8 +1317,6 @@ def add_web_hook_url(request, user_name, repo_name):
 @require_http_methods(["POST"])
 def enable_web_hook_url(request, user_name, repo_name, hook_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
-        return json_httpResponse({'code': 403, 'result': 'failed', 'message': u'没有相关权限'})
     webHookURL = RepoManager.get_webHookURL_by_id(hook_id)
     if webHookURL.repo_id != repo.id:
         return json_httpResponse({'code': 403, 'result': 'failed', 'message': u'没有相关权限'})
@@ -1367,8 +1328,6 @@ def enable_web_hook_url(request, user_name, repo_name, hook_id):
 @require_http_methods(["POST"])
 def disable_web_hook_url(request, user_name, repo_name, hook_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
-        return json_httpResponse({'code': 403, 'result': 'failed', 'message': u'没有相关权限'})
     webHookURL = RepoManager.get_webHookURL_by_id(hook_id)
     if webHookURL.repo_id != repo.id:
         return json_httpResponse({'code': 403, 'result': 'failed', 'message': u'没有相关权限'})
@@ -1380,8 +1339,6 @@ def disable_web_hook_url(request, user_name, repo_name, hook_id):
 @require_http_methods(["POST"])
 def remove_web_hook_url(request, user_name, repo_name, hook_id):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
-        return json_httpResponse({'code': 403, 'result': 'failed', 'message': u'没有相关权限'})
     webHookURL = RepoManager.get_webHookURL_by_id(hook_id)
     if webHookURL.repo_id != repo.id:
         return json_httpResponse({'code': 403, 'result': 'failed', 'message': u'没有相关权限'})
@@ -1390,17 +1347,24 @@ def remove_web_hook_url(request, user_name, repo_name, hook_id):
     return json_httpResponse({'code': 200, 'result': 'success', 'message': u'删除成功'})
 
 @repo_admin_permission_check
+def advance(request, user_name, repo_name):
+    error = u''; title = u'%s / %s / 高级设置' % (user_name, repo_name)
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    response_dictionary = {'mainnav': 'repo', 'current': 'settings', 'subnav': 'advance', 'user_name': user_name, 'repo_name': repo_name, 'title': title, 'repo': repo}
+    return render_to_response('repo/advance.html',
+                          response_dictionary,
+                          context_instance=RequestContext(request))
+    
+@repo_admin_permission_check
 def delete(request, user_name, repo_name):
     error = u''; title = u'%s / %s / 删除仓库！' % (user_name, repo_name)
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
-    if repo is None or repo.user_id != request.user.id:
-        raise Http404
     user = GsuserManager.get_user_by_name(user_name)
     userprofile = GsuserManager.get_userprofile_by_name(user_name)
     if request.method == 'POST':
         RepoManager.delete_repo(user, userprofile, repo)
         return HttpResponseRedirect('/%s/-/repo/' % request.user.username)
-    response_dictionary = {'mainnav': 'repo', 'user_name': user_name, 'repo_name': repo_name, 'error': error, 'title': title}
+    response_dictionary = {'mainnav': 'repo', 'current': 'settings', 'subnav': 'delete', 'user_name': user_name, 'repo_name': repo_name, 'error': error, 'title': title}
     return render_to_response('repo/delete.html',
                           response_dictionary,
                           context_instance=RequestContext(request))
