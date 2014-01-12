@@ -445,6 +445,8 @@ class TeamManager():
             user_permission = teamMember.permission
             if teamMember.permission == PERMISSION.DEFAULT:
                 user_permission = self.get_team_globalPermission_by_userId(repo.user_id)
+        if not repoPermission:
+            return user_permission
         # 1 global_permission check
         if repoPermission.global_permission != 0 and repoPermission.global_permission in PERMISSION.VIEW:
             user_permission = repoPermission.global_permission
