@@ -184,7 +184,7 @@ def _fillwith_push_revref(request, feeds):
             continue
         repo = RepoManager.get_repo_by_id(push_revref.repo_id)
         if repo and repo.auth_type == 2:
-            if not request.user.is_authenticated() or not RepoManager.is_allowed_read_access_repo(repo, request.user):
+            if not request.user.is_authenticated() or not RepoManager.is_allowed_view_access_repo(repo, request.user):
                 continue
         push_revref.commits = RepoManager.list_commit_by_repoId_pushrevrefId(push_revref.repo_id, push_revref.id, 0, 10)
         feed.relative_obj = push_revref
@@ -193,7 +193,7 @@ def _fillwith_commit_message(request, feeds):
     commit_ids = []
     for feed in feeds:
         if feed.is_commit_message():
-           commit_ids.append(feed.relative_id)
+            commit_ids.append(feed.relative_id)
     if len(commit_ids) == 0:
         return
     commit_dict = _convert_to_commit_dict(request, commit_ids)
@@ -203,16 +203,16 @@ def _fillwith_commit_message(request, feeds):
 
 def _convert_to_commit_dict(request, commit_ids):
     commit_dict = {}
-    allowed_write_access_repoId_set = Set()
+    allowed_view_access_repoId_set = Set()
     commits = RepoManager.list_commits_by_ids(commit_ids)
     repos = RepoManager.list_repo_by_ids(list(Set([x.repo_id for x in commits])))
     for repo in repos:
         if repo.auth_type == 2:
-            if not request.user.is_authenticated() or not RepoManager.is_allowed_read_access_repo(repo, request.user):
+            if not request.user.is_authenticated() or not RepoManager.is_allowed_view_access_repo(repo, request.user):
                 continue
-        allowed_write_access_repoId_set.add(repo.id)
+        allowed_view_access_repoId_set.add(repo.id)
     for commit in commits:
-        if commit.repo_id in allowed_write_access_repoId_set:
+        if commit.repo_id in allowed_view_access_repoId_set:
             commit_dict[commit.id] = commit
     return commit_dict
 

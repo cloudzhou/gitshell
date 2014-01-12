@@ -29,7 +29,7 @@
             {% else %}
                 <select class="user-permission-select" data-user-id="{{teamMember.user.id}}" name="permission">
                   {% for key, value in PERMISSION_VIEW.items %}
-                    {% if key != 3 %}
+                    {% if key != 0 and key != 3 %}
                       <option value="{{key}}"{%if key == teamMember.permission%} selected="selected"{%endif%}>{{value}}</option>
                     {% endif %}
                   {% endfor %}

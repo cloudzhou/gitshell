@@ -440,20 +440,21 @@ class TeamManager():
         if RepoManager.is_repo_member(repo, user):
             user_permission = PERMISSION.PUSH
         repoPermission = self.get_repoPermission_by_repoId(repo.id)
-        # group check
-        groupMembers = self.list_groupMember_by_teamUserId_memberUserId(repo.user_id, user.id)
-        groupIdSet = Set([x.group_id for x in groupMembers])
-        # if group_permission_set limit
-        for permissionItem in repoPermission.group_permission_set:
-            if permissionItem.group_id in groupIdSet and permissionItem.permission < user_permission:
-                user_permission = permissionItem.permission
         # if team member
         if teamMember:
             user_permission = teamMember.permission
             if teamMember.permission == PERMISSION.DEFAULT:
                 user_permission = self.get_team_globalPermission_by_userId(repo.user_id)
-        if repoPermission.global_permission in PERMISSION.VIEW:
+        # 1 global_permission check
+        if repoPermission.global_permission != 0 and repoPermission.global_permission in PERMISSION.VIEW:
             user_permission = repoPermission.global_permission
+        # 2 group check
+        groupMembers = self.list_groupMember_by_teamUserId_memberUserId(repo.user_id, user.id)
+        groupIdSet = Set([x.group_id for x in groupMembers])
+        for permissionItem in repoPermission.group_permission_set:
+            if permissionItem.group_id in groupIdSet and permissionItem.permission < user_permission:
+                user_permission = permissionItem.permission
+        # 3 per user check
         for permissionItem in repoPermission.user_permission_set:
             if permissionItem.user_id == user.id:
                 user_permission = permissionItem.permission
@@ -482,15 +483,15 @@ class PERMISSION:
     ADMIN = 3
 
     VIEW_WITHOUT_ADMIN = {
-        1: u'只读权限(pull)',
-        2: u'读写权限(pull+push)',
+        1: u'只读(pull)',
+        2: u'读写(pull+push)',
     }
     VIEW = {
-        -1: u'没有任何权限',
-        0: u'默认权限',
-        1: u'只读权限(pull)',
-        2: u'读写权限(pull+push)',
-        3: u'管理权限(admin)',
+        -1: u'禁止所有权限',
+        0: u'默认',
+        1: u'只读(pull)',
+        2: u'读写(pull+push)',
+        3: u'管理(admin)',
     }
 
 

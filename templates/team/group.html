@@ -2,26 +2,20 @@
 
 {% block container-right %}
 <h2 class="heading">{{teamGroup.name}} 组</h2>
-<table class="table group-member">
-  <tbody>
+<div class="group-member">
     {% for groupMember in groupMembers %}
-    <tr class="team-group">
-      <td class="name">
+    <div class="member">
+      <div class="hide actions">
+        <a href="javascript:;" data-member-user-id="{{groupMember.member_user_id}}" class="remove-group-member btn btn-mini">删除</a>
+      </div>
+      <div class="name">
         <img src="https://gravatar.com/avatar/{{groupMember.member_userprofile.imgurl}}?s=34" alt="{{groupMember.member_userprofile.username}}">
         <a href="/{{groupMember.member_userprofile.username}}/">{{groupMember.member_userprofile.username}}</a>
-      </td>
-      <td class="rights">
-      </td>
-      <td>
-        <div class="hide actions">
-          <a href="javascript:;" data-member-user-id="{{groupMember.member_user_id}}" class="remove-group-member btn btn-mini">删除</a>
-        </div>
-      </td>
-    </tr>
+      </div>
+    </div>
     {% endfor %}
-  </tbody>
-</table>
-  <p class="add-group-member"><input id="add-member" placeholder="添加团队用户"/><button class="add-group-member-btn btn">添加团队用户</button></p>
+</div>
+<div class="add-group-member"><input id="add-member" placeholder="添加团队用户"/><button class="add-group-member-btn btn">添加团队用户</button></div>
 {% endblock %}
 
 {% block js %}
