@@ -90,7 +90,7 @@ def keyauth(request, fingerprint, command):
     reponame = short_repo_path[slash_idx+1 : last_repo_char_idx+1]
     if reponame.endswith('.git'):
         reponame = reponame[0 : len(reponame)-4]
-    if not (re.match('^\w+$', username) and RepoManager.is_allowed_reponame_pattern(reponame)):
+    if not (re.match('^[a-zA-Z0-9_\-]+$', username) and RepoManager.is_allowed_reponame_pattern(reponame)):
         return not_git_command()
     
     user = GsuserManager.get_user_by_name(username)

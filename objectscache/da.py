@@ -285,7 +285,8 @@ def query(model, pt_id, rawsql_id, parameters):
             value.append(obj.id)
             id_key = __get_idkey(table, obj.id)
             cache.add(id_key, obj)
-        cache.add(sqlkey, value)
+        if value and len(value) > 0:
+            cache.add(sqlkey, value)
     return get_many(model, value)
 
 def query_first(model, pt_id, rawsql_id, parameters):
