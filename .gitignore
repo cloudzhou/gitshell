@@ -1,4 +1,5 @@
-.gitignore
 *.pyc
+.gitignore
 env.ini
 settings.py
+wsgi.py
