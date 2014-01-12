@@ -18,7 +18,7 @@ class ResetpasswordForm0(forms.Form):
     email = forms.EmailField()
 
 class ResetpasswordForm1(forms.Form):
-    password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False))
+    password = forms.CharField(max_length=64, widget=forms.PasswordInput(render_value=False), widget=forms.PasswordInput(render_value=False, attrs={'id': 'password'}))
 
 # skills and recommends
 class SkillsForm(forms.Form):
