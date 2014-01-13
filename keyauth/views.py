@@ -119,8 +119,9 @@ def keyauth(request, fingerprint, command):
         teamMember = TeamManager.get_teamMember_by_teamUserId_userId(user.id, userpubkey.user_id)
         if repoMember or teamMember:
             pushUser = GsuserManager.get_user_by_id(userpubkey.user_id)
-            if 'git-receive-pack' in pre_command and RepoManager.is_allowed_access_repo(repo, pushUser, REPO_PERMISSION.WRITE):
-                return response_full_git_command(quote, pre_command, pushUser, user, repo)
+            if 'git-receive-pack' in pre_command:
+                if RepoManager.is_allowed_access_repo(repo, pushUser, REPO_PERMISSION.WRITE):
+                    return response_full_git_command(quote, pre_command, pushUser, user, repo)
             elif RepoManager.is_allowed_access_repo(repo, pushUser, REPO_PERMISSION.READ_ONLY):
                 return response_full_git_command(quote, pre_command, pushUser, user, repo)
     return not_git_command()
