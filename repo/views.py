@@ -1435,17 +1435,20 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_stared_repo = RepoManager.is_stared_repo(request.user.id, repo.id)
     is_repo_member = RepoManager.is_repo_member(repo, request.user)
     is_owner = (repo.user_id == request.user.id)
-    is_owner_or_teamAdmin = RepoManager.is_owner_or_teamAdmin(repo, request.user)
     is_branch = (refs in refs_meta['branches'])
     is_tag = (refs in refs_meta['tags'])
     is_commit = (not is_branch and not is_tag)
+    user_permission = TeamManager.get_repo_user_permission(repo, request.user)
+    has_read_rights = (user_permission >= REPO_PERMISSION.READ_ONLY)
+    has_write_rights = (user_permission >= REPO_PERMISSION.WRITE)
+    has_admin_rights = (user_permission >= REPO_PERMISSION.ADMIN)
     has_forked = False
-    has_pull_right = is_owner_or_teamAdmin
+    has_pull_right = has_admin_rights
     user_child_repo = None
     parent_repo = None
     if repo.fork_repo_id:
         parent_repo = RepoManager.get_repo_by_id(repo.fork_repo_id)
-    if not is_owner_or_teamAdmin:
+    if not has_admin_rights:
         user_child_repo = RepoManager.get_childrepo_by_user_forkrepo(request.user, repo)
         if user_child_repo is not None:
             has_forked = True
@@ -1453,7 +1456,7 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     is_teamMember = TeamManager.is_teamMember(repo.user_id, request.user.id)
     has_fork_right = (repo.auth_type == 0 or is_repo_member or is_teamMember)
     repo_pull_new_count = RepoManager.count_pullRequest_by_descRepoId(repo.id, PULL_STATUS.NEW)
-    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_stared_repo': is_stared_repo, 'has_forked': has_forked, 'is_repo_member': is_repo_member, 'is_teamMember': is_teamMember, 'is_owner': is_owner, 'is_owner_or_teamAdmin': is_owner_or_teamAdmin, 'is_branch': is_branch, 'is_tag': is_tag, 'is_commit': is_commit, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta, 'user_child_repo': user_child_repo, 'parent_repo': parent_repo}
+    return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_stared_repo': is_stared_repo, 'has_forked': has_forked, 'is_repo_member': is_repo_member, 'is_teamMember': is_teamMember, 'is_owner': is_owner, 'is_branch': is_branch, 'is_tag': is_tag, 'is_commit': is_commit, 'has_read_rights': has_read_rights, 'has_write_rights': has_write_rights, 'has_admin_rights': has_admin_rights, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta, 'user_child_repo': user_child_repo, 'parent_repo': parent_repo}
 
 def _list_pull_repo(request, repo):
     raw_pull_repo_list = RepoManager.list_parent_repo(repo, 10)

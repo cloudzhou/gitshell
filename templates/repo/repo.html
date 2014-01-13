@@ -26,7 +26,7 @@
           <li{% if current == 'compare' or current == 'pull' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/pulls/" data-original-title="Pull Request" rel="tooltip"><span><i class="icon-code-fork"></i>合并请求</span></a></li>
           <li{% if current == 'pulse' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/pulse/" data-original-title="Overview" rel="tooltip"><span><i class="icon-desktop"></i>总览</span></a></li>
           {#<li{% if current == 'stats' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/stats/" data-original-title="Graph" rel="tooltip"><span><i class="icon-th"></i>统计</span></a></li>#}
-          {% if is_owner_or_teamAdmin %}
+          {% if has_admin_rights %}
           <li{% if current == 'settings' %} class="active"{% endif %}><a href="/{{user_name}}/{{repo_name}}/settings/" data-original-title="Setting" rel="tooltip"><span><i class="icon-wrench"></i>设置</span></a></li>
           {% endif %}
         </ul>
