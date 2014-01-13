@@ -304,7 +304,7 @@ def _let_request_user_first(memberUsers, user_id):
     return new_memberUsers
 
 def _has_issue_modify_right(request, issue, repo):
-    is_allowed_write_access_repo = RepoManager.is_allowed_write_access_repo(repo, request.user))
+    is_allowed_write_access_repo = RepoManager.is_allowed_write_access_repo(repo, request.user)
     return issue is not None and is_allowed_write_access_repo
 
 def _has_issue_comment_modify_right(request, issue_comment, repo):
