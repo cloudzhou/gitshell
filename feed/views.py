@@ -166,7 +166,8 @@ def feed_by_ids(request):
     _fillwith_commit_message(request, feeds)
     _fillwith_issue_event(request, feeds)
     _fillwith_pull_event(request, feeds)
-    response_dictionary = {'feeds': feeds}
+    relative_obj_not_none_feeds = [x for x in feeds if x.relative_obj is not None]
+    response_dictionary = {'feeds': relative_obj_not_none_feeds}
     return json_httpResponse(response_dictionary)
 
 def _list_feeds(request, ids_str):

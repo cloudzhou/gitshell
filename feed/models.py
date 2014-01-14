@@ -31,7 +31,7 @@ class Feed(BaseModel):
 
     # field without database
     userprofile = None
-    relative_obj = {}
+    relative_obj = None
 
     @classmethod
     def create(self, user_id, repo_id, feed_cate, feed_type, relative_id):

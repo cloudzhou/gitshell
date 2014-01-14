@@ -439,12 +439,12 @@ class TeamManager():
         from gitshell.repo.models import Repo, RepoManager
         if RepoManager.is_repo_member(repo, user):
             user_permission = PERMISSION.PUSH
-        repoPermission = self.get_repoPermission_by_repoId(repo.id)
         # if team member
         if teamMember:
             user_permission = teamMember.permission
             if teamMember.permission == PERMISSION.DEFAULT:
                 user_permission = self.get_team_globalPermission_by_userId(repo.user_id)
+        repoPermission = self.get_repoPermission_by_repoId(repo.id)
         if not repoPermission:
             return user_permission
         # 1 global_permission check
@@ -453,9 +453,16 @@ class TeamManager():
         # 2 group check
         groupMembers = self.list_groupMember_by_teamUserId_memberUserId(repo.user_id, user.id)
         groupIdSet = Set([x.group_id for x in groupMembers])
+        min_group_permission = None
         for permissionItem in repoPermission.group_permission_set:
-            if permissionItem.group_id in groupIdSet and permissionItem.permission < user_permission:
-                user_permission = permissionItem.permission
+            if permissionItem.group_id in groupIdSet:
+                if min_group_permission is None:
+                    min_group_permission = permissionItem.permission
+                    continue
+                if min_group_permission < permissionItem.permission:
+                    min_group_permission = permissionItem.permission
+        if min_group_permission:
+            user_permission = min_group_permission
         # 3 per user check
         for permissionItem in repoPermission.user_permission_set:
             if permissionItem.user_id == user.id:
