@@ -618,11 +618,10 @@ def add_member(request, user_name, repo_name):
     if not userprofile or userprofile.is_team_account == 1:
         return json_failed(500, u'没有相关用户，不能是团队账户')
     length = len(RepoManager.list_repomember(repo.id))
-    if length < 100:
-        RepoManager.add_member(repo, user)
-        return json_success(u'添加成员 %s 成功' % username_or_email)
-    else:
+    if length >= 100:
         return json_failed(500, u'成员数目不得超过100位')
+    RepoManager.add_member(repo, user)
+    return json_success(u'添加成员 %s 成功' % username_or_email)
 
 @repo_admin_permission_check
 @require_http_methods(["POST"])
@@ -1561,11 +1560,4 @@ def _get_merge_user_id(merge_user_id, memberUsers, repo):
         if x.id == merge_user_id:
             return merge_user_id
     return repo.user_id
-
-def json_ok():
-    return json_httpResponse({'result': 'ok'})
-
-def json_failed():
-    return json_httpResponse({'result': 'failed'})
-
 

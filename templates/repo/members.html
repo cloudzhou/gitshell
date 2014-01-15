@@ -55,10 +55,6 @@
         $('#name_input').show();
         $('#username_or_email').focus();
     });
-    $('#username_or_email').blur(function(event) {setTimeout(function(event) {
-        $('#name_input').hide();
-        $('#add_member_tip').show();
-    }, 300);});
     $('#add_member').click(function(event) {
         var username_or_email = $('#username_or_email').attr('value');
         $.post('/{{user_name}}/{{repo_name}}/settings/member/add/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'username_or_email': username_or_email}, function(json){
@@ -72,6 +68,10 @@
             }
         });
     });
+    $('#username_or_email').blur(function(event) {setTimeout(function(event) {
+        $('#name_input').hide();
+        $('#add_member_tip').show();
+    }, 300);});
     $('.remove_member').click(function(event) {
         var username = $(this).attr('value');
         $.post('/{{user_name}}/{{repo_name}}/settings/member/remove/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'username': username}, function(json){
