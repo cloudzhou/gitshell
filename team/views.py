@@ -252,8 +252,11 @@ def group(request, username, group_id):
     if not teamGroup or teamGroup.team_user_id != teamUser.id:
         raise Http404
     groupMembers = TeamManager.list_groupMember_by_teamGroupId(teamGroup.id)
+    userIdInGroupSet = Set([x.member_user_id for x in groupMembers])
+    teamMembers = TeamManager.list_teamMember_by_teamUserId(teamUser.id)
+    teamMembersNotInGroup = [x for x in teamMembers if x.user_id not in userIdInGroupSet]
     current = 'settings'; sub_nav = 'groups'; title = u'%s / 设置 / 组管理 / %s' % (teamUser.username, teamGroup.name)
-    response_dictionary = {'current': current, 'sub_nav': sub_nav, 'title': title, 'teamGroup': teamGroup, 'groupMembers': groupMembers}
+    response_dictionary = {'current': current, 'sub_nav': sub_nav, 'title': title, 'teamGroup': teamGroup, 'groupMembers': groupMembers, 'teamMembersNotInGroup': teamMembersNotInGroup}
     response_dictionary.update(_get_common_team_dict(request, teamUser, teamUserprofile))
     return render_to_response('team/group.html',
                           response_dictionary,

@@ -15,7 +15,16 @@
     </div>
     {% endfor %}
 </div>
-<div class="add-group-member"><input id="add-member" placeholder="添加团队用户"/><button class="add-group-member-btn btn">添加团队用户</button></div>
+{% if teamMembersNotInGroup %}
+<div>
+  <select class="add-group-member-select" name="member">
+    {% for teamMember in teamMembersNotInGroup %}
+    <option value="{{teamMember.user.username}}">{{teamMember.user.username}}</option>
+    {% endfor %}
+  </select>
+  <button class="add-group-member-btn btn btn-mini">添加团队用户</button>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block js %}
@@ -30,7 +39,7 @@ $(function(){
     });
     $('.add-group-member-btn').click(function(){
         var team_group_id = {{teamGroup.id}};
-        var member_username = $('#add-member').val();
+        var member_username = $('option:selected', '.add-group-member-select').val();
         $.post('/{{teamUser.username}}/-/settings/group/add_member/', {csrfmiddlewaretoken: '{{ csrf_token }}', 'team_group_id': team_group_id, 'member_username': member_username}, function(json){
             if(json.code == 200) {
                 window.location.reload(true);
