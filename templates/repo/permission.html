@@ -58,7 +58,7 @@
                   {% for permissionItem in repoPermission.group_permission_set %}
                     <div class="group">
                         <button class="remove-group-permission-button btn btn-mini btn-danger pull-right" data-item-id="{{permissionItem.id}}">&times;</button>
-                        <span><img src="/static/img/teamavatar.png" alt=""><a href="/{{ permissionItem.group.name }}/">{{ permissionItem.group.name }}</a></span>
+                        <span><img src="/static/img/teamavatar.png" alt=""><a href="/{{user_name}}/-/settings/group/{{ permissionItem.group.id }}/">{{ permissionItem.group.name }}</a></span>
                         <select class="group-permission-select" data-group-id="{{permissionItem.group.id}}" name="permission">
                         {% for key, value in PERMISSION_VIEW.items %}
                           {% if key != 0 %}
