@@ -20,7 +20,7 @@
 
     <figure class="repo-avatar">
       <img src="/static/img/repo-avatar48.png" alt="{{repo.name}}">
-      <span class="private"><i class="icon-lock"></i></span>
+      <span class="private"><i class="icon-{%if repo.is_public%}unlock{%else%}lock{%endif%}"></i></span>
     </figure>
     <div class="summary">
       <div class="heading">

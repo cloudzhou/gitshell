@@ -43,7 +43,7 @@
             <dd>{{ gsuserprofile.create_time|date:"Y-m-d" }}</dd>
           </dl>
           
-          {% if user.username != gsuser.username %}
+          {% if user.username != gsuser.username and gsuserprofile.is_team_account == 0 %}
             {% if not is_watched_user %}
               <a id="watchUser" class="btn follow-btn" href="javascript: void(0)">关注他/她</a>
             {% else %}

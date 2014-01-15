@@ -17,9 +17,11 @@
 
   <ul class="nav nav-tabs" id="repoTab">
     <li><a href="#repos" data-toggle="tab">仓库</a></li>
+    {% if gsuserprofile.is_team_account == 0 %}
     <li><a href="#watchedRepos" data-toggle="tab">关注仓库</a></li>
     <li><a href="#followed" data-toggle="tab">关注用户</a></li>
     <li><a href="#follower" data-toggle="tab">粉丝</a></li>
+    {% endif %}
   </ul>
 
   <div class="tab-content">

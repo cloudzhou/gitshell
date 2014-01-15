@@ -36,11 +36,11 @@ def user(request, user_name):
     if gsuser is None:
         raise Http404
     gsuserprofile = GsuserManager.get_userprofile_by_id(gsuser.id)
+    if gsuserprofile.is_team_account == 1 and TeamManager.is_teamMember(gsuser.id, request.user.id):
+        return HttpResponseRedirect('/%s/-/dashboard/' % user_name)
     recommendsForm = RecommendsForm()
     repos = []
     if gsuser.id == request.user.id:
-        repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 100)
-    elif gsuserprofile.is_team_account == 1 and TeamManager.is_teamMember(gsuser.id, request.user.id):
         repos = RepoManager.list_repo_by_userId(gsuser.id, 0, 100)
     else:
         repos = RepoManager.list_unprivate_repo_by_userId(gsuser.id, 0, 100)
