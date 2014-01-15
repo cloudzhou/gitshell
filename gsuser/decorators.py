@@ -42,8 +42,11 @@ def repo_admin_permission_check(function):
                 return error_with_reason(request, 'repo_not_found')
             if not request.user.is_authenticated():
                 return HttpResponseRedirect('/login/?next=' + urlquote(request.path))
-            is_allowed_access_repo = RepoManager.is_allowed_access_repo(repo, request.user, REPO_PERMISSION.ADMIN)
-            if not is_allowed_access_repo:
+            from gitshell.team.models import TeamManager
+            user_permission = TeamManager.get_repo_user_permission(repo, request.user)
+            if user_permission < REPO_PERMISSION.ADMIN:
+                if user_permission >= REPO_PERMISSION.WEB_VIEW:
+                    return HttpResponseRedirect('/%s/%s/' % (user_name, repo_name))
                 if request.method == 'POST':
                     return json_failed(403, u'没有管理权限')
                 return error_with_reason(request, 'repo_permission_denied')
