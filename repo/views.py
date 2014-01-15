@@ -165,7 +165,7 @@ def _blob(request, user_name, repo_name, refs, path, render_method):
                 lang = lang_suffix[suffix]
                 brush = brush_aliases[lang]
         if is_markdown:
-            blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path, lang)
+            blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
         else:
             blob = gitHandler.repo_cat_pygmentize_file(abs_repopath, commit_hash, path, lang)
     response_dictionary = {'mainnav': 'repo', 'current': current, 'title': title, 'path': path, 'blob': blob, 'lang': lang, 'brush': brush, 'is_markdown': is_markdown}
