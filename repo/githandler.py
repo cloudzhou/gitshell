@@ -75,11 +75,13 @@ class GitHandler():
         return ''
 
     def repo_cat_pygmentize_file(self, repo_path, commit_hash, path, lang):
+        origin_commit_hash = commit_hash; origin_path = path
+        (commit_hash, path) = self._all_to_utf8(commit_hash, path)
         stage_file = self._get_stage_file(repo_path, commit_hash, path) + '.pygmentize'
         result = self._read_load_stage_file(stage_file)
         if result is not None:
             return result['pygmentize_blob']
-        blob = self.repo_cat_file(repo_path, commit_hash, path)
+        blob = self.repo_cat_file(repo_path, origin_commit_hash, origin_path)
         pygmentize_blob = self._pygmentize(blob, lang)
         self._dumps_write_stage_file({'pygmentize_blob': pygmentize_blob}, stage_file)
         return pygmentize_blob
