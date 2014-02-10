@@ -20,4 +20,10 @@ $ apt-get install automake build-essential flex git libmysqlclient-dev libpcre3 
 
 $ python setup.py install
 $ ...
+
+$ /opt/bin/nginx start
+$ /opt/bin/redis start
+$ /opt/bin/beanstalkd start
+$ /opt/run/openssh/sbin/sshd
+$ /opt/bin/uwsgi stop 8001 && sleep 3 && /opt/bin/uwsgi start 8001
 ```
