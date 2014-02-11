@@ -1485,9 +1485,9 @@ def _has_repo_pull_right(request, repo):
 def _has_pull_right(request, source_pull_repo, desc_pull_repo):
     if source_pull_repo is None or desc_pull_repo is None:
         return False
-    if source_pull_repo.auth_type != 0 and not RepoManager.is_allowed_access_repo(source_pull_repo, request.user, REPO_PERMISSION.WRITE):
+    if source_pull_repo.auth_type != 0 and not RepoManager.is_allowed_access_repo(source_pull_repo, request.user, REPO_PERMISSION.READ_ONLY):
         return False
-    if desc_pull_repo.auth_type != 0 and not RepoManager.is_allowed_access_repo(desc_pull_repo, request.user, REPO_PERMISSION.WRITE):
+    if desc_pull_repo.auth_type != 0 and not RepoManager.is_allowed_access_repo(desc_pull_repo, request.user, REPO_PERMISSION.READ_ONLY):
         return False
     return True
 
