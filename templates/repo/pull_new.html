@@ -140,7 +140,7 @@
         }
         tmp_global_repo_branch_map[repo] = branches;
         if(source_or_desc == 'desc') {
-          $.post('/' + repo + '/member_users/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
+          $.post('/' + repo + '/writeable_member_users/', {csrfmiddlewaretoken: '{{ csrf_token }}'}, function(json){
             var memberUsers = json.memberUsers;
             tmp_global_repo_memberUser_map[repo] = memberUsers;
             $('#mergeUserId').find('option').remove();

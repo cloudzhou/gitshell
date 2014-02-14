@@ -345,6 +345,7 @@ def pull_new(request, user_name, repo_name, desc_username, desc_refs, source_use
     refs = _get_current_refs(request.user, repo, None, True); path = '.'
 
     memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
+    writeable_memberUsers = _list_writeable_memberUsers(repo, memberUsers)
     # pull action
     if request.method == 'POST':
         source_repo = request.POST.get('source_repo', '')
@@ -374,7 +375,7 @@ def pull_new(request, user_name, repo_name, desc_username, desc_refs, source_use
         return HttpResponseRedirect('/%s/%s/pulls/' % (desc_username, desc_reponame))
 
     pull_repo_list = _list_pull_repo(request, repo)
-    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'title': title, 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list, 'memberUsers': memberUsers}
+    response_dictionary = {'mainnav': 'repo', 'current': 'pull', 'path': path, 'title': title, 'source_username': source_username, 'source_refs': source_refs, 'desc_username': desc_username, 'desc_refs': desc_refs, 'source_repo': source_repo, 'desc_repo': desc_repo, 'pull_repo_list': pull_repo_list, 'memberUsers': writeable_memberUsers}
     response_dictionary.update(get_common_repo_dict(request, repo, user_name, repo_name, refs))
     return render_to_response('repo/pull_new.html',
                           response_dictionary,
@@ -1263,6 +1264,26 @@ def recently(request, user_name):
 @login_required
 @repo_view_permission_check
 @require_http_methods(["POST"])
+def writeable_member_users(request, user_name, repo_name):
+    repo = RepoManager.get_repo_by_name(user_name, repo_name)
+    if repo is None:
+        message = u'仓库不存在'
+        return json_httpResponse({'code': 404, 'result': 'failed', 'message': message})
+    memberUsers = RepoManager.list_repo_team_memberUser(repo.id)
+    # only need username and id
+    filter_memberUsers = []
+    for memberUser in memberUsers:
+        if not RepoManager.is_allowed_access_repo(repo, memberUser, REPO_PERMISSION.WRITE):
+            continue
+        userprofile = Userprofile()
+        userprofile.id = memberUser.id
+        userprofile.username = memberUser.username
+        filter_memberUsers.append(userprofile)
+    return json_httpResponse({'code': 200, 'result': 'success', 'message': u'列出仓库的所有用户', 'memberUsers': filter_memberUsers})
+    
+@login_required
+@repo_view_permission_check
+@require_http_methods(["POST"])
 def member_users(request, user_name, repo_name):
     repo = RepoManager.get_repo_by_name(user_name, repo_name)
     if repo is None:
@@ -1456,6 +1477,14 @@ def get_common_repo_dict(request, repo, user_name, repo_name, refs):
     has_fork_right = (repo.auth_type == 0 or is_repo_member or is_teamMember)
     repo_pull_new_count = RepoManager.count_pullRequest_by_descRepoId(repo.id, PULL_STATUS.NEW)
     return { 'repo': repo, 'user_name': user_name, 'repo_name': repo_name, 'refs': refs, 'is_watched_repo': is_watched_repo, 'is_stared_repo': is_stared_repo, 'has_forked': has_forked, 'is_repo_member': is_repo_member, 'is_teamMember': is_teamMember, 'is_owner': is_owner, 'is_branch': is_branch, 'is_tag': is_tag, 'is_commit': is_commit, 'has_read_rights': has_read_rights, 'has_write_rights': has_write_rights, 'has_admin_rights': has_admin_rights, 'has_fork_right': has_fork_right, 'has_pull_right': has_pull_right, 'repo_pull_new_count': repo_pull_new_count, 'refs_meta': refs_meta, 'user_child_repo': user_child_repo, 'parent_repo': parent_repo}
+
+def _list_writeable_memberUsers(repo, memberUsers):
+    writeable_memberUsers = []
+    for x in memberUsers:
+        if not RepoManager.is_allowed_access_repo(repo, x, REPO_PERMISSION.WRITE):
+            continue
+        writeable_memberUsers.append(x)
+    return writeable_memberUsers
 
 def _list_pull_repo(request, repo):
     raw_pull_repo_list = RepoManager.list_parent_repo(repo, 10)
