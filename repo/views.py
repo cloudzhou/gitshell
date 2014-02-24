@@ -19,7 +19,7 @@ from gitshell.feed.feed import AttrKey, FeedAction
 from gitshell.feed.mailUtils import Mailer
 from gitshell.feed.models import FeedManager, FEED_TYPE, NOTIF_TYPE
 from gitshell.repo.Forms import RepoForm
-from gitshell.repo.githandler import GitHandler
+from gitshell.repo.githandler import GitHandler, lang_suffix, brush_aliases
 from gitshell.repo.models import Repo, RepoManager, PullRequest, WebHookURL, PULL_STATUS, KEEP_REPO_NAME, REPO_PERMISSION
 from gitshell.gsuser.models import GsuserManager, Userprofile, UserViaRef, REF_TYPE
 from gitshell.gsuser.decorators import repo_view_permission_check, repo_source_permission_check, repo_admin_permission_check
@@ -32,8 +32,6 @@ from gitshell.objectscache.models import CacheKey
 from gitshell.viewtools.views import json_httpResponse, json_success, json_failed
 from gitshell.thirdparty.views import github_oauth_access_token, github_get_thirdpartyUser, github_authenticate, github_list_repo, dropbox_share_direct
 
-lang_suffix = {'applescript': 'AppleScript', 'as3': 'AS3', 'bash': 'Bash', 'sh': 'Bash', 'cfm': 'ColdFusion', 'cfc': 'ColdFusion', 'cpp': 'Cpp', 'cxx': 'Cpp', 'c': 'Cpp', 'h': 'Cpp', 'cs': 'CSharp', 'css': 'Css', 'dpr': 'Delphi', 'dfm': 'Delphi', 'pas': 'Delphi', 'diff': 'Diff', 'patch': 'Diff', 'erl': 'Erlang', 'groovy': 'Groovy', 'fx': 'JavaFX', 'jfx': 'JavaFX', 'java': 'Java', 'js': 'JScript', 'pl': 'Perl', 'py': 'Python', 'php': 'Php', 'psl': 'PowerShell', 'rb': 'Ruby', 'sass': 'Sass', 'scala': 'Scala', 'sql': 'Sql', 'vb': 'Vb', 'xml': 'Xml', 'xhtml': 'Xml', 'html': 'Xml', 'htm': 'Xml', 'go': 'Go'}
-brush_aliases = {'AppleScript': 'applescript', 'AS3': 'actionscript3', 'Bash': 'shell', 'ColdFusion': 'coldfusion', 'Cpp': 'cpp', 'CSharp': 'csharp', 'Css': 'css', 'Delphi': 'delphi', 'Diff': 'diff', 'Erlang': 'erlang', 'Groovy': 'groovy', 'JavaFX': 'javafx', 'Java': 'java', 'JScript': 'javascript', 'Perl': 'perl', 'Php': 'php', 'Text': 'text', 'PowerShell': 'powershell', 'Python': 'python', 'Ruby': 'ruby', 'Sass': 'sass', 'Scala': 'scala', 'Sql': 'sql', 'Vb': 'vb', 'Xml': 'xml', 'Go': 'go'}
 PULLREQUEST_COMMIT_MESSAGE_TMPL = 'Merge branch %s of https://gitshell.com/%s/%s/ into %s, see https://gitshell.com/%s/%s/pull/%s/, %s'
 @login_required
 def user_repo(request, user_name):
@@ -155,15 +153,15 @@ def _blob(request, user_name, repo_name, refs, path, render_method):
     abs_repopath = repo.get_abs_repopath()
     gitHandler = GitHandler()
     commit_hash = gitHandler.get_commit_hash(repo, abs_repopath, refs)
-    blob = u''; lang = 'Text'; brush = 'text'
+    blob = u''; lang = 'text'; brush = 'text'
     is_markdown = path.endswith('.markdown') or path.endswith('.md') or path.endswith('.mkd')
     if repo.auth_type == 0 or RepoManager.is_allowed_write_access_repo(repo, request.user):
         paths = path.split('.')
         if len(paths) > 0:
             suffix = paths[-1]
-            if suffix in lang_suffix and lang_suffix[suffix] in brush_aliases:
+            if suffix in lang_suffix and suffix in brush_aliases:
                 lang = lang_suffix[suffix]
-                brush = brush_aliases[lang]
+                brush = brush_aliases[suffix]
         if is_markdown:
             blob = gitHandler.repo_cat_file(abs_repopath, commit_hash, path)
         else:
