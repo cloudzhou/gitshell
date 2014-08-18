@@ -227,10 +227,11 @@ def __get(model, pkid, only_visibly):
     if obj is not None:
         return obj
     try:
-        if only_visibly and hasattr(model, 'visibly'):
-            obj = model.objects.get(visibly = 0, id = pkid)
-        else:
-            obj = model.objects.get(id = pkid)
+        obj = model.objects.get(id=pkid)
+        if not obj:
+            return None
+        if only_visibly and obj.visibly != 0:
+            return None
         cache.add(id_key, obj)
         return obj
     except Exception, e:
@@ -256,10 +257,13 @@ def __get_many(model, pkids, only_visibly):
     if len(uncache_ids) > 0:
         objects = []
         try:
-            if only_visibly and hasattr(model, 'visibly'):
-                objects = model.objects.filter(visibly=0).filter(id__in=uncache_ids)
-            else:
-                objects = model.objects.filter(id__in=uncache_ids)
+            _objects = model.objects.filter(id__in=uncache_ids)
+            for _object in _objects:
+                if not _object:
+                    continue
+                if only_visibly and _object.visibly != 0:
+                    continue
+                objects.append(_object)
         except Exception, e:
             logger.exception(e)
         __add_many(table, objects)
