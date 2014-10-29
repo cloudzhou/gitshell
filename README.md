@@ -1,7 +1,5 @@
 Gitshell
 ========
-Installation details see: [Note.sh](https://bitbucket.org/cloudzhou/source/src/0fb32e1c82486575f111f3085bbdde94ac68b0e3/bin/note.sh?at=master)
-
 Env
 ------------
 - Python 2.7
